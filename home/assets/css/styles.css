@@ -1,0 +1,11 @@
+.block1{
+    width: 100vw;
+    height: 60vh;
+    background-color: #c5e3f8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-bottom-left-radius: 15%;
+    border-bottom-right-radius: 15%;
+}
