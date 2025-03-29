@@ -1,0 +1,18 @@
+Normas de normalización de la base de datos:
+
+    1) Uso de siete (7) carácteres para la creación de tablas.
+    2) Uso de comentarios para la identificación de campos en las tablas.
+    3) Uso de señalización específica para uso de carácteres. Ejemplo: "VARCHAR(10)".
+    4) Todas las tablas deben tener la carácteristica de "ON UPDATE CASCADE ON DELETE CASCADE" en su sentencia para evitar errores en modificación.
+    5) Modificar ante cualquier actualización, el archivo "dbsiget_dbdiagramIO.txt" para la visualización clara de la base de datos actual.
+    6) Usar abreviaciones claras para los campos y tablas de las bases de datos.
+    7) Evitar datos sensibles en texto plano (ej: contraseñas deben ser HASHED).
+
+Ejemplo de tabla bien documentada:  
+
+    CREATE TABLE usrdata (  
+        id_usuario INT PRIMARY KEY AUTO_INCREMENT COMMENT "Identificador único",  
+        usuario_id VARCHAR(10) UNIQUE COMMENT "Código asignado al usuario",  
+        is_activo BOOLEAN DEFAULT TRUE COMMENT "Estado de la cuenta",  
+        creado_fecha DATETIME DEFAULT CURRENT_TIMESTAMP  
+    ) ENGINE=InnoDB ON UPDATE CASCADE ON DELETE CASCADE;  
