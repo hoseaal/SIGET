@@ -1,0 +1,52 @@
+// Tabla maestra de nómina (tmanom)
+Table tmanom {
+    nom_ced VARCHAR(10) [pk, note: "Cédula del empleado"]
+    nom_nom VARCHAR(50) [not null, note: "Nombre del empleado"]
+    nom_ape VARCHAR(50) [not null, note: "Apellido del empleado"]
+    nom_fec DATE [not null, note: "Fecha de ingreso"]
+    nom_gen ENUM('M', 'F') [not null, note: "Género del empleado"]
+    nom_nhi INT [not null, note: "Número de hijos"]
+}
+
+// Tabla esclava de antigüedad (tesant)
+Table tesant {
+    ant_ide INT [pk, increment, note: "Identificador único de antigüedad"]
+    ant_ano INT [not null, note: "Años de antigüedad"]
+    ant_por DECIMAL(5,2) [not null, note: "Porcentaje de antigüedad"]
+}
+
+// Tabla esclava de departamento (tesdep)
+Table tesdep {
+    dep_ide INT [pk, increment, note: "Identificador único de departamento"]
+    dep_nom VARCHAR(50) [not null, note: "Nombre del departamento"]
+    dep_des TEXT [note: "Descripción del departamento"]
+}
+
+// Tabla esclava de cargo ONAPRE (tesona)
+Table tesona {
+    ona_ide INT [pk, increment, note: "Identificador único de cargo ONAPRE"]
+    ona_car VARCHAR(50) [not null, note: "Nombre del cargo ONAPRE"]
+    ona_des TEXT [note: "Descripción del cargo ONAPRE"]
+}
+
+// Tabla esclava de cargo CET (tescet)
+Table tescet {
+    cet_ide INT [pk, increment, note: "Identificador único de cargo CET"]
+    cet_car VARCHAR(50) [not null, note: "Nombre del cargo CET"]
+    cet_des TEXT [note: "Descripción del cargo CET"]
+    cet_salario DECIMAL(10,2) [not null, note: "Salario del cargo CET"]
+}
+
+// Tabla esclava de primas en salario (tespri)
+Table tespri {
+    pri_ide INT [pk, increment, note: "Identificador único de prima"]
+    pri_raz VARCHAR(100) [not null, note: "Razón de la prima"]
+    pri_por DECIMAL(5,2) [not null, note: "Porcentaje de la prima"]
+}
+
+// Tabla esclava de deducciones en salario (tesded)
+Table tesded {
+    ded_ide INT [pk, increment, note: "Identificador único de deducción"]
+    ded_raz VARCHAR(100) [not null, note: "Razón de la deducción"]
+    ded_por DECIMAL(5,2) [not null, note: "Porcentaje de la deducción"]
+}
