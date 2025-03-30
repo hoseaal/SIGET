@@ -12,9 +12,6 @@ const conf = (() => {
 
 conf.distPath = path.resolve(__dirname, conf.distPath);
 
-// -------------------------------------------------------------------------------
-// NPM packages to transpile
-
 const TRANSPILE_PACKAGES = ['bootstrap', 'popper.js', 'shepherd.js'];
 
 const packageRegex = package => `(?:\\\\|\\/)${package}(?:\\\\|\\/).+?\\.js$`;

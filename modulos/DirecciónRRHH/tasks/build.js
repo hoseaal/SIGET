@@ -13,17 +13,13 @@ const colors = require('ansi-colors');
 const rename = require('gulp-rename');
 
 module.exports = (conf, srcGlob) => {
-  // Build CSS
-  // -------------------------------------------------------------------------------
   const buildCssTask = function (cb) {
     return src(srcGlob('**/*.scss', '!**/_*.scss'))
       .pipe(gulpIf(conf.sourcemaps, sourcemaps.init()))
       .pipe(
-        // If sass is installed on your local machine, it will use command line to compile sass else it will use dart sass npm which 3 time slower
         gulpIf(
           localSass,
           exec(
-            // If conf.minify == true, generate compressed style without sourcemap
             gulpIf(
               conf.minify,
               `sass scss:${conf.distPath}/css fonts:${conf.distPath}/fonts libs:${conf.distPath}/libs --style compressed --no-source-map`,
@@ -48,7 +44,6 @@ module.exports = (conf, srcGlob) => {
       .pipe(dest(conf.distPath))
       .pipe(browserSync.stream());
   };
-  // Autoprefix css
   const buildAutoprefixCssTask = function (cb) {
     return src(conf.distPath + '/css/**/*.css')
       .pipe(
@@ -66,8 +61,6 @@ module.exports = (conf, srcGlob) => {
     cb();
   };
 
-  // Build JS
-  // -------------------------------------------------------------------------------
   const buildJsTask = function (cb) {
     setTimeout(function () {
       webpack(require('../webpack.config'), (err, stats) => {
@@ -87,7 +80,6 @@ module.exports = (conf, srcGlob) => {
           info.warnings.forEach(w => log(colors.gray('Webpack compilation warning:'), colors.yellow(w)));
         }
 
-        // Print log
         log(
           stats.toString({
             colors: colors.enabled,
@@ -112,9 +104,6 @@ module.exports = (conf, srcGlob) => {
     }, 1);
   };
 
-  // Build fonts
-  // -------------------------------------------------------------------------------
-
   const FONT_TASKS = [
     {
       name: 'boxicons',
@@ -123,10 +112,8 @@ module.exports = (conf, srcGlob) => {
   ].reduce(function (tasks, font) {
     const functionName = `buildFonts${font.name.replace(/^./, m => m.toUpperCase())}Task`;
     const taskFunction = function () {
-      // return src(root(font.path))
       return (
         src(font.path)
-          // .pipe(dest(normalize(path.join(conf.distPath, 'fonts', font.name))))
           .pipe(dest(path.join(conf.distPath, 'fonts', font.name)))
       );
     };
@@ -139,8 +126,6 @@ module.exports = (conf, srcGlob) => {
   }, []);
 
   const buildFontsTask = parallel(FONT_TASKS);
-  // Copy
-  // -------------------------------------------------------------------------------
 
   const buildCopyTask = function () {
     return src(
@@ -160,9 +145,6 @@ module.exports = (conf, srcGlob) => {
   };
 
   const buildAllTask = series(buildCssTask, buildJsTask, buildFontsTask, buildCopyTask);
-
-  // Exports
-  // ---------------------------------------------------------------------------
 
   return {
     css: series(buildCssTask, buildAutoprefixCssTask),
