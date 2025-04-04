@@ -1,21 +1,23 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useLocation } from "react-router-dom";
+import Layout from "./layouts/Layout";
+import AppRoutes from "./router/AppRoutes";
+import { Blank } from "./layouts/Blank";
 
 function App() {
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    // Hacer petición al backend
-    axios.get('/api')
-      .then((res) => setMessage(res.data.message))
-      .catch((err) => console.error(err));
-  }, []);
-
+  const location = useLocation();
+  const isAuthPath = location.pathname.includes("auth") || location.pathname.includes("error") || location.pathname.includes("under-maintenance") | location.pathname.includes("blank");
   return (
-    <div>
-      <h1>Frontend React + Vite</h1>
-      <p>Mensaje del backend: <strong>{message}</strong></p>
-    </div>
+    <>
+      {isAuthPath ? (
+        <AppRoutes>
+            <Blank/>
+          </AppRoutes>
+      ) : (
+        <Layout>
+          <AppRoutes />
+        </Layout>
+      )}
+    </>
   );
 }
 
