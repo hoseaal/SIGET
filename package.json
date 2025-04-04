@@ -1,5 +1,13 @@
 {
+  "scripts": {
+    "start": "cd modulos/BienesMuebles/server && node index.js",
+    "dev": "cd modulos/BienesMuebles/client && npm run dev",
+    "fullstack": "concurrently \"npm run start\" \"npm run dev\""
+  },
   "dependencies": {
     "bootstrap-icons": "^1.11.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }
