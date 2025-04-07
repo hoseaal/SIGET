@@ -34,7 +34,8 @@ CREATE TABLE `tesant` (
 
 CREATE TABLE `tescae` (
   `cae_ide` varchar(10) NOT NULL COMMENT 'Identificador de categoría especifica',
-  `cae_cae` varchar(50) NOT NULL COMMENT 'descripcion de categoría especifica'
+  `cae_cae` varchar(50) NOT NULL COMMENT 'descripcion de categoría especifica',
+  `sca_ide` varchar(10) NOT NULL COMMENT 'Referencia a subcategoría en tessca'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -82,7 +83,8 @@ CREATE TABLE `tesdep` (
 
 CREATE TABLE `tesmod` (
   `mod_ide` varchar(10) NOT NULL COMMENT 'Identificador de modelo',
-  `mod_mod` varchar(50) NOT NULL COMMENT 'descripcion de modelo'
+  `mod_mod` varchar(50) NOT NULL COMMENT 'descripcion de modelo',
+  `mar_ide` int(11) NOT NULL COMMENT 'Referencia a marca en tmamar'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -117,7 +119,8 @@ CREATE TABLE `tespri` (
 
 CREATE TABLE `tessca` (
   `sca_ide` varchar(10) NOT NULL COMMENT 'Identificador de sub-categoria',
-  `sca_sca` varchar(50) NOT NULL COMMENT 'descripcion de sub-categoria'
+  `sca_sca` varchar(50) NOT NULL COMMENT 'descripcion de sub-categoria',
+  `cat_ide` varchar(10) NOT NULL COMMENT 'Referencia a categoría en tmacat'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -128,7 +131,7 @@ CREATE TABLE `tessca` (
 
 CREATE TABLE `tesusu` (
   `usu_ide` varchar(11) NOT NULL COMMENT 'Identificador unico del usuario',
-  `usu_con` int(11) NOT NULL COMMENT 'contraseña del usuario',
+  `usu_con` varchar(255) NOT NULL COMMENT 'Contraseña del usuario (hashed)',
   `usu_tip` decimal(5,2) NOT NULL COMMENT 'Perfil o tipo de usuario'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -148,7 +151,14 @@ CREATE TABLE `tmab_m` (
   `bim_color` varchar(30) NOT NULL COMMENT 'Color del bien',
   `bim_cod` varchar(20) NOT NULL COMMENT 'Codigo de SUDEBIN del bien mueble',
   `bim_obs` text NOT NULL COMMENT 'Observacion del bien',
-  `bim_sede` varchar(20) NOT NULL COMMENT 'Sede en la que se encuentra el bien (PRINCIPAL)'
+  `bim_sede` varchar(20) NOT NULL COMMENT 'Sede en la que se encuentra el bien (PRINCIPAL)',
+  `est_ide` int(11) NOT NULL COMMENT 'Referencia a estado en tmaest',
+  `tip_ide` varchar(10) NOT NULL COMMENT 'Referencia a tipo en tmatip',
+  `foa_ide` int(11) NOT NULL COMMENT 'Referencia a forma adquisición en tmafoa',
+  `con_ide` int(11) NOT NULL COMMENT 'Referencia a condición en tmacon',
+  `esu_ide` int(11) NOT NULL COMMENT 'Referencia a estado uso en tmaesu',
+  `mod_ide` varchar(10) DEFAULT NULL COMMENT 'Referencia a modelo en tesmod',
+  `cae_ide` varchar(10) DEFAULT NULL COMMENT 'Referencia a categoría específica en tescae'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -229,7 +239,12 @@ CREATE TABLE `tmanom` (
   `nom_ape` varchar(50) NOT NULL COMMENT 'Apellido del empleado',
   `nom_fec` date NOT NULL COMMENT 'Fecha de ingreso',
   `nom_gen` enum('M','F') NOT NULL COMMENT 'Género del empleado',
-  `nom_nhi` int(11) NOT NULL COMMENT 'Número de hijos'
+  `nom_nhi` int(11) NOT NULL COMMENT 'Número de hijos',
+  `usu_ide` varchar(11) DEFAULT NULL COMMENT 'Referencia a usuario en tesusu',
+  `cet_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo CET en tescet',
+  `ona_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo ONAPRE en tesona',
+  `ant_ide` int(11) DEFAULT NULL COMMENT 'Referencia a antigüedad en tesant',
+  `dep_ide` int(11) DEFAULT NULL COMMENT 'Referencia a departamento en tesdep'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -257,7 +272,8 @@ ALTER TABLE `tesant`
 -- Indices de la tabla `tescae`
 --
 ALTER TABLE `tescae`
-  ADD PRIMARY KEY (`cae_ide`);
+  ADD PRIMARY KEY (`cae_ide`),
+  ADD KEY `fk_tescae_tessca` (`sca_ide`);
 
 --
 -- Indices de la tabla `tescet`
@@ -281,7 +297,8 @@ ALTER TABLE `tesdep`
 -- Indices de la tabla `tesmod`
 --
 ALTER TABLE `tesmod`
-  ADD PRIMARY KEY (`mod_ide`);
+  ADD PRIMARY KEY (`mod_ide`),
+  ADD KEY `fk_tesmod_tmamar` (`mar_ide`);
 
 --
 -- Indices de la tabla `tesona`
@@ -299,7 +316,8 @@ ALTER TABLE `tespri`
 -- Indices de la tabla `tessca`
 --
 ALTER TABLE `tessca`
-  ADD PRIMARY KEY (`sca_ide`);
+  ADD PRIMARY KEY (`sca_ide`),
+  ADD KEY `fk_tessca_tmacat` (`cat_ide`);
 
 --
 -- Indices de la tabla `tesusu`
@@ -311,7 +329,14 @@ ALTER TABLE `tesusu`
 -- Indices de la tabla `tmab_m`
 --
 ALTER TABLE `tmab_m`
-  ADD PRIMARY KEY (`bim_ide`);
+  ADD PRIMARY KEY (`bim_ide`),
+  ADD KEY `fk_tmabm_tmaest` (`est_ide`),
+  ADD KEY `fk_tmabm_tmatip` (`tip_ide`),
+  ADD KEY `fk_tmabm_tmafoa` (`foa_ide`),
+  ADD KEY `fk_tmabm_tmacon` (`con_ide`),
+  ADD KEY `fk_tmabm_tmaesu` (`esu_ide`),
+  ADD KEY `fk_tmabm_tesmod` (`mod_ide`),
+  ADD KEY `fk_tmabm_tescae` (`cae_ide`);
 
 --
 -- Indices de la tabla `tmacat`
@@ -353,7 +378,12 @@ ALTER TABLE `tmamar`
 -- Indices de la tabla `tmanom`
 --
 ALTER TABLE `tmanom`
-  ADD PRIMARY KEY (`nom_ced`);
+  ADD PRIMARY KEY (`nom_ced`),
+  ADD UNIQUE KEY `usu_ide` (`usu_ide`),
+  ADD UNIQUE KEY `ona_ide` (`ona_ide`),
+  ADD UNIQUE KEY `ant_ide` (`ant_ide`),
+  ADD KEY `fk_tmanom_tescet` (`cet_ide`),
+  ADD KEY `fk_tmanom_tesdep` (`dep_ide`);
 
 --
 -- Indices de la tabla `tmatip`
@@ -406,4 +436,48 @@ ALTER TABLE `tespri`
 --
 ALTER TABLE `tmamar`
   MODIFY `mar_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de marca';
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `tescae`
+--
+ALTER TABLE `tescae`
+  ADD CONSTRAINT `fk_tescae_tessca` FOREIGN KEY (`sca_ide`) REFERENCES `tessca` (`sca_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `tesmod`
+--
+ALTER TABLE `tesmod`
+  ADD CONSTRAINT `fk_tesmod_tmamar` FOREIGN KEY (`mar_ide`) REFERENCES `tmamar` (`mar_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `tessca`
+--
+ALTER TABLE `tessca`
+  ADD CONSTRAINT `fk_tessca_tmacat` FOREIGN KEY (`cat_ide`) REFERENCES `tmacat` (`cat_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `tmab_m`
+--
+ALTER TABLE `tmab_m`
+  ADD CONSTRAINT `fk_tmabm_tescae` FOREIGN KEY (`cae_ide`) REFERENCES `tescae` (`cae_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tesmod` FOREIGN KEY (`mod_ide`) REFERENCES `tesmod` (`mod_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tmacon` FOREIGN KEY (`con_ide`) REFERENCES `tmacon` (`con_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tmaest` FOREIGN KEY (`est_ide`) REFERENCES `tmaest` (`est_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tmaesu` FOREIGN KEY (`esu_ide`) REFERENCES `tmaesu` (`esu_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tmafoa` FOREIGN KEY (`foa_ide`) REFERENCES `tmafoa` (`foa_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tmatip` FOREIGN KEY (`tip_ide`) REFERENCES `tmatip` (`tip_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `tmanom`
+--
+ALTER TABLE `tmanom`
+  ADD CONSTRAINT `fk_tmanom_tesant` FOREIGN KEY (`ant_ide`) REFERENCES `tesant` (`ant_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmanom_tescet` FOREIGN KEY (`cet_ide`) REFERENCES `tescet` (`cet_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmanom_tesdep` FOREIGN KEY (`dep_ide`) REFERENCES `tesdep` (`dep_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmanom_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmanom_tesusu` FOREIGN KEY (`usu_ide`) REFERENCES `tesusu` (`usu_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;

@@ -2,10 +2,11 @@
   "name": "server",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",     
-    "dev": "nodemon index.js"      
+    "start": "node index.js",
+    "dev": "node --watch index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,10 +14,13 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mysql2": "^3.14.0"
   },
-  
   "devDependencies": {
     "nodemon": "^3.1.9"
+  },
+  "eslintConfig": {
+    "extends": "standard"
   }
 }

@@ -1,11 +1,4 @@
-import { Route, Routes } from "react-router-dom";
-// Layout
-import { WithoutMenuPage } from "../pages/layouts/WithoutMenuPage";
-import { WithoutNavbarPage } from "../pages/layouts/WithoutNavbarPage";
-import { ContainerPage } from "../pages/layouts/ContainerPage";
-import { FluidPage } from "../pages/layouts/FluidPage";
-import { BlankPage } from "../pages/layouts/BlankPage";
-
+import { Route, Routes, Navigate } from "react-router-dom";
 import { LoginPage } from "../pages/authentication/LoginPage";
 import { RegisterPage } from "../pages/authentication/RegisterPage";
 import { ForgotPasswordPage } from "../pages/authentication/ForgotPasswordPage";
@@ -51,14 +44,12 @@ import { TextDividerPage } from "../pages/extended-ui/TextDividerPage";
 const AppRoutes = () => {
     return (
         <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            
-            <Route path="/layout/without-menu" element={<WithoutMenuPage />} />
-            <Route path="/layout/without-navbar" element={<WithoutNavbarPage />} />
-            <Route path="/layout/container" element={<ContainerPage />} />
-            <Route path="/layout/fluid" element={<FluidPage />} />
-            <Route path="/layout/fluid" element={<FluidPage />} />
-            <Route path="/layout/blank" element={<BlankPage />} />
+
+            <Route path="/" element={<Navigate to="/Login" replace />} />
+
+            <Route path="/Login" element={<LoginPage />} />
+
+            <Route path="/Dashboard" element={<DashboardPage />} />
 
             <Route path="/ui/accordion" element={<AccordionPage />} />
             <Route path="/ui/alerts" element={<AlertPage />} />
@@ -81,7 +72,7 @@ const AppRoutes = () => {
             <Route path="/ui/tooltips-popovers" element={<TooltipPopoverPage />} />
             <Route path="/ui/typography" element={<TypographyPage />} />
 
-            <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/Login" element={<LoginPage />} />
             <Route path="/auth/register" element={<RegisterPage />} />
             <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
 
