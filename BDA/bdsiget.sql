@@ -26,6 +26,13 @@ CREATE TABLE `tesant` (
   `ant_por` decimal(5,2) NOT NULL COMMENT 'Porcentaje de antigüedad'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `tesant`
+--
+
+INSERT INTO `tesant` (`ant_ide`, `ant_ano`, `ant_por`) VALUES
+(1, 1, 5.00);
+
 -- --------------------------------------------------------
 
 --
@@ -51,6 +58,13 @@ CREATE TABLE `tescet` (
   `cet_salario` decimal(10,2) NOT NULL COMMENT 'Salario del cargo CET'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `tescet`
+--
+
+INSERT INTO `tescet` (`cet_ide`, `cet_car`, `cet_des`, `cet_salario`) VALUES
+(1, 'Analista Junior', 'Analista de primer nivel', 1500.00);
+
 -- --------------------------------------------------------
 
 --
@@ -75,6 +89,13 @@ CREATE TABLE `tesdep` (
   `dep_des` text DEFAULT NULL COMMENT 'Descripción del departamento'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `tesdep`
+--
+
+INSERT INTO `tesdep` (`dep_ide`, `dep_nom`, `dep_des`) VALUES
+(1, 'Recursos Humanos', 'Departamento de gestión de personal');
+
 -- --------------------------------------------------------
 
 --
@@ -98,6 +119,13 @@ CREATE TABLE `tesona` (
   `ona_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo ONAPRE',
   `ona_des` text DEFAULT NULL COMMENT 'Descripción del cargo ONAPRE'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tesona`
+--
+
+INSERT INTO `tesona` (`ona_ide`, `ona_car`, `ona_des`) VALUES
+(1, 'Técnico I', 'Cargo técnico nivel inicial');
 
 -- --------------------------------------------------------
 
@@ -132,8 +160,16 @@ CREATE TABLE `tessca` (
 CREATE TABLE `tesusu` (
   `usu_ide` varchar(11) NOT NULL COMMENT 'Identificador unico del usuario',
   `usu_con` varchar(255) NOT NULL COMMENT 'Contraseña del usuario (hashed)',
-  `usu_tip` decimal(5,2) NOT NULL COMMENT 'Perfil o tipo de usuario'
+  `usu_tip` decimal(5,2) NOT NULL COMMENT 'Perfil o tipo de usuario',
+  `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Referencia a empleado en tmanom'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tesusu`
+--
+
+INSERT INTO `tesusu` (`usu_ide`, `usu_con`, `usu_tip`, `nom_ced`) VALUES
+('V24681357', '1234', 1.00, 'V24681357');
 
 -- --------------------------------------------------------
 
@@ -240,12 +276,18 @@ CREATE TABLE `tmanom` (
   `nom_fec` date NOT NULL COMMENT 'Fecha de ingreso',
   `nom_gen` enum('M','F') NOT NULL COMMENT 'Género del empleado',
   `nom_nhi` int(11) NOT NULL COMMENT 'Número de hijos',
-  `usu_ide` varchar(11) DEFAULT NULL COMMENT 'Referencia a usuario en tesusu',
   `cet_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo CET en tescet',
   `ona_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo ONAPRE en tesona',
   `ant_ide` int(11) DEFAULT NULL COMMENT 'Referencia a antigüedad en tesant',
   `dep_ide` int(11) DEFAULT NULL COMMENT 'Referencia a departamento en tesdep'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tmanom`
+--
+
+INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `cet_ide`, `ona_ide`, `ant_ide`, `dep_ide`) VALUES
+('V24681357', 'Juan', 'Mendoza', '2023-05-10', 'M', 1, 1, 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -323,7 +365,8 @@ ALTER TABLE `tessca`
 -- Indices de la tabla `tesusu`
 --
 ALTER TABLE `tesusu`
-  ADD PRIMARY KEY (`usu_ide`);
+  ADD PRIMARY KEY (`usu_ide`),
+  ADD UNIQUE KEY `nom_ced` (`nom_ced`);
 
 --
 -- Indices de la tabla `tmab_m`
@@ -379,7 +422,6 @@ ALTER TABLE `tmamar`
 --
 ALTER TABLE `tmanom`
   ADD PRIMARY KEY (`nom_ced`),
-  ADD UNIQUE KEY `usu_ide` (`usu_ide`),
   ADD UNIQUE KEY `ona_ide` (`ona_ide`),
   ADD UNIQUE KEY `ant_ide` (`ant_ide`),
   ADD KEY `fk_tmanom_tescet` (`cet_ide`),
@@ -399,13 +441,13 @@ ALTER TABLE `tmatip`
 -- AUTO_INCREMENT de la tabla `tesant`
 --
 ALTER TABLE `tesant`
-  MODIFY `ant_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de antigüedad';
+  MODIFY `ant_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de antigüedad', AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `tescet`
 --
 ALTER TABLE `tescet`
-  MODIFY `cet_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo CET';
+  MODIFY `cet_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo CET', AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `tesded`
@@ -417,13 +459,13 @@ ALTER TABLE `tesded`
 -- AUTO_INCREMENT de la tabla `tesdep`
 --
 ALTER TABLE `tesdep`
-  MODIFY `dep_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de departamento';
+  MODIFY `dep_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de departamento', AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `tesona`
 --
 ALTER TABLE `tesona`
-  MODIFY `ona_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo ONAPRE';
+  MODIFY `ona_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo ONAPRE', AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `tespri`
@@ -460,6 +502,12 @@ ALTER TABLE `tessca`
   ADD CONSTRAINT `fk_tessca_tmacat` FOREIGN KEY (`cat_ide`) REFERENCES `tmacat` (`cat_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Filtros para la tabla `tesusu`
+--
+ALTER TABLE `tesusu`
+  ADD CONSTRAINT `fk_tesusu_tmanom` FOREIGN KEY (`nom_ced`) REFERENCES `tmanom` (`nom_ced`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `tmab_m`
 --
 ALTER TABLE `tmab_m`
@@ -478,6 +526,5 @@ ALTER TABLE `tmanom`
   ADD CONSTRAINT `fk_tmanom_tesant` FOREIGN KEY (`ant_ide`) REFERENCES `tesant` (`ant_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tescet` FOREIGN KEY (`cet_ide`) REFERENCES `tescet` (`cet_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesdep` FOREIGN KEY (`dep_ide`) REFERENCES `tesdep` (`dep_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_tmanom_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_tmanom_tesusu` FOREIGN KEY (`usu_ide`) REFERENCES `tesusu` (`usu_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_tmanom_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;

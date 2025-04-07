@@ -45,10 +45,6 @@ export const RegisterPage = () => {
                         placeholder="Enter your username"
                         autoFocus />
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
-                    <input type="text" className="form-control" id="email" name="email" placeholder="Enter your email" />
-                </div>
                 <div className="mb-3 form-password-toggle">
                     <label className="form-label" htmlFor="password">Password</label>
                     <div className="input-group input-group-merge">
@@ -85,7 +81,7 @@ export const RegisterPage = () => {
 
             <p className="text-center">
                 <span>Already have an account?</span>
-                <Link aria-label="Go to Login Page" to="/auth/login" className="d-flex align-items-center justify-content-center">
+                <Link aria-label="Go to Login Page" to="/Login" className="d-flex align-items-center justify-content-center">
                     <i className="bx bx-chevron-left scaleX-n1-rtl bx-sm"></i>
                     Back to login
                 </Link>

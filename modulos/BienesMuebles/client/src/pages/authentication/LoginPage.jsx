@@ -1,9 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"
 import './page-auth.css'
 import { AuthWrapper } from "./AuthWrapper";
+import axios from 'axios';
 
 export const LoginPage = () => {
+    const [message, setMessage] = useState('');
+
+    useEffect(() => {
+      // Hacer petición al backend
+      axios.get('/api')
+        .then((res) => setMessage(res.data.message))
+        .catch((err) => console.error(err));
+    }, []);
+    
     const [formData, setFormData] = useState({
         password: '',
         email: '',
@@ -28,6 +38,7 @@ export const LoginPage = () => {
         <AuthWrapper>
             <h4 className="mb-2">Bienvenido al modulo de Gestion de Bienes Muebles! 👋</h4>
             <p className="mb-4">Porfavor ingresa tus datos para acceder. </p>
+            <p>Mensaje del backend: <strong>{message}</strong></p>
 
             <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>
                 <div className="mb-3">
