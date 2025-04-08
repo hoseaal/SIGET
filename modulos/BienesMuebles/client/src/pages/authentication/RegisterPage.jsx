@@ -5,8 +5,7 @@ import { AuthWrapper } from "./AuthWrapper";
 
 export const RegisterPage = () => {
     const [formData, setFormData] = useState({
-        username: '',
-        email: '',
+        ci: '',
         password: '',
         terms: false,
     });
@@ -20,36 +19,43 @@ export const RegisterPage = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle form submission logic here
-        console.log('Form submitted:', formData);
-    };
-
+        try {
+            console.log(formData)
+          const response = await axios.post('/register', formData);
+          alert(`Usuario creado con ID: ${response.data.id}`);
+        } catch (error) {
+          alert(error.response?.data?.error || 'Error al registrar');
+        }
+      };
     return (
         <AuthWrapper>
 
-            <h4 className="mb-2">Adventure starts here 🚀</h4>
-            <p className="mb-4">Make your app management easy and fun!</p>
+            <h4 className="mb-2">Registrate 🚀</h4>
+            <p className="mb-4">Modulo de Gestion de Bienes Muebles! </p>
 
             <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label htmlFor="username" className="form-label">Username</label>
+            <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Cedula de identidad</label>
                     <input
                         type="text"
                         className="form-control"
-                        id="username"
-                        value={formData.username}
+                        id="ci"
+                        value={formData.ci}
                         onChange={handleChange}
-                        name="username"
-                        placeholder="Enter your username"
+                        name="ci"
+                        placeholder="ej. 12345678"
                         autoFocus />
                 </div>
                 <div className="mb-3 form-password-toggle">
-                    <label className="form-label" htmlFor="password">Password</label>
+                    <div className="d-flex justify-content-between">
+                        <label className="form-label" htmlFor="password">Contraseña</label>
+                    </div>
                     <div className="input-group input-group-merge">
                         <input
                             type="password"
+                            autoComplete="true"
                             id="password"
                             value={formData.password}
                             onChange={handleChange}
@@ -57,7 +63,7 @@ export const RegisterPage = () => {
                             name="password"
                             placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                             aria-describedby="password" />
-                        <span className="input-group-text cursor-pointer"><i className="bx bx-hide"></i></span>
+                        <span className="input-group-text cursor-pointer"></span>
                     </div>
                 </div>
 
