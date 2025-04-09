@@ -18,4 +18,3 @@
         // Si hay error en la conexión
         die("Error al conectar con la base de datos: " . $e->getMessage());
     }
-?>

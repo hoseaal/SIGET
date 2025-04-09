@@ -134,20 +134,20 @@
           const password = document.getElementById('password').value;
 
           try {
-            const response = await fetch('../PHP/api/login.php', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ cedula, password }),
-            });
+          const response = await fetch('../PHP/api/login.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ cedula, password }),
+          });
 
-            const result = await response.json();
+          const text = await response.text(); // primero leemos como texto
 
+          try {
+            const result = JSON.parse(text); // luego intentamos parsear
             if (result.success) {
-              // El token ya está en la cookie, solo redireccionamos
               const tipo = result.tipo;
-
               if (tipo == 3) {
                 window.location.href = 'index.php';
               } else if (tipo == 2) {
@@ -155,15 +155,19 @@
               } else {
                 window.location.href = 'auth-login-basic.php';
               }
-
             } else {
               alert(result.message);
             }
-
-          } catch (error) {
-            console.error('Error en el login:', error);
-            alert('Ocurrió un error al iniciar sesión.');
+          } catch (parseError) {
+            console.error("Error al parsear JSON:", parseError);
+            console.error("Respuesta cruda del servidor:", text);
+            alert("Ocurrió un error inesperado del servidor.");
           }
+
+        } catch (error) {
+          console.error('Error en el login (fetch falló):', error);
+          alert('Ocurrió un error al iniciar sesión.');
+        }
         });
       </script>
 
