@@ -1,4 +1,8 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1); // Muestra errores si hay advertencias invisibles
+
 require_once '../../conexion/conexion.php';
 require_once '../../../../vendor/autoload.php';
 
