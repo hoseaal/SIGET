@@ -1,0 +1,76 @@
+<?php
+require_once '../../conexion/conexion.php';
+require_once '../../../../vendor/autoload.php';
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+header('Content-Type: application/json');
+
+// Secret Key (guárdala segura en un archivo de entorno si es producción)
+$secretKey = 'C0ntr@l0r!aD3lEst4d0T@ch!r@';
+
+// Leer el cuerpo crudo del request y decodificar JSON
+$input = json_decode(file_get_contents("php://input"), true);
+
+$cedula = $input['cedula'] ?? '';
+$password = $input['password'] ?? '';
+
+if (empty($cedula) || empty($password)) {
+    echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
+    exit;
+}
+
+if (!$pdo) {
+    echo json_encode(['success' => false, 'message' => 'Error en la conexión a la base de datos.']);
+    exit;
+}
+
+try {
+    // Buscar usuario por cédula
+    $stmt = $pdo->prepare("SELECT * FROM tesusu WHERE nom_ced = :cedula");
+    $stmt->bindParam(':cedula', $cedula);
+    $stmt->execute();
+
+    if ($stmt->rowCount() === 0) {
+        echo json_encode(['success' => false, 'message' => 'Usuario no encontrado.']);
+        exit;
+    }
+
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Verificar contraseña
+    if (!password_verify($password, $user['usu_con'])) {
+        echo json_encode(['success' => false, 'message' => 'Contraseña incorrecta.']);
+        exit;
+    }
+
+    // Crear payload del JWT
+    $payload = [
+        'iss' => 'siget.com',     // Emisor del token
+        'aud' => 'siget.com',     // Audiencia: quién debe recibirlo
+        'iat' => time(),                 // Fecha de emisión (Issued At)
+        'exp' => time() + (60 * 60 * 24 * 6), // 6 días en segundos
+        'data' => [                      // Información personalizada del usuario
+            'cedula' => $user['nom_ced'],
+            'tipo' => $user['usu_tip'],
+        ]
+    ];
+
+    $jwt = JWT::encode($payload, $secretKey, 'HS256');
+
+    setcookie('token', $jwt, time() + (60 * 60 * 24 * 6), '/', '', false, true);  // token en la cookie
+
+    echo json_encode([
+        'success' => true,
+        'token' => $jwt,
+        'tipo' => $user['usu_tip'], // redireccionar
+        'message' => 'Inicio de sesión exitoso.'
+    ]);    
+
+} catch (PDOException $e) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Error al iniciar sesión: ' . $e->getMessage()
+    ]);
+}

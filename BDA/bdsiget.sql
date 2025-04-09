@@ -27,15 +27,6 @@ CREATE TABLE `tesant` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `tesant`
---
-
-INSERT INTO `tesant` (`ant_ide`, `ant_ano`, `ant_por`) VALUES
-(1, 1, 5.00);
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `tescae`
 --
 
@@ -57,15 +48,6 @@ CREATE TABLE `tescet` (
   `cet_des` text DEFAULT NULL COMMENT 'Descripción del cargo CET',
   `cet_salario` decimal(10,2) NOT NULL COMMENT 'Salario del cargo CET'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `tescet`
---
-
-INSERT INTO `tescet` (`cet_ide`, `cet_car`, `cet_des`, `cet_salario`) VALUES
-(1, 'Analista Junior', 'Analista de primer nivel', 1500.00);
-
--- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `tesded`
@@ -90,15 +72,6 @@ CREATE TABLE `tesdep` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `tesdep`
---
-
-INSERT INTO `tesdep` (`dep_ide`, `dep_nom`, `dep_des`) VALUES
-(1, 'Recursos Humanos', 'Departamento de gestión de personal');
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `tesmod`
 --
 
@@ -119,15 +92,6 @@ CREATE TABLE `tesona` (
   `ona_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo ONAPRE',
   `ona_des` text DEFAULT NULL COMMENT 'Descripción del cargo ONAPRE'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `tesona`
---
-
-INSERT INTO `tesona` (`ona_ide`, `ona_car`, `ona_des`) VALUES
-(1, 'Técnico I', 'Cargo técnico nivel inicial');
-
--- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `tespri`
@@ -163,15 +127,6 @@ CREATE TABLE `tesusu` (
   `usu_tip` decimal(5,2) NOT NULL COMMENT 'Perfil o tipo de usuario',
   `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Referencia a empleado en tmanom'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `tesusu`
---
-
-INSERT INTO `tesusu` (`usu_ide`, `usu_con`, `usu_tip`, `nom_ced`) VALUES
-('V24681357', '1234', 1.00, 'V24681357');
-
--- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `tmab_m`
@@ -281,15 +236,6 @@ CREATE TABLE `tmanom` (
   `ant_ide` int(11) DEFAULT NULL COMMENT 'Referencia a antigüedad en tesant',
   `dep_ide` int(11) DEFAULT NULL COMMENT 'Referencia a departamento en tesdep'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `tmanom`
---
-
-INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `cet_ide`, `ona_ide`, `ant_ide`, `dep_ide`) VALUES
-('V24681357', 'Juan', 'Mendoza', '2023-05-10', 'M', 1, 1, 1, 1, 1);
-
--- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `tmatip`
@@ -528,3 +474,5 @@ ALTER TABLE `tmanom`
   ADD CONSTRAINT `fk_tmanom_tesdep` FOREIGN KEY (`dep_ide`) REFERENCES `tesdep` (`dep_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
+
+ALTER TABLE `tesusu` CHANGE `usu_ide` `usu_ide` INT(1) NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico del usuario';
