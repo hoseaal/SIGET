@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import UserRepository from './user-repository.js'
+import { UserRepository } from './user-repository.js'
 
 const router = express.Router()
 const app = express()
@@ -20,16 +20,36 @@ app.get('/api', (req, res) => {
 
 app.post('/protected', (req, res) => {})
 
+app.post('/api/login', async (req, res) => {
+  try {
+    if (!req.body.ci || !req.body.password) {
+      return res.status(400).json({ error: 'CI y password son requeridos' })
+    }
+
+    const user = await UserRepository.login({
+      ci: req.body.ci,
+      password: req.body.password
+    })
+
+    res.status(200).json(user)
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      error: error.message
+    })
+  }
+})
+
 app.post('/api/register', async (req, res) => {
   try {
-    console.log('Body recibido:', req.body)
     if (!req.body.ci || !req.body.password) {
       return res.status(400).json({ error: 'CI y password son requeridos' })
     }
 
     const user = await UserRepository.create({
       ci: req.body.ci,
-      password: req.body.password
+      password: req.body.password,
+      terms: req.body.terms
     })
 
     res.status(201).json(user)

@@ -33,7 +33,7 @@ export const RegisterPage = () => {
         e.preventDefault();
         try {
           const response = await axios.post('/api/register', formData);
-          alert(`Usuario creado con ID: ${response.data.id}`);
+          alert(`Usuario creado con ID: ${response.data.usu_ide}`);
         } catch (error) {
           alert(error.response?.data?.error || error.message)
         }

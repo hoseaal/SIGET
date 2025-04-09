@@ -1,16 +1,16 @@
-/* eslint-disable no-empty-pattern */
-// user-repository.js
 import { getConnection } from './conn.js'
+import { Validaciones } from './Validaciones.js'
+import bcrypt from 'bcrypt'
 
-class UserRepository {
-  async create ({ ci, password }) {
-    // Validaciones
-    if (typeof ci !== 'string') throw new Error('El CI está vacío')
-    if (ci.length < 3) throw new Error('El CI debe tener mínimo 3 caracteres')
-    if (typeof password !== 'string') throw new Error('La contraseña está vacía')
-
+export class UserRepository {
+  static async create ({ ci, password, terms }) {
     const conn = await getConnection()
     try {
+      // Ejecutar validaciones
+      Validaciones.username(ci)
+      Validaciones.password(password)
+      Validaciones.terms(terms)
+
       // Verificar si usuario existe
       const [existingUsers] = await conn.query(
         'SELECT * FROM tesusu WHERE usu_ide = ?',
@@ -21,17 +21,47 @@ class UserRepository {
         throw new Error('El usuario ya existe')
       }
 
-      const [] = await conn.query(
+      const hashedPassword = bcrypt.hashSync(password, 10)
+
+      // Insertar nuevo usuario
+      // eslint-disable-next-line no-unused-vars
+      const [result] = await conn.query(
         'INSERT INTO tesusu (usu_ide, usu_con, usu_tip, nom_ced) VALUES (?, ?, 1, ?)',
-        [ci, password, ci]
+        [ci, hashedPassword, ci]
       )
 
-      return { id: ci, ci }
+      return { usu_ide: ci, nom_ced: ci }
+    } catch (error) {
+      Validaciones.errors(error)
+      throw error
     } finally {
       if (conn) conn.release()
     }
   }
-}
 
-// Exporta una instancia en lugar de la clase
-export default new UserRepository()
+  static async login ({ ci, password }) {
+    const conn = await getConnection()
+    Validaciones.username(ci)
+    Validaciones.password(password)
+    const [existingUsers] = await conn.query(
+      'SELECT * FROM tesusu WHERE usu_ide = ?',
+      [ci]
+    )
+
+    if (existingUsers.length === 0) {
+      throw new Error('Usuario incorrecto')
+    }
+
+    const ValidacionPassword = await bcrypt.compare(password, existingUsers[0].usu_con)
+    if (!ValidacionPassword) throw new Error('Contraseña incorrecta')
+
+    const { password: _, ...publicUser } = existingUsers[0]
+
+    return {
+      success: true,
+      user: {
+        usu_ide: publicUser.usu_ide
+      }
+    }
+  }
+}

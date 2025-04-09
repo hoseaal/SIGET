@@ -15,9 +15,8 @@ export const LoginPage = () => {
     }, []);
     
     const [formData, setFormData] = useState({
-        password: '',
-        email: '',
-        rememberMe: false,
+        ci: '',
+        password: ''
     });
 
     const handleChange = (e) => {
@@ -29,10 +28,15 @@ export const LoginPage = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle form submission logic here
-        console.log('Form submitted:', formData);
+        console.log('Form submitted:', formData)
+        try {
+            const response = await axios.post('/api/login', formData);
+            alert(`Usuario ${response.data.user.usu_ide} ha iniciado sesión correctamente`);
+            } catch (error) {
+            alert(error.response?.data?.error || error.message)
+        }
     };
     return (
         <AuthWrapper>
@@ -47,7 +51,7 @@ export const LoginPage = () => {
                         type="text"
                         className="form-control"
                         id="ci"
-                        value={formData.name}
+                        value={formData.ci}
                         onChange={handleChange}
                         name="ci"
                         placeholder="ej. 12345678"
