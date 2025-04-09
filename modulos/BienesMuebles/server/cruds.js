@@ -2,7 +2,7 @@
 import { getConnection } from './conn.js'
 
 export const selectData = async (table, whereClause = '') => {
-  const conn = await getConnection().getConnection()
+  const conn = await getConnection()
   try {
     const query = `SELECT * FROM ${table} ${whereClause}`
     const [rows] = await conn.query(query)

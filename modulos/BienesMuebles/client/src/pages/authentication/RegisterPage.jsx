@@ -1,9 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"
 import './page-auth.css'
 import { AuthWrapper } from "./AuthWrapper";
+import axios from "axios";
 
 export const RegisterPage = () => {
+     const [message, setMessage] = useState('');
+    
+        useEffect(() => {
+          // Hacer petición al backend
+          axios.get('/api')
+            .then((res) => setMessage(res.data.message))
+            .catch((err) => console.error(err));
+        }, []);
+
     const [formData, setFormData] = useState({
         ci: '',
         password: '',
@@ -22,18 +32,19 @@ export const RegisterPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            console.log(formData)
-          const response = await axios.post('/register', formData);
+          const response = await axios.post('/api/register', formData);
           alert(`Usuario creado con ID: ${response.data.id}`);
         } catch (error) {
-          alert(error.response?.data?.error || 'Error al registrar');
+          alert(error.response?.data?.error || error.message)
         }
       };
+
     return (
         <AuthWrapper>
 
             <h4 className="mb-2">Registrate 🚀</h4>
             <p className="mb-4">Modulo de Gestion de Bienes Muebles! </p>
+            <p>Mensaje del backend: <strong>{message}</strong></p>
 
             <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>
             <div className="mb-3">

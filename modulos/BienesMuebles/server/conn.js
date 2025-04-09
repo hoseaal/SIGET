@@ -1,4 +1,3 @@
-// backend/db.js
 import { createPool } from 'mysql2/promise'
 
 let client = null
@@ -29,11 +28,14 @@ const connectDB = async (user, password) => {
   }
 }
 
-const getConnection = () => {
-  if (!client) {
-    throw new Error('Client no está inicializado')
+const getConnection = async () => {
+  try {
+    const connection = await pool.getConnection()
+    return connection
+  } catch (error) {
+    console.error('Error al obtener conexión:', error.message)
+    throw error // Es importante lanzar el error para manejarlo arriba
   }
-  return client
 }
 
 export { pool, connectDB, getConnection }
