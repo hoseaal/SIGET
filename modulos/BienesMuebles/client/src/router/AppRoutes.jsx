@@ -1,4 +1,5 @@
 import { Route, Routes, Navigate } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoutes";
 import { LoginPage } from "../pages/authentication/LoginPage";
 import { RegisterPage } from "../pages/authentication/RegisterPage";
 import { ForgotPasswordPage } from "../pages/authentication/ForgotPasswordPage";
@@ -49,7 +50,11 @@ const AppRoutes = () => {
 
             <Route path="/Login" element={<LoginPage />} />
 
-            <Route path="/Dashboard" element={<DashboardPage />} />
+            <Route path="/Dashboard" element={
+                <ProtectedRoute>
+                    <DashboardPage />
+                </ProtectedRoute>
+            } />
 
             <Route path="/ui/accordion" element={<AccordionPage />} />
             <Route path="/ui/alerts" element={<AlertPage />} />

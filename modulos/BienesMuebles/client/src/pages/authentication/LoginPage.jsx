@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"
 import './page-auth.css'
+import { useNavigate } from "react-router-dom";
 import { AuthWrapper } from "./AuthWrapper";
 import axios from 'axios';
 
 export const LoginPage = () => {
+    const navigate = useNavigate();
     const [message, setMessage] = useState('');
 
     useEffect(() => {
@@ -30,14 +32,24 @@ export const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Form submitted:', formData)
         try {
-            const response = await axios.post('/api/login', formData);
-            alert(`Usuario ${response.data.user.usu_ide} ha iniciado sesión correctamente`);
-            } catch (error) {
-            alert(error.response?.data?.error || error.message)
+          const response = await axios.post('/api/login', formData, {
+            withCredentials: true // Necesario para recibir cookies
+          });
+      
+          if (response.data.success) {
+            console.log(response.data.user);
+            alert(`Bienvenido ${response.data.user.usu_ide}`);
+            setTimeout(() => {
+                navigate('/Dashboard', { replace: true });  
+              }, 1000); 
+          }
+        } catch (error) {
+            alert(error.response?.data?.error || error.message);
+            // Limpia solo la contraseña
+             setFormData(prev => ({ ...prev, password: '' }));
         }
-    };
+      };
     return (
         <AuthWrapper>
             <h4 className="mb-2">Bienvenido al modulo de Gestion de Bienes Muebles! 👋</h4>
