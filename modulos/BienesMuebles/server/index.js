@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import config from './config.js'
 import { UserRepository } from './user-repository.js'
 import authenticate from './authenticate.js'
+import { selectData, selectWhereData } from './cruds.js'
 
 const router = express.Router()
 const app = express()
@@ -103,6 +104,34 @@ app.post('/api/logout', (req, res) => {
   res.clearCookie('access_token').json({ message: 'Sesión cerrada' })
 })
 
+app.get('/api/selects', async (req, res) => {
+  console.log('Recibiendo datos de selects...')
+  console.log('Query:', req.query)
+  try {
+    const { table, columns, fk, dato } = req.query
+
+    // Validación básica
+    if (!table) {
+      return res.status(400).json({ error: 'El parámetro "table" es requerido' })
+    }
+
+    let data
+    if (fk && dato) {
+      data = await selectWhereData(table, columns, fk, dato)
+    } else {
+      data = await selectData(table, columns)
+    }
+
+    console.log('Datos obtenidos:', data)
+    res.json(data)
+  } catch (err) {
+    console.error('Error en /api/selects:', err)
+    res.status(500).json({
+      error: 'Error al obtener datos',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    })
+  }
+})
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor Node.js corriendo en http://localhost:${PORT}`)

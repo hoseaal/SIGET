@@ -2,17 +2,13 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"
 import './page-auth.css'
 import { AuthWrapper } from "./AuthWrapper";
+import Alert from "../../components/atoms/Alert";
 import axios from "axios";
 
 export const RegisterPage = () => {
-     const [message, setMessage] = useState('');
-    
-        useEffect(() => {
-          // Hacer petición al backend
-          axios.get('/api')
-            .then((res) => setMessage(res.data.message))
-            .catch((err) => console.error(err));
-        }, []);
+    const [formEnviado, setFormEnviado] = useState(false); // Estado para alternar vista
+    const [mensajeMostrado, setMensajeMostrado] = useState(false); 
+    const [errorMessage, setErrorMessage] = useState(false); 
 
     const [formData, setFormData] = useState({
         ci: '',
@@ -33,9 +29,16 @@ export const RegisterPage = () => {
         e.preventDefault();
         try {
           const response = await axios.post('/api/register', formData);
-          alert(`Usuario creado con ID: ${response.data.usu_ide}`);
+          setFormEnviado(true); 
+        setMensajeMostrado(true); 
         } catch (error) {
-          alert(error.response?.data?.error || error.message)
+            setFormEnviado(false); // Indicar que hubo un error
+            setMensajeMostrado(true);
+            setErrorMessage(error.response?.data?.error || error.message)
+            
+            setTimeout(() => {
+                setMensajeMostrado(false);
+              }, 3000);
         }
       };
 
@@ -44,7 +47,6 @@ export const RegisterPage = () => {
 
             <h4 className="mb-2">Registrate 🚀</h4>
             <p className="mb-4">Modulo de Gestion de Bienes Muebles! </p>
-            <p>Mensaje del backend: <strong>{message}</strong></p>
 
             <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>
             <div className="mb-3">
@@ -94,6 +96,12 @@ export const RegisterPage = () => {
                     </div>
                 </div>
                 <button aria-label='Click me' className="btn btn-primary d-grid w-100">Sign up</button>
+                <br></br>
+                {mensajeMostrado && 
+                <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
+                {formEnviado ? 'Iniciando sesion...' : `${errorMessage}`}
+            </Alert>
+              }
             </form>
 
             <p className="text-center">
