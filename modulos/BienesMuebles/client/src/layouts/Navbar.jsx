@@ -68,7 +68,7 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-        {getGreetingMessage(userDataa[0]?.nom_nom + ' ' + userDataa[0].nom_ape)}
+        {getGreetingMessage(userDataa[0]?.nom_nom + ' ' + userDataa[0]?.nom_ape)}
         <ul className="navbar-nav flex-row align-items-center ms-auto">
           <li className="nav-item navbar-dropdown dropdown-user dropdown">
             <a aria-label='dropdown profile avatar' className="nav-link dropdown-toggle hide-arrow" href="#" data-bs-toggle="dropdown">

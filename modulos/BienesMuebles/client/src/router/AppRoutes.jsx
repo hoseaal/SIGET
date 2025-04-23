@@ -9,6 +9,10 @@ import { NotificationPage } from "../pages/account/NotificationPage";
 import { ErrorPage } from "../pages/misc/ErrorPage";
 import { MaintenancePage } from "../pages/misc/MaintenancePage";
 
+import { Bm2 } from "../pages/formularios/BM-2";
+
+import { Categorias } from "../pages/configuracion/categorias";
+
 import { AccordionPage } from "../pages/user-interface/AccordionPage";
 import { AlertPage } from "../pages/user-interface/AlertPage";
 import { BadgesPage } from "../pages/user-interface/BadgePage";
@@ -55,6 +59,10 @@ const AppRoutes = () => {
                     <DashboardPage />
                 </ProtectedRoute>
             } />
+
+            <Route path="/BM/BM-2" element={<Bm2 />} />
+
+            <Route path="/Configuracion/Categorias" element={<Categorias/>}/>
 
             <Route path="/ui/accordion" element={<AccordionPage />} />
             <Route path="/ui/alerts" element={<AlertPage />} />
