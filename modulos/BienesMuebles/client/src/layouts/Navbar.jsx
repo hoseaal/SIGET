@@ -1,5 +1,62 @@
 import getGreetingMessage from '../utils/greetingHandler';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { fetchData } from '../data/fetchData';
+import axios from 'axios';
+
 const Navbar = () => {
+  const [userData, setUserData] = useState([]);
+  const [userDataa, setUserDataa] = useState([]);
+
+    useEffect(() => {
+      const fetchUserData = async () => {
+        try {
+          const response = await axios.get('/api/verify-auth', {
+            withCredentials: true
+          });
+          
+          if (response.data.success) {
+            setUserData(response.data.user);
+            console.log(userData)
+          }
+        } catch (error) {
+          console.error('Error obteniendo datos de usuario:', error)
+        }
+      };
+  
+      fetchUserData();
+    }, []);
+
+    const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(
+        '/api/logout', 
+        {}, // Body vacío
+        { 
+          withCredentials: true // Importante para enviar cookies
+        }
+      );
+      // Mostrar mensaje del backend
+      alert(response.data.message);
+
+      navigate('/Login', { replace: true })
+      
+    } catch (error) {
+      alert('Error al cerrar sesión');
+      console.error('Logout error:', error);
+    }
+  };
+
+   useEffect(() => {
+      const fetchAllData = async () => {
+        const fetchUser = await fetchData('tmanom', '*', 'nom_ced', userData?.usu_ide);
+        setUserDataa(fetchUser);
+        console.log('userDataa', userDataa);
+      }
+      fetchAllData();
+    }, []);
   return (
     <nav
       className="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
@@ -11,7 +68,7 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-        {getGreetingMessage('Dwi')}
+        {getGreetingMessage(userDataa[0]?.nom_nom + ' ' + userDataa[0]?.nom_ape)}
         <ul className="navbar-nav flex-row align-items-center ms-auto">
           <li className="nav-item navbar-dropdown dropdown-user dropdown">
             <a aria-label='dropdown profile avatar' className="nav-link dropdown-toggle hide-arrow" href="#" data-bs-toggle="dropdown">
@@ -65,7 +122,7 @@ const Navbar = () => {
               <li>
                 <a aria-label='click to log out' className="dropdown-item" href="#">
                   <i className="bx bx-power-off me-2"></i>
-                  <span className="align-middle">Log Out</span>
+                  <a className="align-middle" onClick={handleLogout}>Log Out</a>
                 </a>
               </li>
             </ul>

@@ -124,7 +124,7 @@ CREATE TABLE `tessca` (
 CREATE TABLE `tesusu` (
   `usu_ide` varchar(11) NOT NULL COMMENT 'Identificador unico del usuario',
   `usu_con` varchar(255) NOT NULL COMMENT 'Contraseña del usuario (hashed)',
-  `usu_tip` decimal(5,2) NOT NULL COMMENT 'Perfil o tipo de usuario',
+  `usu_tip` int(1) NOT NULL COMMENT 'Perfil o tipo de usuario',
   `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Referencia a empleado en tmanom'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -473,6 +473,8 @@ ALTER TABLE `tmanom`
   ADD CONSTRAINT `fk_tmanom_tescet` FOREIGN KEY (`cet_ide`) REFERENCES `tescet` (`cet_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesdep` FOREIGN KEY (`dep_ide`) REFERENCES `tesdep` (`dep_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `tmab_m` ADD COLUMN `coi_ide` int(11) COMMENT 'Referencia a concepto de incorporación en tmacoi', ADD CONSTRAINT `fk_tmabm_tmacoi` FOREIGN KEY (`coi_ide`) REFERENCES `tmacoi` (`coi_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 ALTER TABLE `tesusu` CHANGE `usu_ide` `usu_ide` INT(1) NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico del usuario';

@@ -12,7 +12,7 @@ const Sidebar = () => {
                     <span className="app-brand-logo demo">
                         <img src="/assets/img/sneat.svg" alt="sneat-logo" aria-label='Sneat logo image' />
                     </span>
-                    <span className="app-brand-text demo menu-text fw-bold ms-2">Sneat</span>
+                    <span className="app-brand-text demo menu-text fw-bold ms-2">SIGET</span>
                 </Link>
 
                 <a href="#" className="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
