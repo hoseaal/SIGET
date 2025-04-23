@@ -1,1 +1,4 @@
 vendor/firebase/php-jwt/
+
+/vendor/
+/.env
