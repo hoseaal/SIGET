@@ -2,3 +2,4 @@ vendor/firebase/php-jwt/
 
 /vendor/
 /.env
+modulos/BienesMuebles/server/node_modules/

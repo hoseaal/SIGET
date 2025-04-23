@@ -1,4 +1,5 @@
 import { Route, Routes, Navigate } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoutes";
 import { LoginPage } from "../pages/authentication/LoginPage";
 import { RegisterPage } from "../pages/authentication/RegisterPage";
 import { ForgotPasswordPage } from "../pages/authentication/ForgotPasswordPage";
@@ -7,6 +8,10 @@ import { Connections } from "../pages/account/ConnectionsPage";
 import { NotificationPage } from "../pages/account/NotificationPage";
 import { ErrorPage } from "../pages/misc/ErrorPage";
 import { MaintenancePage } from "../pages/misc/MaintenancePage";
+
+import { Bm2 } from "../pages/formularios/BM-2";
+
+import { Categorias } from "../pages/configuracion/categorias";
 
 import { AccordionPage } from "../pages/user-interface/AccordionPage";
 import { AlertPage } from "../pages/user-interface/AlertPage";
@@ -49,7 +54,15 @@ const AppRoutes = () => {
 
             <Route path="/Login" element={<LoginPage />} />
 
-            <Route path="/Dashboard" element={<DashboardPage />} />
+            <Route path="/Dashboard" element={
+                <ProtectedRoute>
+                    <DashboardPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/BM/BM-2" element={<Bm2 />} />
+
+            <Route path="/Configuracion/Categorias" element={<Categorias/>}/>
 
             <Route path="/ui/accordion" element={<AccordionPage />} />
             <Route path="/ui/alerts" element={<AlertPage />} />

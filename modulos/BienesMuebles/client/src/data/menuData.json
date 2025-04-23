@@ -6,7 +6,78 @@
                 "text": "Dashboard",
                 "icon": "bx bx-home",
                 "available": true,
-                "link": "/"
+                "link": "/Dashboard"
+            }
+        ]
+    },
+    {
+        "header": "Formularios",
+        "items": [
+            {
+                "text": "Bienes Muebles",
+                "icon": "bx bx-cabinet",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "BM-1",
+                        "available": true,
+                        "link": ""
+                    },
+                    {
+                        "text": "BM-2",
+                        "available": true,
+                        "link": "/BM/BM-2"
+                    },
+                    {
+                        "text": "BM-3",
+                        "available": true,
+                        "link": " "
+                    },
+                    {
+                        "text": "BM-4",
+                        "available": true,
+                        "link": " "
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "header": "Configuración",
+        "items": [
+            {
+                "text": "Configuración General",
+                "icon": "bx bx-cog",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Categorías",
+                        "available": true,
+                        "link": "/Configuracion/Categorias"
+                    },
+                    {
+                        "text": "Modelos y Marcas",
+                        "available": true,
+                        "link": " "
+                    },
+                    {
+                        "text": "Tipos",
+                        "available": true,
+                        "link": " "
+                    },
+                    {
+                        "text": "Estados de Uso",
+                        "available": true,
+                        "link": " "
+                    },
+                    {
+                        "text": "Condicines Fisicas",
+                        "available": true,
+                        "link": " "
+                    }
+                ]
             }
         ]
     },

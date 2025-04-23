@@ -1,9 +1,32 @@
-import { useEffect } from "react";
+import { useEffect, useState} from "react";
+import axios from "axios";
 
 export const DashboardPage = () => {
+    const [userData, setUserData] = useState(null);
+
     useEffect(() => {
-        dashboardAnalitics();
-    }, [])
+      const fetchUserData = async () => {
+        try {
+          const response = await axios.get('/api/verify-auth', {
+            withCredentials: true
+          });
+          
+          if (response.data.success) {
+            setUserData(response.data.user);
+            console.log(userData.usu_ide)
+          }
+        } catch (error) {
+          console.error('Error obteniendo datos de usuario:', error)
+        }
+      };
+  
+      fetchUserData();
+    }, []);
+  
+    if (!userData) {
+      return <div>Cargando datos de usuario...</div>;
+    }
+
     return (
         <>
             <div className="row">
@@ -13,7 +36,7 @@ export const DashboardPage = () => {
                             <div className="col-sm-7">
                                 <div className="card-body">
                                     <h5 className="card-title text-primary">
-                                        Congratulations John! 🎉
+                                        Congratulations {userData.usu_ide} 🎉
                                     </h5>
                                     <p className="mb-4">
                                         You have done <span className="fw-medium">72%</span> more
