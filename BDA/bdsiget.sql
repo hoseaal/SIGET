@@ -528,5 +528,13 @@ ALTER TABLE `tmanom`
   ADD CONSTRAINT `fk_tmanom_tesdep` FOREIGN KEY (`dep_ide`) REFERENCES `tesdep` (`dep_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+CREATE TABLE `tmacoi` (
+  `coi_ide` int(11) NOT NULL COMMENT 'Identificador de concepto de incorporación',
+  `coi_coi` varchar(50) NOT NULL COMMENT 'Descripción de concepto de incorporación'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `tmacoi`
+  ADD PRIMARY KEY (`coi_ide`);
+
 ALTER TABLE `tmab_m` ADD COLUMN `coi_ide` int(11) COMMENT 'Referencia a concepto de incorporación en tmacoi', ADD CONSTRAINT `fk_tmabm_tmacoi` FOREIGN KEY (`coi_ide`) REFERENCES `tmacoi` (`coi_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
