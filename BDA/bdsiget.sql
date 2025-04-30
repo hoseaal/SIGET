@@ -22,8 +22,7 @@ USE `dbsiget`;
 
 CREATE TABLE `tesant` (
   `ant_ide` int(11) NOT NULL COMMENT 'Identificador único de antigüedad',
-  `ant_ano` int(11) NOT NULL COMMENT 'Años de antigüedad',
-  `ant_por` decimal(5,2) NOT NULL COMMENT 'Porcentaje de antigüedad'
+  `ant_ano` int(11) NOT NULL COMMENT 'Años de antigüedad'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -45,8 +44,7 @@ CREATE TABLE `tescae` (
 CREATE TABLE `tescet` (
   `cet_ide` int(11) NOT NULL COMMENT 'Identificador único de cargo CET',
   `cet_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo CET',
-  `cet_des` text DEFAULT NULL COMMENT 'Descripción del cargo CET',
-  `cet_salario` decimal(10,2) NOT NULL COMMENT 'Salario del cargo CET'
+  `cet_des` text DEFAULT NULL COMMENT 'Descripción del cargo CET'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -67,7 +65,7 @@ CREATE TABLE `tesded` (
 
 CREATE TABLE `tesdep` (
   `dep_ide` int(11) NOT NULL COMMENT 'Identificador único de departamento',
-  `dep_nom` varchar(50) NOT NULL COMMENT 'Nombre del departamento',
+  `dep_nom` varchar(255) NOT NULL COMMENT 'Nombre del departamento',
   `dep_des` text DEFAULT NULL COMMENT 'Descripción del departamento'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -91,6 +89,18 @@ CREATE TABLE `tesona` (
   `ona_ide` int(11) NOT NULL COMMENT 'Identificador único de cargo ONAPRE',
   `ona_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo ONAPRE',
   `ona_des` text DEFAULT NULL COMMENT 'Descripción del cargo ONAPRE'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Estructura de tabla para la tabla `tesnlv`
+--
+
+CREATE TABLE `tesnvl` (
+  `nvl_ide` int(11) NOT NULL COMMENT 'Identificador único del rango',
+  `nvl_ran` varchar(2) NOT NULL COMMENT 'Tipo de nivel salarial',
+  `nvl_des` text DEFAULT NULL COMMENT 'Descripción del cargo ONAPRE',
+  `nvl_sal` decimal(10,2) NOT NULL COMMENT 'Salario Correspondiente',
+  `ona_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo ONAPRE en tesona'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -295,6 +305,13 @@ ALTER TABLE `tesona`
   ADD PRIMARY KEY (`ona_ide`);
 
 --
+-- Indices de la tabla `tesnvl`
+--
+
+ALTER TABLE `tesnvl`
+  ADD PRIMARY KEY (`nvl_ide`);
+
+--
 -- Indices de la tabla `tespri`
 --
 ALTER TABLE `tespri`
@@ -387,13 +404,13 @@ ALTER TABLE `tmatip`
 -- AUTO_INCREMENT de la tabla `tesant`
 --
 ALTER TABLE `tesant`
-  MODIFY `ant_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de antigüedad', AUTO_INCREMENT=2;
+  MODIFY `ant_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de antigüedad', AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT de la tabla `tescet`
 --
 ALTER TABLE `tescet`
-  MODIFY `cet_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo CET', AUTO_INCREMENT=2;
+  MODIFY `cet_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo CET', AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT de la tabla `tesded`
@@ -405,13 +422,20 @@ ALTER TABLE `tesded`
 -- AUTO_INCREMENT de la tabla `tesdep`
 --
 ALTER TABLE `tesdep`
-  MODIFY `dep_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de departamento', AUTO_INCREMENT=2;
+  MODIFY `dep_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de departamento', AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT de la tabla `tesona`
 --
 ALTER TABLE `tesona`
-  MODIFY `ona_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo ONAPRE', AUTO_INCREMENT=2;
+  MODIFY `ona_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo ONAPRE', AUTO_INCREMENT=1;
+
+--
+-- AUTO_INCREMENT de la tabla `tesnvl`
+--
+ALTER TABLE `tesnvl`
+  MODIFY `nvl_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del rango', AUTO_INCREMENT=1;
+
 
 --
 -- AUTO_INCREMENT de la tabla `tespri`
@@ -474,6 +498,12 @@ ALTER TABLE `tmanom`
   ADD CONSTRAINT `fk_tmanom_tesdep` FOREIGN KEY (`dep_ide`) REFERENCES `tesdep` (`dep_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+--
+-- Filtros para la tabla `tesnvl`
+--
+ALTER TABLE `tesnvl`
+  ADD CONSTRAINT `fk_tesnvl_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 CREATE TABLE `tmacoi` (
   `coi_ide` int(11) NOT NULL COMMENT 'Identificador de concepto de incorporación',
   `coi_coi` varchar(50) NOT NULL COMMENT 'Descripción de concepto de incorporación'
@@ -485,4 +515,221 @@ ALTER TABLE `tmacoi`
 ALTER TABLE `tmab_m` ADD COLUMN `coi_ide` int(11) COMMENT 'Referencia a concepto de incorporación en tmacoi', ADD CONSTRAINT `fk_tmabm_tmacoi` FOREIGN KEY (`coi_ide`) REFERENCES `tmacoi` (`coi_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
-ALTER TABLE `tesusu` CHANGE `usu_ide` `usu_ide` INT(1) NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico del usuario';
+/* VOLCADO DE LA BASE DE DATOS */
+
+-- TABLA TESCET
+
+INSERT INTO `tescet` (`cet_car`, `cet_des`) VALUES
+('ABOGADO PI', NULL),
+('ABOGADO PII', NULL),
+('ANALISTA PI', NULL),
+('ANALISTA PII', NULL),
+('ASISTENTE ADMINISTRATIVO TSU I', NULL),
+('ASISTENTE ADMINISTRATIVO TSU II', NULL),
+('ASISTENTE DE TÉCNICO TSU II', NULL),
+('AUDITOR PI', NULL),
+('AUDITOR PII', NULL),
+('AUDITOR PIII', NULL),
+('AUXILIAR ADMINISTRATIVO BI', NULL),
+('AUXILIAR BI', NULL),
+('AUXILIAR BII', NULL),
+('AUXILIAR BIII', NULL),
+('CONSULTOR JURÍDICO', NULL),
+('CONTADOR PI', NULL),
+('DIRECTOR(A)(E) / ABOGADO PII - IV', NULL),
+('DIRECTOR(A)(E) / JEFE DE DIVISIÓN GENERAL', NULL),
+('DIRECTOR(A)(E) / JEFE DE DIVISIÓN', NULL),
+('DIRECTOR(A)', NULL),
+('DIRECTOR(A) DE LINEA', NULL),
+('DIRECTOR(A) GENERAL', NULL),
+('ENFERMERA', NULL),
+('JEFE DE DIVISIÓN', NULL),
+('JEFE DE DIVISIÓN(E) / ABOGADA PII - III', NULL),
+('JEFE DE DIVISIÓN GENERAL', NULL),
+('JEFE DE OFICINA', NULL),
+('MÉDICO', NULL),
+('NOTIFICADOR BIII', NULL),
+('ODONTÓLOGO', NULL),
+('PLANIFICADOR PI', NULL),
+('PROMOTOR SOCIAL TI', NULL),
+('SUPERVISOR', NULL),
+('CONTRALOR(A) DEL ESTADO', NULL);
+
+-- TABLA TESONA
+
+INSERT INTO `tesona` (`ona_car`) VALUES
+('BACHILLER I (BI)'),
+('BACHILLER II (BII)'),
+('BACHILLER III (BIII)'),
+('TSU I (TI)'),
+('TSU II (TII)'),
+('PROFESIONAL I (PI)'),
+('PROFESIONAL II (PII)'),
+('PROFESIONAL III (PIII)'),
+('COORDINADOR(A) DE ÁREA'),
+('DIRECTOR DE LINEA'),
+('DIRECTOR GENERAL'),
+('JEFE DE DIVISIÓN'),
+('JEFE DE DIVISIÓN (COORDINADOR DE ÁREA)'),
+('JEFE DE DIVISIÓN DE REMUNERACIONES'),
+('JEFE DE DIVISIÓN GENERAL'),
+('CONTRALOR(A) DEL ESTADO');
+
+-- TABLA TESNVL
+
+INSERT INTO `tesnvl` (`nvl_ran`, `nvl_sal`, `ona_ide`) VALUES
+('I', 130.00, 1),
+('II', 132.00, 1),
+('III', 134.00, 1),
+('IV', 135.00, 1),
+('V', 137.00, 1),
+('VI', 139.00, 1),
+('VII', 141.00, 1),
+('I', 148.00, 2),
+('II', 150.00, 2),
+('III', 152.00, 2),
+('IV', 154.00, 2),
+('V', 155.00, 2),
+('VI', 157.00, 2),
+('VII', 159.00, 2),
+('I', 166.00, 3),
+('II', 168.00, 3),
+('III', 170.00, 3),
+('IV', 172.00, 3),
+('V', 174.00, 3),
+('VI', 176.00, 3),
+('VII', 177.00, 3),
+('I', 192.00, 4),
+('II', 194.00, 4),
+('III', 196.00, 4),
+('IV', 197.00, 4),
+('V', 199.00, 4),
+('VI', 201.00, 4),
+('VII', 203.00, 4),
+('I', 217.00, 5),
+('II', 219.00, 5),
+('III', 221.00, 5),
+('IV', 223.00, 5),
+('V', 225.00, 5),
+('VI', 226.00, 5),
+('VII', 228.00, 5),
+('I', 246.00, 6),
+('II', 248.00, 6),
+('III', 250.00, 6),
+('IV', 252.00, 6),
+('V', 254.00, 6),
+('VI', 256.00, 6),
+('VII', 257.00, 6),
+('I', 276.00, 7),
+('II', 277.00, 7),
+('III', 279.00, 7),
+('IV', 281.00, 7),
+('V', 283.00, 7),
+('VI', 285.00, 7),
+('VII', 287.00, 7),
+('I', 305.00, 8),
+('II', 307.00, 8),
+('III', 308.00, 8),
+('IV', 310.00, 8),
+('V', 312.00, 8),
+('VI', 314.00, 8),
+('VII', 316.00, 8),
+('I', 348.00, 9),
+('I', 376.00, 10),
+('I', 391.00, 11),
+('I', 363.00, 12),
+('I', 363.00, 13),
+('I', 363.00, 14),
+('I', 363.00, 15),
+('I', 409.00, 16);
+
+-- TABLA TESANT
+
+INSERT INTO `tesant` (`ant_ano`) VALUES
+('1'),
+('2'),
+('3'),
+('4'),
+('5'),
+('6'),
+('7'),
+('8'),
+('9'),
+('10'),
+('11'),
+('12'),
+('13'),
+('14'),
+('15'),
+('16'),
+('17'),
+('18'),
+('19'),
+('20'),
+('21'),
+('22'),
+('23'),
+('24'),
+('25'),
+('26'),
+('27'),
+('28'),
+('29'),
+('30'),
+('31'),
+('32'),
+('33'),
+('34'),
+('35'),
+('36'),
+('37'),
+('38'),
+('39'),
+('40'),
+('41'),
+('42'),
+('43'),
+('44'),
+('45'),
+('46'),
+('47'),
+('48'),
+('49'),
+('50'),
+('51'),
+('52');
+
+-- TABLA TESDEP
+
+INSERT INTO `tesdep` (`dep_nom`, `dep_des`) VALUES
+  ('Despacho Contralor', 'Corresponde al Contralor o Contralora coordinar las acciones internas o externas que permitan a la Contraloría del Estado ejercer sus funciones de control, vigilancia y fiscalización del patrimonio público del Estado, de acuerdo con la Constitución de la República Bolivariana de Venezuela, Constitución del Estado Táchira, Ley Orgánica de la Contraloría General de la República y del Sistema Nacional de Control Fiscal, Ley de la Contraloría del Estado Táchira, el presente Reglamento Interno, y demás normativas nacionales y estadales que rigen la materia.'),
+
+  ('Dirección de Secretaría del Despacho Contralor', 'Planifica y coordina todas aquellas actividades que coadyuven al cumplimiento y buen desempeño de los objetivos estratégicos del Órgano Contralor.'),
+
+  ('Unidad de Auditoria Interna', 'Realiza el examen posterior, objetivo, sistemático y profesional, la evaluación del sistema de control interno establecido en la Contraloría del Estado, incluyendo el grado de operatividad y eficacia de los sistemas de administración y de información gerencial, así como del examen de los registros y estados financieros, para determinar su pertinencia, y confiabilidad en el marco de las operaciones realizadas. Asimismo le corresponde el ejercicio de las potestades de investigación fiscal y determinación de responsabilidades administrativas.'),
+
+  ('Dirección General', 'Asiste al Contralor o Contralora del Estado en la planificación, coordinación, dirección y control de las funciones que de conformidad con las leyes debe cumplir la Contraloría del Estado, a través de cada una de las unidades administrativas que la conforman; así como la vigilancia en el cumplimiento de las políticas y objetivos establecidos por la institución.'),
+
+  ('Dirección de Consultoria Jurídica', 'Asesora e interviene en todos los asuntos jurídicos relacionados con el Órgano Contralor, así como defiende los derechos e intereses de la Contraloría del Estado Táchira ante todas las autoridades de la República.'),
+
+  ('Dirección Técnica', 'Actua como la unidad de asesoramiento técnico del Contralor o Contralora y de las diferentes unidades administrativas de la Contraloría en lo referente a las políticas, normas y procedimientos de control; planifica, organiza y desarrolla las actividades de la institución en lo referente a la informática; coordina en materia de cooperación técnica, así como fomenta y desarrolla normas, instrucciones y pautas técnicas para el funcionamiento del órgano contralor.'),
+
+  ('Oficina de Seguridad', 'Planifica, coordina e implementa las políticas y acciones necesarias para garantizar la seguridad, custodia y salvaguarda de las instalaciones y personal de la Contraloría del Estado Táchira, de manera tal que asegure el normal funcionamiento de la institución.'),
+
+  ('Dirección de Recursos Humanos', 'Planifica, coordina, ejecuta y controla las operaciones relacionadas con la administración del recurso humano, en particular, lo relacionado con el reclutamiento, selección, ingreso, clasificación, remuneración, desarrollo, evaluación, adiestramiento, registro, control y bienestar social del personal; además le corresponde la elaboración de planes de prevención y mejoramiento de la seguridad laboral y medio ambiente de trabajo, así como velar por el fortalecimiento de las relaciones públicas, políticas de comunicación, imagen e identidad corporativa del Órgano Contralor.'),
+
+  ('Dirección de Administración', 'Planifica, coordina, dirige, ejecuta y supervisa las diferentes actividades en materia financiera y presupuestaria, servicios administrativos, así como, la guarda y custodia de los bienes muebles e inmuebles de la Contraloría.'),
+
+  ('Oficina Atención al Público y Participación Ciudadana', 'Fomenta la participación ciudadana y el derecho de los ciudadanos a participar en el control sobre la gestión pública, promoviendo la formación y educación de las comunidades en el área del control fiscal y social, atendiendo sus iniciativas, reclamos, sugerencias, quejas, peticiones y denuncias.'),
+
+  ('Oficina de Transporte y Servicios Generales', 'Planifica, coordina e implementa las políticas y acciones necesarias para garantizar la prestación de los servicios generales que aseguren el normal funcionamiento de la organización.'),
+
+  ('Dirección de la Administración Central y Poder Legislativo', 'Coordina sistemas de control y evaluación gubernamental, para llevar a cabo el seguimiento y verificación del manejo racional, eficiente y eficaz de los recursos asignados a las dependencias de la Administración Central y el Poder Legislativo Estadal, mediante la práctica de revisiones, exámenes, inspecciones, auditorías e investigaciones de todo tipo, así como evaluar el cumplimiento y los resultados de sus políticas y acciones administrativas.'),
+
+  ('Dirección de la Administración Descentralizada', 'Coordina sistemas de control y evaluación gubernamental, para llevar a cabo el seguimiento y verificación del manejo racional, eficiente y eficaz de los recursos asignados a las dependencias de la Administración Descentralizada, mediante la práctica de revisiones, exámenes, inspecciones, auditorías e investigaciones de todo tipo, así como evaluar el cumplimiento y los resultados de sus políticas y acciones administrativas.'),
+
+  ('Dirección de Investigaciones', 'Realiza las actuaciones que sean necesarias a fin de verificar la ocurrencia de actos, hechos y omisiones contrarios a una norma legal o sublegal, vinculados con el manejo, custodia o administración de fondos y bienes públicos, determinar el monto de los daños causados al patrimonio, si fuere el caso, así como la procedencia de acciones fiscales.'),
+
+  ('Dirección de Determinación de Responsabilidades', 'Realiza las actuaciones que sean necesarias a fin de verificar la ocurrencia de actos, hechos y omisiones contrarios a una norma legal o sublegal, vinculados con el manejo, custodia o administración de fondos y bienes públicos, determinar el monto de los daños causados al patrimonio, si fuere el caso, así como la procedencia de acciones fiscales.');
+
+-- FUTUROS VOLCADOS EN LA BASE DE DATOS
