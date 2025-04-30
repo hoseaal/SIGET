@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import express from 'express'
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
@@ -5,7 +6,7 @@ import cookieParser from 'cookie-parser'
 import config from './config.js'
 import { UserRepository } from './user-repository.js'
 import authenticate from './authenticate.js'
-import { selectData, selectWhereData } from './cruds.js'
+import { selectData, selectWhereData, getTableColumns } from './cruds.js'
 
 const router = express.Router()
 const app = express()
@@ -130,6 +131,22 @@ app.get('/api/selects', async (req, res) => {
     })
   }
 })
+
+app.get('/api/table-columns', async (req, res) => {
+  try {
+    const { id_table } = req.query
+    if (!id_table) {
+      return res.status(400).json({ error: 'Debe proporcionar el nombre de la tabla' })
+    }
+
+    const { columns, idColumn } = await getTableColumns(id_table) // Obtiene las columnas y la columna de identificación única
+    res.json({ columns, idColumn }) // Devuelve ambos en la respuesta
+  } catch (err) {
+    console.error('Error al obtener columnas:', err.message)
+    res.status(500).json({ error: 'Error al obtener columnas' })
+  }
+})
+
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor Node.js corriendo en http://localhost:${PORT}`)
