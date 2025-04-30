@@ -3,7 +3,7 @@ import axios from 'axios';
 export const fetchData = async (table, columns, conditionColumn, conditionValue) => {
 
   const params = conditionColumn && conditionValue
-    ? { table, columns, fk: conditionColumn, dato: conditionValue } // Usamos 'fk' y 'dato' para que coincidan con el backend
+    ? { table, columns, fk: conditionColumn, dato: conditionValue }
     : { table, columns };
 
   try {

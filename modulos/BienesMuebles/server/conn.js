@@ -34,8 +34,9 @@ const getConnection = async () => {
     return connection
   } catch (error) {
     console.error('Error al obtener conexión:', error.message)
-    throw error // Es importante lanzar el error para manejarlo arriba
+    throw error 
   }
 }
 
 export { pool, connectDB, getConnection }
+ 

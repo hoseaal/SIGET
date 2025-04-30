@@ -17,8 +17,7 @@ if (!$token) {
 
 try {
     $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-    // IMPORTANTE: exportamos $decoded para que el archivo que lo incluya pueda usarlo
-    // Si estás usando PHP 7.1+, no necesitas hacer nada más
+   
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Token inválido: ' . $e->getMessage()]);

@@ -33,12 +33,12 @@ const Navbar = () => {
     try {
       const response = await axios.post(
         '/api/logout', 
-        {}, // Body vacío
+        {}, 
         { 
-          withCredentials: true // Importante para enviar cookies
+          withCredentials: true // enviar cookies
         }
       );
-      // Mostrar mensaje del backend
+
       alert(response.data.message);
 
       navigate('/Login', { replace: true })

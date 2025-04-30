@@ -11,10 +11,9 @@ use Firebase\JWT\Key;
 
 header('Content-Type: application/json');
 
-// Secret Key (guárdala segura en un archivo de entorno si es producción)
+// Secret Key
 $secretKey = 'C0ntr@l0r!aD3lEst4d0T@ch!r@';
 
-// Leer el cuerpo crudo del request y decodificar JSON
 $input = json_decode(file_get_contents("php://input"), true);
 
 $cedula = $input['cedula'] ?? '';

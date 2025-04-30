@@ -1,4 +1,4 @@
-import { getConnection } from './conn.js' // Importa tu conexión existente
+import { getConnection } from './conn.js' // Importa la conexión existente
 
 export const selectData = async (table, columns = '*') => {
   const connection = await getConnection()
