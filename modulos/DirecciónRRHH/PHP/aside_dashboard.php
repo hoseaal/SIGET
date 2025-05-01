@@ -40,11 +40,6 @@
                     <div data-i18n="Basic">Registrar Usuario</div>
                   </a>
                 </li>
-                <li class="menu-item">
-                  <a href="CargaMasiva.php" class="menu-link" target="_blank">
-                    <div data-i18n="Basic">Carga Masiva</div>
-                  </a>
-                </li>
               </ul>
             </li>
 
@@ -96,11 +91,6 @@
                 <li class="menu-item">
                   <a href="#" class="menu-link" target="_blank">
                     <div data-i18n="Basic">Otorgar Permisos</div>
-                  </a>
-                </li>
-                <li class="menu-item">
-                  <a href="#" class="menu-link" target="_blank">
-                    <div data-i18n="Basic">Registrar Usuario</div>
                   </a>
                 </li>
               </ul>
