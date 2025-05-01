@@ -57,6 +57,7 @@
     <script src="../assets/vendor/js/helpers.js"></script>
 
     <script src="../assets/js/config.js"></script>
+    <?php require_once '../PHP/api/usuarios/carga_select.php'; ?>
   </head>
 
   <body>
@@ -79,105 +80,104 @@
           <div class="container-xxl flex-grow-1 container-p-y">
             <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Agregar /</span> Nuevo Trabajador</h4>
 
-            <div class="row">
-              <!-- Datos Personales -->
-              <div class="col-md-6">
-                <div class="card mb-4">
-                  <h5 class="card-header">Datos Personales</h5>
-                  <div class="card-body">
-                    <!-- Cédula -->
-                    <div class="mb-3">
-                      <label for="cedula" class="form-label">Cédula</label>
-                      <input type="number" class="form-control" id="cedula" />
-                    </div>
-                    <!-- Nombres -->
-                    <div class="mb-3">
-                      <label for="nombre" class="form-label">Nombres</label>
-                      <input type="text" class="form-control" id="nombre" />
-                    </div>
-                    <!-- Apellidos -->
-                    <div class="mb-3">
-                      <label for="apellidos" class="form-label">Apellidos</label>
-                      <input type="text" class="form-control" id="apellidos" />
-                    </div>
-                    <!-- Fecha de Ingreso -->
-                    <div class="mb-3">
-                      <label for="fechaingreso" class="form-label">Fecha de ingreso</label>
-                      <input type="date" class="form-control" id="fechaingreso" />
-                    </div>
-                    <!-- Género del Empleado -->
-                    <div class="mb-3">
-                      <div class="mb-2">
-                        <label class="form-label">Género del Empleado</label>
+            <form id="formRegistro" action="../PHP/api/usuarios/procesar_registro.php" method="POST">
+              <div class="row">
+                <!-- Datos Personales -->
+                <div class="col-md-6">
+                  <div class="card mb-4">
+                    <h5 class="card-header">Datos Personales</h5>
+                    <div class="card-body">
+                        <!-- Cédula -->
+                        <div class="mb-3">
+                          <label for="cedula" class="form-label">Cédula</label>
+                          <input type="number" class="form-control" id="cedula" name="cedula" required />
+                        </div>
+                        <!-- Nombres -->
+                        <div class="mb-3">
+                          <label for="nombre" class="form-label">Nombres</label>
+                          <input type="text" class="form-control" id="nombre" name="nombre" required/>
+                        </div>
+                        <!-- Apellidos -->
+                        <div class="mb-3">
+                          <label for="apellidos" class="form-label">Apellidos</label>
+                          <input type="text" class="form-control" id="apellidos" name="apellidos" required />
+                        </div>
+                        <!-- Fecha de Ingreso -->
+                        <div class="mb-3">
+                          <label for="fechaingreso" class="form-label">Fecha de ingreso</label>
+                          <input type="date" class="form-control" id="fechaingreso" name="fechaingreso" required />
+                        </div>
+                        <!-- Género del Empleado -->
+                        <div class="mb-3">
+                          <div class="mb-2">
+                            <label class="form-label">Género del Empleado</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="generoEmpleado" id="generoMasculino" value="M" />
+                            <label class="form-check-label" for="generoMasculino">Masculino (M)</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="generoEmpleado" id="generoFemenino" value="F" />
+                            <label class="form-check-label" for="generoFemenino">Femenino (F)</label>
+                          </div>
+                        </div>
+                        <!-- Número de Hijos -->
+                        <div class="mb-3">
+                          <label for="numerohijos" class="form-label">Número de Hijos</label>
+                          <input type="number" class="form-control" id="numerohijos" name="numeroHijos" required/>
+                        </div>
+                      <div id="defaultFormControlHelp" class="form-text">
+                        No comparta información privada sin previa autorización.
                       </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="generoEmpleado" id="generoMasculino" value="M" />
-                        <label class="form-check-label" for="generoMasculino">Masculino (M)</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="generoEmpleado" id="generoFemenino" value="F" />
-                        <label class="form-check-label" for="generoFemenino">Femenino (F)</label>
-                      </div>
-                    </div>
-                    <!-- Número de Hijos -->
-                    <div class="mb-3">
-                      <label for="numerohijos" class="form-label">Número de Hijos</label>
-                      <input type="number" class="form-control" id="numerohijos" />
-                    </div>
-                    <div id="defaultFormControlHelp" class="form-text">
-                      No comparta información privada sin previa autorización.
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Datos del Área -->
-              <div class="col-md-6">
-                <div class="card mb-4">
-                  <h5 class="card-header">Datos del Área</h5>
-                  <div class="card-body">
-                    <div class="mb-3">
-                      <label for="cargocet" class="form-label">Cargo CET</label>
-                      <select id="cargocet" class="form-select">
-                        <option>Seleccione</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
-                      </select>
+                <!-- Datos del Área -->
+                <div class="col-md-6">
+                  <div class="card mb-4">
+                    <h5 class="card-header">Datos del Área</h5>
+                    <div class="card-body">
+                      <!-- Cargo CET -->
+                      <div class="mb-3">
+                        <label for="cargocet" class="form-label">Cargo CET</label>
+                        <select id="cargocet" name="cargocet" class="form-select" required>
+                          <option value="">Seleccione</option>
+                          <?php foreach ($cargosCet as $cargo): ?>
+                            <option value="<?= $cargo['cet_ide'] ?>"><?= htmlspecialchars($cargo['cet_car']) ?></option>
+                          <?php endforeach; ?>
+                        </select>
+                      </div>
+                      <!-- Cargo ONAPRE -->
+                      <div class="mb-3">
+                        <label for="cargoonapre" class="form-label">Cargo ONAPRE</label>
+                        <select id="cargoonapre" name="cargoonapre" class="form-select" required>
+                          <option value="">Seleccione</option>
+                          <?php foreach ($cargosOnapre as $cargo): ?>
+                            <option value="<?= $cargo['ona_ide'] ?>"><?= htmlspecialchars($cargo['ona_car']) ?></option>
+                          <?php endforeach; ?>
+                        </select>
+                      </div>
+                      <!-- Departamento -->
+                      <div class="mb-3">
+                        <label for="departamentoasig" class="form-label">Departamento Asignado</label>
+                        <select id="departamentoasig" name="departamentoasig" class="form-select" required>
+                          <option value="">Seleccione</option>
+                          <?php foreach ($departamentos as $dep): ?>
+                            <option value="<?= $dep['dep_ide'] ?>"><?= htmlspecialchars($dep['dep_nom']) ?></option>
+                          <?php endforeach; ?>
+                        </select>
+                      </div>
                     </div>
-                    <div class="mb-3">
-                      <label for="cargoonapre" class="form-label">Cargo ONAPRE</label>
-                      <select id="cargoonapre" class="form-select">
-                        <option>Seleccione</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <label for="antiguedad" class="form-label">Antiguedad del Empleado</label>
-                      <select id="antiguedad" class="form-select">
-                        <option>Seleccione</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <label for="departamentoasig" class="form-label">Departamento Asignado</label>
-                      <select id="departamentoasig" class="form-select">
-                        <option>Seleccione</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
-                      </select>
-                    </div>
-                    <button type="button" class="btn btn-outline-primary">Registrar</button>
-                    <button type="button" class="btn btn-outline-danger">Limpiar Campos</button>
                   </div>
                 </div>
-              </div>
-            </div> <!-- Cierre de .row -->
+                <!-- Botones de Acción -->
+                <div class="col-12 d-flex justify-content-center gap-2 mt-2">
+                  <button type="submit" name="registrar" class="btn btn-outline-primary px-4">Registrar</button>
+                  <button type="button" id="btnLimpiar" class="btn btn-outline-danger px-4">Limpiar Campos</button>
+                </div>
+              </div> <!-- Cierre de .row -->
+            </form>
           </div>
           <!-- / Content -->
           <div class="content-backdrop fade"></div>
@@ -192,7 +192,6 @@
     </div>
     <!-- / Layout wrapper -->
 
-
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
     <script src="../assets/vendor/libs/jquery/jquery.js"></script>
@@ -203,16 +202,20 @@
     <script src="../assets/vendor/js/menu.js"></script>
     <!-- endbuild -->
 
-    <!-- Vendors JS -->
-
     <!-- Main JS -->
     <script src="../assets/js/main.js"></script>
 
     <!-- Page JS -->
-
     <script src="../assets/js/form-basic-inputs.js"></script>
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="../js/buttons.js"></script>
+
+    <script>
+      document.getElementById('btnLimpiar').addEventListener('click', function() {
+        document.getElementById('formRegistro').reset();
+      });
+    </script>
+
   </body>
 </html>

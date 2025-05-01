@@ -22,7 +22,8 @@ USE `dbsiget`;
 
 CREATE TABLE `tesant` (
   `ant_ide` int(11) NOT NULL COMMENT 'Identificador único de antigüedad',
-  `ant_ano` int(11) NOT NULL COMMENT 'Años de antigüedad'
+  `ant_ano` int(11) NOT NULL COMMENT 'Años de antigüedad acumulada',
+  `nom_ced` varchar(10) NOT NULL COMMENT 'Cédula del empleado'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -243,7 +244,6 @@ CREATE TABLE `tmanom` (
   `nom_nhi` int(11) NOT NULL COMMENT 'Número de hijos',
   `cet_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo CET en tescet',
   `ona_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo ONAPRE en tesona',
-  `ant_ide` int(11) DEFAULT NULL COMMENT 'Referencia a antigüedad en tesant',
   `dep_ide` int(11) DEFAULT NULL COMMENT 'Referencia a departamento en tesdep'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -386,7 +386,6 @@ ALTER TABLE `tmamar`
 ALTER TABLE `tmanom`
   ADD PRIMARY KEY (`nom_ced`),
   ADD UNIQUE KEY `ona_ide` (`ona_ide`),
-  ADD UNIQUE KEY `ant_ide` (`ant_ide`),
   ADD KEY `fk_tmanom_tescet` (`cet_ide`),
   ADD KEY `fk_tmanom_tesdep` (`dep_ide`);
 
@@ -478,6 +477,12 @@ ALTER TABLE `tesusu`
   ADD CONSTRAINT `fk_tesusu_tmanom` FOREIGN KEY (`nom_ced`) REFERENCES `tmanom` (`nom_ced`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Filtros para la tabla `tesant`
+--
+ALTER TABLE `tesant`
+  ADD CONSTRAINT `fk_tesant_tmanom` FOREIGN KEY (`nom_ced`) REFERENCES `tmanom` (`nom_ced`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `tmab_m`
 --
 ALTER TABLE `tmab_m`
@@ -493,7 +498,6 @@ ALTER TABLE `tmab_m`
 -- Filtros para la tabla `tmanom`
 --
 ALTER TABLE `tmanom`
-  ADD CONSTRAINT `fk_tmanom_tesant` FOREIGN KEY (`ant_ide`) REFERENCES `tesant` (`ant_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tescet` FOREIGN KEY (`cet_ide`) REFERENCES `tescet` (`cet_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesdep` FOREIGN KEY (`dep_ide`) REFERENCES `tesdep` (`dep_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -642,62 +646,6 @@ INSERT INTO `tesnvl` (`nvl_ran`, `nvl_sal`, `ona_ide`) VALUES
 ('I', 363.00, 14),
 ('I', 363.00, 15),
 ('I', 409.00, 16);
-
--- TABLA TESANT
-
-INSERT INTO `tesant` (`ant_ano`) VALUES
-('1'),
-('2'),
-('3'),
-('4'),
-('5'),
-('6'),
-('7'),
-('8'),
-('9'),
-('10'),
-('11'),
-('12'),
-('13'),
-('14'),
-('15'),
-('16'),
-('17'),
-('18'),
-('19'),
-('20'),
-('21'),
-('22'),
-('23'),
-('24'),
-('25'),
-('26'),
-('27'),
-('28'),
-('29'),
-('30'),
-('31'),
-('32'),
-('33'),
-('34'),
-('35'),
-('36'),
-('37'),
-('38'),
-('39'),
-('40'),
-('41'),
-('42'),
-('43'),
-('44'),
-('45'),
-('46'),
-('47'),
-('48'),
-('49'),
-('50'),
-('51'),
-('52');
 
 -- TABLA TESDEP
 
