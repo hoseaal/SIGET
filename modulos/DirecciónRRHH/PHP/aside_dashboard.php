@@ -40,6 +40,11 @@
                     <div data-i18n="Basic">Registrar Usuario</div>
                   </a>
                 </li>
+                <li class="menu-item">
+                  <a href="Register-AntUser.php" class="menu-link" target="_blank">
+                    <div data-i18n="Basic">Antigüedades Viejas</div>
+                  </a>
+                </li>
               </ul>
             </li>
 
@@ -50,7 +55,7 @@
               </a>
               <ul class="menu-sub">
                 <li class="menu-item">
-                  <a href="#" class="menu-link" target="_blank">
+                  <a href="Table_Nomina.php" class="menu-link" target="_blank">
                     <div data-i18n="Basic">Tabla Trabajadores</div>
                   </a>
                 </li>
