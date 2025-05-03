@@ -133,7 +133,7 @@ CREATE TABLE `tessca` (
 --
 
 CREATE TABLE `tesusu` (
-  `usu_ide` varchar(11) NOT NULL COMMENT 'Identificador unico del usuario',
+  `usu_ide` INT NOT NULL COMMENT 'Identificador unico del usuario',
   `usu_con` varchar(255) NOT NULL COMMENT 'Contraseña del usuario (hashed)',
   `usu_tip` int(1) NOT NULL COMMENT 'Perfil o tipo de usuario',
   `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Referencia a empleado en tmanom'
@@ -475,6 +475,12 @@ ALTER TABLE `tessca`
 --
 ALTER TABLE `tesusu`
   ADD CONSTRAINT `fk_tesusu_tmanom` FOREIGN KEY (`nom_ced`) REFERENCES `tmanom` (`nom_ced`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Modificación para AI para la tabla `tesusu`
+--
+ALTER TABLE `tesusu`
+MODIFY `usu_ide` INT NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico del usuario';
 
 --
 -- Filtros para la tabla `tesant`
