@@ -60,18 +60,18 @@
                   </a>
                 </li>
                 <li class="menu-item">
-                  <a href="#" class="menu-link" target="_blank">
+                  <a href="Table_User.php" class="menu-link" target="_blank">
                     <div data-i18n="Basic">Tabla Usuarios</div>
                   </a>
                 </li>
                 <li class="menu-item">
-                  <a href="#" class="menu-link" target="_blank">
-                    <div data-i18n="Basic">Cargos ONAPRE</div>
+                  <a href="Tables_Cargos.php" class="menu-link" target="_blank">
+                    <div data-i18n="Basic">Cargos</div>
                   </a>
                 </li>
                 <li class="menu-item">
-                  <a href="#" class="menu-link" target="_blank">
-                    <div data-i18n="Basic">Cargos CET</div>
+                  <a href="Table_NvlSalarial.php" class="menu-link" target="_blank">
+                    <div data-i18n="Basic">Niveles Salariales</div>
                   </a>
                 </li>
                 <li class="menu-item">
