@@ -79,7 +79,7 @@
           <div class="container-xxl flex-grow-1 container-p-y">
             <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Agregar /</span> Registro de Antigüedades</h4>
 
-            <form id="formAnt" action="#" method="POST">
+            <form id="formAnt">
               <div class="row">
                 <!-- Datos Personales -->
                 <div class="col-md-6">
@@ -90,131 +90,51 @@
                               type="button"
                               class="btn btn-primary mb-3"
                               data-bs-toggle="modal"
-                              data-bs-target="#basicModal"
+                              data-bs-target="#modalUsuarios"
                           >
                               Añadir
                           </button>
                           
                           <!-- Campo para mostrar la cédula seleccionada -->
-                          <div class="mb-3">
+                            <div class="mb-3">
                               <label class="form-label">Usuario seleccionado</label>
                               <div class="input-group">
-                                  <input 
-                                      type="text" 
-                                      class="form-control" 
-                                      id="cedulaSeleccionada" 
-                                      placeholder="Ningún usuario seleccionado" 
-                                      readonly
-                                  >
-                                  <button class="btn btn-outline-secondary" type="button" onclick="limpiarSeleccion()">
-                                      <i class="bx bx-x"></i>
-                                  </button>
-                              </div>
+                              <input type="text" id="cedulaSeleccionada" name="cedulaSeleccionada" class="form-control" readonly>
+                            </div>
                           </div>
 
                           <!-- Modal -->
-                          <div class="modal fade" id="basicModal" tabindex="-1" aria-hidden="true">
-                              <div class="modal-dialog" role="document">
-                                  <div class="modal-content">
-                                      <div class="modal-header">
-                                          <h5 class="modal-title" id="exampleModalLabel1">Por favor, seleccione un usuario.</h5>
-                                          <button
-                                              type="button"
-                                              class="btn-close"
-                                              data-bs-dismiss="modal"
-                                              aria-label="Close"
-                                          ></button>
-                                      </div>
-                                      <div class="modal-body">
-                                          <div class="row">
-                                              <div class="col mb-3">
-                                                  <div class="input-group input-group-merge">
-                                                      <span class="input-group-text" id="basic-addon-search31"><i class="bx bx-search"></i></span>
-                                                      <input
-                                                          type="text"
-                                                          class="form-control"
-                                                          placeholder="Buscar..."
-                                                          aria-label="Buscar..."
-                                                          aria-describedby="basic-addon-search31"
-                                                      />
-                                                  </div>
-                                              </div>
-                                          </div>
-                                          <div class="row g-2">
-                                              <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                                                  <table class="table table-hover table-striped table-bordered" id="usuariosTable">
-                                                      <thead class="sticky-top" style="background-color: #f8f9fa;">
-                                                          <tr>
-                                                              <th style="width: 30%; background-color: #f1f1f1;" class="py-3">Cédula</th>
-                                                              <th style="width: 35%; background-color: #f1f1f1;" class="py-3">Nombre</th>
-                                                              <th style="width: 35%; background-color: #f1f1f1;" class="py-3">Apellido</th>
-                                                          </tr>
-                                                      </thead>
-                                                      <tbody>
-                                                          <tr class="align-middle" onclick="selectRow(this, '12345678')">
-                                                              <td class="py-2">12345678</td>
-                                                              <td class="py-2">María</td>
-                                                              <td class="py-2">González</td>
-                                                          </tr>
-                                                          <tr class="align-middle" onclick="selectRow(this, '23456789')">
-                                                              <td class="py-2">23456789</td>
-                                                              <td class="py-2">Juan</td>
-                                                              <td class="py-2">Pérez</td>
-                                                          </tr>
-                                                          <tr class="align-middle" onclick="selectRow(this, '34567890')">
-                                                              <td class="py-2">34567890</td>
-                                                              <td class="py-2">Carlos</td>
-                                                              <td class="py-2">Rodríguez</td>
-                                                          </tr>
-                                                          <tr class="align-middle" onclick="selectRow(this, '45678901')">
-                                                              <td class="py-2">45678901</td>
-                                                              <td class="py-2">Ana</td>
-                                                              <td class="py-2">Martínez</td>
-                                                          </tr>
-                                                          <tr class="align-middle" onclick="selectRow(this, '56789012')">
-                                                              <td class="py-2">56789012</td>
-                                                              <td class="py-2">Luis</td>
-                                                              <td class="py-2">Gómez</td>
-                                                          </tr>
-                                                          <tr class="align-middle" onclick="selectRow(this, '67890123')">
-                                                              <td class="py-2">67890123</td>
-                                                              <td class="py-2">Laura</td>
-                                                              <td class="py-2">Fernández</td>
-                                                          </tr>
-                                                          <tr class="align-middle" onclick="selectRow(this, '78901234')">
-                                                              <td class="py-2">78901234</td>
-                                                              <td class="py-2">Pedro</td>
-                                                              <td class="py-2">Sánchez</td>
-                                                          </tr>
-                                                          <tr class="align-middle" onclick="selectRow(this, '89012345')">
-                                                              <td class="py-2">89012345</td>
-                                                              <td class="py-2">Sofía</td>
-                                                              <td class="py-2">López</td>
-                                                          </tr>
-                                                          <tr class="align-middle" onclick="selectRow(this, '90123456')">
-                                                              <td class="py-2">90123456</td>
-                                                              <td class="py-2">Miguel</td>
-                                                              <td class="py-2">Díaz</td>
-                                                          </tr>
-                                                          <tr class="align-middle" onclick="selectRow(this, '01234567')">
-                                                              <td class="py-2">01234567</td>
-                                                              <td class="py-2">Elena</td>
-                                                              <td class="py-2">Hernández</td>
-                                                          </tr>
-                                                      </tbody>
-                                                  </table>
-                                              </div>
-                                          </div>
-                                      </div>
-                                      <div class="modal-footer">
-                                          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                              Cerrar
-                                          </button>
-                                          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Confirmar selección</button>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
+                            <div class="modal fade" id="modalUsuarios" tabindex="-1" role="dialog" aria-labelledby="modalUsuariosLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Seleccionar Usuario</h5>
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-hover" id="tablaUsuarios">
+                                    <thead>
+                                        <tr>
+                                        <th>Cédula</th>
+                                        <th>Nombres</th>
+                                        <th>Apellidos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Aquí se insertarán los usuarios vía JavaScript -->
+                                    </tbody>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                        Cerrar      
+                                    </button>
+                                    <button type="button" id="confirmarSeleccion" class="btn btn-primary" disabled>Confirmar Selección</button>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
                           <div id="defaultFormControlHelp" class="form-text">
                               No comparta información privada sin previa autorización.
                           </div>
@@ -278,115 +198,6 @@
     <script async defer src="../js/buttons.js"></script>
 
     <script>
-        // Función para limpiar todos los campos del formulario
-        function limpiarFormulario() {
-            if (!confirm('¿Está seguro que desea limpiar todos los campos?')) {
-                return;
-            }
-            // Limpiar selección de usuario
-            limpiarSeleccion();
-            
-            // Limpiar campo de búsqueda en el modal
-            document.querySelector('#basicModal input[type="text"]').value = '';
-            
-            // Limpiar todos los rangos de antigüedad
-            const container = document.getElementById('antiguedades-container');
-            container.innerHTML = '';
-            
-            // Agregar un nuevo rango vacío (como estado inicial)
-            agregarRangoAntiguedad();
-            
-            // Deseleccionar cualquier fila en la tabla
-            const filas = document.querySelectorAll('#usuariosTable tbody tr');
-            filas.forEach(fila => fila.classList.remove('table-primary', 'selected'));
-        }
-        
-        // Asignar la función al botón "Limpiar Campos"
-        document.getElementById('btnLimpiar').addEventListener('click', limpiarFormulario);
-        
-        // Funciones existentes (se mantienen igual)
-        function selectRow(row, cedula) {
-            const rows = document.querySelectorAll('#usuariosTable tbody tr');
-            rows.forEach(r => r.classList.remove('table-primary', 'selected'));
-            row.classList.add('table-primary', 'selected');
-            document.getElementById('cedulaSeleccionada').value = cedula;
-        }
-        
-        function limpiarSeleccion() {
-            const rows = document.querySelectorAll('#usuariosTable tbody tr');
-            rows.forEach(r => r.classList.remove('table-primary', 'selected'));
-            document.getElementById('cedulaSeleccionada').value = '';
-        }
-        
-        let contadorRangos = 0;
-        
-        function agregarRangoAntiguedad() {
-            contadorRangos++;
-            const rangoDiv = document.createElement('div');
-            rangoDiv.className = 'rango-antiguedad mb-3';
-            rangoDiv.id = `rango-${contadorRangos}`;
-            
-            rangoDiv.innerHTML = `
-                <div class="row g-3 align-items-center">
-                    <div class="col-md-5">
-                        <label class="form-label">Fecha inicial</label>
-                        <input type="date" class="form-control" id="fecha-inicial-${contadorRangos}">
-                    </div>
-                    <div class="col-md-2 text-center">
-                        <span class="fs-4">-</span>
-                    </div>
-                    <div class="col-md-5">
-                        <label class="form-label">Fecha final</label>
-                        <input type="date" class="form-control" id="fecha-final-${contadorRangos}">
-                    </div>
-                </div>
-                <div class="text-end mt-2">
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarRango('rango-${contadorRangos}')">
-                        <i class="bx bx-trash"></i> Eliminar
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('antiguedades-container').appendChild(rangoDiv);
-        }
-        
-        function eliminarRango(idRango) {
-            const rango = document.getElementById(idRango);
-            if (rango) {
-                rango.remove();
-            }
-        }
-        
-        // Agregar un rango inicial al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            agregarRangoAntiguedad();
-        });
-    </script>
-
-    <script>
-        function selectRow(row, cedula) {
-            // Remover la clase 'selected' de todas las filas
-            const rows = document.querySelectorAll('#usuariosTable tbody tr');
-            rows.forEach(r => r.classList.remove('table-primary', 'selected'));
-            
-            // Añadir la clase 'selected' a la fila clickeada
-            row.classList.add('table-primary', 'selected');
-            
-            // Actualizar el campo de cédula seleccionada
-            document.getElementById('cedulaSeleccionada').value = cedula;
-        }
-        
-        function limpiarSeleccion() {
-            // Limpiar selección
-            const rows = document.querySelectorAll('#usuariosTable tbody tr');
-            rows.forEach(r => r.classList.remove('table-primary', 'selected'));
-            
-            // Limpiar campo de cédula
-            document.getElementById('cedulaSeleccionada').value = '';
-        }
-    </script>
-
-    <script>
         // Contador para identificar cada grupo de selects
         let contadorRangos = 0;
         
@@ -434,6 +245,101 @@
         // Agregar un rango inicial al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             agregarRangoAntiguedad();
+        });
+    </script>
+
+    <script>
+        let cedulaSeleccionada = '';
+
+        $(document).ready(function() {
+            $('#modalUsuarios').on('show.bs.modal', function () {
+                // Limpiar tabla
+                $('#tablaUsuarios tbody').empty();
+                
+                // Cargar usuarios
+                fetch('../PHP/api/usuarios/get_usuarios.php')
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach(usuario => {
+                            const fila = `
+                                <tr data-cedula="${usuario.nom_ced}">
+                                    <td>${usuario.nom_ced}</td>
+                                    <td>${usuario.nom_nom}</td>
+                                    <td>${usuario.nom_ape}</td>
+                                </tr>`;
+                            $('#tablaUsuarios tbody').append(fila);
+                        });
+                    });
+            });
+
+            // Seleccionar fila
+            $('#tablaUsuarios tbody').on('click', 'tr', function() {
+                $('#tablaUsuarios tr').removeClass('table-primary');
+                $(this).addClass('table-primary');
+                cedulaSeleccionada = $(this).data('cedula');
+                $('#confirmarSeleccion').prop('disabled', false);
+            });
+
+            // Confirmar selección
+            $('#confirmarSeleccion').on('click', function() {
+                $('#cedulaSeleccionada').val(cedulaSeleccionada);
+                $('#modalUsuarios').modal('hide');
+            });
+        });
+    </script>
+
+    <script>
+        document.getElementById('formAnt').addEventListener('submit', function (e) {
+            e.preventDefault(); 
+
+            const cedula = document.getElementById('cedulaSeleccionada').value;
+            if (!cedula) {
+                alert("Debe seleccionar un usuario.");
+                return;
+            }
+
+            const rangos = [];
+            const contenedores = document.querySelectorAll('.rango-antiguedad');
+
+            contenedores.forEach((rangoDiv) => {
+                const fechaInicial = rangoDiv.querySelector('input[id^="fecha-inicial"]').value;
+                const fechaFinal = rangoDiv.querySelector('input[id^="fecha-final"]').value;
+
+                if (fechaInicial && fechaFinal) {
+                    rangos.push({
+                        ant_ani: fechaInicial,
+                        ant_anf: fechaFinal
+                    });
+                }
+            });
+
+            if (rangos.length === 0) {
+                alert("Debe ingresar al menos un rango válido de fechas.");
+                return;
+            }
+
+            fetch('../PHP/api/usuarios/registrar_antiguedades.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cedula, rangos })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert("Datos registrados correctamente.");
+                    document.getElementById('formAnt').reset();
+                    document.getElementById('antiguedades-container').innerHTML = '';
+                    agregarRangoAntiguedad();
+                } else {
+                    alert("Error al registrar: " + data.message);
+                }
+            })
+            .catch(error => {
+                alert("Ocurrió un error en la solicitud.");
+                console.error(error);
+            });
         });
     </script>
 
