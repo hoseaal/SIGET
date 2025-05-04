@@ -22,7 +22,8 @@ USE `dbsiget`;
 
 CREATE TABLE `tesant` (
   `ant_ide` int(11) NOT NULL COMMENT 'Identificador único de antigüedad',
-  `ant_ano` int(11) NOT NULL COMMENT 'Años de antigüedad acumulada',
+  `ant_ani` DATE NOT NULL COMMENT 'Años de antigüedad inicial',
+  `ant_anf` DATE NOT NULL COMMENT 'Años de antigüedad final',
   `nom_ced` varchar(10) NOT NULL COMMENT 'Cédula del empleado'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -55,7 +56,7 @@ CREATE TABLE `tescet` (
 CREATE TABLE `tesded` (
   `ded_ide` int(11) NOT NULL COMMENT 'Identificador único de deducción',
   `ded_raz` varchar(100) NOT NULL COMMENT 'Razón de la deducción',
-  `ded_por` decimal(5,2) NOT NULL COMMENT 'Porcentaje de la deducción'
+  `ded_por` decimal(10,2) NOT NULL COMMENT 'Porcentaje de la deducción'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -685,5 +686,18 @@ INSERT INTO `tesdep` (`dep_nom`, `dep_des`) VALUES
   ('Dirección de Investigaciones', 'Realiza las actuaciones que sean necesarias a fin de verificar la ocurrencia de actos, hechos y omisiones contrarios a una norma legal o sublegal, vinculados con el manejo, custodia o administración de fondos y bienes públicos, determinar el monto de los daños causados al patrimonio, si fuere el caso, así como la procedencia de acciones fiscales.'),
 
   ('Dirección de Determinación de Responsabilidades', 'Realiza las actuaciones que sean necesarias a fin de verificar la ocurrencia de actos, hechos y omisiones contrarios a una norma legal o sublegal, vinculados con el manejo, custodia o administración de fondos y bienes públicos, determinar el monto de los daños causados al patrimonio, si fuere el caso, así como la procedencia de acciones fiscales.');
+
+-- TABLA TESDED
+
+INSERT INTO tesded (ded_raz, ded_por) 
+  VALUES 
+  ('Seguro del Empleado', 0.04),
+  ('Seguro Patronal', 0.09),
+  ('R.P.E Empleado', 0.005),
+  ('R.P.E Patronal', 0.02),
+  ('F.A.O.V Empleado', 0.01),
+  ('F.A.O.V Patronal', 2.00),
+  ('F.E.J.P Empleado y Patronal', 0.03),
+  ('Caja Empleado y Patronal', 0.10);
 
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
