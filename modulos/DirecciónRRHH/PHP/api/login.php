@@ -31,7 +31,12 @@ if (!$pdo) {
 
 try {
     // Buscar usuario por cédula
-    $stmt = $pdo->prepare("SELECT * FROM tesusu WHERE nom_ced = :cedula");
+    $stmt = $pdo->prepare("
+        SELECT tu.nom_ced, tu.usu_con, tu.usu_tip, tn.nom_nom, tn.nom_ape
+        FROM tesusu tu
+        INNER JOIN tmanom tn ON tu.nom_ced = tn.nom_ced
+        WHERE tu.nom_ced = :cedula
+    ");
     $stmt->bindParam(':cedula', $cedula);
     $stmt->execute();
 
@@ -50,12 +55,14 @@ try {
 
     // Crear payload del JWT
     $payload = [
-        'iss' => 'siget.com',     // Emisor del token
-        'aud' => 'siget.com',     // Audiencia: quién debe recibirlo
-        'iat' => time(),                 // Fecha de emisión (Issued At)
-        'exp' => time() + (60 * 60 * 24 * 6), // 6 días en segundos
-        'data' => [                      // Información personalizada del usuario
+        'iss' => 'siget.com',
+        'aud' => 'siget.com',
+        'iat' => time(),
+        'exp' => time() + (60 * 60 * 24 * 6),
+        'data' => [
             'cedula' => $user['nom_ced'],
+            'nombre' => $user['nom_nom'],
+            'apellido' => $user['nom_ape'],
             'tipo' => $user['usu_tip'],
         ]
     ];

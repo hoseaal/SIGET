@@ -84,8 +84,7 @@
                           <p class="mb-4">
                             Automatiza las <span class="fw-bold">nóminas</span> para un trabajo mucho más eficiente y seguro.
                           </p>
-
-                          <a href="javascript:;" class="btn btn-sm btn-outline-primary">Acceder a nóminas</a>
+                          <a href="Table_Nomina.php" class="btn btn-sm btn-outline-primary">Acceder a nóminas</a>
                         </div>
                       </div>
                       <div class="col-sm-5 text-center text-sm-left">

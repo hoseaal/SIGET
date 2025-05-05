@@ -1,3 +1,14 @@
+<?php
+require_once '../PHP/api/validar-jwt.php';
+
+$decoded = $GLOBALS['decoded'] ?? null;
+
+$nombre = $decoded->data->nombre ?? '';
+$apellido = $decoded->data->apellido ?? '';
+$tipo = $decoded->data->tipo ?? '';
+
+?>
+
 <!-- Navbar -->
         <nav
             class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
@@ -36,8 +47,20 @@
                             </div>
                           </div>
                           <div class="flex-grow-1">
-                            <span class="fw-semibold d-block">John Doe</span>
-                            <small class="text-muted">Admin</small>
+                            <span class="fw-semibold d-block">
+                                <?= htmlspecialchars($nombre . ' ' . $apellido) ?>
+                            </span>
+                            <small class="text-muted">
+                              <?php
+                                if ($tipo == 3) {
+                                  echo "jefe de área";
+                                } elseif ($tipo == 2) {
+                                  echo "trabajador";
+                                } else {
+                                  echo "desconocido";
+                                }
+                              ?>
+                          </small>
                           </div>
                         </div>
                       </a>
