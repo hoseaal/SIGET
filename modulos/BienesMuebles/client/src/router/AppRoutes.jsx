@@ -60,9 +60,17 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/BM/BM-2" element={<Bm2 />} />
+            <Route path="/Configuracion/Categorias" element={
+                <ProtectedRoute>
+                    <Categorias/>
+                </ProtectedRoute>
+            } />
 
-            <Route path="/Configuracion/Categorias" element={<Categorias/>}/>
+            <Route path="/BM/BM-2" element={
+                <ProtectedRoute>
+                    <Bm2 />
+                </ProtectedRoute>
+            } />
 
             <Route path="/ui/accordion" element={<AccordionPage />} />
             <Route path="/ui/alerts" element={<AlertPage />} />

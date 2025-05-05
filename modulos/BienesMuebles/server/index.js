@@ -7,6 +7,7 @@ import config from './config.js'
 import { UserRepository } from './user-repository.js'
 import authenticate from './authenticate.js'
 import { selectData, selectWhereData, getTableColumns } from './cruds.js'
+import { getConnection } from './conn.js'
 
 const router = express.Router()
 const app = express()
@@ -144,6 +145,22 @@ app.get('/api/table-columns', async (req, res) => {
   } catch (err) {
     console.error('Error al obtener columnas:', err.message)
     res.status(500).json({ error: 'Error al obtener columnas' })
+  }
+})
+
+app.post('/api/insert', async (req, res) => {
+  try {
+    const { table, data } = req.body
+    if (!table || !data) {
+      return res.status(400).json({ error: 'Tabla y datos son requeridos' })
+    }
+
+    const connection = await getConnection()
+    const [result] = await connection.query(`INSERT INTO ${table} SET ?`, data)
+    res.status(201).json({ id: result.insertId })
+  } catch (err) {
+    console.error('Error al insertar:', err.message)
+    res.status(500).json({ error: 'Error al insertar datos' })
   }
 })
 
