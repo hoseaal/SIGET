@@ -112,7 +112,7 @@
               </form>
                   <div class="d-flex justify-content-between">
                     <label class="form-label" for="password">¿Problemas con contraseña?</label>
-                    <a href="auth-forgot-password-basic.html">
+                    <a href="#">
                       <small>Restablecer</small>
                     </a>
                   </div>

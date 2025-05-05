@@ -97,6 +97,12 @@
                     <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                   </div>
                 </div>
+                <div class="d-flex justify-content-between">
+                    <label class="form-label" for="password">¿Problemas con su contraseña?</label>
+                    <a href="#">
+                      <small>Restablecer</small>
+                    </a>
+                  </div>
                 <div class="mb-3">
                   <button class="btn btn-primary d-grid w-100" type="submit">Iniciar Sesión</button>
                 </div>
