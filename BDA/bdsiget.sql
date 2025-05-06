@@ -697,4 +697,12 @@ INSERT INTO tesded (ded_raz, ded_por)
   ('F.E.J.P Empleado y Patronal', 0.03),
   ('Caja Empleado y Patronal', 0.10);
 
+-- TABLA TESPRI
+
+INSERT INTO `tespri` (`pri_raz`, `pri_por`) VALUES
+('Prima por Transporte', 48.00),
+('Prima por hogares', 40.00),
+('Complemento de Alimentación', 5.00),
+('Prima por Hijos', 12.50);
+
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS

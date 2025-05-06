@@ -85,12 +85,11 @@
                   <h5 class="card-header">Tabla de Niveles Salariales</h5>
                   <div class="card-body">
                     <!-- Tabla de Salarios -->
-                    <div class="table-responsive text-nowrap">
-                      <table class="table" id="workersTable">
+                    <div class="table-responsive text-nowrap fixed-height">
+                      <table class="table" id="salaryTable">
                         <thead>
                           <tr>
                             <th>Nivel salarial</th>
-                            <th>Descripción</th>
                             <th>Salario</th>
                             <th>CARGO ONAPRE</th>
                             <th>Acciones</th>
@@ -105,7 +104,7 @@
                     <!-- Paginación -->
                     <div class="demo-inline-spacing mt-4">
                       <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center" id="pagination">
+                        <ul class="pagination justify-content-center" id="paginationSalary">
                           <!-- La paginación se generará dinámicamente con JavaScript -->
                         </ul>
                       </nav>
@@ -154,174 +153,49 @@
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="../js/buttons.js"></script>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Datos de ejemplo
-        const workersData = [
-          { nivel: 'I', des: 'Sin Descripción', sal: '130.00', cargonapre: 'BACHILLER I (BI)', },
-          { nivel: 'II', des: 'Sin Descripción', sal: '132.00', cargonapre: 'BACHILLER I (BI)', },
-          { nivel: 'III', des: 'Sin Descripción', sal: '134.00', cargonapre: 'BACHILLER I (BI)', },
-          { nivel: 'IV', des: 'Sin Descripción', sal: '135.00', cargonapre: 'BACHILLER I (BI)', },
-          { nivel: 'IV', des: 'Sin Descripción', sal: '137.00', cargonapre: 'BACHILLER I (BI)', },
-          { nivel: 'I', des: 'Sin Descripción', sal: '139.00', cargonapre: 'BACHILLER II (BII)', },
-          { nivel: 'II', des: 'Sin Descripción', sal: '141.00', cargonapre: 'BACHILLER II (BII)', }
-        ];
+    <!-- Funcionamiento de la tabla de Niveles Salariales -->
+    <script src="../assets/js/modulos/gest-presupuesto/func-table_NivelesSalariales.js"></script> 
 
-        // Variables para la paginación
-        const rowsPerPage = 7;
-        let currentPage = 1;
-        const tableBody = document.querySelector('#workersTable tbody');
-        const paginationElement = document.getElementById('pagination');
-
-        // Función para mostrar los Usuarios en la página actual
-        function displayWorkers(page) {
-          tableBody.innerHTML = '';
-
-          const startIndex = (page - 1) * rowsPerPage;
-          const endIndex = startIndex + rowsPerPage;
-          const paginatedItems = workersData.slice(startIndex, endIndex);
-
-          paginatedItems.forEach((worker, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${worker.nivel}</td>
-              <td><strong>${worker.des}</strong></td>
-              <td>${worker.sal}</td>
-              <td>${worker.cargonapre}</td>
-              <td>
-                <div class="dropdown">
-                  <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                    <i class="bx bx-dots-vertical-rounded"></i>
-                  </button>
-                  <div class="dropdown-menu">
-                    <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-edit-alt me-1"></i> Editar</a>
-                    <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i> Eliminar</a>
-                  </div>
-                </div>
-              </td>
-            `;
-            tableBody.appendChild(row);
-          });
-        }
-
-        // Función para configurar la paginación
-        function setupPagination(items, rowsPerPage) {
-          paginationElement.innerHTML = '';
-          
-          const pageCount = Math.ceil(items.length / rowsPerPage);
-          
-          // Botón Primera página
-          let li = document.createElement('li');
-          li.className = 'page-item first';
-          li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-left"></i></a>`;
-          li.addEventListener('click', () => {
-            currentPage = 1;
-            displayWorkers(currentPage);
-            updatePaginationButtons();
-          });
-          paginationElement.appendChild(li);
-          
-          // Botón Página anterior
-          li = document.createElement('li');
-          li.className = 'page-item prev';
-          li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-left"></i></a>`;
-          li.addEventListener('click', () => {
-            if (currentPage > 1) {
-              currentPage--;
-              displayWorkers(currentPage);
-              updatePaginationButtons();
-            }
-          });
-          paginationElement.appendChild(li);
-          
-          // Números de página
-          for (let i = 1; i <= pageCount; i++) {
-            li = document.createElement('li');
-            li.className = 'page-item';
-            if (i === currentPage) li.classList.add('active');
-            li.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
-            li.addEventListener('click', () => {
-              currentPage = i;
-              displayWorkers(currentPage);
-              updatePaginationButtons();
-            });
-            paginationElement.appendChild(li);
-          }
-          
-          // Botón Página siguiente
-          li = document.createElement('li');
-          li.className = 'page-item next';
-          li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-right"></i></a>`;
-          li.addEventListener('click', () => {
-            if (currentPage < pageCount) {
-              currentPage++;
-              displayWorkers(currentPage);
-              updatePaginationButtons();
-            }
-          });
-          paginationElement.appendChild(li);
-          
-          // Botón Última página
-          li = document.createElement('li');
-          li.className = 'page-item last';
-          li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-right"></i></a>`;
-          li.addEventListener('click', () => {
-            currentPage = pageCount;
-            displayWorkers(currentPage);
-            updatePaginationButtons();
-          });
-          paginationElement.appendChild(li);
-        }
-        
-        // Función para actualizar el estado de los botones de paginación
-        function updatePaginationButtons() {
-          const pageCount = Math.ceil(workersData.length / rowsPerPage);
-          const pageItems = paginationElement.querySelectorAll('.page-item');
-          
-          // Remover clase active de todos los items
-          pageItems.forEach(item => {
-            item.classList.remove('active');
-          });
-          
-          // Agregar clase active al item correspondiente
-          pageItems.forEach((item, index) => {
-            // Los primeros 2 items son los botones "first" y "prev"
-            // Los últimos 2 items son los botones "next" y "last"
-            if (index >= 2 && index < 2 + pageCount) {
-              if (index - 1 === currentPage) {
-                item.classList.add('active');
-              }
-            }
-          });
-          
-          // Actualizar estado de los botones de navegación
-          const firstBtn = paginationElement.querySelector('.first');
-          const prevBtn = paginationElement.querySelector('.prev');
-          const nextBtn = paginationElement.querySelector('.next');
-          const lastBtn = paginationElement.querySelector('.last');
-          
-          if (currentPage === 1) {
-            firstBtn.classList.add('disabled');
-            prevBtn.classList.add('disabled');
-          } else {
-            firstBtn.classList.remove('disabled');
-            prevBtn.classList.remove('disabled');
-          }
-          
-          if (currentPage === pageCount) {
-            nextBtn.classList.add('disabled');
-            lastBtn.classList.add('disabled');
-          } else {
-            nextBtn.classList.remove('disabled');
-            lastBtn.classList.remove('disabled');
-          }
-        }
-
-        // Inicializar la tabla y paginación
-        displayWorkers(currentPage);
-        setupPagination(workersData, rowsPerPage);
-      });
-    </script>
-
+    <!-- Modal de Editar Nivel Salarial-->
+    <div class="modal fade" id="ModalNivelSalarial" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel1">Editar Nivel Salarial</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col mb-3">
+                <label for="tipoNlvSalarial" class="form-label">Tipo de Nivel Salarial</label>
+                <input type="text" id="tipoNlvSalarial" class="form-control" placeholder="Ej. I, II, III" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col mb-3">
+                <label for="salarioAsig" class="form-label">Salario Correspondiente</label>
+                <input type="number" id="salarioAsig" class="form-control" placeholder="Ej. 150.00" step="0.01" min="0" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col mb-3">
+                <label for="OnapreAsig" class="form-label">Seleccionar cargo ONAPRE correspondiente</label>
+                <select id="OnapreAsig" class="form-select">
+                  <option value="">Seleccione</option>
+                  <!-- Las opciones se llenarán dinámicamente -->
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+              Cerrar
+            </button>
+            <button type="button" class="btn btn-primary">Confirmar Cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  
   </body>
 </html>
