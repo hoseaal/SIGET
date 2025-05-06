@@ -45,8 +45,7 @@ CREATE TABLE `tescae` (
 
 CREATE TABLE `tescet` (
   `cet_ide` int(11) NOT NULL COMMENT 'Identificador único de cargo CET',
-  `cet_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo CET',
-  `cet_des` text DEFAULT NULL COMMENT 'Descripción del cargo CET'
+  `cet_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo CET'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -89,8 +88,7 @@ CREATE TABLE `tesmod` (
 
 CREATE TABLE `tesona` (
   `ona_ide` int(11) NOT NULL COMMENT 'Identificador único de cargo ONAPRE',
-  `ona_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo ONAPRE',
-  `ona_des` text DEFAULT NULL COMMENT 'Descripción del cargo ONAPRE'
+  `ona_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo ONAPRE'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -100,7 +98,6 @@ CREATE TABLE `tesona` (
 CREATE TABLE `tesnvl` (
   `nvl_ide` int(11) NOT NULL COMMENT 'Identificador único del rango',
   `nvl_ran` varchar(2) NOT NULL COMMENT 'Tipo de nivel salarial',
-  `nvl_des` text DEFAULT NULL COMMENT 'Descripción del cargo ONAPRE',
   `nvl_sal` decimal(10,2) NOT NULL COMMENT 'Salario Correspondiente',
   `ona_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo ONAPRE en tesona'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -530,41 +527,41 @@ COMMIT;
 
 -- TABLA TESCET
 
-INSERT INTO `tescet` (`cet_car`, `cet_des`) VALUES
-('ABOGADO PI', NULL),
-('ABOGADO PII', NULL),
-('ANALISTA PI', NULL),
-('ANALISTA PII', NULL),
-('ASISTENTE ADMINISTRATIVO TSU I', NULL),
-('ASISTENTE ADMINISTRATIVO TSU II', NULL),
-('ASISTENTE DE TÉCNICO TSU II', NULL),
-('AUDITOR PI', NULL),
-('AUDITOR PII', NULL),
-('AUDITOR PIII', NULL),
-('AUXILIAR ADMINISTRATIVO BI', NULL),
-('AUXILIAR BI', NULL),
-('AUXILIAR BII', NULL),
-('AUXILIAR BIII', NULL),
-('CONSULTOR JURÍDICO', NULL),
-('CONTADOR PI', NULL),
-('DIRECTOR(A)(E) / ABOGADO PII - IV', NULL),
-('DIRECTOR(A)(E) / JEFE DE DIVISIÓN GENERAL', NULL),
-('DIRECTOR(A)(E) / JEFE DE DIVISIÓN', NULL),
-('DIRECTOR(A)', NULL),
-('DIRECTOR(A) DE LINEA', NULL),
-('DIRECTOR(A) GENERAL', NULL),
-('ENFERMERA', NULL),
-('JEFE DE DIVISIÓN', NULL),
-('JEFE DE DIVISIÓN(E) / ABOGADA PII - III', NULL),
-('JEFE DE DIVISIÓN GENERAL', NULL),
-('JEFE DE OFICINA', NULL),
-('MÉDICO', NULL),
-('NOTIFICADOR BIII', NULL),
-('ODONTÓLOGO', NULL),
-('PLANIFICADOR PI', NULL),
-('PROMOTOR SOCIAL TI', NULL),
-('SUPERVISOR', NULL),
-('CONTRALOR(A) DEL ESTADO', NULL);
+INSERT INTO `tescet` (`cet_car`) VALUES
+('ABOGADO PI'),
+('ABOGADO PII'),
+('ANALISTA PI'),
+('ANALISTA PII'),
+('ASISTENTE ADMINISTRATIVO TSU I'),
+('ASISTENTE ADMINISTRATIVO TSU II'),
+('ASISTENTE DE TÉCNICO TSU II'),
+('AUDITOR PI'),
+('AUDITOR PII'),
+('AUDITOR PIII'),
+('AUXILIAR ADMINISTRATIVO BI'),
+('AUXILIAR BI'),
+('AUXILIAR BII'),
+('AUXILIAR BIII'),
+('CONSULTOR JURÍDICO'),
+('CONTADOR PI'),
+('DIRECTOR(A)(E) / ABOGADO PII - IV'),
+('DIRECTOR(A)(E) / JEFE DE DIVISIÓN GENERAL'),
+('DIRECTOR(A)(E) / JEFE DE DIVISIÓN'),
+('DIRECTOR(A)'),
+('DIRECTOR(A) DE LINEA'),
+('DIRECTOR(A) GENERAL'),
+('ENFERMERA'),
+('JEFE DE DIVISIÓN'),
+('JEFE DE DIVISIÓN(E) / ABOGADA PII - III'),
+('JEFE DE DIVISIÓN GENERAL'),
+('JEFE DE OFICINA'),
+('MÉDICO'),
+('NOTIFICADOR BIII'),
+('ODONTÓLOGO'),
+('PLANIFICADOR PI'),
+('PROMOTOR SOCIAL TI'),
+('SUPERVISOR'),
+('CONTRALOR(A) DEL ESTADO');
 
 -- TABLA TESONA
 

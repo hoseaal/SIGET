@@ -172,11 +172,11 @@
                   </div>
                 </div>
 
-                <!-- Últimos Pagos Realizados -->
+                <!-- Últimas Modificaciones -->
                 <div class="col-md-6 col-lg-4 order-2 mb-4">
                   <div class="card h-100">
                     <div class="card-header d-flex align-items-center justify-content-between">
-                      <h5 class="card-title m-0 me-2">Últimos Pagos Realizados</h5>
+                      <h5 class="card-title m-0 me-2">Últimas Modificaciones</h5>
                       <div class="dropdown">
                         <button
                           class="btn p-0"
@@ -189,9 +189,7 @@
                           <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="payrollDropdown">
-                          <a class="dropdown-item" href="javascript:void(0);">Últimos 28 días</a>
-                          <a class="dropdown-item" href="javascript:void(0);">Último mes</a>
-                          <a class="dropdown-item" href="javascript:void(0);">Último año</a>
+                          <a class="dropdown-item" href="javascript:void(0);">Ver más</a>
                         </div>
                       </div>
                     </div>
@@ -203,12 +201,11 @@
                           </div>
                           <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                             <div class="me-2">
-                              <small class="text-muted d-block mb-1">Transferencia Bancaria</small>
-                              <h6 class="mb-0">Pago a Juan Pérez</h6>
+                              <small class="text-muted d-block mb-1">Inserción de un Usuario</small>
+                              <h6 class="mb-0">Juan Pérez</h6>
                             </div>
                             <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">+300</h6>
-                              <span class="text-muted">Bs.S</span>
+                              <h6 class="mb-0">30458968</h6>
                             </div>
                           </div>
                         </li>
@@ -218,12 +215,11 @@
                           </div>
                           <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                             <div class="me-2">
-                              <small class="text-muted d-block mb-1">Bono Productividad</small>
+                              <small class="text-muted d-block mb-1">Eliminación de un usuario</small>
                               <h6 class="mb-0">María García</h6>
                             </div>
                             <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">+120</h6>
-                              <span class="text-muted">Bs.S</span>
+                              <h6 class="mb-0">11452678</h6>
                             </div>
                           </div>
                         </li>
@@ -233,12 +229,11 @@
                           </div>
                           <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                             <div class="me-2">
-                              <small class="text-muted d-block mb-1">Reintegro</small>
+                              <small class="text-muted d-block mb-1">Actualización de Nómina</small>
                               <h6 class="mb-0">Luis Fernández</h6>
                             </div>
                             <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">+75.50</h6>
-                              <span class="text-muted">Bs.S</span>
+                              <h6 class="mb-0">Fecha de Ingreso</h6>
                             </div>
                           </div>
                         </li>
@@ -248,12 +243,11 @@
                           </div>
                           <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                             <div class="me-2">
-                              <small class="text-muted d-block mb-1">Horas Extra</small>
+                              <small class="text-muted d-block mb-1">Actualización de Deducción</small>
                               <h6 class="mb-0">Ana Rodríguez</h6>
                             </div>
                             <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">+45.00</h6>
-                              <span class="text-muted">Bs.S</span>
+                              <h6 class="mb-0">50%</h6>
                             </div>
                           </div>
                         </li>
@@ -263,27 +257,11 @@
                           </div>
                           <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                             <div class="me-2">
-                              <small class="text-muted d-block mb-1">Pago Quincenal</small>
+                              <small class="text-muted d-block mb-1">Eliminación de departamento</small>
                               <h6 class="mb-0">Carlos Ruiz</h6>
                             </div>
                             <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">+300</h6>
-                              <span class="text-muted">Bs.S</span>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/cc-warning.png" alt="Descuento" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Descuento por Inasistencia</small>
-                              <h6 class="mb-0">Pedro Méndez</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">-20.00</h6>
-                              <span class="text-muted">Bs.S</span>
+                              <h6 class="mb-0">15478698</h6>
                             </div>
                           </div>
                         </li>
@@ -291,7 +269,7 @@
                     </div>
                   </div>
                 </div>
-                <!--/ Últimos Pagos Realizados -->
+                <!--/ Últimas Modificaciones -->
 
 
                 <!-- Order Statistics -->
