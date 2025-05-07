@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}">
                                 <i class="bx bx-edit-alt me-1"></i> Editar
                             </a>
-                            <a class="dropdown-item delete-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}" data-nvl_ran="${salary.nvl_ran}">
+                            <a class="dropdown-item delete-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}" data-nvl_ran="${salary.nvl_ran}" data-ona_car="${salary.ona_car || 'Sin cargo asignado'}">
                                 <i class="bx bx-trash me-1"></i> Eliminar
                             </a>
                         </div>
@@ -150,13 +150,14 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.addEventListener('click', function() {
                 const nvl_ide = this.getAttribute('data-nvl_ide');
                 const nvl_ran = this.getAttribute('data-nvl_ran');
-                showDeleteConfirmation(nvl_ide, nvl_ran);
+                const ona_car = this.getAttribute('data-ona_car');
+                showDeleteConfirmation(nvl_ide, nvl_ran, ona_car);
             });
         });
     }
 
     // Función para mostrar confirmación de eliminación
-    function showDeleteConfirmation(nvl_ide, nvl_ran) {
+    function showDeleteConfirmation(nvl_ide, nvl_ran, ona_car) {
         const modalHTML = `
         <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-sm" role="document">
@@ -166,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p>¿Seguro de eliminar el nivel salarial <strong>${nvl_ran}</strong>?</p>
+                        <p>¿Seguro de eliminar el nivel salarial: "<strong>${nvl_ran}</strong>", que le pertenece al cargo ONAPRE: "<strong>${ona_car}</strong>"?</p>
                         <p class="text-danger">¡Este cambio no se puede deshacer!</p>
                     </div>
                     <div class="modal-footer">
