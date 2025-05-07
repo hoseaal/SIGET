@@ -343,5 +343,25 @@
         });
     </script>
 
+    <script>
+        // Función para limpiar todos los campos
+        function limpiarCampos() {
+            // 1. Limpiar el campo de cédula seleccionada
+            document.getElementById('cedulaSeleccionada').value = '';
+            
+            // 2. Limpiar el contenedor de antigüedades y agregar un rango inicial
+            const container = document.getElementById('antiguedades-container');
+            container.innerHTML = '';
+            contadorRangos = 0;
+            agregarRangoAntiguedad();
+            
+            $('#tablaUsuarios tr').removeClass('table-primary');
+            cedulaSeleccionada = '';
+            $('#confirmarSeleccion').prop('disabled', true);
+        }
+
+        document.getElementById('btnLimpiar').addEventListener('click', limpiarCampos);
+    </script>
+
   </body>
 </html>
