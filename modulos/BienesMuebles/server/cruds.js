@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 /* eslint-disable camelcase */
 import { getConnection } from './conn.js' // Importa la conexión existente
 
@@ -60,5 +62,44 @@ export const getTableColumns = async (id_table) => {
   } catch (err) {
     console.error('Error al obtener columnas:', err.message)
     return { columns: [], idColumn: null }
+  }
+}
+
+export const insertData = async (table, data) => {
+  try {
+    const connection = await getConnection()
+    const keys = Object.keys(data)
+    const values = Object.values(data)
+    const placeholders = keys.map(() => '?').join(', ')
+
+    const query = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`
+
+    const [result] = await connection.execute(query, values)
+
+    // Para MySQL necesitamos hacer una consulta adicional para obtener el registro insertado
+    let insertedData
+    if (result.insertId) {
+      const [rows] = await connection.execute(
+              `SELECT * FROM ${table} WHERE id = ?`,
+              [result.insertId]
+      )
+      insertedData = rows[0]
+    }
+
+    return {
+      success: true, // Asegúrate de incluir esto
+      status: 200,
+      message: 'Registro insertado correctamente',
+      data: rows[0]
+    }
+  } catch (err) {
+    return {
+      success: false,
+      status: 500,
+      error: err.message,
+      message: 'Error al insertar datos'
+    }
+  } finally {
+    if (getConnection) await getConnection.release()
   }
 }

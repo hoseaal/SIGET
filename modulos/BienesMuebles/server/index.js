@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser'
 import config from './config.js'
 import { UserRepository } from './user-repository.js'
 import authenticate from './authenticate.js'
-import { selectData, selectWhereData, getTableColumns } from './cruds.js'
+import { selectData, selectWhereData, getTableColumns, insertData } from './cruds.js'
 import { getConnection } from './conn.js'
 
 const router = express.Router()
@@ -105,8 +105,6 @@ app.post('/api/logout', (req, res) => {
 })
 
 app.get('/api/selects', async (req, res) => {
-  console.log('Recibiendo datos de selects...')
-  console.log('Query:', req.query)
   try {
     const { table, columns, fk, dato } = req.query
 
@@ -167,6 +165,27 @@ app.post('/api/insert', async (req, res) => {
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor Node.js corriendo en http://localhost:${PORT}`)
+})
+
+router.post('/api/insert', async (req, res) => {
+  try {
+    const { table, data } = req.body
+    const result = await insertData(table, data)
+    // Envía la misma estructura en éxito y error
+    console.log('Resultado de la inserción:', res)
+    res.status(result.status).json({
+      success: result.success,
+      message: result.message,
+      data: result.data,
+      error: result.error || null
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: err.message
+    })
+  }
 })
 
 export default router

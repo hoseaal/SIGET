@@ -7,7 +7,6 @@ export const fetchData = async (table, columns, conditionColumn, conditionValue)
     : { table, columns };
 
   try {
-    console.log(params)
     const response = await axios.get('/api/selects', { params });
     
     return response.data;
