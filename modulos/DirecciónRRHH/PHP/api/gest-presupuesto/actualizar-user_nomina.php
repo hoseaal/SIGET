@@ -26,7 +26,8 @@ try {
             nom_nhi = :num_hijos,
             dep_ide = :dep_ide,
             cet_ide = :cargo_cet,
-            ona_ide = :cargo_onapre
+            ona_ide = :cargo_onapre,
+            nvl_ran = :nvl_ran
         WHERE nom_ced = :cedula_original
     ");
     
@@ -40,6 +41,7 @@ try {
     $query->bindParam(':dep_ide', $data['dep_ide']);
     $query->bindParam(':cargo_cet', $data['cargo_cet']);
     $query->bindParam(':cargo_onapre', $data['cargo_onapre']);
+    $query->bindParam(':nvl_ran', $data['nvl_ran']);
     $query->bindParam(':cedula_original', $data['cedula_original']);
     
     if ($query->execute()) {

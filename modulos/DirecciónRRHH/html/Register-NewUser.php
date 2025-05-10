@@ -158,6 +158,20 @@
                           <?php endforeach; ?>
                         </select>
                       </div>
+                      <!-- Nivel Salarial -->
+                      <div class="mb-3">
+                        <label for="nivelsalarial" class="form-label">Nivel Salarial</label>
+                        <select id="nivelsalarial" name="nivelsalarial" class="form-select" required>
+                          <option value="">Seleccione</option>
+                            <option value="I">I</option>
+                            <option value="II">II</option>
+                            <option value="III">III</option>
+                            <option value="IV">IV</option>
+                            <option value="V">V</option>
+                            <option value="VI">VI</option>
+                            <option value="VII">VII</option>
+                        </select>
+                      </div>
                       <!-- Departamento -->
                       <div class="mb-3">
                         <label for="departamentoasig" class="form-label">Departamento Asignado</label>
@@ -212,8 +226,114 @@
     <script async defer src="../js/buttons.js"></script>
 
     <script>
-      document.getElementById('btnLimpiar').addEventListener('click', function() {
-        document.getElementById('formRegistro').reset();
+      $(document).ready(function() {
+          // Función para limpiar todos los campos del formulario
+          function limpiarFormulario() {
+              // Resetear el formulario (esto limpia inputs básicos)
+              $('#formRegistro')[0].reset();
+              
+              // Resetear selects personalizados (asegurando que muestren "Seleccione")
+              $('#cargocet, #cargoonapre, #nivelsalarial, #departamentoasig').val('');
+              
+              // Resetear radios (ninguno seleccionado)
+              $('input[name="generoEmpleado"]').prop('checked', false);
+              
+              // Restablecer todas las opciones del nivel salarial (por si se había modificado)
+              $('#nivelsalarial').html(`
+                  <option value="">Seleccione</option>
+                  <option value="I">I</option>
+                  <option value="II">II</option>
+                  <option value="III">III</option>
+                  <option value="IV">IV</option>
+                  <option value="V">V</option>
+                  <option value="VI">VI</option>
+                  <option value="VII">VII</option>
+              `);
+          }
+
+          // Evento click para el botón Limpiar Campos
+          $('#btnLimpiar').click(function() {
+              limpiarFormulario();
+          });
+
+          // Código previo para la validación de cargos ONAPRE
+          const cargosEspeciales = [
+              "COORDINADOR(A) DE ÁREA",
+              "DIRECTOR DE LINEA",
+              "DIRECTOR GENERAL",
+              "JEFE DE DIVISIÓN",
+              "JEFE DE DIVISIÓN (COORDINADOR DE ÁREA)",
+              "JEFE DE DIVISIÓN DE REMUNERACIONES",
+              "JEFE DE DIVISIÓN GENERAL",
+              "CONTRALOR(A) DEL ESTADO"
+          ];
+
+          $('#cargoonapre').change(function() {
+              const cargoSeleccionado = $(this).find('option:selected').text().trim();
+              
+              if (cargosEspeciales.includes(cargoSeleccionado)) {
+                  $('#nivelsalarial').html('<option value="I">I</option>');
+              } else {
+                  $('#nivelsalarial').html(`
+                      <option value="">Seleccione</option>
+                      <option value="I">I</option>
+                      <option value="II">II</option>
+                      <option value="III">III</option>
+                      <option value="IV">IV</option>
+                      <option value="V">V</option>
+                      <option value="VI">VI</option>
+                      <option value="VII">VII</option>
+                  `);
+              }
+          });
+
+          if ($('#cargoonapre').val()) {
+              $('#cargoonapre').trigger('change');
+          }
+      });
+    </script>
+
+    <!-- Validación de Selección para nivel de salario -->
+    <script>
+      $(document).ready(function() {
+          // Definir los cargos especiales que solo permiten nivel I
+          const cargosEspeciales = [
+              "COORDINADOR(A) DE ÁREA",
+              "DIRECTOR DE LINEA",
+              "DIRECTOR GENERAL",
+              "JEFE DE DIVISIÓN",
+              "JEFE DE DIVISIÓN (COORDINADOR DE ÁREA)",
+              "JEFE DE DIVISIÓN DE REMUNERACIONES",
+              "JEFE DE DIVISIÓN GENERAL",
+              "CONTRALOR(A) DEL ESTADO"
+          ];
+
+          // Escuchar cambios en el select de Cargo ONAPRE
+          $('#cargoonapre').change(function() {
+              const cargoSeleccionado = $(this).find('option:selected').text().trim();
+              
+              if (cargosEspeciales.includes(cargoSeleccionado)) {
+                  // Si es un cargo especial, mostrar solo opción I
+                  $('#nivelsalarial').html('<option value="I">I</option>');
+              } else {
+                  // Si no es un cargo especial, mostrar todas las opciones
+                  $('#nivelsalarial').html(`
+                      <option value="">Seleccione</option>
+                      <option value="I">I</option>
+                      <option value="II">II</option>
+                      <option value="III">III</option>
+                      <option value="IV">IV</option>
+                      <option value="V">V</option>
+                      <option value="VI">VI</option>
+                      <option value="VII">VII</option>
+                  `);
+              }
+          });
+
+          // También validar al cargar la página si ya hay un valor seleccionado
+          if ($('#cargoonapre').val()) {
+              $('#cargoonapre').trigger('change');
+          }
       });
     </script>
 

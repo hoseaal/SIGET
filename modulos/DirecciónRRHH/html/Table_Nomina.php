@@ -98,6 +98,12 @@
               <div class="col-md-12">
                 <div class="card mb-4">
                   <h5 class="card-header">Tabla de Trabajadores dentro del Sistema</h5>
+                  <!-- Botón de exportación -->
+                  <div class="mt-1">
+                    <button id="exportToExcel" class="btn btn-danger">
+                      <i class="bx bx-export me-1"></i> Exportar salarios de nómina
+                    </button>
+                  </div>
                   <div class="card-body">
                     <!-- Tabla de trabajadores -->
                     <div class="table-responsive text-nowrap fixed-height">
@@ -172,6 +178,12 @@
 
     <!-- Funcionamiento de la tabla -->
     <script src="../assets/js/modulos/gest-presupuesto/func-table_nomina.js"></script>
+
+    <script>
+      document.getElementById('exportToExcel').addEventListener('click', function() {
+        window.location.href = '../PHP/api/export_xls/exportar_nomina.php';
+      });
+    </script>
 
     <!-- MODALES -->
     <!-- Modal de Editar los Usuarios -->
@@ -261,6 +273,20 @@
                           <?php endforeach; ?>
                         </select>
                       </div>
+                      <!-- Nivel Salarial -->
+                      <div class="mb-3">
+                        <label for="nivelsalarial" class="form-label">Nivel Salarial</label>
+                        <select id="nivelsalarial" name="nivelsalarial" class="form-select" required>
+                          <option value="">Seleccione</option>
+                            <option value="I">I</option>
+                            <option value="II">II</option>
+                            <option value="III">III</option>
+                            <option value="IV">IV</option>
+                            <option value="V">V</option>
+                            <option value="VI">VI</option>
+                            <option value="VII">VII</option>
+                        </select>
+                      </div>
                       <!-- Departamento -->
                       <div class="mb-3">
                         <label for="departamentoasig" class="form-label">Departamento Asignado</label>
@@ -286,6 +312,59 @@
         </div>
       </div>
     </div>
+
+    <script>
+      $(document).ready(function() {
+          // Lista de cargos ONAPRE que deben mostrar solo nivel I
+          const cargosEspeciales = [
+              "COORDINADOR(A) DE ÁREA",
+              "DIRECTOR DE LINEA",
+              "DIRECTOR GENERAL",
+              "JEFE DE DIVISIÓN",
+              "JEFE DE DIVISIÓN (COORDINADOR DE ÁREA)",
+              "JEFE DE DIVISIÓN DE REMUNERACIONES",
+              "JEFE DE DIVISIÓN GENERAL",
+              "CONTRALOR(A) DEL ESTADO"
+          ];
+
+          // Escuchar cambios en el select de Cargo ONAPRE
+          $('#cargoonapre').change(function() {
+              const selectedOptionText = $(this).find('option:selected').text().trim();
+              const nivelSalarialSelect = $('#nivelsalarial');
+              
+              if (cargosEspeciales.includes(selectedOptionText)) {
+                  // Si es un cargo especial, mostrar solo opción I
+                  nivelSalarialSelect.html(`
+                      <option value="">Seleccione</option>
+                      <option value="I" selected>I</option>
+                  `);
+              } else {
+                  // Si no es un cargo especial, mostrar todas las opciones
+                  nivelSalarialSelect.html(`
+                      <option value="">Seleccione</option>
+                      <option value="I">I</option>
+                      <option value="II">II</option>
+                      <option value="III">III</option>
+                      <option value="IV">IV</option>
+                      <option value="V">V</option>
+                      <option value="VI">VI</option>
+                      <option value="VII">VII</option>
+                  `);
+              }
+          });
+
+          // También validar al cargar el modal si ya hay un cargo seleccionado
+          $('#largeModal').on('show.bs.modal', function() {
+              const selectedOptionText = $('#cargoonapre').find('option:selected').text().trim();
+              if (cargosEspeciales.includes(selectedOptionText)) {
+                  $('#nivelsalarial').html(`
+                      <option value="">Seleccione</option>
+                      <option value="I" selected>I</option>
+                  `);
+              }
+          });
+      });
+    </script>
 
   </body>
 </html>

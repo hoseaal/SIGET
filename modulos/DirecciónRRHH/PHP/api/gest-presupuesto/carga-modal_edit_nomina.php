@@ -22,8 +22,8 @@
                 t.dep_ide as dep_ide,
                 d.dep_nom as departamento,
                 t.cet_ide as cargo_cet,
-                t.ona_ide as cargo_onapre
-                -- Agrega más campos según necesites
+                t.ona_ide as cargo_onapre,
+                t.nvl_ran as nvl_ran
             FROM tmanom t
             LEFT JOIN tesdep d ON t.dep_ide = d.dep_ide
             WHERE t.nom_ced = :cedula
