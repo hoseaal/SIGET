@@ -275,6 +275,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (worker.cargo_onapre) {
             document.getElementById('cargoonapre').value = worker.cargo_onapre;
         }
+        if (worker.nvl_ran) {
+            document.getElementById('nivelsalarial').value = worker.nvl_ran;
+        }
+        if (worker.nom_pro) {
+            document.getElementById('nivelprof').value = worker.nom_pro;
+        }
         if (worker.dep_ide) {
             document.getElementById('departamentoasig').value = worker.dep_ide;
         }
@@ -310,6 +316,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 num_hijos: document.getElementById('numerohijos').value,
                 cargo_cet: document.getElementById('cargocet').value,
                 cargo_onapre: document.getElementById('cargoonapre').value,
+                nvl_ran: document.getElementById('nivelsalarial').value,
+                nom_pro: document.getElementById('nivelprof').value,
                 dep_ide: document.getElementById('departamentoasig').value
             };
             

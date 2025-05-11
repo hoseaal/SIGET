@@ -92,15 +92,29 @@ CREATE TABLE `tesona` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Estructura de tabla para la tabla `tesnlv`
+-- Estructura de tabla para la tabla `tesnvl`
 --
 
 CREATE TABLE `tesnvl` (
   `nvl_ide` int(11) NOT NULL COMMENT 'Identificador único del rango',
-  `nvl_ran` varchar(2) NOT NULL COMMENT 'Tipo de nivel salarial',
+  `nvl_ran` varchar(5) NOT NULL COMMENT 'Tipo de nivel salarial',
   `nvl_sal` decimal(10,2) NOT NULL COMMENT 'Salario Correspondiente',
   `ona_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo ONAPRE en tesona'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Estructura de tabla para la tabla `tesnvl_historico`
+--
+
+CREATE TABLE `tesnvl_historico` (
+  `nvl_ide` int(11) NOT NULL,
+  `nvl_ran` varchar(5) NOT NULL,
+  `nvl_sal` decimal(10,2) NOT NULL COMMENT 'Salario histórico',
+  `ona_ide` int(11) DEFAULT NULL,
+  `nvl_fec` date NOT NULL COMMENT 'Fecha en la que este salario estaba activo'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `tespri`
@@ -240,9 +254,11 @@ CREATE TABLE `tmanom` (
   `nom_fec` date NOT NULL COMMENT 'Fecha de ingreso',
   `nom_gen` enum('M','F') NOT NULL COMMENT 'Género del empleado',
   `nom_nhi` int(11) NOT NULL COMMENT 'Número de hijos',
-  `cet_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo CET en tescet',
-  `ona_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo ONAPRE en tesona',
-  `dep_ide` int(11) DEFAULT NULL COMMENT 'Referencia a departamento en tesdep'
+  `nom_pro` int(1) NOT NULL COMMENT 'Valor de profesionalización',
+  `cet_ide` int(11) NOT NULL COMMENT 'Referencia a cargo CET en tescet',
+  `ona_ide` int(11) NOT NULL COMMENT 'Referencia a cargo ONAPRE en tesona',
+  `nvl_ran` varchar(3) NOT NULL COMMENT 'Referencia a Tipo de nivel salarial',
+  `dep_ide` int(11) NOT NULL COMMENT 'Referencia a departamento en tesdep'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -307,6 +323,9 @@ ALTER TABLE `tesona`
 --
 
 ALTER TABLE `tesnvl`
+  ADD PRIMARY KEY (`nvl_ide`);
+
+ALTER TABLE `tesnvl_historico`
   ADD PRIMARY KEY (`nvl_ide`);
 
 --
@@ -433,6 +452,8 @@ ALTER TABLE `tesona`
 ALTER TABLE `tesnvl`
   MODIFY `nvl_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del rango', AUTO_INCREMENT=1;
 
+ALTER TABLE `tesnvl_historico`
+  MODIFY `nvl_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del rango', AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT de la tabla `tespri`
@@ -511,6 +532,9 @@ ALTER TABLE `tmanom`
 --
 ALTER TABLE `tesnvl`
   ADD CONSTRAINT `fk_tesnvl_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `tesnvl_historico`
+  ADD CONSTRAINT `fk_tesnvl_tesona2` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE `tmacoi` (
   `coi_ide` int(11) NOT NULL COMMENT 'Identificador de concepto de incorporación',
@@ -650,6 +674,74 @@ INSERT INTO `tesnvl` (`nvl_ran`, `nvl_sal`, `ona_ide`) VALUES
 ('I', 363.00, 14),
 ('I', 363.00, 15),
 ('I', 409.00, 16);
+
+-- TABLA TESNVL HISTÓRICO
+
+INSERT INTO `tesnvl_historico` (`nvl_ran`, `nvl_sal`, `ona_ide`, `nvl_fec`) VALUES
+('I', 7.00, 1, '2021-05-01'),
+('II', 7.14, 1, '2021-05-01'),
+('III', 7.28, 1, '2021-05-01'),
+('IV', 7.42, 1, '2021-05-01'),
+('V', 7.56, 1, '2021-05-01'),
+('VI', 7.70, 1, '2021-05-01'),
+('VII', 7.84, 1, '2021-05-01'),
+('I', 8.40, 2, '2021-05-01'),
+('II', 8.54, 2, '2021-05-01'),
+('III', 8.68, 2, '2021-05-01'),
+('IV', 8.82, 2, '2021-05-01'),
+('V', 8.96, 2, '2021-05-01'),
+('VI', 9.10, 2, '2021-05-01'),
+('VII', 9.24, 2, '2021-05-01'),
+('I', 9.80, 3, '2021-05-01'),
+('II', 9.94, 3, '2021-05-01'),
+('III', 10.08, 3, '2021-05-01'),
+('IV', 10.22, 3, '2021-05-01'),
+('V', 10.36, 3, '2021-05-01'),
+('VI', 10.50, 3, '2021-05-01'),
+('VII', 10.64, 3, '2021-05-01'),
+('I', 11.76, 4, '2021-05-01'),
+('II', 11.90, 4, '2021-05-01'),
+('III', 12.04, 4, '2021-05-01'),
+('IV', 12.18, 4, '2021-05-01'),
+('V', 12.32, 4, '2021-05-01'),
+('VI', 12.46, 4, '2021-05-01'),
+('VII', 12.60, 4, '2021-05-01'),
+('I', 13.72, 5, '2021-05-01'),
+('II', 13.86, 5, '2021-05-01'),
+('III', 14.00, 5, '2021-05-01'),
+('IV', 14.14, 5, '2021-05-01'),
+('V', 14.28, 5, '2021-05-01'),
+('VI', 14.42, 5, '2021-05-01'),
+('VII', 14.56, 5, '2021-05-01'),
+('I', 15.96, 6, '2021-05-01'),
+('II', 16.10, 6, '2021-05-01'),
+('III', 16.24, 6, '2021-05-01'),
+('IV', 16.38, 6, '2021-05-01'),
+('V', 16.52, 6, '2021-05-01'),
+('VI', 16.66, 6, '2021-05-01'),
+('VII', 16.80, 6, '2021-05-01'),
+('I', 18.20, 7, '2021-05-01'),
+('II', 18.34, 7, '2021-05-01'),
+('III', 18.48, 7, '2021-05-01'),
+('IV', 18.62, 7, '2021-05-01'),
+('V', 18.76, 7, '2021-05-01'),
+('VI', 18.90, 7, '2021-05-01'),
+('VII', 19.04, 7, '2021-05-01'),
+('I', 20.44, 8, '2021-05-01'),
+('II', 20.58, 8, '2021-05-01'),
+('III', 20.72, 8, '2021-05-01'),
+('IV', 21.86, 8, '2021-05-01'),
+('V', 21.00, 8, '2021-05-01'),
+('VI', 21.14, 8, '2021-05-01'),
+('VII', 21.28, 8, '2021-05-01'),
+('I', 23.80, 9, '2021-05-01'),
+('I', 25.90, 10, '2021-05-01'),
+('I', 27.08, 11, '2021-05-01'),
+('I', 24.92, 12, '2021-05-01'),
+('I', 24.92, 13, '2021-05-01'),
+('I', 24.92, 14, '2021-05-01'),
+('I', 24.92, 15, '2021-05-01'),
+('I', 28.48, 16, '2021-05-01');
 
 -- TABLA TESDEP
 

@@ -104,70 +104,38 @@
                 <div class="col-lg-4 col-md-4 order-1">
                   <div class="row">
                     <div class="col-lg-6 col-md-12 col-6 mb-4">
-                      <div class="card">
-                        <div class="card-body">
-                          <div class="card-title d-flex align-items-start justify-content-between">
-                            <div class="avatar flex-shrink-0">
-                              <img
-                                src="../assets/img/icons/unicons/chart-success.png"
-                                alt="chart success"
-                                class="rounded"
-                              />
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="card-title d-flex align-items-start justify-content-between">
+                                    <div class="avatar flex-shrink-0">
+                                        <img
+                                            src="../assets/img/icons/unicons/chart-success.png"
+                                            alt="chart success"
+                                            class="rounded"
+                                        />
+                                    </div>
+                                </div>
+                                <span class="fw-semibold d-block mb-1">Total de Usuarios</span>
+                                <h3 class="card-title mb-2" id="total-usuarios"></h3>
                             </div>
-                            <div class="dropdown">
-                              <button
-                                class="btn p-0"
-                                type="button"
-                                id="cardOpt3"
-                                data-bs-toggle="dropdown"
-                                aria-haspopup="true"
-                                aria-expanded="false"
-                              >
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                              </button>
-                              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
-                                <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                              </div>
-                            </div>
-                          </div>
-                          <span class="fw-semibold d-block mb-1">Total de Usuarios</span>
-                          <h3 class="card-title mb-2">50</h3>
                         </div>
-                      </div>
                     </div>
                     <div class="col-lg-6 col-md-12 col-6 mb-4">
-                      <div class="card">
-                        <div class="card-body">
-                          <div class="card-title d-flex align-items-start justify-content-between">
-                            <div class="avatar flex-shrink-0">
-                              <img
-                                src="../assets/img/icons/unicons/wallet-info.png"
-                                alt="Credit Card"
-                                class="rounded"
-                              />
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="card-title d-flex align-items-start justify-content-between">
+                                    <div class="avatar flex-shrink-0">
+                                        <img
+                                            src="../assets/img/icons/unicons/wallet-info.png"
+                                            alt="Credit Card"
+                                            class="rounded"
+                                        />
+                                    </div>
+                                </div>
+                                <span>Total de empleados</span>
+                                <h3 class="card-title text-nowrap mb-1" id="total-empleados"></h3>
                             </div>
-                            <div class="dropdown">
-                              <button
-                                class="btn p-0"
-                                type="button"
-                                id="cardOpt6"
-                                data-bs-toggle="dropdown"
-                                aria-haspopup="true"
-                                aria-expanded="false"
-                              >
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                              </button>
-                              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt6">
-                                <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                              </div>
-                            </div>
-                          </div>
-                          <span>Total de empleados</span>
-                          <h3 class="card-title text-nowrap mb-1">110</h3>
                         </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -356,64 +324,32 @@
                 
                 <div class="col-12 col-md-8 col-lg-4 order-3 order-md-2">
                   <div class="row">
-                    <div class="col-7 mb-4">
-                      <div class="card">
-                        <div class="card-body">
-                          <div class="card-title d-flex align-items-start justify-content-between">
-                            <div class="avatar flex-shrink-0">
-                              <img src="../assets/img/icons/unicons/paypal.png" alt="Credit Card" class="rounded" />
-                            </div>
-                            <div class="dropdown">
-                              <button
-                                class="btn p-0"
-                                type="button"
-                                id="cardOpt4"
-                                data-bs-toggle="dropdown"
-                                aria-haspopup="true"
-                                aria-expanded="false"
-                              >
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                              </button>
-                              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
-                                <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                      <div class="col-7 mb-4">
+                          <div class="card">
+                              <div class="card-body">
+                                  <div class="card-title d-flex align-items-start justify-content-between">
+                                      <div class="avatar flex-shrink-0">
+                                          <img src="../assets/img/icons/unicons/paypal.png" alt="Credit Card" class="rounded" />
+                                      </div>
+                                  </div>
+                                  <span class="d-block mb-1">% por Área</span>
+                                  <h3 class="card-title text-nowrap mb-2" id="promedioArea">Cargando...</h3>
                               </div>
-                            </div>
                           </div>
-                          <span class="d-block mb-1">% por Área</span>
-                          <h3 class="card-title text-nowrap mb-2">2.200Bs.S</h3>
-                        </div>
                       </div>
-                    </div>
-                    <div class="col-7 mb-4">
-                      <div class="card">
-                        <div class="card-body">
-                          <div class="card-title d-flex align-items-start justify-content-between">
-                            <div class="avatar flex-shrink-0">
-                              <img src="../assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
-                            </div>
-                            <div class="dropdown">
-                              <button
-                                class="btn p-0"
-                                type="button"
-                                id="cardOpt1"
-                                data-bs-toggle="dropdown"
-                                aria-haspopup="true"
-                                aria-expanded="false"
-                              >
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                              </button>
-                              <div class="dropdown-menu" aria-labelledby="cardOpt1">
-                                <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+                      <div class="col-7 mb-4">
+                          <div class="card">
+                              <div class="card-body">
+                                  <div class="card-title d-flex align-items-start justify-content-between">
+                                      <div class="avatar flex-shrink-0">
+                                          <img src="../assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
+                                      </div>
+                                  </div>
+                                  <span class="fw-semibold d-block mb-1">Salida total de nómina</span>
+                                  <h3 class="card-title mb-2" id="totalNomina">Cargando...</h3>
                               </div>
-                            </div>
                           </div>
-                          <span class="fw-semibold d-block mb-1">Salida total de nómina</span>
-                          <h3 class="card-title mb-2">33.000 Bs.S</h3>
-                        </div>
                       </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -452,5 +388,44 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="../js/buttons.js"></script>
+
+    <script>
+      // Función para cargar las estadísticas
+      function cargarEstadisticas() {
+          fetch('../PHP/api/usuarios/total-1_index.php')
+              .then(response => response.json())
+              .then(data => {
+                  document.getElementById('total-usuarios').textContent = data.total_usuarios;
+                  document.getElementById('total-empleados').textContent = data.total_empleados;
+              })
+              .catch(error => console.error('Error al cargar estadísticas:', error));
+      }
+
+      // Cargar las estadísticas cuando la página se cargue
+      document.addEventListener('DOMContentLoaded', cargarEstadisticas);
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          fetch('../PHP/api/usuarios/total-2_index.php')
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      document.getElementById('promedioArea').textContent = data.formattedPromedio + ' Bs.S';
+                      document.getElementById('totalNomina').textContent = data.formattedTotal + ' Bs.S';
+                  } else {
+                      console.error(data.message);
+                      document.getElementById('promedioArea').textContent = 'Error';
+                      document.getElementById('totalNomina').textContent = 'Error';
+                  }
+              })
+              .catch(error => {
+                  console.error('Error:', error);
+                  document.getElementById('promedioArea').textContent = 'Error';
+                  document.getElementById('totalNomina').textContent = 'Error';
+              });
+      });
+    </script>
+
   </body>
 </html>
