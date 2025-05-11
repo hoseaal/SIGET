@@ -77,14 +77,15 @@
     $sheet->setCellValue('F1', 'CARGO ONAPRE');
     $sheet->setCellValue('G1', 'FECHA INGRESO');
     $sheet->setCellValue('H1', 'SALARIO BASE');
-    $sheet->setCellValue('I1', 'ANTIGUEDAD QUINCENAL');
-    $sheet->setCellValue('J1', 'PROFESIONALIZACIÓN QUINCENAL');
-    $sheet->setCellValue('K1', 'PRIMA POR JERARQUÍA');
-    $sheet->setCellValue('L1', 'PRIMA DE TRANSPORTE');
-    $sheet->setCellValue('M1', 'PRIMA POR RECONOCIMIENTO');
-    $sheet->setCellValue('N1', 'PRIMA DE HOGARES');
-    $sheet->setCellValue('O1', 'COMPLEMENTO DE ALIMENTACIÓN');
-    $sheet->setCellValue('P1', 'PRIMA POR HIJOS');
+    $sheet->setCellValue('I1', 'SALARIO BASE QUINCENAL');
+    $sheet->setCellValue('J1', 'ANTIGÜEDAD QUINCENAL');
+    $sheet->setCellValue('K1', 'PROFESIONALIZACIÓN QUINCENAL');
+    $sheet->setCellValue('L1', 'PRIMA POR JERARQUÍA');
+    $sheet->setCellValue('M1', 'PRIMA DE TRANSPORTE');
+    $sheet->setCellValue('N1', 'PRIMA POR RECONOCIMIENTO');
+    $sheet->setCellValue('O1', 'PRIMA DE HOGARES');
+    $sheet->setCellValue('P1', 'COMPLEMENTO DE ALIMENTACIÓN');
+    $sheet->setCellValue('Q1', 'PRIMA POR HIJOS');
 
     // Estilo para los encabezados
     $headerStyle = [
@@ -98,7 +99,7 @@
         ],
     ];
 
-    $sheet->getStyle('A1:P1')->applyFromArray($headerStyle);
+    $sheet->getStyle('A1:Q1')->applyFromArray($headerStyle);
 
     // Llenar datos
     $row = 2;
@@ -107,6 +108,12 @@
     
     foreach ($resultados as $data) {
         $sueldo_quincenal = $data['salario_base'] / 2;
+        
+        // Cálculo de antigüedad quincenal
+        $fecha_ingreso = new DateTime($data['fecha_ingreso']);
+        $diferencia = $fecha_actual->diff($fecha_ingreso);
+        $anios_servicio = $diferencia->y;
+        $antiguedad_quincenal = ($anios_servicio / 100) * $sueldo_quincenal;
         
         // Cálculo seguro de profesionalización
         $porcentaje = 0.00;
@@ -126,9 +133,6 @@
             ($data['prima_transporte_porcentaje'] / 2) : 0;
             
         // Cálculo de prima por reconocimiento
-        $fecha_ingreso = new DateTime($data['fecha_ingreso']);
-        $diferencia = $fecha_actual->diff($fecha_ingreso);
-        $anios_servicio = $diferencia->y;
         $prima_reconocimiento = ($anios_servicio / 100) * $data['salario_historico'];
         
         // Cálculo de prima por hogares (pri_por / 2)
@@ -153,32 +157,43 @@
         $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
         $sheet->setCellValue('H' . $row, $data['salario_base']);
         $sheet->setCellValue('I' . $row, $sueldo_quincenal);
-        $sheet->setCellValue('J' . $row, $profesionalizacion);
-        $sheet->setCellValue('K' . $row, $data['prima_jerarquia']);
-        $sheet->setCellValue('L' . $row, $prima_transporte);
-        $sheet->setCellValue('M' . $row, $prima_reconocimiento);
-        $sheet->setCellValue('N' . $row, $prima_hogares);
-        $sheet->setCellValue('O' . $row, $complemento_alimentacion);
-        $sheet->setCellValue('P' . $row, $prima_hijos);
+        $sheet->setCellValue('J' . $row, $antiguedad_quincenal);
+        $sheet->setCellValue('K' . $row, $profesionalizacion);
+        $sheet->setCellValue('L' . $row, $data['prima_jerarquia']);
+        $sheet->setCellValue('M' . $row, $prima_transporte);
+        $sheet->setCellValue('N' . $row, $prima_reconocimiento);
+        $sheet->setCellValue('O' . $row, $prima_hogares);
+        $sheet->setCellValue('P' . $row, $complemento_alimentacion);
+        $sheet->setCellValue('Q' . $row, $prima_hijos);
         
         $row++;
         $contador++;
     }
 
     // Aplicar formato numérico a las columnas numéricas
-    $sheet->getStyle('H2:P' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+    $sheet->getStyle('H2:Q' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
 
     // Autoajustar columnas
-    foreach (range('A', 'P') as $column) {
+    foreach (range('A', 'Q') as $column) {
         $sheet->getColumnDimension($column)->setAutoSize(true);
     }
 
     // Congelar la primera fila (encabezados)
     $sheet->freezePane('A2');
 
+    // Generar nombre del archivo con formato: Mes_Contralor y Funcionarios_Fecha
+    $meses = [
+        1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+        5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+        9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+    ];
+    $mes_actual = $meses[date('n')];
+    $fecha_descarga = date('d-m-Y');
+    $nombre_archivo = $mes_actual . '_Contralor y Funcionarios_' . $fecha_descarga . '.xlsx';
+
     // Configurar el writer y descargar el archivo
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="nomina_trabajadores.xlsx"');
+    header('Content-Disposition: attachment;filename="' . $nombre_archivo . '"');
     header('Cache-Control: max-age=0');
 
     $writer = new Xlsx($spreadsheet);

@@ -797,4 +797,9 @@ INSERT INTO `tespri` (`pri_raz`, `pri_por`) VALUES
 ('Complemento de Alimentación', 5.00),
 ('Prima por Hijos', 12.50);
 
+-- TABLA TMANOM (Contralor DATA REAL SIN USUARIO)
+
+INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES 
+('18845038', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '2023-02-01', 'M', '1', '2', '34', '16', 'I', '1');
+
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
