@@ -278,6 +278,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (worker.nvl_ran) {
             document.getElementById('nivelsalarial').value = worker.nvl_ran;
         }
+        if (worker.nom_pro) {
+            document.getElementById('nivelprof').value = worker.nom_pro;
+        }
         if (worker.dep_ide) {
             document.getElementById('departamentoasig').value = worker.dep_ide;
         }
@@ -314,6 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 cargo_cet: document.getElementById('cargocet').value,
                 cargo_onapre: document.getElementById('cargoonapre').value,
                 nvl_ran: document.getElementById('nivelsalarial').value,
+                nom_pro: document.getElementById('nivelprof').value,
                 dep_ide: document.getElementById('departamentoasig').value
             };
             

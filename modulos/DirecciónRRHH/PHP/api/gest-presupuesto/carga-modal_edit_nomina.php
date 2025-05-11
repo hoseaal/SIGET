@@ -19,6 +19,7 @@
                 t.nom_gen as genero,
                 t.nom_fec as fecha_ingreso,
                 t.nom_nhi as num_hijos,
+                t.nom_pro as nom_pro,
                 t.dep_ide as dep_ide,
                 d.dep_nom as departamento,
                 t.cet_ide as cargo_cet,

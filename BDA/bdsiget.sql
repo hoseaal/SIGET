@@ -254,9 +254,10 @@ CREATE TABLE `tmanom` (
   `nom_fec` date NOT NULL COMMENT 'Fecha de ingreso',
   `nom_gen` enum('M','F') NOT NULL COMMENT 'Género del empleado',
   `nom_nhi` int(11) NOT NULL COMMENT 'Número de hijos',
+  `nom_pro` int(1) NOT NULL COMMENT 'Valor de profesionalización',
   `cet_ide` int(11) NOT NULL COMMENT 'Referencia a cargo CET en tescet',
   `ona_ide` int(11) NOT NULL COMMENT 'Referencia a cargo ONAPRE en tesona',
-  `nvl_ran` varchar(3) NOT NULL COMMENT 'Referenia a Tipo de nivel salarial',
+  `nvl_ran` varchar(3) NOT NULL COMMENT 'Referencia a Tipo de nivel salarial',
   `dep_ide` int(11) NOT NULL COMMENT 'Referencia a departamento en tesdep'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

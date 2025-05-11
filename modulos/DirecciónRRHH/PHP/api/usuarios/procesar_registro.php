@@ -9,6 +9,7 @@
         $fechaIngreso   = $_POST['fechaingreso'];
         $genero         = $_POST['generoEmpleado'] ?? null;
         $numeroHijos    = $_POST['numeroHijos'];
+        $nivelprof    = $_POST['nivelprof'];
         $cargoCet       = $_POST['cargocet'];
         $cargoOnapre    = $_POST['cargoonapre'];
         $nivelsalarial    = $_POST['nivelsalarial'];
@@ -17,8 +18,8 @@
         try {
             // Preparar consulta
             $stmt = $pdo->prepare("INSERT INTO tmanom 
-                (nom_ced, nom_nom, nom_ape, nom_fec, nom_gen, nom_nhi, cet_ide, ona_ide, nvl_ran, dep_ide) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                (nom_ced, nom_nom, nom_ape, nom_fec, nom_gen, nom_nhi, nom_pro, cet_ide, ona_ide, nvl_ran, dep_ide) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             // Ejecutar con los valores
             $stmt->execute([
@@ -28,6 +29,7 @@
                 $fechaIngreso,
                 $genero,
                 $numeroHijos,
+                $nivelprof,
                 $cargoCet,
                 $cargoOnapre,
                 $nivelsalarial,

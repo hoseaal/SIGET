@@ -24,6 +24,7 @@ try {
             nom_gen = :genero,
             nom_fec = :fecha_ingreso,
             nom_nhi = :num_hijos,
+            nom_pro = :nom_pro,
             dep_ide = :dep_ide,
             cet_ide = :cargo_cet,
             ona_ide = :cargo_onapre,
@@ -38,6 +39,7 @@ try {
     $query->bindParam(':genero', $data['genero']);
     $query->bindParam(':fecha_ingreso', $data['fecha_ingreso']);
     $query->bindParam(':num_hijos', $data['num_hijos']);
+    $query->bindParam(':nom_pro', $data['nom_pro']);
     $query->bindParam(':dep_ide', $data['dep_ide']);
     $query->bindParam(':cargo_cet', $data['cargo_cet']);
     $query->bindParam(':cargo_onapre', $data['cargo_onapre']);

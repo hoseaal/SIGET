@@ -287,6 +287,18 @@
                             <option value="VII">VII</option>
                         </select>
                       </div>
+                      <!-- Nivel De Profesionalización -->
+                      <div class="mb-3">
+                        <label for="nivelprof" class="form-label">Nivel de Profesionalzación</label>
+                        <select id="nivelprof" name="nivelprof" class="form-select" required>
+                          <option value="">Seleccione</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                      </div>
                       <!-- Departamento -->
                       <div class="mb-3">
                         <label for="departamentoasig" class="form-label">Departamento Asignado</label>
