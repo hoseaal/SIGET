@@ -4,4 +4,8 @@ INSTALAR LAS SIGUIENTES DEPENDENCIAS DESDE EL TERMINAL DE VS CODE:
 
 composer require firebase/php-jwt
 
-2) ...
+2) Dependencia para el funcionamiento de exportaciones xls
+
+composer require phpoffice/phpspreadsheet
+
+3) ...
