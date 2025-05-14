@@ -12,6 +12,8 @@ import { MaintenancePage } from "../pages/misc/MaintenancePage";
 import { Bm2 } from "../pages/formularios/BM-2";
 
 import { Categorias } from "../pages/configuracion/categorias";
+import { ModelosyMarcas } from "../pages/configuracion/modelosymarcas"
+import { Tipos } from "../pages/configuracion/tipos";
 
 import { AccordionPage } from "../pages/user-interface/AccordionPage";
 import { AlertPage } from "../pages/user-interface/AlertPage";
@@ -60,9 +62,29 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/BM/BM-2" element={<Bm2 />} />
+            <Route path="/Configuracion/Categorias" element={
+                <ProtectedRoute>
+                    <Categorias/>
+                </ProtectedRoute>
+            } />
 
-            <Route path="/Configuracion/Categorias" element={<Categorias/>}/>
+            <Route path="/Configuracion/ModelosyMarcas" element={
+                <ProtectedRoute>
+                    <ModelosyMarcas/>
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Configuracion/Tipos" element={
+                <ProtectedRoute>
+                    <Tipos/>
+                </ProtectedRoute>
+            } />
+
+            <Route path="/BM/BM-2" element={
+                <ProtectedRoute>
+                    <Bm2 />
+                </ProtectedRoute>
+            } />
 
             <Route path="/ui/accordion" element={<AccordionPage />} />
             <Route path="/ui/alerts" element={<AlertPage />} />

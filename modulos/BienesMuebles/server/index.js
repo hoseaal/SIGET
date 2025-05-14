@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import express from 'express'
 import cors from 'cors'
 import jwt from 'jsonwebtoken'
@@ -5,7 +6,8 @@ import cookieParser from 'cookie-parser'
 import config from './config.js'
 import { UserRepository } from './user-repository.js'
 import authenticate from './authenticate.js'
-import { selectData, selectWhereData } from './cruds.js'
+import { selectData, selectWhereData, getTableColumns, insertData, updateData, deleteData } from './cruds.js'
+import { getConnection } from './conn.js'
 
 const router = express.Router()
 const app = express()
@@ -103,8 +105,6 @@ app.post('/api/logout', (req, res) => {
 })
 
 app.get('/api/selects', async (req, res) => {
-  console.log('Recibiendo datos de selects...')
-  console.log('Query:', req.query)
   try {
     const { table, columns, fk, dato } = req.query
 
@@ -120,7 +120,6 @@ app.get('/api/selects', async (req, res) => {
       data = await selectData(table, columns)
     }
 
-    console.log('Datos obtenidos:', data)
     res.json(data)
   } catch (err) {
     console.error('Error en /api/selects:', err)
@@ -130,6 +129,105 @@ app.get('/api/selects', async (req, res) => {
     })
   }
 })
+
+app.get('/api/table-columns', async (req, res) => {
+  try {
+    const { id_table } = req.query
+    if (!id_table) {
+      return res.status(400).json({ error: 'Debe proporcionar el nombre de la tabla' })
+    }
+
+    const { columns, idColumn } = await getTableColumns(id_table) // Obtiene las columnas y la columna de identificación única
+    res.json({ columns, idColumn }) // Devuelve ambos en la respuesta
+  } catch (err) {
+    console.error('Error al obtener columnas:', err.message)
+    res.status(500).json({ error: 'Error al obtener columnas' })
+  }
+})
+
+app.post('/api/insert', async (req, res) => {
+  try {
+    const { table, data } = req.body
+    if (!table || !data) {
+      return res.status(400).json({ error: 'Tabla y datos son requeridos' })
+    }
+
+    const connection = await getConnection()
+    const [result] = await connection.query(`INSERT INTO ${table} SET ?`, data)
+    res.status(201).json({ id: result.insertId })
+  } catch (err) {
+    console.error('Error al insertar:', err.message)
+    res.status(500).json({ error: 'Error al insertar datos' })
+  }
+})
+
+router.post('/api/insert', async (req, res) => {
+  try {
+    const { table, data } = req.body
+    const result = await insertData(table, data)
+    // Envía la misma estructura en éxito y error
+    console.log('Resultado de la inserción:', res)
+    res.status(result.status).json({
+      success: result.success,
+      message: result.message,
+      data: result.data,
+      error: result.error || null
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: err.message
+    })
+  }
+})
+
+router.put('/api/update', async (req, res) => {
+  try {
+    const { table, id, data } = req.body
+    const result = await updateData(table, id, data)
+
+    // Envía la misma estructura en éxito y error
+    res.status(result.status).json({
+      success: result.success,
+      message: result.message,
+      data: result.data,
+      error: result.error || null
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: err.message
+    })
+  }
+})
+
+router.delete('/api/delete', async (req, res) => {
+  try {
+    const { table, id, idColumn } = req.body
+
+    if (!table || !id || !idColumn) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faltan parámetros requeridos (table, id o idColumn)'
+      })
+    }
+
+    const result = await deleteData(table, id, idColumn)
+    res.status(result.status).json(result)
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: err.message
+    })
+  }
+})
+
+// Monta el router en la aplicación
+app.use(router)
+
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor Node.js corriendo en http://localhost:${PORT}`)

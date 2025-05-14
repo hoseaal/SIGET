@@ -60,12 +60,12 @@
                     {
                         "text": "Modelos y Marcas",
                         "available": true,
-                        "link": " "
+                        "link": "/Configuracion/ModelosyMarcas"
                     },
                     {
                         "text": "Tipos",
                         "available": true,
-                        "link": " "
+                        "link": "/Configuracion/Tipos"
                     },
                     {
                         "text": "Estados de Uso",

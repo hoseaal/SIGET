@@ -1,8 +1,10 @@
 import { useEffect, useState} from "react";
 import axios from "axios";
+import { fetchData } from "../data/fetchData";
 
 export const DashboardPage = () => {
     const [userData, setUserData] = useState(null);
+    const [userDataa, setUserDataa] = useState([]);
 
     useEffect(() => {
       const fetchUserData = async () => {
@@ -13,7 +15,7 @@ export const DashboardPage = () => {
           
           if (response.data.success) {
             setUserData(response.data.user);
-            console.log(userData.usu_ide)
+            
           }
         } catch (error) {
           console.error('Error obteniendo datos de usuario:', error)
@@ -22,6 +24,16 @@ export const DashboardPage = () => {
   
       fetchUserData();
     }, []);
+
+    useEffect(() => {
+          const fetchAllData = async () => {
+            const fetchUser = await fetchData('tmanom', '*', 'nom_ced', userData?.usu_ide);
+            setUserDataa(fetchUser);
+            console.log('userDataa', userDataa);
+          }
+          fetchAllData();
+        }, [userData]);
+
   
     if (!userData) {
       return <div>Cargando datos de usuario...</div>;
@@ -36,7 +48,7 @@ export const DashboardPage = () => {
                             <div className="col-sm-7">
                                 <div className="card-body">
                                     <h5 className="card-title text-primary">
-                                        Congratulations {userData.usu_ide} 🎉
+                                        Congratulations {userDataa[0]?.nom_nom + ' ' + userDataa[0]?.nom_ape} 🎉
                                     </h5>
                                     <p className="mb-4">
                                         You have done <span className="fw-medium">72%</span> more
