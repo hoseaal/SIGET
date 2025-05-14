@@ -1,0 +1,68 @@
+<?php
+    require_once '../../../conexion/conexion.php';
+
+    header('Content-Type: application/json');
+
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        if (!$data || !isset($data['pri_ide']) || !isset($data['pri_raz']) || !isset($data['pri_por'])) {
+            throw new Exception('Datos incompletos para la actualización');
+        }
+
+        $pri_ide = $data['pri_ide'];
+        $pri_raz = $data['pri_raz'];
+        $pri_por = $data['pri_por'];
+
+        // Validar datos
+        if (empty($pri_raz) || !is_numeric($pri_por)) {
+            throw new Exception('Datos inválidos');
+        }
+
+        // Iniciar transacción
+        $pdo->beginTransaction();
+
+        try {
+            // Preparar la consulta de actualización
+            $query = $pdo->prepare("
+                UPDATE tespri SET
+                    pri_raz = :pri_raz,
+                    pri_por = :pri_por
+                WHERE pri_ide = :pri_ide
+            ");
+            
+            $query->bindParam(':pri_raz', $pri_raz);
+            $query->bindParam(':pri_por', $pri_por);
+            $query->bindParam(':pri_ide', $pri_ide);
+            
+            if (!$query->execute()) {
+                throw new Exception('Error al ejecutar la actualización');
+            }
+
+            $pdo->commit();
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Asignación actualizada correctamente',
+                'pri_ide' => $pri_ide
+            ]);
+            
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+        
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error en la base de datos: ' . $e->getMessage()
+        ]);
+    } catch (Exception $e) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+    }
+?>

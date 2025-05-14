@@ -22,8 +22,9 @@ USE `dbsiget`;
 
 CREATE TABLE `tesant` (
   `ant_ide` int(11) NOT NULL COMMENT 'Identificador único de antigüedad',
-  `ant_ano` int(11) NOT NULL COMMENT 'Años de antigüedad',
-  `ant_por` decimal(5,2) NOT NULL COMMENT 'Porcentaje de antigüedad'
+  `ant_ani` DATE NOT NULL COMMENT 'Años de antigüedad inicial',
+  `ant_anf` DATE NOT NULL COMMENT 'Años de antigüedad final',
+  `nom_ced` varchar(10) NOT NULL COMMENT 'Cédula del empleado'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -44,9 +45,7 @@ CREATE TABLE `tescae` (
 
 CREATE TABLE `tescet` (
   `cet_ide` int(11) NOT NULL COMMENT 'Identificador único de cargo CET',
-  `cet_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo CET',
-  `cet_des` text DEFAULT NULL COMMENT 'Descripción del cargo CET',
-  `cet_salario` decimal(10,2) NOT NULL COMMENT 'Salario del cargo CET'
+  `cet_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo CET'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -56,7 +55,7 @@ CREATE TABLE `tescet` (
 CREATE TABLE `tesded` (
   `ded_ide` int(11) NOT NULL COMMENT 'Identificador único de deducción',
   `ded_raz` varchar(100) NOT NULL COMMENT 'Razón de la deducción',
-  `ded_por` decimal(5,2) NOT NULL COMMENT 'Porcentaje de la deducción'
+  `ded_por` decimal(10,2) NOT NULL COMMENT 'Porcentaje de la deducción'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -67,7 +66,7 @@ CREATE TABLE `tesded` (
 
 CREATE TABLE `tesdep` (
   `dep_ide` int(11) NOT NULL COMMENT 'Identificador único de departamento',
-  `dep_nom` varchar(50) NOT NULL COMMENT 'Nombre del departamento',
+  `dep_nom` varchar(255) NOT NULL COMMENT 'Nombre del departamento',
   `dep_des` text DEFAULT NULL COMMENT 'Descripción del departamento'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -89,9 +88,33 @@ CREATE TABLE `tesmod` (
 
 CREATE TABLE `tesona` (
   `ona_ide` int(11) NOT NULL COMMENT 'Identificador único de cargo ONAPRE',
-  `ona_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo ONAPRE',
-  `ona_des` text DEFAULT NULL COMMENT 'Descripción del cargo ONAPRE'
+  `ona_car` varchar(50) NOT NULL COMMENT 'Nombre del cargo ONAPRE'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Estructura de tabla para la tabla `tesnvl`
+--
+
+CREATE TABLE `tesnvl` (
+  `nvl_ide` int(11) NOT NULL COMMENT 'Identificador único del rango',
+  `nvl_ran` varchar(5) NOT NULL COMMENT 'Tipo de nivel salarial',
+  `nvl_sal` decimal(10,2) NOT NULL COMMENT 'Salario Correspondiente',
+  `ona_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo ONAPRE en tesona'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Estructura de tabla para la tabla `tesnvl_historico`
+--
+
+CREATE TABLE `tesnvl_historico` (
+  `nvl_ide` int(11) NOT NULL,
+  `nvl_ran` varchar(5) NOT NULL,
+  `nvl_sal` decimal(10,2) NOT NULL COMMENT 'Salario histórico',
+  `ona_ide` int(11) DEFAULT NULL,
+  `nvl_fec` date NOT NULL COMMENT 'Fecha en la que este salario estaba activo'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `tespri`
@@ -122,7 +145,7 @@ CREATE TABLE `tessca` (
 --
 
 CREATE TABLE `tesusu` (
-  `usu_ide` varchar(11) NOT NULL COMMENT 'Identificador unico del usuario',
+  `usu_ide` INT NOT NULL COMMENT 'Identificador unico del usuario',
   `usu_con` varchar(255) NOT NULL COMMENT 'Contraseña del usuario (hashed)',
   `usu_tip` int(1) NOT NULL COMMENT 'Perfil o tipo de usuario',
   `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Referencia a empleado en tmanom'
@@ -231,10 +254,11 @@ CREATE TABLE `tmanom` (
   `nom_fec` date NOT NULL COMMENT 'Fecha de ingreso',
   `nom_gen` enum('M','F') NOT NULL COMMENT 'Género del empleado',
   `nom_nhi` int(11) NOT NULL COMMENT 'Número de hijos',
-  `cet_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo CET en tescet',
-  `ona_ide` int(11) DEFAULT NULL COMMENT 'Referencia a cargo ONAPRE en tesona',
-  `ant_ide` int(11) DEFAULT NULL COMMENT 'Referencia a antigüedad en tesant',
-  `dep_ide` int(11) DEFAULT NULL COMMENT 'Referencia a departamento en tesdep'
+  `nom_pro` int(1) NOT NULL COMMENT 'Valor de profesionalización',
+  `cet_ide` int(11) NOT NULL COMMENT 'Referencia a cargo CET en tescet',
+  `ona_ide` int(11) NOT NULL COMMENT 'Referencia a cargo ONAPRE en tesona',
+  `nvl_ran` varchar(3) NOT NULL COMMENT 'Referencia a Tipo de nivel salarial',
+  `dep_ide` int(11) NOT NULL COMMENT 'Referencia a departamento en tesdep'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -293,6 +317,16 @@ ALTER TABLE `tesmod`
 --
 ALTER TABLE `tesona`
   ADD PRIMARY KEY (`ona_ide`);
+
+--
+-- Indices de la tabla `tesnvl`
+--
+
+ALTER TABLE `tesnvl`
+  ADD PRIMARY KEY (`nvl_ide`);
+
+ALTER TABLE `tesnvl_historico`
+  ADD PRIMARY KEY (`nvl_ide`);
 
 --
 -- Indices de la tabla `tespri`
@@ -369,7 +403,6 @@ ALTER TABLE `tmamar`
 ALTER TABLE `tmanom`
   ADD PRIMARY KEY (`nom_ced`),
   ADD UNIQUE KEY `ona_ide` (`ona_ide`),
-  ADD UNIQUE KEY `ant_ide` (`ant_ide`),
   ADD KEY `fk_tmanom_tescet` (`cet_ide`),
   ADD KEY `fk_tmanom_tesdep` (`dep_ide`);
 
@@ -387,13 +420,13 @@ ALTER TABLE `tmatip`
 -- AUTO_INCREMENT de la tabla `tesant`
 --
 ALTER TABLE `tesant`
-  MODIFY `ant_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de antigüedad', AUTO_INCREMENT=2;
+  MODIFY `ant_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de antigüedad', AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT de la tabla `tescet`
 --
 ALTER TABLE `tescet`
-  MODIFY `cet_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo CET', AUTO_INCREMENT=2;
+  MODIFY `cet_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo CET', AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT de la tabla `tesded`
@@ -405,13 +438,22 @@ ALTER TABLE `tesded`
 -- AUTO_INCREMENT de la tabla `tesdep`
 --
 ALTER TABLE `tesdep`
-  MODIFY `dep_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de departamento', AUTO_INCREMENT=2;
+  MODIFY `dep_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de departamento', AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT de la tabla `tesona`
 --
 ALTER TABLE `tesona`
-  MODIFY `ona_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo ONAPRE', AUTO_INCREMENT=2;
+  MODIFY `ona_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de cargo ONAPRE', AUTO_INCREMENT=1;
+
+--
+-- AUTO_INCREMENT de la tabla `tesnvl`
+--
+ALTER TABLE `tesnvl`
+  MODIFY `nvl_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del rango', AUTO_INCREMENT=1;
+
+ALTER TABLE `tesnvl_historico`
+  MODIFY `nvl_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del rango', AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT de la tabla `tespri`
@@ -454,6 +496,18 @@ ALTER TABLE `tesusu`
   ADD CONSTRAINT `fk_tesusu_tmanom` FOREIGN KEY (`nom_ced`) REFERENCES `tmanom` (`nom_ced`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Modificación para AI para la tabla `tesusu`
+--
+ALTER TABLE `tesusu`
+MODIFY `usu_ide` INT NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico del usuario';
+
+--
+-- Filtros para la tabla `tesant`
+--
+ALTER TABLE `tesant`
+  ADD CONSTRAINT `fk_tesant_tmanom` FOREIGN KEY (`nom_ced`) REFERENCES `tmanom` (`nom_ced`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `tmab_m`
 --
 ALTER TABLE `tmab_m`
@@ -469,10 +523,18 @@ ALTER TABLE `tmab_m`
 -- Filtros para la tabla `tmanom`
 --
 ALTER TABLE `tmanom`
-  ADD CONSTRAINT `fk_tmanom_tesant` FOREIGN KEY (`ant_ide`) REFERENCES `tesant` (`ant_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tescet` FOREIGN KEY (`cet_ide`) REFERENCES `tescet` (`cet_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesdep` FOREIGN KEY (`dep_ide`) REFERENCES `tesdep` (`dep_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmanom_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `tesnvl`
+--
+ALTER TABLE `tesnvl`
+  ADD CONSTRAINT `fk_tesnvl_tesona` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `tesnvl_historico`
+  ADD CONSTRAINT `fk_tesnvl_tesona2` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE `tmacoi` (
   `coi_ide` int(11) NOT NULL COMMENT 'Identificador de concepto de incorporación',
@@ -485,4 +547,276 @@ ALTER TABLE `tmacoi`
 ALTER TABLE `tmab_m` ADD COLUMN `coi_ide` int(11) COMMENT 'Referencia a concepto de incorporación en tmacoi', ADD CONSTRAINT `fk_tmabm_tmacoi` FOREIGN KEY (`coi_ide`) REFERENCES `tmacoi` (`coi_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
-ALTER TABLE `tesusu` CHANGE `usu_ide` `usu_ide` INT(1) NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico del usuario';
+CREATE TABLE `tessup` (
+  `sup_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID único de suplencia',
+  `nom_ced` varchar(10) NOT NULL COMMENT 'Cédula del empleado suplente (FK a tmanom)',
+  `sup_fec_ini` date NOT NULL COMMENT 'Fecha de inicio de la suplencia',
+  `sup_fec_fin` date DEFAULT NULL COMMENT 'Fecha de fin de la suplencia (NULL si está activa)',
+  `cet_ide` int(11) DEFAULT NULL COMMENT 'Cargo CET que suple (FK a tescet)',
+  `ona_ide` int(11) DEFAULT NULL COMMENT 'Cargo ONAPRE que suple (FK a tesona)',
+  `nvl_ran` varchar(3) DEFAULT NULL COMMENT 'Nivel salarial durante la suplencia',
+  `dep_ide` int(11) DEFAULT NULL COMMENT 'Departamento durante la suplencia (FK a tesdep)',
+  `sup_activa` tinyint(1) DEFAULT 1 COMMENT 'Indicador de suplencia activa (1=activa, 0=inactiva)',
+  PRIMARY KEY (`sup_ide`),
+  FOREIGN KEY (`nom_ced`) REFERENCES `tmanom`(`nom_ced`),
+  FOREIGN KEY (`cet_ide`) REFERENCES `tescet`(`cet_ide`),
+  FOREIGN KEY (`ona_ide`) REFERENCES `tesona`(`ona_ide`),
+  FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/* VOLCADO DE LA BASE DE DATOS */
+
+-- TABLA TESCET
+
+INSERT INTO `tescet` (`cet_car`) VALUES
+('ABOGADO PI'),
+('ABOGADO PII'),
+('ANALISTA PI'),
+('ANALISTA PII'),
+('ASISTENTE ADMINISTRATIVO TSU I'),
+('ASISTENTE ADMINISTRATIVO TSU II'),
+('ASISTENTE DE TÉCNICO TSU II'),
+('AUDITOR PI'),
+('AUDITOR PII'),
+('AUDITOR PIII'),
+('AUXILIAR ADMINISTRATIVO BI'),
+('AUXILIAR BI'),
+('AUXILIAR BII'),
+('AUXILIAR BIII'),
+('CONSULTOR JURÍDICO'),
+('CONTADOR PI'),
+('DIRECTOR(A)(E) / ABOGADO PII - IV'),
+('DIRECTOR(A)(E) / JEFE DE DIVISIÓN GENERAL'),
+('DIRECTOR(A)(E) / JEFE DE DIVISIÓN'),
+('DIRECTOR(A)'),
+('DIRECTOR(A) DE LINEA'),
+('DIRECTOR(A) GENERAL'),
+('ENFERMERA'),
+('JEFE DE DIVISIÓN'),
+('JEFE DE DIVISIÓN(E) / ABOGADA PII - III'),
+('JEFE DE DIVISIÓN GENERAL'),
+('JEFE DE OFICINA'),
+('MÉDICO'),
+('NOTIFICADOR BIII'),
+('ODONTÓLOGO'),
+('PLANIFICADOR PI'),
+('PROMOTOR SOCIAL TI'),
+('SUPERVISOR'),
+('CONTRALOR(A) DEL ESTADO');
+
+-- TABLA TESONA
+
+INSERT INTO `tesona` (`ona_car`) VALUES
+('BACHILLER I (BI)'),
+('BACHILLER II (BII)'),
+('BACHILLER III (BIII)'),
+('TSU I (TI)'),
+('TSU II (TII)'),
+('PROFESIONAL I (PI)'),
+('PROFESIONAL II (PII)'),
+('PROFESIONAL III (PIII)'),
+('COORDINADOR(A) DE ÁREA'),
+('DIRECTOR DE LINEA'),
+('DIRECTOR GENERAL'),
+('JEFE DE DIVISIÓN'),
+('JEFE DE DIVISIÓN (COORDINADOR DE ÁREA)'),
+('JEFE DE DIVISIÓN DE REMUNERACIONES'),
+('JEFE DE DIVISIÓN GENERAL'),
+('CONTRALOR(A) DEL ESTADO');
+
+-- TABLA TESNVL
+
+INSERT INTO `tesnvl` (`nvl_ran`, `nvl_sal`, `ona_ide`) VALUES
+('I', 130.00, 1),
+('II', 132.00, 1),
+('III', 134.00, 1),
+('IV', 135.00, 1),
+('V', 137.00, 1),
+('VI', 139.00, 1),
+('VII', 141.00, 1),
+('I', 148.00, 2),
+('II', 150.00, 2),
+('III', 152.00, 2),
+('IV', 154.00, 2),
+('V', 155.00, 2),
+('VI', 157.00, 2),
+('VII', 159.00, 2),
+('I', 166.00, 3),
+('II', 168.00, 3),
+('III', 170.00, 3),
+('IV', 172.00, 3),
+('V', 174.00, 3),
+('VI', 176.00, 3),
+('VII', 177.00, 3),
+('I', 192.00, 4),
+('II', 194.00, 4),
+('III', 196.00, 4),
+('IV', 197.00, 4),
+('V', 199.00, 4),
+('VI', 201.00, 4),
+('VII', 203.00, 4),
+('I', 217.00, 5),
+('II', 219.00, 5),
+('III', 221.00, 5),
+('IV', 223.00, 5),
+('V', 225.00, 5),
+('VI', 226.00, 5),
+('VII', 228.00, 5),
+('I', 246.00, 6),
+('II', 248.00, 6),
+('III', 250.00, 6),
+('IV', 252.00, 6),
+('V', 254.00, 6),
+('VI', 256.00, 6),
+('VII', 257.00, 6),
+('I', 276.00, 7),
+('II', 277.00, 7),
+('III', 279.00, 7),
+('IV', 281.00, 7),
+('V', 283.00, 7),
+('VI', 285.00, 7),
+('VII', 287.00, 7),
+('I', 305.00, 8),
+('II', 307.00, 8),
+('III', 308.00, 8),
+('IV', 310.00, 8),
+('V', 312.00, 8),
+('VI', 314.00, 8),
+('VII', 316.00, 8),
+('I', 348.00, 9),
+('I', 376.00, 10),
+('I', 391.00, 11),
+('I', 363.00, 12),
+('I', 363.00, 13),
+('I', 363.00, 14),
+('I', 363.00, 15),
+('I', 409.00, 16);
+
+-- TABLA TESNVL HISTÓRICO
+
+INSERT INTO `tesnvl_historico` (`nvl_ran`, `nvl_sal`, `ona_ide`, `nvl_fec`) VALUES
+('I', 7.00, 1, '2021-05-01'),
+('II', 7.14, 1, '2021-05-01'),
+('III', 7.28, 1, '2021-05-01'),
+('IV', 7.42, 1, '2021-05-01'),
+('V', 7.56, 1, '2021-05-01'),
+('VI', 7.70, 1, '2021-05-01'),
+('VII', 7.84, 1, '2021-05-01'),
+('I', 8.40, 2, '2021-05-01'),
+('II', 8.54, 2, '2021-05-01'),
+('III', 8.68, 2, '2021-05-01'),
+('IV', 8.82, 2, '2021-05-01'),
+('V', 8.96, 2, '2021-05-01'),
+('VI', 9.10, 2, '2021-05-01'),
+('VII', 9.24, 2, '2021-05-01'),
+('I', 9.80, 3, '2021-05-01'),
+('II', 9.94, 3, '2021-05-01'),
+('III', 10.08, 3, '2021-05-01'),
+('IV', 10.22, 3, '2021-05-01'),
+('V', 10.36, 3, '2021-05-01'),
+('VI', 10.50, 3, '2021-05-01'),
+('VII', 10.64, 3, '2021-05-01'),
+('I', 11.76, 4, '2021-05-01'),
+('II', 11.90, 4, '2021-05-01'),
+('III', 12.04, 4, '2021-05-01'),
+('IV', 12.18, 4, '2021-05-01'),
+('V', 12.32, 4, '2021-05-01'),
+('VI', 12.46, 4, '2021-05-01'),
+('VII', 12.60, 4, '2021-05-01'),
+('I', 13.72, 5, '2021-05-01'),
+('II', 13.86, 5, '2021-05-01'),
+('III', 14.00, 5, '2021-05-01'),
+('IV', 14.14, 5, '2021-05-01'),
+('V', 14.28, 5, '2021-05-01'),
+('VI', 14.42, 5, '2021-05-01'),
+('VII', 14.56, 5, '2021-05-01'),
+('I', 15.96, 6, '2021-05-01'),
+('II', 16.10, 6, '2021-05-01'),
+('III', 16.24, 6, '2021-05-01'),
+('IV', 16.38, 6, '2021-05-01'),
+('V', 16.52, 6, '2021-05-01'),
+('VI', 16.66, 6, '2021-05-01'),
+('VII', 16.80, 6, '2021-05-01'),
+('I', 18.20, 7, '2021-05-01'),
+('II', 18.34, 7, '2021-05-01'),
+('III', 18.48, 7, '2021-05-01'),
+('IV', 18.62, 7, '2021-05-01'),
+('V', 18.76, 7, '2021-05-01'),
+('VI', 18.90, 7, '2021-05-01'),
+('VII', 19.04, 7, '2021-05-01'),
+('I', 20.44, 8, '2021-05-01'),
+('II', 20.58, 8, '2021-05-01'),
+('III', 20.72, 8, '2021-05-01'),
+('IV', 21.86, 8, '2021-05-01'),
+('V', 21.00, 8, '2021-05-01'),
+('VI', 21.14, 8, '2021-05-01'),
+('VII', 21.28, 8, '2021-05-01'),
+('I', 23.80, 9, '2021-05-01'),
+('I', 25.90, 10, '2021-05-01'),
+('I', 27.08, 11, '2021-05-01'),
+('I', 24.92, 12, '2021-05-01'),
+('I', 24.92, 13, '2021-05-01'),
+('I', 24.92, 14, '2021-05-01'),
+('I', 24.92, 15, '2021-05-01'),
+('I', 28.48, 16, '2021-05-01');
+
+-- TABLA TESDEP
+
+INSERT INTO `tesdep` (`dep_nom`, `dep_des`) VALUES
+  ('Despacho Contralor', 'Corresponde al Contralor o Contralora coordinar las acciones internas o externas que permitan a la Contraloría del Estado ejercer sus funciones de control, vigilancia y fiscalización del patrimonio público del Estado, de acuerdo con la Constitución de la República Bolivariana de Venezuela, Constitución del Estado Táchira, Ley Orgánica de la Contraloría General de la República y del Sistema Nacional de Control Fiscal, Ley de la Contraloría del Estado Táchira, el presente Reglamento Interno, y demás normativas nacionales y estadales que rigen la materia.'),
+
+  ('Dirección de Secretaría del Despacho Contralor', 'Planifica y coordina todas aquellas actividades que coadyuven al cumplimiento y buen desempeño de los objetivos estratégicos del Órgano Contralor.'),
+
+  ('Unidad de Auditoria Interna', 'Realiza el examen posterior, objetivo, sistemático y profesional, la evaluación del sistema de control interno establecido en la Contraloría del Estado, incluyendo el grado de operatividad y eficacia de los sistemas de administración y de información gerencial, así como del examen de los registros y estados financieros, para determinar su pertinencia, y confiabilidad en el marco de las operaciones realizadas. Asimismo le corresponde el ejercicio de las potestades de investigación fiscal y determinación de responsabilidades administrativas.'),
+
+  ('Dirección General', 'Asiste al Contralor o Contralora del Estado en la planificación, coordinación, dirección y control de las funciones que de conformidad con las leyes debe cumplir la Contraloría del Estado, a través de cada una de las unidades administrativas que la conforman; así como la vigilancia en el cumplimiento de las políticas y objetivos establecidos por la institución.'),
+
+  ('Dirección de Consultoria Jurídica', 'Asesora e interviene en todos los asuntos jurídicos relacionados con el Órgano Contralor, así como defiende los derechos e intereses de la Contraloría del Estado Táchira ante todas las autoridades de la República.'),
+
+  ('Dirección Técnica', 'Actua como la unidad de asesoramiento técnico del Contralor o Contralora y de las diferentes unidades administrativas de la Contraloría en lo referente a las políticas, normas y procedimientos de control; planifica, organiza y desarrolla las actividades de la institución en lo referente a la informática; coordina en materia de cooperación técnica, así como fomenta y desarrolla normas, instrucciones y pautas técnicas para el funcionamiento del órgano contralor.'),
+
+  ('Oficina de Seguridad', 'Planifica, coordina e implementa las políticas y acciones necesarias para garantizar la seguridad, custodia y salvaguarda de las instalaciones y personal de la Contraloría del Estado Táchira, de manera tal que asegure el normal funcionamiento de la institución.'),
+
+  ('Dirección de Recursos Humanos', 'Planifica, coordina, ejecuta y controla las operaciones relacionadas con la administración del recurso humano, en particular, lo relacionado con el reclutamiento, selección, ingreso, clasificación, remuneración, desarrollo, evaluación, adiestramiento, registro, control y bienestar social del personal; además le corresponde la elaboración de planes de prevención y mejoramiento de la seguridad laboral y medio ambiente de trabajo, así como velar por el fortalecimiento de las relaciones públicas, políticas de comunicación, imagen e identidad corporativa del Órgano Contralor.'),
+
+  ('Dirección de Administración', 'Planifica, coordina, dirige, ejecuta y supervisa las diferentes actividades en materia financiera y presupuestaria, servicios administrativos, así como, la guarda y custodia de los bienes muebles e inmuebles de la Contraloría.'),
+
+  ('Oficina Atención al Público y Participación Ciudadana', 'Fomenta la participación ciudadana y el derecho de los ciudadanos a participar en el control sobre la gestión pública, promoviendo la formación y educación de las comunidades en el área del control fiscal y social, atendiendo sus iniciativas, reclamos, sugerencias, quejas, peticiones y denuncias.'),
+
+  ('Oficina de Transporte y Servicios Generales', 'Planifica, coordina e implementa las políticas y acciones necesarias para garantizar la prestación de los servicios generales que aseguren el normal funcionamiento de la organización.'),
+
+  ('Dirección de la Administración Central y Poder Legislativo', 'Coordina sistemas de control y evaluación gubernamental, para llevar a cabo el seguimiento y verificación del manejo racional, eficiente y eficaz de los recursos asignados a las dependencias de la Administración Central y el Poder Legislativo Estadal, mediante la práctica de revisiones, exámenes, inspecciones, auditorías e investigaciones de todo tipo, así como evaluar el cumplimiento y los resultados de sus políticas y acciones administrativas.'),
+
+  ('Dirección de la Administración Descentralizada', 'Coordina sistemas de control y evaluación gubernamental, para llevar a cabo el seguimiento y verificación del manejo racional, eficiente y eficaz de los recursos asignados a las dependencias de la Administración Descentralizada, mediante la práctica de revisiones, exámenes, inspecciones, auditorías e investigaciones de todo tipo, así como evaluar el cumplimiento y los resultados de sus políticas y acciones administrativas.'),
+
+  ('Dirección de Investigaciones', 'Realiza las actuaciones que sean necesarias a fin de verificar la ocurrencia de actos, hechos y omisiones contrarios a una norma legal o sublegal, vinculados con el manejo, custodia o administración de fondos y bienes públicos, determinar el monto de los daños causados al patrimonio, si fuere el caso, así como la procedencia de acciones fiscales.'),
+
+  ('Dirección de Determinación de Responsabilidades', 'Realiza las actuaciones que sean necesarias a fin de verificar la ocurrencia de actos, hechos y omisiones contrarios a una norma legal o sublegal, vinculados con el manejo, custodia o administración de fondos y bienes públicos, determinar el monto de los daños causados al patrimonio, si fuere el caso, así como la procedencia de acciones fiscales.');
+
+-- TABLA TESDED
+
+INSERT INTO tesded (ded_raz, ded_por) 
+  VALUES 
+  ('Seguro del Empleado', 0.04),
+  ('Seguro Patronal', 0.09),
+  ('R.P.E Empleado', 0.005),
+  ('R.P.E Patronal', 0.02),
+  ('F.A.O.V Empleado', 0.01),
+  ('F.A.O.V Patronal', 2.00),
+  ('F.E.J.P Empleado y Patronal', 0.03),
+  ('Caja Empleado y Patronal', 0.10);
+
+-- TABLA TESPRI
+
+INSERT INTO `tespri` (`pri_raz`, `pri_por`) VALUES
+('Prima por Transporte', 48.00),
+('Prima por hogares', 40.00),
+('Complemento de Alimentación', 5.00),
+('Prima por Hijos', 12.50);
+
+-- TABLA TMANOM (Contralor DATA REAL SIN USUARIO)
+
+INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES 
+('18845038', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '2023-02-01', 'M', '1', '2', '34', '16', 'I', '1');
+
+-- FUTUROS VOLCADOS EN LA BASE DE DATOS

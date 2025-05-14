@@ -16,8 +16,11 @@ if (!$token) {
 }
 
 try {
+    // Hacemos que $decoded esté disponible globalmente
     $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-   
+    // Lo guardamos en una variable global para usarla en otras partes
+    $GLOBALS['decoded'] = $decoded;
+
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Token inválido: ' . $e->getMessage()]);

@@ -51,7 +51,7 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Usuario registrado correctamente.',
-        'redirect' => 'auth-registe-basic.php'
+        'redirect' => 'auth-register-basic.php'
     ]);    
 } catch (PDOException $e) {
     echo json_encode([
