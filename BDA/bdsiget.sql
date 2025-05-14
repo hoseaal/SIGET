@@ -547,6 +547,23 @@ ALTER TABLE `tmacoi`
 ALTER TABLE `tmab_m` ADD COLUMN `coi_ide` int(11) COMMENT 'Referencia a concepto de incorporación en tmacoi', ADD CONSTRAINT `fk_tmabm_tmacoi` FOREIGN KEY (`coi_ide`) REFERENCES `tmacoi` (`coi_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
+CREATE TABLE `tessup` (
+  `sup_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID único de suplencia',
+  `nom_ced` varchar(10) NOT NULL COMMENT 'Cédula del empleado suplente (FK a tmanom)',
+  `sup_fec_ini` date NOT NULL COMMENT 'Fecha de inicio de la suplencia',
+  `sup_fec_fin` date DEFAULT NULL COMMENT 'Fecha de fin de la suplencia (NULL si está activa)',
+  `cet_ide` int(11) DEFAULT NULL COMMENT 'Cargo CET que suple (FK a tescet)',
+  `ona_ide` int(11) DEFAULT NULL COMMENT 'Cargo ONAPRE que suple (FK a tesona)',
+  `nvl_ran` varchar(3) DEFAULT NULL COMMENT 'Nivel salarial durante la suplencia',
+  `dep_ide` int(11) DEFAULT NULL COMMENT 'Departamento durante la suplencia (FK a tesdep)',
+  `sup_activa` tinyint(1) DEFAULT 1 COMMENT 'Indicador de suplencia activa (1=activa, 0=inactiva)',
+  PRIMARY KEY (`sup_ide`),
+  FOREIGN KEY (`nom_ced`) REFERENCES `tmanom`(`nom_ced`),
+  FOREIGN KEY (`cet_ide`) REFERENCES `tescet`(`cet_ide`),
+  FOREIGN KEY (`ona_ide`) REFERENCES `tesona`(`ona_ide`),
+  FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 /* VOLCADO DE LA BASE DE DATOS */
 
 -- TABLA TESCET
