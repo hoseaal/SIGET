@@ -177,11 +177,11 @@
                         <label for="nivelprof" class="form-label">Nivel de Profesionalzación</label>
                         <select id="nivelprof" name="nivelprof" class="form-select" required>
                           <option value="">Seleccione</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
+                            <option value="1">1 - T.S.U</option>
+                            <option value="2">2 - Profesional</option>
+                            <option value="3">3 - Especialista</option>
+                            <option value="4">4 - Maestria</option>
+                            <option value="5">5 - Doctor</option>
                         </select>
                       </div>
                       <!-- Departamento -->

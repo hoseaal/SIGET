@@ -42,7 +42,7 @@
                 </li>
                 <li class="menu-item">
                   <a href="Register-AntUser.php" class="menu-link" target="_blank">
-                    <div data-i18n="Basic">Antigüedades Viejas</div>
+                    <div data-i18n="Basic">Registro de Antigüedades</div>
                   </a>
                 </li>
               </ul>
