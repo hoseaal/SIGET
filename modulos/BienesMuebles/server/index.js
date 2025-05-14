@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser'
 import config from './config.js'
 import { UserRepository } from './user-repository.js'
 import authenticate from './authenticate.js'
-import { selectData, selectWhereData, getTableColumns, insertData } from './cruds.js'
+import { selectData, selectWhereData, getTableColumns, insertData, updateData, deleteData } from './cruds.js'
 import { getConnection } from './conn.js'
 
 const router = express.Router()
@@ -120,7 +120,6 @@ app.get('/api/selects', async (req, res) => {
       data = await selectData(table, columns)
     }
 
-    console.log('Datos obtenidos:', data)
     res.json(data)
   } catch (err) {
     console.error('Error en /api/selects:', err)
@@ -162,11 +161,6 @@ app.post('/api/insert', async (req, res) => {
   }
 })
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`Servidor Node.js corriendo en http://localhost:${PORT}`)
-})
-
 router.post('/api/insert', async (req, res) => {
   try {
     const { table, data } = req.body
@@ -186,6 +180,57 @@ router.post('/api/insert', async (req, res) => {
       error: err.message
     })
   }
+})
+
+router.put('/api/update', async (req, res) => {
+  try {
+    const { table, id, data } = req.body
+    const result = await updateData(table, id, data)
+
+    // Envía la misma estructura en éxito y error
+    res.status(result.status).json({
+      success: result.success,
+      message: result.message,
+      data: result.data,
+      error: result.error || null
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: err.message
+    })
+  }
+})
+
+router.delete('/api/delete', async (req, res) => {
+  try {
+    const { table, id, idColumn } = req.body
+
+    if (!table || !id || !idColumn) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faltan parámetros requeridos (table, id o idColumn)'
+      })
+    }
+
+    const result = await deleteData(table, id, idColumn)
+    res.status(result.status).json(result)
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: err.message
+    })
+  }
+})
+
+// Monta el router en la aplicación
+app.use(router)
+
+// Iniciar servidor
+app.listen(PORT, () => {
+  console.log(`Servidor Node.js corriendo en http://localhost:${PORT}`)
 })
 
 export default router

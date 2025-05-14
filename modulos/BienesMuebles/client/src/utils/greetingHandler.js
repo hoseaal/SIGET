@@ -11,7 +11,7 @@ const getGreetingMessage = (name) => {
     } else if (currentHour >= 12 && currentHour < 18) {
         greeting = 'Buenas Tardes 🌤️';
     } else {
-        greeting = 'Beunas Noches 🌙';
+        greeting = 'Buenas Noches 🌙';
     }
 
     return `👋 Hola ${name}, ${greeting}!`;

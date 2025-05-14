@@ -99,7 +99,120 @@ export const insertData = async (table, data) => {
       error: err.message,
       message: 'Error al insertar datos'
     }
+  }
+}
+
+export const updateData = async (table, id, data) => {
+  let connection
+  try {
+    // Validación inicial
+    if (id === undefined || id === null) {
+      throw new Error('El ID no puede ser undefined o null')
+    }
+
+    connection = await getConnection()
+
+    // Obtener primary key
+    const [pkColumns] = await connection.execute(
+      `SHOW KEYS FROM ${table} WHERE Key_name = 'PRIMARY'`
+    )
+
+    if (pkColumns.length === 0) {
+      throw new Error('No se encontró primary key en la tabla')
+    }
+
+    const primaryKeyColumn = pkColumns[0].Column_name
+
+    // Limpiar datos (convertir undefined a null)
+    const cleanData = {}
+    Object.keys(data).forEach(key => {
+      cleanData[key] = data[key] !== undefined ? data[key] : null
+    })
+
+    // Validar que hay datos para actualizar
+    if (Object.keys(cleanData).length === 0) {
+      return {
+        success: false,
+        status: 400,
+        message: 'No hay datos válidos para actualizar'
+      }
+    }
+
+    // Construir consulta
+    const setClause = Object.keys(cleanData)
+      .map(key => `${key} = ?`)
+      .join(', ')
+
+    const values = [...Object.values(cleanData), id] // Asegurar que id tiene valor
+
+    console.log('Valores finales para la consulta:', values) // Debug
+
+    const query = `UPDATE ${table} SET ${setClause} WHERE ${primaryKeyColumn} = ?`
+    const [result] = await connection.execute(query, values)
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        status: 404,
+        message: 'No se encontró el registro a actualizar'
+      }
+    }
+
+    // Obtener registro actualizado
+    const [updatedRows] = await connection.execute(
+      `SELECT * FROM ${table} WHERE ${primaryKeyColumn} = ?`,
+      [id]
+    )
+
+    return {
+      success: true,
+      status: 200,
+      message: 'Registro actualizado correctamente',
+      data: updatedRows[0]
+    }
+  } catch (err) {
+    console.error('Error en updateData:', err.message)
+    return {
+      success: false,
+      status: 500,
+      error: err.message,
+      message: 'Error al actualizar datos'
+    }
   } finally {
-    if (getConnection) await getConnection.release()
+    if (connection) await connection.release()
+  }
+}
+
+export const deleteData = async (table, id, idColumn) => {
+  let connection
+  try {
+    connection = await getConnection()
+
+    const query = `DELETE FROM ${table} WHERE ${idColumn} = ?`
+    const [result] = await connection.execute(query, [id])
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        status: 404,
+        message: 'No se encontró el registro a eliminar'
+      }
+    }
+
+    return {
+      success: true,
+      status: 200,
+      message: 'Registro eliminado correctamente'
+    }
+  } catch (err) {
+    console.error('Error en deleteData:', err)
+    return {
+      success: false,
+      status: 500,
+      error: err.message,
+      message: 'Error al eliminar datos'
+    }
+  } finally {
+    if (connection) await connection.release()
   }
 }

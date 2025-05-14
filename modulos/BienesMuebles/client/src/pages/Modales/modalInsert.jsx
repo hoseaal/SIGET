@@ -6,7 +6,7 @@ import axios from 'axios';
 import Alert from "../../components/atoms/Alert";
 import { fetchData } from '../../data/fetchData';
 
-function ModalInsert({ show, handleClose, columns, tableName, foreign }) {
+function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess }) {
     const [formData, setFormData] = useState({});
 
     const [formEnviado, setFormEnviado] = useState(false)
