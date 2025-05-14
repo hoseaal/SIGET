@@ -10,6 +10,7 @@ import { ErrorPage } from "../pages/misc/ErrorPage";
 import { MaintenancePage } from "../pages/misc/MaintenancePage";
 
 import { Bm2 } from "../pages/formularios/BM-2";
+import { Bm1 } from "../pages/formularios/BM-1";
 
 import { Categorias } from "../pages/configuracion/categorias";
 import { ModelosyMarcas } from "../pages/configuracion/modelosymarcas"
@@ -73,7 +74,7 @@ const AppRoutes = () => {
                     <ModelosyMarcas/>
                 </ProtectedRoute>
             } />
-
+              
             <Route path="/Configuracion/Tipos" element={
                 <ProtectedRoute>
                     <Tipos/>
@@ -83,6 +84,12 @@ const AppRoutes = () => {
             <Route path="/BM/BM-2" element={
                 <ProtectedRoute>
                     <Bm2 />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/BM/BM-1" element={
+                <ProtectedRoute>
+                    <Bm1 />
                 </ProtectedRoute>
             } />
 
@@ -108,7 +115,7 @@ const AppRoutes = () => {
             <Route path="/ui/typography" element={<TypographyPage />} />
 
             <Route path="/Login" element={<LoginPage />} />
-            <Route path="/auth/register" element={<RegisterPage />} />
+            <Route path="/Register" element={<RegisterPage />} />
             <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
 
             <Route path="/account/settings" element={<AccountPage />} />

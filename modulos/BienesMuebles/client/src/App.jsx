@@ -6,7 +6,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 function App() {
   const location = useLocation();
-  const isAuthPath = location.pathname.includes("auth/register") ||location.pathname.includes("Login") || location.pathname.includes("error") || location.pathname.includes("under-maintenance") | location.pathname.includes("blank");
+  const isAuthPath = location.pathname.includes("Register") ||location.pathname.includes("Login") || location.pathname.includes("error") || location.pathname.includes("under-maintenance") | location.pathname.includes("blank");
   return (
     <>
       {isAuthPath ? (
