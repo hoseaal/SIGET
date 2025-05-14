@@ -402,7 +402,7 @@ ALTER TABLE `tmamar`
 --
 ALTER TABLE `tmanom`
   ADD PRIMARY KEY (`nom_ced`),
-  ADD UNIQUE KEY `ona_ide` (`ona_ide`),
+  ADD KEY `ona_ide` (`ona_ide`),
   ADD KEY `fk_tmanom_tescet` (`cet_ide`),
   ADD KEY `fk_tmanom_tesdep` (`dep_ide`);
 
@@ -563,6 +563,8 @@ CREATE TABLE `tessup` (
   FOREIGN KEY (`ona_ide`) REFERENCES `tesona`(`ona_ide`),
   FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE tmacue ( `cue_id` int NOT NULL COMMENT 'Identificador de relacion de cuenta de BM del mes anterior', `cue_cue` float(10.2) NOT NULL COMMENT 'Monte de relacion de cuenta de BM del mes anterior' );
 
 /* VOLCADO DE LA BASE DE DATOS */
 
@@ -820,3 +822,52 @@ INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `no
 ('18845038', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '2023-02-01', 'M', '1', '2', '34', '16', 'I', '1');
 
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
+
+INSERT INTO `tmacat` (`cat_ide`, `cat_cat`) VALUES 
+(1, 'Maquinaria y demás equipos de contrucción campo industria y taller'),
+(2, 'Equipos de comunicaciones y de señalamiento'),
+(3, 'Equipos medicos quirúrgicos dentales y veterinarios'),
+(4, 'Equipos científicos religiosos de enseñanza y recreación'),
+(5, 'Equipos de defensa y seguridad del Estado'),
+(6, 'Máquinas muebles y demás equipos de oficina y de alojamiento');
+
+INSERT INTO `tessca` (`sca_ide`, `sca_sca`, `cat_ide`) VALUES 
+(1, 'Mobiliario y equipos de oficina', 6),
+(2, 'Equipos de procesamiento de datos', 6),
+(3, 'Mobiliario y equipos de alojamiento', 6),
+(4, 'Otras máquinas muebles y demás equipos de oficina y de alojamiento', 6);
+
+INSERT INTO `tessca` (`sca_ide`, `sca_sca`, `cat_ide`) VALUES 
+(5, 'Maquinaria y equipos de construcción y mantenimiento', 1),
+(6, 'Maquinarias y equipos para mantenimiento de automotores', 1),
+(7, 'Maquinarias y equipos agrícolas y pecuarios', 1),
+(8, 'Maquinarias y equipos de artes gráficas y reproducción', 1),
+(9, 'Maquinarias y equipos industriales y de taller', 1),
+(10, 'Maquinarias y equipos de energía', 1),
+(11, 'Maquinarias y equipos de riego y acueductos', 1),
+(12, 'Equipos de almacen', 1);
+
+INSERT INTO `tessca` (`sca_ide`, `sca_sca`, `cat_ide`) VALUES 
+(13, 'Equipos de telecomunicaciones', 2),
+(14, 'Equipos de señalamiento', 2),
+(15, 'Equipos de control de tráfico aéreo', 2),
+(16, 'Equipos de correo', 2),
+(17, 'Otros equipos de comunicaciones y de señalamiento', 2);
+
+INSERT INTO `tessca` (`sca_ide`, `sca_sca`, `cat_ide`) VALUES 
+(18, 'Equipos médicos quirúrgicos dentales y veterinarios', 3),
+(19, 'Otros Equipos médicos quirúrgicos dentales y veterinarios', 3);
+
+INSERT INTO `tessca` (`sca_ide`, `sca_sca`, `cat_ide`) VALUES 
+(20, 'Equipos científicos y de laboratorio', 4),
+(21, 'Equipos de enseñanza deporte y recreación', 4),
+(22, 'Obras de arte', 4),
+(23, 'Libros y revistas', 4),
+(24, 'Equipos religiosos', 4),
+(25, 'Instrumentos musicales', 4),
+(26, 'Otros equipos científicos religiosos de enseñanza y recreación', 4);
+
+INSERT INTO `tessca` (`sca_ide`, `sca_sca`, `cat_ide`) VALUES 
+(27, 'Equipos y armamentos de defensa y seguridad pública', 5),
+(28, 'Otros equipos para la defensa y seguridad pública', 5);
+

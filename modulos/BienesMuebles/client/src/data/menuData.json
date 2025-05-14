@@ -22,7 +22,7 @@
                     {
                         "text": "BM-1",
                         "available": true,
-                        "link": ""
+                        "link": "/BM/BM-1"
                     },
                     {
                         "text": "BM-2",
@@ -32,10 +32,23 @@
                     {
                         "text": "BM-3",
                         "available": true,
-                        "link": " "
+                        "link": "/BM/BM-3"
                     },
                     {
                         "text": "BM-4",
+                        "available": true,
+                        "link": "/BM/BM-4"
+                    }
+                ]
+            },
+            {
+                "text": "Bienes en Almacen",
+                "icon": "bx bx-box",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Inventario ",
                         "available": true,
                         "link": " "
                     }
