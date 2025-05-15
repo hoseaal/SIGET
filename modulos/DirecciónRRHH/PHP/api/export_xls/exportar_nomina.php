@@ -10,6 +10,73 @@
 
     require '../../../conexion/conexion.php';
 
+    // Obtener porcentaje de seguro del empleado
+    $sql_seguro_empleado = "SELECT ded_por FROM tesded WHERE ded_raz LIKE '%Seguro del Empleado%' LIMIT 1";
+    $stmt_seguro_empleado = $pdo->query($sql_seguro_empleado);
+    $porcentaje_seguro_empleado = $stmt_seguro_empleado->fetch(PDO::FETCH_COLUMN);
+    $porcentaje_seguro_empleado = $porcentaje_seguro_empleado ? $porcentaje_seguro_empleado / 100 : 0;
+
+    // Obtener porcentaje de seguro patronal
+    $sql_seguro_patronal = "SELECT ded_por FROM tesded WHERE ded_raz LIKE '%Seguro Patronal%' LIMIT 1";
+    $stmt_seguro_patronal = $pdo->query($sql_seguro_patronal);
+    $porcentaje_seguro_patronal = $stmt_seguro_patronal->fetch(PDO::FETCH_COLUMN);
+    $porcentaje_seguro_patronal = $porcentaje_seguro_patronal ? $porcentaje_seguro_patronal / 100 : 0;
+
+    // Obtener porcentaje de R.P.E Empleado
+    $sql_rpe_empleado = "SELECT ded_por FROM tesded WHERE ded_raz LIKE '%R.P.E Empleado%' LIMIT 1";
+    $stmt_rpe_empleado = $pdo->query($sql_rpe_empleado);
+    $porcentaje_rpe_empleado = $stmt_rpe_empleado->fetch(PDO::FETCH_COLUMN);
+    $porcentaje_rpe_empleado = $porcentaje_rpe_empleado ? $porcentaje_rpe_empleado / 100 : 0;
+
+    // Obtener porcentaje de R.P.E Patronal
+    $sql_rpe_patronal = "SELECT ded_por FROM tesded WHERE ded_raz LIKE '%R.P.E Patronal%' LIMIT 1";
+    $stmt_rpe_patronal = $pdo->query($sql_rpe_patronal);
+    $porcentaje_rpe_patronal = $stmt_rpe_patronal->fetch(PDO::FETCH_COLUMN);
+    $porcentaje_rpe_patronal = $porcentaje_rpe_patronal ? $porcentaje_rpe_patronal / 100 : 0;
+
+    // Obtener porcentaje de FAOV Empleado
+    $sql_faov_empleado = "SELECT ded_por FROM tesded WHERE ded_raz LIKE '%F.A.O.V Empleado%' LIMIT 1";
+    $stmt_faov_empleado = $pdo->query($sql_faov_empleado);
+    $porcentaje_faov_empleado = $stmt_faov_empleado->fetch(PDO::FETCH_COLUMN);
+    $porcentaje_faov_empleado = $porcentaje_faov_empleado ? $porcentaje_faov_empleado / 100 : 0;
+
+    // Obtener porcentaje de FAOV Patronal
+    $sql_faov_patronal = "SELECT ded_por FROM tesded WHERE ded_raz LIKE '%F.A.O.V Patronal%' LIMIT 1";
+    $stmt_faov_patronal = $pdo->query($sql_faov_patronal);
+    $porcentaje_faov_patronal = $stmt_faov_patronal->fetch(PDO::FETCH_COLUMN);
+    $porcentaje_faov_patronal = $porcentaje_faov_patronal ? $porcentaje_faov_patronal / 100 : 0;
+
+    // Obtener porcentaje de FEJP Empleado y Patronal
+    $sql_fejp = "SELECT ded_por FROM tesded WHERE ded_raz LIKE '%F.E.J.P Empleado y Patronal%' LIMIT 1";
+    $stmt_fejp = $pdo->query($sql_fejp);
+    $porcentaje_fejp = $stmt_fejp->fetch(PDO::FETCH_COLUMN);
+    $porcentaje_fejp = $porcentaje_fejp ? $porcentaje_fejp / 100 : 0;
+
+    // Calcular cantidad de lunes según periodo del mes
+    $dia_actual = date('j');
+    $mes_actual = date('n');
+    $ano_actual = date('Y');
+    
+    $cantidad_lunes = 0;
+    if ($dia_actual <= 15) {
+        // Contar lunes del 1 al 15
+        $fecha_inicio = new DateTime("$ano_actual-$mes_actual-01");
+        $fecha_fin = new DateTime("$ano_actual-$mes_actual-15");
+    } else {
+        // Contar lunes del 16 al final del mes
+        $fecha_inicio = new DateTime("$ano_actual-$mes_actual-16");
+        $fecha_fin = new DateTime("$ano_actual-$mes_actual-t"); // t = último día del mes
+    }
+    
+    $intervalo = new DateInterval('P1D');
+    $periodo = new DatePeriod($fecha_inicio, $intervalo, $fecha_fin);
+    
+    foreach ($periodo as $fecha) {
+        if ($fecha->format('N') == 1) { // 1 = Lunes
+            $cantidad_lunes++;
+        }
+    }
+
     // Consulta SQL para obtener datos de nómina
     $sql = "
     SELECT 
@@ -111,6 +178,13 @@
     $sheet->setCellValue('V1', 'TOTAL DE ASIGNACIONES');
     $sheet->setCellValue('W1', 'ASIGNACIÓN MENSUAL');
     $sheet->setCellValue('X1', 'SEMANAL PARA EL IVSS');
+    $sheet->setCellValue('Y1', 'SEGURO EMPLEADO');
+    $sheet->setCellValue('Z1', 'SEGURO PATRONAL');
+    $sheet->setCellValue('AA1', 'R.P.E EMPLEADO');
+    $sheet->setCellValue('AB1', 'R.P.E PATRONAL');
+    $sheet->setCellValue('AC1', 'FAOV EMPLEADO');
+    $sheet->setCellValue('AD1', 'FAOV PATRONAL');
+    $sheet->setCellValue('AE1', 'FEJP EMPLEADO Y PATRONAL');
 
     // Estilo para los encabezados
     $headerStyle = [
@@ -122,9 +196,14 @@
             'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
             'startColor' => ['rgb' => '4472C4'],
         ],
+        'alignment' => [
+            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            'wrapText' => true,
+        ],
     ];
 
-    $sheet->getStyle('A1:X1')->applyFromArray($headerStyle);
+    $sheet->getStyle('A1:AE1')->applyFromArray($headerStyle);
 
     // Llenar datos
     $row = 2;
@@ -376,6 +455,63 @@
             $semanal_ivss = round((($asignacion_mensual / 2) * 24) / 52, 2);
         }
 
+        // Cálculo del seguro del empleado
+        $seguro_empleado = 0;
+        if ($asignacion_mensual > 650.00) {
+            $base_calculo = 650.00;
+            $seguro_empleado = round((($base_calculo * 12) / 52) * $porcentaje_seguro_empleado * $cantidad_lunes, 2);
+        } else {
+            $base_calculo = $asignacion_mensual / 2;
+            $seguro_empleado = round((($base_calculo * 24) / 52) * $porcentaje_seguro_empleado * $cantidad_lunes, 2);
+        }
+
+        // Cálculo del seguro patronal (misma lógica que seguro empleado pero con diferente porcentaje)
+        $seguro_patronal = 0;
+        if ($asignacion_mensual > 650.00) {
+            $base_calculo = 650.00;
+            $seguro_patronal = round((($base_calculo * 12) / 52) * $porcentaje_seguro_patronal * $cantidad_lunes, 2);
+        } else {
+            $base_calculo = $asignacion_mensual / 2;
+            $seguro_patronal = round((($base_calculo * 24) / 52) * $porcentaje_seguro_patronal * $cantidad_lunes, 2);
+        }
+
+        // Cálculo del R.P.E Empleado
+        $rpe_empleado = 0;
+        $limite_rpe = 130 * 10; // 130 * 10 = 1300
+        
+        if ($asignacion_mensual > $limite_rpe) {
+            $base_calculo = $limite_rpe;
+            $rpe_empleado = round((($base_calculo * 12) / 52) * $porcentaje_rpe_empleado * $cantidad_lunes, 2);
+        } else {
+            $base_calculo = $asignacion_mensual / 2;
+            $rpe_empleado = round((($base_calculo * 24) / 52) * $porcentaje_rpe_empleado * $cantidad_lunes, 2);
+        }
+
+        // Cálculo del R.P.E Patronal (misma lógica que R.P.E Empleado pero con diferente porcentaje)
+        $rpe_patronal = 0;
+        if ($asignacion_mensual > $limite_rpe) {
+            $base_calculo = $limite_rpe;
+            $rpe_patronal = round((($base_calculo * 12) / 52) * $porcentaje_rpe_patronal * $cantidad_lunes, 2);
+        } else {
+            $base_calculo = $asignacion_mensual / 2;
+            $rpe_patronal = round((($base_calculo * 24) / 52) * $porcentaje_rpe_patronal * $cantidad_lunes, 2);
+        }
+
+        // Cálculo del FAOV Empleado (1% del total de asignaciones)
+        $faov_empleado = round($total_asignaciones * $porcentaje_faov_empleado, 2);
+
+        // Cálculo del FAOV Patronal (2% del total de asignaciones)
+        $faov_patronal = round($faov_empleado * $porcentaje_faov_patronal, 2);
+
+        // Cálculo del FEJP Empleado y Patronal
+        $base_fejp = $sueldo_quincenal + $antiguedad_quincenal;
+        
+        // Sumar diferencias si son numéricas
+        $base_fejp += is_numeric($diferencia_sueldo) ? $diferencia_sueldo : 0;
+        $base_fejp += is_numeric($diferencia_antiguedad) ? $diferencia_antiguedad : 0;
+        
+        $fejp = round($base_fejp * $porcentaje_fejp, 2);
+
         $sheet->setCellValue('A' . $row, $contador);
         $sheet->setCellValue('B' . $row, $data['cedula']);
         $sheet->setCellValue('C' . $row, $data['nombre']);
@@ -401,18 +537,62 @@
         $sheet->setCellValue('V' . $row, $total_asignaciones);
         $sheet->setCellValue('W' . $row, $asignacion_mensual);
         $sheet->setCellValue('X' . $row, $semanal_ivss);
+        $sheet->setCellValue('Y' . $row, $seguro_empleado);
+        $sheet->setCellValue('Z' . $row, $seguro_patronal);
+        $sheet->setCellValue('AA' . $row, $rpe_empleado);
+        $sheet->setCellValue('AB' . $row, $rpe_patronal);
+        $sheet->setCellValue('AC' . $row, $faov_empleado);
+        $sheet->setCellValue('AD' . $row, $faov_patronal);
+        $sheet->setCellValue('AE' . $row, $fejp);
         
         $row++;
         $contador++;
     }
 
     // Aplicar formato numérico a las columnas numéricas
-    $sheet->getStyle('H2:X' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+    $sheet->getStyle('H2:AE' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
 
-    // Autoajustar columnas
-    foreach (range('A', 'X') as $column) {
-        $sheet->getColumnDimension($column)->setAutoSize(true);
-    }
+    // Estilo para el contenido
+    $contentStyle = [
+        'alignment' => [
+            'wrapText' => true,
+            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
+        ],
+    ];
+    $sheet->getStyle('A2:AE' . $row)->applyFromArray($contentStyle);
+
+    // Configurar anchos de columnas específicas para mejor visualización
+    $sheet->getColumnDimension('A')->setWidth(5);  // N°
+    $sheet->getColumnDimension('B')->setWidth(12); // CÉDULA
+    $sheet->getColumnDimension('C')->setWidth(20); // NOMBRE
+    $sheet->getColumnDimension('D')->setWidth(20); // APELLIDO
+    $sheet->getColumnDimension('E')->setWidth(30); // CARGO CET
+    $sheet->getColumnDimension('F')->setWidth(30); // CARGO ONAPRE
+    $sheet->getColumnDimension('G')->setWidth(12); // FECHA INGRESO
+    $sheet->getColumnDimension('H')->setWidth(12); // SALARIO BASE
+    $sheet->getColumnDimension('I')->setWidth(12); // SALARIO BASE QUINCENAL
+    $sheet->getColumnDimension('J')->setWidth(12); // ANTIGUEDAD QUINCENAL
+    $sheet->getColumnDimension('K')->setWidth(12); // PROFESIONALIZACIÓN QUINCENAL
+    $sheet->getColumnDimension('L')->setWidth(12); // PRIMA POR JERARQUÍA
+    $sheet->getColumnDimension('M')->setWidth(12); // PRIMA DE TRANSPORTE
+    $sheet->getColumnDimension('N')->setWidth(12); // PRIMA DE RECONOCIMIENTO
+    $sheet->getColumnDimension('O')->setWidth(12); // PRIMA DE HOGARES
+    $sheet->getColumnDimension('P')->setWidth(12); // COMPLEMENTO DE ALIMENTACIÓN
+    $sheet->getColumnDimension('Q')->setWidth(12); // PRIMA POR HIJOS
+    $sheet->getColumnDimension('R')->setWidth(23); // DIFERENCIA DE SUELDO BÁSICO
+    $sheet->getColumnDimension('S')->setWidth(23); // DIFERENCIA DE ANTIGUEDAD
+    $sheet->getColumnDimension('T')->setWidth(23); // DIFERENCIA DE PROFESIONALIZACIÓN
+    $sheet->getColumnDimension('U')->setWidth(23); // DIFERENCIA DE JERARQUÍA
+    $sheet->getColumnDimension('V')->setWidth(12); // TOTAL DE ASIGNACIONES
+    $sheet->getColumnDimension('W')->setWidth(12); // ASIGNACIÓN MENSUAL
+    $sheet->getColumnDimension('X')->setWidth(12); // SEMANAL PARA EL IVSS
+    $sheet->getColumnDimension('Y')->setWidth(12); // SEGURO EMPLEADO
+    $sheet->getColumnDimension('Z')->setWidth(12); // SEGURO PATRONAL
+    $sheet->getColumnDimension('AA')->setWidth(12); // R.P.E EMPLEADO
+    $sheet->getColumnDimension('AB')->setWidth(12); // R.P.E PATRONAL
+    $sheet->getColumnDimension('AC')->setWidth(12); // FAOV EMPLEADO
+    $sheet->getColumnDimension('AD')->setWidth(12); // FAOV PATRONAL
+    $sheet->getColumnDimension('AE')->setWidth(12); // FEJP EMPLEADO Y PATRONAL
 
     // Congelar la primera fila (encabezados)
     $sheet->freezePane('A2');
