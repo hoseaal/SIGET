@@ -169,7 +169,7 @@
             <div class="row">
               <div class="col mb-3">
                 <label for="tipoDeduccion" class="form-label">Nombre de la Deducción</label>
-                <input type="text" id="tipoDeduccion" class="form-control" placeholder="Ej. Seguro del Empleado" required />
+                <input type="text" id="tipoDeduccion" class="form-control" placeholder="Ej. Seguro del Empleado" disabled required />
               </div>
             </div>
             <div class="row">

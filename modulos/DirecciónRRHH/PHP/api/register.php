@@ -42,7 +42,7 @@ try {
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Insertar nuevo usuario
-    $stmt = $pdo->prepare("INSERT INTO tesusu (usu_con, usu_tip, nom_ced) VALUES (:contrasena, :tip, :cedula)");
+    $stmt = $pdo->prepare("INSERT INTO tesusu (usu_ide, usu_con, usu_tip, nom_ced) VALUES (:cedula, :contrasena, :tip, :cedula)");
     $stmt->bindParam(':contrasena', $hashedPassword);
     $stmt->bindParam(':tip', $tip);
     $stmt->bindParam(':cedula', $cedula);

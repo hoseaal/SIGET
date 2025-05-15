@@ -1,6 +1,6 @@
 /**
-* Template Name: eNno
-* Template URL: https://bootstrapmade.com/enno-free-simple-bootstrap-template/
+* Template Name: OnePage
+* Template URL: https://bootstrapmade.com/onepage-multipurpose-bootstrap-template/
 * Updated: Aug 07 2024 with Bootstrap v5.3.3
 * Author: BootstrapMade.com
 * License: https://bootstrapmade.com/license/
@@ -103,6 +103,11 @@
   window.addEventListener('load', aosInit);
 
   /**
+   * Initiate Pure Counter
+   */
+  new PureCounter();
+
+  /**
    * Initiate glightbox
    */
   const glightbox = GLightbox({
@@ -110,9 +115,23 @@
   });
 
   /**
-   * Initiate Pure Counter
+   * Init swiper sliders
    */
-  new PureCounter();
+  function initSwiper() {
+    document.querySelectorAll(".init-swiper").forEach(function(swiperElement) {
+      let config = JSON.parse(
+        swiperElement.querySelector(".swiper-config").innerHTML.trim()
+      );
+
+      if (swiperElement.classList.contains("swiper-tab")) {
+        initSwiperWithCustomPagination(swiperElement, config);
+      } else {
+        new Swiper(swiperElement, config);
+      }
+    });
+  }
+
+  window.addEventListener("load", initSwiper);
 
   /**
    * Init isotope layout and filters
@@ -148,23 +167,13 @@
   });
 
   /**
-   * Init swiper sliders
+   * Frequently Asked Questions Toggle
    */
-  function initSwiper() {
-    document.querySelectorAll(".init-swiper").forEach(function(swiperElement) {
-      let config = JSON.parse(
-        swiperElement.querySelector(".swiper-config").innerHTML.trim()
-      );
-
-      if (swiperElement.classList.contains("swiper-tab")) {
-        initSwiperWithCustomPagination(swiperElement, config);
-      } else {
-        new Swiper(swiperElement, config);
-      }
+  document.querySelectorAll('.faq-item h3, .faq-item .faq-toggle').forEach((faqItem) => {
+    faqItem.addEventListener('click', () => {
+      faqItem.parentNode.classList.toggle('faq-active');
     });
-  }
-
-  window.addEventListener("load", initSwiper);
+  });
 
   /**
    * Correct scrolling position upon page load for URLs containing hash links.
