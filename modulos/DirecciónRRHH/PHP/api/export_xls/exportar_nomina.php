@@ -10,6 +10,9 @@
 
     require '../../../conexion/conexion.php';
 
+    // Configurar zona horaria 
+    date_default_timezone_set('America/Caracas');
+
     // Obtener porcentaje de seguro del empleado
     $sql_seguro_empleado = "SELECT ded_por FROM tesded WHERE ded_raz LIKE '%Seguro del Empleado%' LIMIT 1";
     $stmt_seguro_empleado = $pdo->query($sql_seguro_empleado);
@@ -52,7 +55,7 @@
     $porcentaje_fejp = $stmt_fejp->fetch(PDO::FETCH_COLUMN);
     $porcentaje_fejp = $porcentaje_fejp ? $porcentaje_fejp / 100 : 0;
 
-    // Calcular cantidad de lunes según periodo del mes
+    // Calcular cantidad de lunes según periodo del mes - VERSIÓN CORREGIDA
     $dia_actual = date('j');
     $mes_actual = date('n');
     $ano_actual = date('Y');
@@ -63,9 +66,10 @@
         $fecha_inicio = new DateTime("$ano_actual-$mes_actual-01");
         $fecha_fin = new DateTime("$ano_actual-$mes_actual-15");
     } else {
-        // Contar lunes del 16 al final del mes
+        // Contar lunes del 16 al final del mes - FORMA CORRECTA
         $fecha_inicio = new DateTime("$ano_actual-$mes_actual-16");
-        $fecha_fin = new DateTime("$ano_actual-$mes_actual-t"); // t = último día del mes
+        // Obtener el último día del mes correctamente
+        $fecha_fin = new DateTime("last day of $ano_actual-$mes_actual");
     }
     
     $intervalo = new DateInterval('P1D');
@@ -603,8 +607,11 @@
         5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
         9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
     ];
-    $mes_actual = $meses[date('n')];
-    $fecha_descarga = date('d-m-Y');
+    // Obtener fecha actual 
+    $fecha_actual = new DateTime('now', new DateTimeZone('America/Caracas'));
+    $mes_actual = $meses[(int)$fecha_actual->format('n')];
+    $fecha_descarga = $fecha_actual->format('d-m-Y');
+    
     $nombre_archivo = $mes_actual . '_Contralor y Funcionarios_' . $fecha_descarga . '.xlsx';
 
     // Configurar el writer y descargar el archivo
