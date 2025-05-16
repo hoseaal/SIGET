@@ -48,7 +48,27 @@
                 "link": "",
                 "submenu": [
                     {
-                        "text": "Inventario ",
+                        "text": "Papelería ",
+                        "available": true,
+                        "link": " "
+                    },
+                    {
+                        "text": "Ferretería",
+                        "available": true,
+                        "link": " "
+                    },
+                    {
+                        "text": "Repuestos",
+                        "available": true,
+                        "link": " "
+                    },
+                    {
+                        "text": "Medicamentos",
+                        "available": true,
+                        "link": " "
+                    },
+                    {
+                        "text": "Productos de limpienza",
                         "available": true,
                         "link": " "
                     }

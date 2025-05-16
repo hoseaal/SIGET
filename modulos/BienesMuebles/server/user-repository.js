@@ -44,7 +44,7 @@ export class UserRepository {
     Validaciones.username(ci)
     Validaciones.password(password)
     const [existingUsers] = await conn.query(
-      'SELECT * FROM tesusu WHERE usu_ide = ?',
+      'SELECT * FROM tesusu WHERE nom_ced = ?',
       [ci]
     )
 
