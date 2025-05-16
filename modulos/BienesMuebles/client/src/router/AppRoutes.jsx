@@ -74,7 +74,7 @@ const AppRoutes = () => {
                     <ModelosyMarcas/>
                 </ProtectedRoute>
             } />
-
+              
             <Route path="/Configuracion/Tipos" element={
                 <ProtectedRoute>
                     <Tipos/>
@@ -92,7 +92,6 @@ const AppRoutes = () => {
                     <Bm1 />
                 </ProtectedRoute>
             } />
-
 
             <Route path="/ui/accordion" element={<AccordionPage />} />
             <Route path="/ui/alerts" element={<AlertPage />} />
