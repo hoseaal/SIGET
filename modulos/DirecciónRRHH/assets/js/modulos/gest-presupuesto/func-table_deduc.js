@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
             row.innerHTML = `
                 <td>${rowNumber}</td>
                 <td><strong>${deduction.ded_raz}</strong></td>
-                <td>${deduction.ded_por}</td>
+                <td>${deduction.ded_por} %</td>
                 <td>
                     <div class="dropdown">
                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">

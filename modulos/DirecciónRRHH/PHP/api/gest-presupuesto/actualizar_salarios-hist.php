@@ -17,10 +17,11 @@
 
         // Preparar la consulta de actualización
         $query = $pdo->prepare("
-            UPDATE tesnvl SET
+            UPDATE tesnvl_historico SET
                 nvl_ran = :nvl_ran,
                 nvl_sal = :nvl_sal,
-                ona_ide = :ona_ide
+                ona_ide = :ona_ide,
+                nvl_fec = :nvl_fec
             WHERE nvl_ide = :nvl_ide
         ");
         
@@ -28,6 +29,7 @@
         $query->bindParam(':nvl_ide', $data['nvl_ide'], PDO::PARAM_INT);
         $query->bindParam(':nvl_ran', $data['nvl_ran']);
         $query->bindParam(':nvl_sal', $data['nvl_sal']);
+        $query->bindParam(':nvl_fec', $data['nvl_fec']);
         
         // Manejar el caso cuando ona_ide es null
         if (empty($data['ona_ide'])) {

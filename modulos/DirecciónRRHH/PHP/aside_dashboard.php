@@ -75,6 +75,16 @@
                   </a>
                 </li>
                 <li class="menu-item">
+                  <a href="Table_NvlSalarial-Hist.php" class="menu-link" target="_blank">
+                    <div data-i18n="Basic">Histórico de Niveles Salariales</div>
+                  </a>
+                </li>
+                <li class="menu-item">
+                  <a href="Table_suplencias.php" class="menu-link" target="_blank">
+                    <div data-i18n="Basic">Suplencias de los Trabajadores</div>
+                  </a>
+                </li>
+                <li class="menu-item">
                   <a href="Table_deduc.php" class="menu-link" target="_blank">
                     <div data-i18n="Basic">Deducciones</div>
                   </a>

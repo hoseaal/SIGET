@@ -145,7 +145,7 @@ CREATE TABLE `tessca` (
 --
 
 CREATE TABLE `tesusu` (
-  `usu_ide` INT NOT NULL COMMENT 'Identificador unico del usuario',
+  `usu_ide` varchar(10) NOT NULL COMMENT 'Identificador unico del usuario',
   `usu_con` varchar(255) NOT NULL COMMENT 'Contraseña del usuario (hashed)',
   `usu_tip` int(1) NOT NULL COMMENT 'Perfil o tipo de usuario',
   `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Referencia a empleado en tmanom'
@@ -810,14 +810,14 @@ INSERT INTO `tesdep` (`dep_nom`, `dep_des`) VALUES
 
 INSERT INTO tesded (ded_raz, ded_por) 
   VALUES 
-  ('Seguro del Empleado', 0.04),
-  ('Seguro Patronal', 0.09),
-  ('R.P.E Empleado', 0.005),
-  ('R.P.E Patronal', 0.02),
-  ('F.A.O.V Empleado', 0.01),
-  ('F.A.O.V Patronal', 2.00),
-  ('F.E.J.P Empleado y Patronal', 0.03),
-  ('Caja Empleado y Patronal', 0.10);
+  ('Seguro del Empleado', 4),
+  ('Seguro Patronal', 9),
+  ('R.P.E Empleado', 5),
+  ('R.P.E Patronal', 2),
+  ('F.A.O.V Empleado', 1),
+  ('F.A.O.V Patronal', 200),
+  ('F.E.J.P Empleado y Patronal', 3),
+  ('Caja Empleado y Patronal', 10);
 
 -- TABLA TESPRI
 
