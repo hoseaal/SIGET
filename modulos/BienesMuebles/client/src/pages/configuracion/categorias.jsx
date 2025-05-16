@@ -188,6 +188,8 @@ export const Categorias = () => {
 
     }, [columns3, showcatEsModal, refreshKey]);
 
+    console.log("cat", data)
+    console.log("subcat", data2)
     console.log("especificas", data3)
 
    return (

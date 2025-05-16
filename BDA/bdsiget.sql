@@ -536,15 +536,15 @@ ALTER TABLE `tesnvl`
 ALTER TABLE `tesnvl_historico`
   ADD CONSTRAINT `fk_tesnvl_tesona2` FOREIGN KEY (`ona_ide`) REFERENCES `tesona` (`ona_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-CREATE TABLE `tmacoi` (
-  `coi_ide` int(11) NOT NULL COMMENT 'Identificador de concepto de incorporación',
-  `coi_coi` varchar(50) NOT NULL COMMENT 'Descripción de concepto de incorporación'
+CREATE TABLE `tmacom` (
+  `com_ide` int(11) NOT NULL COMMENT 'Identificador de concepto de movimiento',
+  `com_com` varchar(50) NOT NULL COMMENT 'Descripción de concepto de movimiento'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE `tmacoi`
-  ADD PRIMARY KEY (`coi_ide`);
+ALTER TABLE `tmacom`
+  ADD PRIMARY KEY (`com_ide`);
 
-ALTER TABLE `tmab_m` ADD COLUMN `coi_ide` int(11) COMMENT 'Referencia a concepto de incorporación en tmacoi', ADD CONSTRAINT `fk_tmabm_tmacoi` FOREIGN KEY (`coi_ide`) REFERENCES `tmacoi` (`coi_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `tmab_m` ADD COLUMN `com_ide` int(11) COMMENT 'Referencia a concepto de movimiento en tmacom', ADD CONSTRAINT `fk_tmabm_tmacom` FOREIGN KEY (`com_ide`) REFERENCES `tmacom` (`com_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 CREATE TABLE `tessup` (
@@ -564,7 +564,18 @@ CREATE TABLE `tessup` (
   FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE tmacue ( `cue_id` int NOT NULL COMMENT 'Identificador de relacion de cuenta de BM del mes anterior', `cue_cue` float(10.2) NOT NULL COMMENT 'Monte de relacion de cuenta de BM del mes anterior' );
+CREATE TABLE tmacue ( `cue_id` int NOT NULL COMMENT 'Identificador de relacion de cuenta de BM del mes anterior', `cue_cue` float(10.2) NOT NULL COMMENT 'Monto de relacion de cuenta de BM del mes anterior' );
+
+CREATE TABLE ttrpre ( 
+  `pre_ide` INT NOT NULL AUTO_INCREMENT COMMENT "identificador unico de prestamo", 
+  `bim_ide` VARCHAR(10) NOT NULL COMMENT "identificador unico del bien", 
+  `dep_ide` INT NOT NULL COMMENT "identificador unico del departamento", 
+  `pre_des` TEXT COMMENT "Observacion del prestamo", 
+  `pre_est` TINYINT(1) COMMENT "Estado del prestamo (1 para prestado 0 para no prestado)", 
+  PRIMARY KEY (`pre_ide`), FOREIGN KEY (`bim_ide`) REFERENCES `tmab_m`(`bim_ide`), 
+  FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`), 
+  UNIQUE KEY `relacion_unica` (`bim_ide`, `dep_ide`) 
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 /* VOLCADO DE LA BASE DE DATOS */
 
