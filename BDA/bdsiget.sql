@@ -159,12 +159,12 @@ CREATE TABLE `tmab_m` (
   `bim_ide` varchar(10) NOT NULL COMMENT 'Codigo interno del bien',
   `bim_des` text NOT NULL COMMENT 'Descripcion del bien',
   `bim_fec` date NOT NULL COMMENT 'Fecha de adquisicion del bien',
-  `bim_ndo` date NOT NULL COMMENT 'Numero de documento (factura) del bien',
+  `bim_ndo` varchar(10) NOT NULL COMMENT 'Numero de documento (factura) del bien',
   `bim_val` decimal(10,0) NOT NULL COMMENT 'Valor monetario de adquisicion del bien ',
   `bim_moneda` varchar(10) NOT NULL COMMENT 'Moneda en la que esta el valor del bien (Bolivares)',
   `bim_color` varchar(30) NOT NULL COMMENT 'Color del bien',
   `bim_cod` varchar(20) NOT NULL COMMENT 'Codigo de SUDEBIN del bien mueble',
-  `bim_obs` text NOT NULL COMMENT 'Observacion del bien',
+  `bim_obs` text COMMENT 'Observacion del bien',
   `bim_sede` varchar(20) NOT NULL COMMENT 'Sede en la que se encuentra el bien (PRINCIPAL)',
   `est_ide` int(11) NOT NULL COMMENT 'Referencia a estado en tmaest',
   `tip_ide` varchar(10) NOT NULL COMMENT 'Referencia a tipo en tmatip',
@@ -577,6 +577,13 @@ CREATE TABLE ttrpre (
   UNIQUE KEY `relacion_unica` (`bim_ide`, `dep_ide`) 
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+ALTER TABLE `tmab_m` 
+ADD COLUMN `dep_ide` INT NULL COMMENT 'Departamento al que pertenece el bien',
+ADD CONSTRAINT `fk_bien_departamento` 
+    FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE;
+    
 /* VOLCADO DE LA BASE DE DATOS */
 
 -- TABLA TESCET
