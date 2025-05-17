@@ -15,25 +15,28 @@ export const Bm2 = () => {
     const [errorMessage, setErrorMessage] = useState(false); 
 
     const [formData, setFormData] = useState({
-        numero_identificacion: '',
-        unidad_administrativa: '',
-        descripcion_bien: '',
-        forma_adquisicion: '',
-        fecha_adquisicion: '',
-        numero_documento: '',
-        valor_monetario: '',
-        moneda: '',
-        color_bien: '',
-        codigo_sudebin: '',
-        estado_uso: '',
-        condicion_fisica: '',
-        marca: '',
-        modelo: '',
-        tipo_bien: '',
-        categoria_general: '',
-        subcategoria: '',
-        categoria_especifica: '',
-        concepto_incorporacion: ''
+        bim_ide: '',
+        bim_des: '',
+        bim_fec: '',
+        bim_ndo: '',
+        bim_val: '',
+        bim_moneda: '',
+        bim_color: '',
+        bim_cod: '',
+        bim_obs: null,
+        bim_sede: 'PRINCIPAL',
+        est_ide: 4,
+        tip_ide: '',
+        foa_ide: '',
+        con_ide: '',
+        esu_ide: '',
+        mar_ide: '',
+        mod_ide: '',
+        cat_ide: '',
+        sca_ide: '',
+        cae_ide: '',
+        com_ide: '',
+        dep_ide: ''
     });
 
     const handleRelacionChange = (e) => {
@@ -51,11 +54,11 @@ export const Bm2 = () => {
     //tablas Foraneas
     const [unidadAdmin, setUnidadAdmin] = useState([]);
     const [formaAdquisicion, setFormaAdquisicion] = useState([]);
-    const [moneda, setMoneda] = useState([]);
+    const [bim_moneda, setbim_moneda] = useState([]);
     const [estadoUso, setEstadoUso] = useState([]);
     const [condicionFisica, setCondicionFisica] = useState([]);
-    const [marca, setMarca] = useState([]);
-    const [modelo, setModelo] = useState([]);
+    const [mar_ide, setmar_ide] = useState([]);
+    const [mod_ide, setmod_ide] = useState([]);
     const [tipoBien, setTipoBien] = useState([]);
     const [catGen, setCatgen] = useState([]);
     const [subCat, setsubCat] = useState([]);
@@ -66,7 +69,7 @@ export const Bm2 = () => {
         const fetchAllData = async () => {
             const unidadAdminData = await fetchData('tesdep', '*');
             const formaAdquisicionData = await fetchData('tmafoa', '*');
-            const monedaData = [
+            const bim_monedaData = [
                 {
                     "mon_ide": 1,
                     "mon_mon": "Bolivares"
@@ -78,17 +81,17 @@ export const Bm2 = () => {
             ];
             const estadoUsoData = await fetchData('tmaesu', '*');
             const condicionFisicaData = await fetchData('tmacon', '*');
-            const marcaData = await fetchData('tmamar', '*');
+            const mar_ideData = await fetchData('tmamar', '*');
             const tipoBienData = await fetchData('tmatip', '*');
             const catGenData = await fetchData('tmacat', '*');
             const conceptoMovData = await fetchData('tmacom', '*');
 
             setUnidadAdmin(unidadAdminData || []);
             setFormaAdquisicion(formaAdquisicionData || []);
-            setMoneda(monedaData || []);
+            setbim_moneda(bim_monedaData || []);
             setEstadoUso(estadoUsoData || []);
             setCondicionFisica(condicionFisicaData || []);
-            setMarca(marcaData || []);
+            setmar_ide(mar_ideData || []);
             setTipoBien(tipoBienData || []);
             setCatgen(catGenData || []);
             setConceptoMov(conceptoMovData || []);
@@ -97,50 +100,50 @@ export const Bm2 = () => {
         fetchAllData();
     }, []);
 
-    // Efecto para cargar modelos cuando se selecciona una marca
+    // Efecto para cargar mod_ides cuando se selecciona una mar_ide
     useEffect(() => {
-        const fetchModelos = async () => {
-            if (!formData.marca) {
-                setModelo([]);
+        const fetchmod_ides = async () => {
+            if (!formData.mar_ide) {
+                setmod_ide([]);
                 return;
             }
 
-            const modelosData = await fetchData('tesmod', '*', 'mar_ide', formData.marca);
-            setModelo(modelosData || []);
+            const mod_idesData = await fetchData('tesmod', '*', 'mar_ide', formData.mar_ide);
+            setmod_ide(mod_idesData || []);
         };
 
-        fetchModelos();
-    }, [formData.marca]);
+        fetchmod_ides();
+    }, [formData.mar_ide]);
 
     // Efecto para cargar subcategorías cuando se selecciona una categoría general
     useEffect(() => {
-        const fetchSubCategorias = async () => {
-            if (!formData.categoria_general) {
+        const fetchsca_ides = async () => {
+            if (!formData.cat_ide) {
                 setsubCat([]);
                 return;
             }
 
-            const subCatData = await fetchData('tessca', '*', 'cat_ide', formData.categoria_general);
+            const subCatData = await fetchData('tessca', '*', 'cat_ide', formData.cat_ide);
             setsubCat(subCatData || []);
         };
 
-        fetchSubCategorias();
-    }, [formData.categoria_general]);
+        fetchsca_ides();
+    }, [formData.cat_ide]);
 
     // Efecto para cargar categorías específicas cuando se selecciona una subcategoría
     useEffect(() => {
         const fetchCatEspecificas = async () => {
-            if (!formData.subcategoria) {
+            if (!formData.sca_ide) {
                 setCatEsp([]);
                 return;
             }
 
-            const catEspData = await fetchData('tescae', '*', 'sca_ide', formData.subcategoria);
+            const catEspData = await fetchData('tescae', '*', 'sca_ide', formData.sca_ide);
             setCatEsp(catEspData || []);
         };
 
         fetchCatEspecificas();
-    }, [formData.subcategoria]);
+    }, [formData.sca_ide]);
 
      // Agregamos estado para el filtro de búsqueda
     const [searchTerm, setSearchTerm] = useState('');
@@ -162,36 +165,81 @@ export const Bm2 = () => {
 }, [searchTerm, catEsp]);
 
 const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        try {
-            const response = await axios.post('/api/insert', {
-                table: 'tmab_m', 
-                data: formData
+    e.preventDefault();
+    
+    const datosEnviar = {
+        bim_ide: formData.bim_ide,
+        bim_des: formData.bim_des,
+        bim_fec: formData.bim_fec,
+        bim_ndo: formData.bim_ndo,
+        bim_val: formData.bim_val,
+        bim_moneda: formData.bim_moneda,
+        bim_color: formData.bim_color,
+        bim_cod: formData.bim_cod,
+        bim_obs: null,
+        bim_sede: 'PRICIPAL',
+        est_ide: 4,
+        tip_ide: formData.tip_ide,
+        foa_ide: formData.foa_ide,
+        con_ide: formData.con_ide,
+        esu_ide: formData.esu_ide,
+        mod_ide: formData.mod_ide,
+        cae_ide: formData.cae_ide,
+        com_ide: formData.com_ide,
+        dep_ide: formData.dep_ide
+    }
+    
+    console.log('Datos a enviar:', datosEnviar);
+    // Validación básica
+    if (!formData.bim_ide || !formData.dep_ide) {
+        setErrorMessage('Los campos obligatorios deben ser completados');
+        setMensajeMostrado(true);
+        setTimeout(() => setMensajeMostrado(false), 3000);
+        return;
+    }
+
+    try {
+        const response = await axios.post('/api/insert', {
+            table: 'tmab_m', 
+            data: datosEnviar
+        });
+
+        console.log('CORRECTO', response.status)
+
+        if (response.status === 201) {
+            setFormEnviado(true);
+            setMensajeMostrado(true);
+            setFormData({
+                bim_ide: '',
+                bim_des: '',
+                bim_fec: '',
+                bim_ndo: '',
+                bim_val: '',
+                bim_moneda: '',
+                bim_color: '',
+                bim_cod: '',
+                tip_ide: '',
+                foa_ide: '',
+                con_ide: '',
+                esu_ide: '',
+                mar_ide: '',
+                mod_ide: '',
+                cat_ide: '',
+                sca_ide: '',
+                cae_ide: '',
+                com_ide: '',
+                dep_ide: ''
             });
-
-
-            if (response.status === 201) {
-                setFormEnviado(true)
-                    setMensajeMostrado(true)
-                    setTimeout(() => {
-                        setMensajeMostrado(false);
-                    }, 1000);
-                }
-        } catch (error) {
-            if (error.response && error.response.data && error.response.data.error === 'DUPLICATE_KEY') {
-                setErrorMessage('Error: Este codigo ya existe.'); 
-            }
-                setFormEnviado(false); // Indicar que hubo un error
-                setMensajeMostrado(true);
-                console.error('Error al insertar:', error);
-                setErrorMessage(error.response?.data?.error || error.message)
-
-                setTimeout(() => {
-                    setMensajeMostrado(false);
-                  }, 3000);
+            setTimeout(() => setMensajeMostrado(false), 3000);
         }
-    };
+    } catch (error) {
+        console.error('Error al insertar:', error);
+        setFormEnviado(false);
+        setMensajeMostrado(true);
+        setErrorMessage(error.response?.data?.error || error.message || 'Error desconocido');
+        setTimeout(() => setMensajeMostrado(false), 3000);
+    }
+};
 
 
     return (
@@ -227,7 +275,7 @@ const handleSubmit = async (e) => {
                         </div>
                         {relacion ? (
                             <div className="card-body">
-                                <form>
+                                <form  onSubmit={handleSubmit}>
                                     <div className="row mb-3">
                                         <label className="col-sm-2 col-form-label" htmlFor="basic-default-name">Número de Identificación</label>
                                         <div className="col-sm-10">
@@ -236,8 +284,8 @@ const handleSubmit = async (e) => {
                                                 className="form-control" 
                                                 id="basic-default-name" 
                                                 placeholder="xxxx" 
-                                                name="numero_identificacion"
-                                                value={formData.numero_identificacion}
+                                                name="bim_ide"
+                                                value={formData.bim_ide}
                                                 onChange={handleChange}
                                             />
                                         </div>
@@ -245,8 +293,8 @@ const handleSubmit = async (e) => {
                                     <Form.Group className="mb-3">
                                         <Form.Label>UNIDAD ADMINISTRATIVA</Form.Label>
                                         <Form.Select 
-                                            name='unidad_administrativa'
-                                            value={formData.unidad_administrativa}
+                                            name='dep_ide'
+                                            value={formData.dep_ide}
                                             onChange={handleChange}
                                         >
                                             <option value="">Seleccione una opción</option>
@@ -265,8 +313,8 @@ const handleSubmit = async (e) => {
                                                 className="form-control"
                                                 id="basic-default-company"
                                                 placeholder="xxxx"
-                                                name="descripcion_bien"
-                                                value={formData.descripcion_bien}
+                                                name="bim_des"
+                                                value={formData.bim_des}
                                                 onChange={handleChange}
                                             />
                                         </div>
@@ -274,8 +322,8 @@ const handleSubmit = async (e) => {
                                     <Form.Group className="mb-3">
                                         <Form.Label>Forma de Adquisición</Form.Label>
                                         <Form.Select 
-                                            name='forma_adquisicion'
-                                            value={formData.forma_adquisicion}
+                                            name='foa_ide'
+                                            value={formData.foa_ide}
                                             onChange={handleChange}
                                         >
                                             <option value="">Seleccione una opción</option>
@@ -295,8 +343,8 @@ const handleSubmit = async (e) => {
                                                     id="basic-default-email"
                                                     className="form-control"
                                                     placeholder="xxxx"
-                                                    name="fecha_adquisicion"
-                                                    value={formData.fecha_adquisicion}
+                                                    name="bim_fec"
+                                                    value={formData.bim_fec}
                                                     onChange={handleChange}
                                                 />
                                             </div>
@@ -311,8 +359,8 @@ const handleSubmit = async (e) => {
                                                     id="basic-default-email"
                                                     className="form-control"
                                                     placeholder="xxxx"
-                                                    name="numero_documento"
-                                                    value={formData.numero_documento}
+                                                    name="bim_ndo"
+                                                    value={formData.bim_ndo}
                                                     onChange={handleChange}
                                                 />
                                             </div>
@@ -326,21 +374,21 @@ const handleSubmit = async (e) => {
                                                 id="basic-default-phone"
                                                 className="form-control phone-mask"
                                                 placeholder="0.00"
-                                                name="valor_monetario"
-                                                value={formData.valor_monetario}
+                                                name="bim_val"
+                                                value={formData.bim_val}
                                                 onChange={handleChange}
                                             />
                                         </div>
                                     </div>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Moneda</Form.Label>
+                                        <Form.Label>bim_moneda</Form.Label>
                                         <Form.Select 
-                                            name='moneda'
-                                            value={formData.moneda}
+                                            name='bim_moneda'
+                                            value={formData.bim_moneda}
                                             onChange={handleChange}
                                         >
                                             <option value="">Seleccione una opción</option>
-                                            {moneda.map((item) => (
+                                            {bim_moneda.map((item) => (
                                                 <option key={item.mon_ide} value={item.mon_ide}>
                                                     {item.mon_mon}
                                                 </option>
@@ -355,8 +403,8 @@ const handleSubmit = async (e) => {
                                                 id="basic-default-phone"
                                                 className="form-control phone-mask"
                                                 placeholder="Ej: Rojo"
-                                                name="color_bien"
-                                                value={formData.color_bien}
+                                                name="bim_color"
+                                                value={formData.bim_color}
                                                 onChange={handleChange}
                                             />
                                         </div>
@@ -369,8 +417,8 @@ const handleSubmit = async (e) => {
                                                 id="basic-default-phone"
                                                 className="form-control phone-mask"
                                                 placeholder="Ej: 12345"
-                                                name="codigo_sudebin"
-                                                value={formData.codigo_sudebin}
+                                                name="bim_cod"
+                                                value={formData.bim_cod}
                                                 onChange={handleChange}
                                             />
                                         </div>
@@ -378,8 +426,8 @@ const handleSubmit = async (e) => {
                                     <Form.Group className="mb-3">
                                         <Form.Label>Estado de uso</Form.Label>
                                         <Form.Select 
-                                            name='estado_uso'
-                                            value={formData.estado_uso}
+                                            name='esu_ide'
+                                            value={formData.esu_ide}
                                             onChange={handleChange}
                                         >
                                             <option value="">Seleccione una opción</option>
@@ -393,8 +441,8 @@ const handleSubmit = async (e) => {
                                     <Form.Group className="mb-3">
                                         <Form.Label>Condición física</Form.Label>
                                         <Form.Select 
-                                            name='condicion_fisica'
-                                            value={formData.condicion_fisica}
+                                            name='con_ide'
+                                            value={formData.con_ide}
                                             onChange={handleChange}
                                         >
                                             <option value="">Seleccione una opción</option>
@@ -406,14 +454,14 @@ const handleSubmit = async (e) => {
                                         </Form.Select>
                                     </Form.Group>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Marca</Form.Label>
+                                        <Form.Label>mar_ide</Form.Label>
                                         <Form.Select 
-                                            name='marca'
-                                            value={formData.marca}
+                                            name='mar_ide'
+                                            value={formData.mar_ide}
                                             onChange={handleChange}
                                         >
                                             <option value="">Seleccione una opción</option>
-                                            {marca.map((item) => (
+                                            {mar_ide.map((item) => (
                                                 <option key={item.mar_ide} value={item.mar_ide}>
                                                     {item.mar_mar}
                                                 </option>
@@ -421,15 +469,15 @@ const handleSubmit = async (e) => {
                                         </Form.Select>
                                     </Form.Group>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Modelo</Form.Label>
+                                        <Form.Label>mod_ide</Form.Label>
                                         <Form.Select 
-                                            name='modelo'
-                                            value={formData.modelo}
+                                            name='mod_ide'
+                                            value={formData.mod_ide}
                                             onChange={handleChange}
-                                            disabled={!formData.marca}
+                                            disabled={!formData.mar_ide}
                                         >
                                             <option value="">Seleccione una opción</option>
-                                            {modelo.map((item) => (
+                                            {mod_ide.map((item) => (
                                                 <option key={item.mod_ide} value={item.mod_ide}>
                                                     {item.mod_mod}
                                                 </option>
@@ -439,8 +487,8 @@ const handleSubmit = async (e) => {
                                     <Form.Group className="mb-3">
                                         <Form.Label>Tipo de Bien</Form.Label>
                                         <Form.Select 
-                                            name='tipo_bien'
-                                            value={formData.tipo_bien}
+                                            name='tip_ide'
+                                            value={formData.tip_ide}
                                             onChange={handleChange}
                                         >
                                             <option value="">Seleccione una opción</option>
@@ -454,8 +502,8 @@ const handleSubmit = async (e) => {
                                     <Form.Group className="mb-3">
                                         <Form.Label>Categoría General</Form.Label>
                                         <Form.Select 
-                                            name='categoria_general'
-                                            value={formData.categoria_general}
+                                            name='cat_ide'
+                                            value={formData.cat_ide}
                                             onChange={handleChange}
                                         >
                                             <option value="">Seleccione una opción</option>
@@ -469,10 +517,10 @@ const handleSubmit = async (e) => {
                                     <Form.Group className="mb-3">
                                         <Form.Label>Sub-Categoría</Form.Label>
                                         <Form.Select 
-                                            name='subcategoria'
-                                            value={formData.subcategoria}
+                                            name='sca_ide'
+                                            value={formData.sca_ide}
                                             onChange={handleChange}
-                                            disabled={!formData.categoria_general}
+                                            disabled={!formData.cat_ide}
                                         >
                                             <option value="">Seleccione una opción</option>
                                             {subCat.map((item) => (
@@ -490,14 +538,14 @@ const handleSubmit = async (e) => {
                                             onChange={selectedOption => {
                                                 handleChange({
                                                     target: {
-                                                        name: 'categoria_especifica',
+                                                        name: 'cae_ide',
                                                         value: selectedOption ? selectedOption.value : ''
                                                     }
                                                 });
                                             }}
                                             value={filteredCatEsp.find(option => 
-                                                option.value === formData.categoria_especifica)}
-                                            isDisabled={!formData.subcategoria}
+                                                option.value === formData.cae_ide)}
+                                            isDisabled={!formData.sca_ide}
                                             placeholder="Buscar categoría..."
                                             noOptionsMessage={() => "No se encontraron opciones"}
                                             loadingMessage={() => "Buscando..."}
@@ -508,8 +556,8 @@ const handleSubmit = async (e) => {
                                     <Form.Group className="mb-3">
                                         <Form.Label>Concepto de Movimiento</Form.Label>
                                         <Form.Select 
-                                            name='concepto_incorporacion'
-                                            value={formData.concepto_incorporacion}
+                                            name='com_ide'
+                                            value={formData.com_ide}
                                             onChange={handleChange}
                                         >
                                             <option value="">Seleccione una opción</option>
