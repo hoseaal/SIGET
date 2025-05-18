@@ -164,6 +164,7 @@ export const Bm2 = () => {
     }
 }, [searchTerm, catEsp]);
 
+
 const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -209,27 +210,45 @@ const handleSubmit = async (e) => {
         if (response.status === 201) {
             setFormEnviado(true);
             setMensajeMostrado(true);
-            setFormData({
-                bim_ide: '',
-                bim_des: '',
-                bim_fec: '',
-                bim_ndo: '',
-                bim_val: '',
-                bim_moneda: '',
-                bim_color: '',
-                bim_cod: '',
-                tip_ide: '',
-                foa_ide: '',
-                con_ide: '',
-                esu_ide: '',
-                mar_ide: '',
-                mod_ide: '',
-                cat_ide: '',
-                sca_ide: '',
-                cae_ide: '',
-                com_ide: '',
-                dep_ide: ''
-            });
+            const datosActa = {
+                    fechaActualizacion: "DICIEMBRE 2023",
+                    numeroActa: "INC-2023-789",
+                    ciudad: "San Cristóbal",
+                    dia: "15",
+                    mes: "Noviembre",
+                    anio: "23",
+                    hora: "10:30 AM",
+                    nombreDirectorAdmin: "María Rodríguez",
+                    ciDirectorAdmin: "12345678",
+                    nombreDirectorAsignacion: "Carlos Pérez",
+                    ciDirectorAsignacion: "87654321",
+                    unidadAsignacion: "Dirección de Tecnología",
+                    nombreJefeCompras: "Juan González",
+                    ciJefeCompras: "11223344",
+                    nombreAnalistaBienes: "Ana López",
+                    ciAnalistaBienes: "44332211",
+                    descripcionIncorporacion: "Computador portátil marca HP, modelo EliteBook 840 G9",
+                    codigoBien: "TEC-2023-001",
+                    unidadDestino: "Departamento de Desarrollo de Software",
+                    nombreFuncionarioElabora: "Pedro Martínez"
+            };
+            const pdfResponse = await axios.post(
+                '/api/generar-acta',
+                datosActa,
+                { responseType: 'blob', withCredentials: true }
+            );
+
+            // Crear descarga automática
+            const url = window.URL.createObjectURL(new Blob([pdfResponse.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `acta_incorporacion_${formData.bim_cod}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            // Limpiar formulario
+            setFormEnviado(true);
             setTimeout(() => setMensajeMostrado(false), 3000);
         }
     } catch (error) {
@@ -240,8 +259,6 @@ const handleSubmit = async (e) => {
         setTimeout(() => setMensajeMostrado(false), 3000);
     }
 };
-
-
     return (
         <>
             <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-2</h4>
@@ -381,7 +398,7 @@ const handleSubmit = async (e) => {
                                         </div>
                                     </div>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>bim_moneda</Form.Label>
+                                        <Form.Label>Moneda</Form.Label>
                                         <Form.Select 
                                             name='bim_moneda'
                                             value={formData.bim_moneda}
@@ -389,7 +406,7 @@ const handleSubmit = async (e) => {
                                         >
                                             <option value="">Seleccione una opción</option>
                                             {bim_moneda.map((item) => (
-                                                <option key={item.mon_ide} value={item.mon_ide}>
+                                                <option key={item.mon_ide} value={item.mon_mon}>
                                                     {item.mon_mon}
                                                 </option>
                                             ))}

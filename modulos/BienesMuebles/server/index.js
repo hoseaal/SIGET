@@ -8,6 +8,8 @@ import { UserRepository } from './user-repository.js'
 import authenticate from './authenticate.js'
 import { selectData, selectWhereData, getTableColumns, insertData, updateData, deleteData } from './cruds.js'
 import { getConnection } from './conn.js'
+import { generarActaIncorporacion } from './services/pdf-services.js'
+import fs from 'fs'
 
 const router = express.Router()
 const app = express()
@@ -222,6 +224,32 @@ router.delete('/api/delete', async (req, res) => {
       message: 'Error interno del servidor',
       error: err.message
     })
+  }
+})
+
+app.post('/api/generar-acta', async (req, res) => {
+  try {
+    const datosActa = {
+      ...req.body,
+      fechaActualizacion: new Date().toLocaleDateString('es-VE', { year: 'numeric', month: 'long' }).toUpperCase()
+    }
+
+    const pdfPath = await generarActaIncorporacion(datosActa)
+
+    // Enviar el archivo como respuesta
+    res.download(pdfPath, `acta_incorporacion_${datosActa.numeroActa || 'generada'}.pdf`, (err) => {
+      if (err) {
+        console.error('Error al enviar el archivo:', err)
+        res.status(500).json({ error: 'Error al enviar el PDF' })
+      }
+      // Opcional: eliminar el archivo después de enviarlo
+      fs.unlink(pdfPath, (unlinkErr) => {
+        if (unlinkErr) console.error('Error al eliminar el archivo temporal:', unlinkErr)
+      })
+    })
+  } catch (error) {
+    console.error('Error al generar acta:', error)
+    res.status(500).json({ error: 'Error al generar el acta' })
   }
 })
 
