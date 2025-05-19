@@ -55,6 +55,17 @@
     $porcentaje_fejp = $stmt_fejp->fetch(PDO::FETCH_COLUMN);
     $porcentaje_fejp = $porcentaje_fejp ? $porcentaje_fejp / 100 : 0;
 
+    // Obtener porcentaje de Caja Empleado y Patronal
+    $sql_caja = "SELECT ded_por FROM tesded WHERE ded_raz LIKE '%Caja Empleado y Patronal%' LIMIT 1";
+    $stmt_caja = $pdo->query($sql_caja);
+    $porcentaje_caja = $stmt_caja->fetch(PDO::FETCH_COLUMN);
+    $porcentaje_caja = $porcentaje_caja ? $porcentaje_caja / 100 : 0;
+
+    // Obtener datos de cajas de ahorro
+    $sql_cajas = "SELECT nom_ced, cep_activa FROM tescep";
+    $stmt_cajas = $pdo->query($sql_cajas);
+    $cajas_ahorro = $stmt_cajas->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
     // Calcular cantidad de lunes según periodo del mes - VERSIÓN CORREGIDA
     $dia_actual = date('j');
     $mes_actual = date('n');
@@ -189,6 +200,7 @@
     $sheet->setCellValue('AC1', 'FAOV EMPLEADO');
     $sheet->setCellValue('AD1', 'FAOV PATRONAL');
     $sheet->setCellValue('AE1', 'FEJP EMPLEADO Y PATRONAL');
+    $sheet->setCellValue('AF1', 'CAJA EMPLEADO Y PATRONAL');
 
     // Estilo para los encabezados
     $headerStyle = [
@@ -207,7 +219,7 @@
         ],
     ];
 
-    $sheet->getStyle('A1:AE1')->applyFromArray($headerStyle);
+    $sheet->getStyle('A1:AF1')->applyFromArray($headerStyle);
 
     // Llenar datos
     $row = 2;
@@ -516,6 +528,25 @@
         
         $fejp = round($base_fejp * $porcentaje_fejp, 2);
 
+        // Cálculo de Caja Empleado y Patronal - VERSIÓN CORREGIDA
+        $caja_ahorro = 'No está en caja de ahorro';
+        
+        // Verificar si el empleado está en la tabla tescep
+        if (isset($cajas_ahorro[$data['cedula']])) {
+            $cep_activa = $cajas_ahorro[$data['cedula']][0]['cep_activa']; // Accedemos correctamente al valor
+            
+            if ($cep_activa == 1) {
+                // Calcular base para caja de ahorro
+                $base_caja = $sueldo_quincenal;
+                
+                // Sumar diferencia de sueldo si existe
+                $base_caja += is_numeric($diferencia_sueldo) ? $diferencia_sueldo : 0;
+                
+                // Calcular caja de ahorro
+                $caja_ahorro = round($base_caja * $porcentaje_caja, 2);
+            }
+        }
+
         $sheet->setCellValue('A' . $row, $contador);
         $sheet->setCellValue('B' . $row, $data['cedula']);
         $sheet->setCellValue('C' . $row, $data['nombre']);
@@ -548,13 +579,14 @@
         $sheet->setCellValue('AC' . $row, $faov_empleado);
         $sheet->setCellValue('AD' . $row, $faov_patronal);
         $sheet->setCellValue('AE' . $row, $fejp);
+        $sheet->setCellValue('AF' . $row, $caja_ahorro);
         
         $row++;
         $contador++;
     }
 
     // Aplicar formato numérico a las columnas numéricas
-    $sheet->getStyle('H2:AE' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+    $sheet->getStyle('H2:AF' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
 
     // Estilo para el contenido
     $contentStyle = [
@@ -563,7 +595,7 @@
             'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
         ],
     ];
-    $sheet->getStyle('A2:AE' . $row)->applyFromArray($contentStyle);
+    $sheet->getStyle('A2:AF' . $row)->applyFromArray($contentStyle);
 
     // Configurar anchos de columnas específicas para mejor visualización
     $sheet->getColumnDimension('A')->setWidth(5);  // N°
@@ -597,6 +629,7 @@
     $sheet->getColumnDimension('AC')->setWidth(12); // FAOV EMPLEADO
     $sheet->getColumnDimension('AD')->setWidth(12); // FAOV PATRONAL
     $sheet->getColumnDimension('AE')->setWidth(12); // FEJP EMPLEADO Y PATRONAL
+    $sheet->getColumnDimension('AF')->setWidth(20); // CAJA EMPLEADO Y PATRONAL
 
     // Congelar la primera fila (encabezados)
     $sheet->freezePane('A2');
