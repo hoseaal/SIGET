@@ -827,7 +827,7 @@ INSERT INTO tesded (ded_raz, ded_por)
   VALUES 
   ('Seguro del Empleado', 4),
   ('Seguro Patronal', 9),
-  ('R.P.E Empleado', 5),
+  ('R.P.E Empleado', 0.50),
   ('R.P.E Patronal', 2),
   ('F.A.O.V Empleado', 1),
   ('F.A.O.V Patronal', 200),
