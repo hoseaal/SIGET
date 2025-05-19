@@ -564,6 +564,14 @@ CREATE TABLE `tessup` (
   FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `tescep` (
+  `cep_ide` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID único de Caja de Empleado Patronal',
+  `cep_activa` tinyint(1) DEFAULT 1 COMMENT 'Indicador de caja de ahorro activa (1=activa, 0=inactiva)',
+  `nom_ced` varchar(10) NOT NULL COMMENT 'Cédula del empleado suplente (FK a tmanom)',
+  PRIMARY KEY (`cep_ide`),
+  FOREIGN KEY (`nom_ced`) REFERENCES `tmanom`(`nom_ced`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE tmacue ( `cue_id` int NOT NULL COMMENT 'Identificador de relacion de cuenta de BM del mes anterior', `cue_cue` float(10.2) NOT NULL COMMENT 'Monto de relacion de cuenta de BM del mes anterior' );
 
 CREATE TABLE ttrpre ( 
