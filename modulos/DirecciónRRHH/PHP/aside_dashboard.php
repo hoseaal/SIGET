@@ -85,6 +85,11 @@
                   </a>
                 </li>
                 <li class="menu-item">
+                  <a href="#" class="menu-link" target="_blank">
+                    <div data-i18n="Basic">Caja de Ahorro Patronal</div>
+                  </a>
+                </li>
+                <li class="menu-item">
                   <a href="Table_deduc.php" class="menu-link" target="_blank">
                     <div data-i18n="Basic">Deducciones</div>
                   </a>

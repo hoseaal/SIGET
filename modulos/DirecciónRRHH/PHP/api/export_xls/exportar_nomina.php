@@ -191,16 +191,17 @@
     $sheet->setCellValue('T1', 'DIFERENCIA DE PROFESIONALIZACIÓN');
     $sheet->setCellValue('U1', 'DIFERENCIA DE JERARQUÍA');
     $sheet->setCellValue('V1', 'TOTAL DE ASIGNACIONES');
-    $sheet->setCellValue('W1', 'ASIGNACIÓN MENSUAL');
-    $sheet->setCellValue('X1', 'SEMANAL PARA EL IVSS');
-    $sheet->setCellValue('Y1', 'SEGURO EMPLEADO');
-    $sheet->setCellValue('Z1', 'SEGURO PATRONAL');
-    $sheet->setCellValue('AA1', 'R.P.E EMPLEADO');
-    $sheet->setCellValue('AB1', 'R.P.E PATRONAL');
-    $sheet->setCellValue('AC1', 'FAOV EMPLEADO');
-    $sheet->setCellValue('AD1', 'FAOV PATRONAL');
-    $sheet->setCellValue('AE1', 'FEJP EMPLEADO Y PATRONAL');
-    $sheet->setCellValue('AF1', 'CAJA EMPLEADO Y PATRONAL');
+    $sheet->setCellValue('W1', 'TOTAL DE DEDUCCIONES');
+    $sheet->setCellValue('X1', 'ASIGNACIÓN MENSUAL');
+    $sheet->setCellValue('Y1', 'SEMANAL PARA EL IVSS');
+    $sheet->setCellValue('Z1', 'SEGURO EMPLEADO');
+    $sheet->setCellValue('AA1', 'SEGURO PATRONAL');
+    $sheet->setCellValue('AB1', 'R.P.E EMPLEADO');
+    $sheet->setCellValue('AC1', 'R.P.E PATRONAL');
+    $sheet->setCellValue('AD1', 'FAOV EMPLEADO');
+    $sheet->setCellValue('AE1', 'FAOV PATRONAL');
+    $sheet->setCellValue('AF1', 'FEJP EMPLEADO Y PATRONAL');
+    $sheet->setCellValue('AG1', 'CAJA EMPLEADO Y PATRONAL');
 
     // Estilo para los encabezados
     $headerStyle = [
@@ -219,7 +220,7 @@
         ],
     ];
 
-    $sheet->getStyle('A1:AF1')->applyFromArray($headerStyle);
+    $sheet->getStyle('A1:AG1')->applyFromArray($headerStyle);
 
     // Llenar datos
     $row = 2;
@@ -547,6 +548,18 @@
             }
         }
 
+        // Cálculo del total de deducciones
+        $total_deducciones = 0;
+        
+        // Sumar solo las deducciones del empleado (no patronales)
+        if (is_numeric($seguro_empleado)) $total_deducciones += $seguro_empleado;
+        if (is_numeric($rpe_empleado)) $total_deducciones += $rpe_empleado;
+        if (is_numeric($faov_empleado)) $total_deducciones += $faov_empleado;
+        if (is_numeric($fejp)) $total_deducciones += $fejp;
+        if (is_numeric($caja_ahorro)) $total_deducciones += $caja_ahorro;
+        
+        $total_deducciones = round($total_deducciones, 2);
+
         $sheet->setCellValue('A' . $row, $contador);
         $sheet->setCellValue('B' . $row, $data['cedula']);
         $sheet->setCellValue('C' . $row, $data['nombre']);
@@ -570,23 +583,24 @@
         $sheet->setCellValue('T' . $row, $diferencia_profesionalizacion);
         $sheet->setCellValue('U' . $row, $diferencia_jerarquia);
         $sheet->setCellValue('V' . $row, $total_asignaciones);
-        $sheet->setCellValue('W' . $row, $asignacion_mensual);
-        $sheet->setCellValue('X' . $row, $semanal_ivss);
-        $sheet->setCellValue('Y' . $row, $seguro_empleado);
-        $sheet->setCellValue('Z' . $row, $seguro_patronal);
-        $sheet->setCellValue('AA' . $row, $rpe_empleado);
-        $sheet->setCellValue('AB' . $row, $rpe_patronal);
-        $sheet->setCellValue('AC' . $row, $faov_empleado);
-        $sheet->setCellValue('AD' . $row, $faov_patronal);
-        $sheet->setCellValue('AE' . $row, $fejp);
-        $sheet->setCellValue('AF' . $row, $caja_ahorro);
+        $sheet->setCellValue('W' . $row, $total_deducciones);
+        $sheet->setCellValue('X' . $row, $asignacion_mensual);
+        $sheet->setCellValue('Y' . $row, $semanal_ivss);
+        $sheet->setCellValue('Z' . $row, $seguro_empleado);
+        $sheet->setCellValue('AA' . $row, $seguro_patronal);
+        $sheet->setCellValue('AB' . $row, $rpe_empleado);
+        $sheet->setCellValue('AC' . $row, $rpe_patronal);
+        $sheet->setCellValue('AD' . $row, $faov_empleado);
+        $sheet->setCellValue('AE' . $row, $faov_patronal);
+        $sheet->setCellValue('AF' . $row, $fejp);
+        $sheet->setCellValue('AG' . $row, $caja_ahorro);
         
         $row++;
         $contador++;
     }
 
     // Aplicar formato numérico a las columnas numéricas
-    $sheet->getStyle('H2:AF' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+    $sheet->getStyle('H2:AG' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
 
     // Estilo para el contenido
     $contentStyle = [
@@ -595,7 +609,7 @@
             'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
         ],
     ];
-    $sheet->getStyle('A2:AF' . $row)->applyFromArray($contentStyle);
+    $sheet->getStyle('A2:AG' . $row)->applyFromArray($contentStyle);
 
     // Configurar anchos de columnas específicas para mejor visualización
     $sheet->getColumnDimension('A')->setWidth(5);  // N°
@@ -620,16 +634,17 @@
     $sheet->getColumnDimension('T')->setWidth(23); // DIFERENCIA DE PROFESIONALIZACIÓN
     $sheet->getColumnDimension('U')->setWidth(23); // DIFERENCIA DE JERARQUÍA
     $sheet->getColumnDimension('V')->setWidth(12); // TOTAL DE ASIGNACIONES
-    $sheet->getColumnDimension('W')->setWidth(12); // ASIGNACIÓN MENSUAL
-    $sheet->getColumnDimension('X')->setWidth(12); // SEMANAL PARA EL IVSS
-    $sheet->getColumnDimension('Y')->setWidth(12); // SEGURO EMPLEADO
-    $sheet->getColumnDimension('Z')->setWidth(12); // SEGURO PATRONAL
-    $sheet->getColumnDimension('AA')->setWidth(12); // R.P.E EMPLEADO
-    $sheet->getColumnDimension('AB')->setWidth(12); // R.P.E PATRONAL
-    $sheet->getColumnDimension('AC')->setWidth(12); // FAOV EMPLEADO
-    $sheet->getColumnDimension('AD')->setWidth(12); // FAOV PATRONAL
-    $sheet->getColumnDimension('AE')->setWidth(12); // FEJP EMPLEADO Y PATRONAL
-    $sheet->getColumnDimension('AF')->setWidth(20); // CAJA EMPLEADO Y PATRONAL
+    $sheet->getColumnDimension('W')->setWidth(12); // TOTAL DE DEDUCCIONES
+    $sheet->getColumnDimension('X')->setWidth(12); // ASIGNACIÓN MENSUAL
+    $sheet->getColumnDimension('Y')->setWidth(12); // SEMANAL PARA EL IVSS
+    $sheet->getColumnDimension('Z')->setWidth(12); // SEGURO EMPLEADO
+    $sheet->getColumnDimension('AA')->setWidth(12); // SEGURO PATRONAL
+    $sheet->getColumnDimension('AB')->setWidth(12); // R.P.E EMPLEADO
+    $sheet->getColumnDimension('AC')->setWidth(12); // R.P.E PATRONAL
+    $sheet->getColumnDimension('AD')->setWidth(12); // FAOV EMPLEADO
+    $sheet->getColumnDimension('AE')->setWidth(12); // FAOV PATRONAL
+    $sheet->getColumnDimension('AF')->setWidth(12); // FEJP EMPLEADO Y PATRONAL
+    $sheet->getColumnDimension('AG')->setWidth(20); // CAJA EMPLEADO Y PATRONAL
 
     // Congelar la primera fila (encabezados)
     $sheet->freezePane('A2');
