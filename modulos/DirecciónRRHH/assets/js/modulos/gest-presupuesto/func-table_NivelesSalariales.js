@@ -7,7 +7,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#salaryTable tbody');
     const paginationElement = document.getElementById('paginationSalary');
 
-    // Función para cargar los niveles salariales desde la API
+    // Variable para almacenar todos los niveles salariales
+    let allSalaries = [];
+    let isSearching = false;
+    let currentSearchTerm = '';
+
+    // Función para cargar TODOS los niveles salariales desde la API (para búsqueda)
+    async function fetchAllSalaries() {
+        try {
+            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_salarios.php?all=true`);
+            const data = await response.json();
+            
+            if (data.success) {
+                allSalaries = data.salaries;
+                return data.salaries;
+            } else {
+                console.error('Error al cargar todos los niveles salariales:', data.message);
+                return [];
+            }
+        } catch (error) {
+            console.error('Error en la solicitud:', error);
+            return [];
+        }
+    }
+
+    // Función para cargar los niveles salariales paginados desde la API
     async function fetchSalaries(page) {
         try {
             const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_salarios.php?page=${page}&per_page=${rowsPerPage}`);
@@ -39,8 +63,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Función para filtrar localmente
+    function filterSalariesLocally(salaries, searchTerm) {
+        if (!searchTerm) return salaries;
+        
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        return salaries.filter(salary => {
+            return (
+                (salary.nvl_ran && salary.nvl_ran.toLowerCase().includes(lowerSearchTerm)) ||
+                (salary.nvl_sal && salary.nvl_sal.toString().includes(searchTerm)) ||
+                (salary.ona_car && salary.ona_car.toLowerCase().includes(lowerSearchTerm))
+            );
+        });
+    }
+
     // Función para mostrar los niveles salariales en la página actual
-    async function displaySalaries(page) {
+    async function displaySalaries(page, salariesToDisplay = null) {
+        const isFiltered = salariesToDisplay !== null;
+        
         // Mostrar loader mientras carga
         tableBody.innerHTML = `
             <tr>
@@ -52,10 +92,20 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `;
         
-        const result = await fetchSalaries(page);
-        const salaries = result.salaries;
-        totalSalaries = result.total;
-        totalPages = result.total_pages;
+        let salaries = [];
+        if (isFiltered) {
+            salaries = salariesToDisplay;
+            totalSalaries = salaries.length;
+            totalPages = Math.ceil(salaries.length / rowsPerPage);
+        } else {
+            const result = await fetchSalaries(page);
+            salaries = result.salaries;
+            totalSalaries = result.total;
+            totalPages = result.total_pages;
+        }
+        
+        // Pequeño retraso para evitar parpadeo con cargas rápidas
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         tableBody.innerHTML = '';
         
@@ -66,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (i === 0) {
                     row.innerHTML = `
                         <td colspan="4" class="text-center empty-row">
-                            ${i === 0 ? 'No se encontraron registros' : '&nbsp;'}
+                            ${isFiltered ? 'No se encontraron coincidencias' : 'No se encontraron registros'}
                         </td>
                     `;
                 } else {
@@ -121,6 +171,68 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Actualizar paginación
         setupPagination();
+    }
+
+    // Función para configurar el buscador
+    function setupSearch() {
+        const searchInput = document.getElementById('salarySearch');
+        let searchTimeout;
+        
+        // Cargar todos los registros al iniciar para búsquedas
+        fetchAllSalaries();
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            
+            const searchTerm = this.value.trim();
+            currentSearchTerm = searchTerm;
+            
+            if (searchTerm.length === 0) {
+                // Si el buscador está vacío, volver a la paginación normal
+                isSearching = false;
+                currentPage = 1;
+                displaySalaries(currentPage);
+                paginationElement.style.display = '';
+                return;
+            }
+            
+            // Pequeño retraso para no hacer búsquedas con cada tecla
+            searchTimeout = setTimeout(async () => {
+                isSearching = true;
+                
+                // Mostrar loader
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Buscando...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                
+                // Si no tenemos todos los registros cargados, intentar cargarlos
+                if (allSalaries.length === 0) {
+                    allSalaries = await fetchAllSalaries();
+                }
+                
+                // Filtrar localmente con todos los datos
+                const filtered = filterSalariesLocally(allSalaries, searchTerm);
+                displaySalaries(1, filtered);
+                paginationElement.style.display = filtered.length > rowsPerPage ? '' : 'none';
+            }, 300);
+        });
+        
+        // Restaurar paginación si se borra la búsqueda
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape' || this.value.trim() === '') {
+                this.value = '';
+                isSearching = false;
+                currentPage = 1;
+                displaySalaries(currentPage);
+                paginationElement.style.display = '';
+            }
+        });
     }
 
     // Función para configurar los event listeners
@@ -230,7 +342,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Recargar la tabla
-                await displaySalaries(currentPage);
+                if (isSearching) {
+                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
+                    allSalaries = await fetchAllSalaries();
+                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+                    displaySalaries(1, filtered);
+                } else {
+                    // Si no, recargar la página actual normalmente
+                    await displaySalaries(currentPage);
+                }
                 alert(result.message || 'Nivel salarial eliminado correctamente');
             } else {
                 throw new Error(result.message || 'Error al eliminar el nivel salarial');
@@ -256,7 +376,13 @@ document.addEventListener('DOMContentLoaded', function() {
         li.addEventListener('click', () => {
             if (currentPage !== 1) {
                 currentPage = 1;
-                displaySalaries(currentPage);
+                if (isSearching) {
+                    // Si estamos buscando, mostrar los primeros resultados filtrados
+                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+                    displaySalaries(1, filtered);
+                } else {
+                    displaySalaries(currentPage);
+                }
             }
         });
         paginationElement.appendChild(li);
@@ -268,7 +394,12 @@ document.addEventListener('DOMContentLoaded', function() {
         li.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
-                displaySalaries(currentPage);
+                if (isSearching) {
+                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+                    displaySalaries(currentPage, filtered);
+                } else {
+                    displaySalaries(currentPage);
+                }
             }
         });
         paginationElement.appendChild(li);
@@ -284,7 +415,12 @@ document.addEventListener('DOMContentLoaded', function() {
             li.addEventListener('click', () => {
                 if (currentPage !== i) {
                     currentPage = i;
-                    displaySalaries(currentPage);
+                    if (isSearching) {
+                        const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+                        displaySalaries(currentPage, filtered);
+                    } else {
+                        displaySalaries(currentPage);
+                    }
                 }
             });
             paginationElement.appendChild(li);
@@ -297,7 +433,12 @@ document.addEventListener('DOMContentLoaded', function() {
         li.addEventListener('click', () => {
             if (currentPage < totalPages) {
                 currentPage++;
-                displaySalaries(currentPage);
+                if (isSearching) {
+                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+                    displaySalaries(currentPage, filtered);
+                } else {
+                    displaySalaries(currentPage);
+                }
             }
         });
         paginationElement.appendChild(li);
@@ -309,7 +450,12 @@ document.addEventListener('DOMContentLoaded', function() {
         li.addEventListener('click', () => {
             if (currentPage !== totalPages) {
                 currentPage = totalPages;
-                displaySalaries(currentPage);
+                if (isSearching) {
+                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+                    displaySalaries(currentPage, filtered);
+                } else {
+                    displaySalaries(currentPage);
+                }
             }
         });
         paginationElement.appendChild(li);
@@ -416,7 +562,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Cambios guardados exitosamente');
                 
                 // Recargar los datos
-                displaySalaries(currentPage);
+                if (isSearching) {
+                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
+                    allSalaries = await fetchAllSalaries();
+                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+                    displaySalaries(1, filtered);
+                } else {
+                    // Si no, recargar la página actual normalmente
+                    await displaySalaries(currentPage);
+                }
             } else {
                 alert('Error al guardar: ' + (result.message || 'Error desconocido'));
             }
@@ -430,6 +584,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Inicializar la tabla
-    displaySalaries(currentPage);
+    // Inicializar la tabla, paginación y buscador
+    displaySalaries(currentPage).then(() => {
+        setupSearch();
+    });
 });

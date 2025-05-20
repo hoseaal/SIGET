@@ -82,7 +82,21 @@
               <!-- Tabla de Usuarios dentro del Sistema -->
               <div class="col-md-12">
                 <div class="card mb-4">
-                  <h5 class="card-header">Tabla de Usuarios dentro del Sistema</h5>
+                  <h5 class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">Tabla de Usuarios dentro del Sistema</span>
+                    
+                    <!-- Buscador a la derecha -->
+                    <div class="input-group input-group-merge" style="width: 280px;">
+                      <span class="input-group-text"><i class="bx bx-search"></i></span>
+                      <input 
+                        type="text" 
+                        class="form-control" 
+                        id="usersSearch" 
+                        placeholder="Buscar usuario..." 
+                        aria-label="Buscar usuario"
+                      >
+                    </div>
+                  </h5>
                   <div class="card-body">
                     <!-- Tabla de Usuarios -->
                     <div class="table-responsive text-nowrap">
