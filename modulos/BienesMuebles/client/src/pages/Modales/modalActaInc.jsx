@@ -6,11 +6,13 @@ import axios from 'axios';
 import Alert from "../../components/atoms/Alert";
 import { fetchData } from '../../data/fetchData';
 
-function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdministrativa }) {
+function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdministrativa, limpiarFormulario }) {
   const [formData, setFormData] = useState({});
   const [formEnviado, setFormEnviado] = useState(false);
   const [mensajeMostrado, setMensajeMostrado] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [bienes, setBienes] = useState([]);
+  const [bienSeleccionado, setBienSeleccionado] = useState(null);
 
   // Obtener fecha y hora actual
   const today = new Date();
@@ -29,13 +31,55 @@ function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdmini
 
   const [unidadAdmin, setUnidadAdmin] = useState([]);
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      const unidadAdminData = await fetchData('tesdep', '*', 'dep_ide', unidadAdministrativa);
-      setUnidadAdmin(unidadAdminData || []);
-    };
-    fetchAllData();
-  }, []);
+useEffect(() => {
+  const fetchAllData = async () => {
+    try {
+      if (BienId && unidadAdministrativa) {
+        const unidadAdminData = await fetchData('tesdep', '*', 'dep_ide', unidadAdministrativa);
+        setUnidadAdmin(unidadAdminData || []);
+      }
+
+      if (!BienId) {
+        const bienesData = await fetchData('tmab_m', '*');
+        setBienes(bienesData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  
+  fetchAllData();
+}, [bienSeleccionado]);
+
+const handleSelectBien = async (e) => {
+  const bienId = e.target.value;
+  if (!bienId) {
+    setBienSeleccionado(null);
+    return;
+  }
+
+  try {
+    const bien = bienes.find(b => b.bim_ide === bienId);
+    if (!bien) return;
+
+    console.log(bien.bim_color)
+    const unidadAdminData = await fetchData('tesdep', '*', 'dep_ide', bien.dep_ide);
+    const marcaData = await fetchData('tmamar', '*', 'mar_ide', bien.mar_ide);
+    const modeloData = await fetchData('tesmod', '*', 'mod_ide', bien.mod_ide);
+
+    setBienSeleccionado({
+      id: bien.bim_ide,
+      descripcion: bien.bim_des,
+      unidadAdministrativa: unidadAdminData?.[0]?.dep_nom || 'No disponible',
+      marca: marcaData?.[0]?.mar_mar,
+      modelo: modeloData?.[0]?.mod_mod,
+      color: bien.bim_color
+    });
+  } catch (error) {
+    console.error('Error al cargar datos del bien:', error);
+    // Podrías mostrar un mensaje al usuario aquí
+  }
+};
 
   const handleSubmit = async () => {
     const datosActa = {
@@ -50,35 +94,66 @@ function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdmini
       ciDirectorAdmin: formData.ciDirectorAdmin,
       nombreDirectorAsignacion: formData.nombreDirectorAsignacion,
       ciDirectorAsignacion: formData.ciDirectorAsignacion,
-      unidadAsignacion: unidadAdmin[0].dep_nom,
+      unidadAsignacion: unidadAdmin[0]?.dep_nom,
       nombreJefeCompras: formData.nombreJefeCompras,
       ciJefeCompras: formData.ciJefeCompras,
       nombreAnalistaBienes: formData.nombreAnalistaBienes,
       ciAnalistaBienes: formData.ciAnalistaBienes,
-      descripcionIncorporacion: descripcionBien,
-      codigoBien: BienId || formData.codigoBien,
-      unidadDestino: unidadAdmin[0].dep_nom,
+      descripcionIncorporacion: descripcionBien || bienSeleccionado?.descripcion,
+      codigoBien: BienId || bienSeleccionado?.id || formData.codigoBien,
+      unidadDestino: unidadAdmin[0]?.dep_nom,
+      nombreFuncionarioElabora: formData.nombreFuncionarioElabora,
+    };
+
+    const datosActaCET = {
+      fechaActualizacion: 'DICIEMBRE 2015',
+      numeroActa: formData.numeroActa,
+      ciudad: 'San Cristóbal',
+      dia,
+      mes,
+      anio,
+      hora,
+      nombreDirectorAdmin: formData.nombreDirectorAdmin,
+      ciDirectorAdmin: formData.ciDirectorAdmin,
+      nombreDirectorServicios: formData.nombreDirectorServicios, // Nuevo campo
+      ciDirectorServicios: formData.ciDirectorServicios, // Nuevo campo
+      unidadAsignacion: unidadAdmin[0]?.dep_nom,
+      nombreJefeCompras: formData.nombreJefeCompras,
+      ciJefeCompras: formData.ciJefeCompras,
+      descripcionIncorporacion: descripcionBien || bienSeleccionado?.descripcion,
+      codigoBien: BienId || bienSeleccionado?.id || formData.codigoBien,
+      modelo: bienSeleccionado?.modelo, // Nuevo campo
+      marca: bienSeleccionado?.marca, // Nuevo campo
+      color: bienSeleccionado?.color, // Nuevo campo
+      unidadDestino: unidadAdmin[0]?.dep_nom,
       nombreFuncionarioElabora: formData.nombreFuncionarioElabora,
     };
 
     try {
-      const pdfResponse = await axios.post(
-        '/api/generar-acta',
-        datosActa,
-        { responseType: 'blob', withCredentials: true }
-      );
+      const [pdfResp1, pdfResp2] = await Promise.all([
+        axios.post('/api/generar-acta', datosActa, { responseType: 'blob', withCredentials: true }),
+        axios.post('/api/generar-acta-CET', datosActaCET, { responseType: 'blob', withCredentials: true })
+      ]);
 
-      const url = window.URL.createObjectURL(new Blob([pdfResponse.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `acta_incorporacion_${BienId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const blobs = [pdfResp1, pdfResp2];
+      const nombres = ['acta_incorporacion', 'acta_CET'];
+
+      blobs.forEach((res, i) => {
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${nombres[i]}_${BienId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      });
 
       setFormEnviado(true);
       setMensajeMostrado(true);
       setTimeout(() => setMensajeMostrado(false), 3000);
+
+      setFormData({});
+      setBienSeleccionado({});
 
       
     } catch (error) {
@@ -90,10 +165,6 @@ function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdmini
     }
   };
 
-  console.log(unidadAdmin[0]?.dep_nom)
-  console.log(BienId)
-  console.log(descripcionBien)
-
   return (
     <Modal show={show} onHide={handleClose} size="lg">
       <Modal.Header closeButton>
@@ -101,20 +172,52 @@ function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdmini
       </Modal.Header>
       <Modal.Body>
         <Form>
-            <Form.Group className="mb-2">
+          {BienId ? (
+            <>
+              <Form.Group className="mb-2">
                 <Form.Label>Codigo del Bien</Form.Label>
                 <Form.Control type="text" value={BienId} disabled />
-            </Form.Group>
+              </Form.Group>
 
-            <Form.Group className="mb-2">
-            <Form.Label>Descripción del Bien</Form.Label>
-            <Form.Control type="text" value={descripcionBien} disabled />
-          </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Label>Descripción del Bien</Form.Label>
+                <Form.Control type="text" value={descripcionBien} disabled />
+              </Form.Group>
 
-            <Form.Group className="mb-2">
-            <Form.Label>Unidad Administrativa</Form.Label>
-            <Form.Control type="text" value={unidadAdmin[0]?.dep_nom} disabled />
-          </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Label>Unidad Administrativa</Form.Label>
+                <Form.Control type="text" value={unidadAdmin[0]?.dep_nom} disabled />
+              </Form.Group>
+            </>
+          ) : (
+            <>
+              <Form.Group className="mb-2">
+                <Form.Label>Seleccionar Bien</Form.Label>
+                <Form.Select onChange={handleSelectBien}>
+                  <option value="">Seleccione un bien</option>
+                  {bienes.map(bien => (
+                    <option key={bien.bim_ide} value={bien.bim_ide}>
+                      {bien.bim_ide} - {bien.bim_des}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+
+              {bienSeleccionado && (
+                <>
+                  <Form.Group className="mb-2">
+                    <Form.Label>Descripción del Bien</Form.Label>
+                    <Form.Control type="text" value={bienSeleccionado.descripcion} disabled />
+                  </Form.Group>
+
+                  <Form.Group className="mb-2">
+                    <Form.Label>Unidad Administrativa</Form.Label>
+                    <Form.Control type="text" value={bienSeleccionado.unidadAdministrativa || unidadAdmin} disabled />
+                  </Form.Group>
+                </>
+              )}
+            </>
+          )}
 
           <Form.Group className="mb-2">
             <Form.Label>Número de Acta</Form.Label>
@@ -122,14 +225,16 @@ function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdmini
           </Form.Group>
 
           {[
-            ['nombreDirectorAdmin', 'Nombre Director(a) Administración'],
-            ['ciDirectorAdmin', 'CI Director(a) Administración'],
-            ['nombreDirectorAsignacion', 'Nombre Director(a) Asignación'],
-            ['ciDirectorAsignacion', 'CI Director(a) Asignación'],
-            ['nombreJefeCompras', 'Nombre Jefe de Compras'],
-            ['ciJefeCompras', 'CI Jefe de Compras'],
-            ['nombreAnalistaBienes', 'Nombre Analista de Bienes'],
-            ['ciAnalistaBienes', 'CI Analista de Bienes'],
+            ['nombreDirectorAdmin', 'Nombre Director(a) de Administración'],
+            ['ciDirectorAdmin', 'CI Director(a) de Administración'],
+            ['nombreDirectorAsignacion', 'Nombre Director(a) de la oficina de Asignación del Bien'],
+            ['ciDirectorAsignacion', 'CI Director(a) de la oficina de Asignación del Bien'],
+            ['nombreJefeCompras', 'Nombre Jefe de la Division de Compras, Bienes e Iventarios'],
+            ['ciJefeCompras', 'CI Jefe de la Division de Compras, Bienes e Iventarios'],
+            ['nombreAnalistaBienes', 'Nombre Analista de Bienes e Inventarios IV'],
+            ['ciAnalistaBienes', 'CI Analista de Bienes e Inventarios IV'],
+            ['nombreDirectorServicios', 'Nombre Director Servicios Generales'],
+            ['ciDirectorServicios', 'CI Director Servicios Generales'],
             ['nombreFuncionarioElabora', 'Funcionario que Elabora el Acta']
           ].map(([name, label]) => (
             <Form.Group className="mb-2" controlId={name} key={name}>
@@ -140,7 +245,11 @@ function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdmini
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="primary" onClick={() => { handleSubmit(); handleClose(); }}>
+        <Button 
+          variant="primary" 
+          onClick={() => { handleSubmit(); handleClose(); limpiarFormulario();}}
+          disabled={!BienId && !bienSeleccionado}
+        >
           Generar PDF
         </Button>
       </Modal.Footer>

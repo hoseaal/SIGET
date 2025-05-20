@@ -55,3 +55,56 @@ export function generarActaIncorporacion (datos) {
     }
   })
 }
+
+export function generarActaCET (datos) {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ margin: 40, size: 'A4' })
+      const outputPath = `acta_cet_${Date.now()}.pdf`
+      const stream = fs.createWriteStream(outputPath)
+      doc.pipe(stream)
+
+      doc.font('Helvetica')
+
+      doc.fontSize(15).text('ACTA C.E.T.', { align: 'center' })
+      doc.moveDown(0.5)
+      doc.fontSize(12).text(`No. ${datos.numeroActa || 'xxx-20XX'}`, { align: 'center' })
+
+      doc.moveDown(1)
+      doc.fontSize(11).text(`En la ciudad de ${datos.ciudad || 'San Cristóbal'}, a los ${datos.dia || '___'} días del mes de ${datos.mes || '___'} de ${datos.anio || '____'}, siendo las ${datos.hora || '___'}, reunidos en la sede de la Contraloría del Estado Táchira, Municipio San Cristóbal, Parroquia la Concordia, en la Dirección de Administración, los Ciudadanos: ${datos.nombreDirectorAdmin || '___'} titular de la cédula de identidad Nº V-${datos.ciDirectorAdmin || '__________'}, ${datos.nombreJefeCompras || '___'}, titular de la cédula de identidad Nº V-${datos.ciJefeCompras || '__________'}, Jefe de División General Bienes Compras e Inventarios; y ${datos.nombreDirectorServicios || '___'}, titular de Cédula de Identidad Nº V-${datos.ciDirectorServicios || '__________'}, Director de Servicios Generales, Seguridad y Transporte, para dejar constancia por medio de la presente acta de la INCORPORACIÓN, BAJO EL CONCEPTO DE COMPRA (Código 03), del bien que se detalla a continuación:`)
+
+      doc.moveDown()
+      doc.text(`Código: ${datos.codigoBien || '___'}`)
+
+      doc.moveDown(0.5)
+      doc.text(`${datos.descripcionIncorporacion || '___'}. Marca: ${datos.marca || '___'}, Modelo: ${datos.modelo || '___'}, Color: ${datos.color || '___'}.`)
+
+      doc.moveDown(1)
+      doc.text(`Se incorpora el anterior bien a la ${datos.unidadDestino || '___'}.`)
+
+      doc.moveDown()
+      doc.text('En fe de lo expuesto, se elaboran tres ejemplares a un solo tenor y un mismo efecto y en conformidad firman:')
+
+      // Firmas
+      doc.moveDown(2)
+      const firmaY = doc.y
+
+      doc.text(`${datos.nombreDirectorAdmin || '___'}`, 70, firmaY)
+      doc.text('Directora de Administración', 70, firmaY + 15)
+
+      doc.text(`${datos.nombreJefeCompras || '___'}`, 330, firmaY)
+      doc.text('Jefe de Bienes Compras e Inventarios', 330, firmaY + 15)
+
+      doc.moveDown(4)
+      doc.text(`${datos.nombreDirectorServicios || '___'}`, { align: 'center' })
+      doc.text('Director de Servicios Generales, Seguridad y Transporte', { align: 'center' })
+
+      doc.end()
+
+      stream.on('finish', () => resolve(outputPath))
+      stream.on('error', reject)
+    } catch (error) {
+      reject(error)
+    }
+  })
+}

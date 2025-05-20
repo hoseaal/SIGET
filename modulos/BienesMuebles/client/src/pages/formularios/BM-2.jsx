@@ -233,13 +233,45 @@ const handleSubmit = async (e) => {
         setMensajeMostrado(true);
         setErrorMessage(error.response?.data?.error || error.message || 'Error desconocido');
         setTimeout(() => setMensajeMostrado(false), 3000);
+        setFormData({
+            bim_ide: ''
+        })
     }
 };
+
+//limpiar formulario
+  const limpiarFormulario = () => {
+    setFormData({
+        bim_ide: '',
+        bim_des: '',
+        bim_fec: '',
+        bim_ndo: '',
+        bim_val: '',
+        bim_moneda: '',
+        bim_color: '',
+        bim_cod: '',
+        bim_obs: null,
+        bim_sede: 'PRINCIPAL',
+        est_ide: 4,
+        tip_ide: '',
+        foa_ide: '',
+        con_ide: '',
+        esu_ide: '',
+        mar_ide: '',
+        mod_ide: '',
+        cat_ide: '',
+        sca_ide: '',
+        cae_ide: '',
+        com_ide: '',
+        dep_ide: ''
+    });
+  };
+
     return (
         <>
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-2</h4>
-                <button id="exportToExcel" class="btn btn-primary">
+                <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowActInc(true)}>
                     <i className="bx bx-export me-1"></i> Generar acta de Incorporación de Bien
                 </button>
             </div>
@@ -290,7 +322,7 @@ const handleSubmit = async (e) => {
                                     <div className="row mb-3">
                                         <label className="col-sm-2 col-form-label" htmlFor="basic-default-company">Descripción del Bien</label>
                                         <div className="col-sm-10">
-                                            <input
+                                            <textarea
                                                 type="text"
                                                 className="form-control"
                                                 id="basic-default-company"
@@ -564,6 +596,7 @@ const handleSubmit = async (e) => {
                                                         BienId= {formData.bim_ide} 
                                                         descripcionBien= {formData.bim_des}
                                                         unidadAdministrativa= {formData.dep_ide}
+                                                        limpiarFormulario = {() => limpiarFormulario()}
                                                       />
                             </div>
                         ) : (
@@ -571,7 +604,8 @@ const handleSubmit = async (e) => {
                                 <form>
                                     {/* Aquí iría el formulario para Desincorporación */}
                                     <div className="row justify-content-end">
-                                        <Button type='primary'>Generar acta de Desincorporación de Bien</Button>
+                                        
+                                        <Button type='primary'> <i className="bx bx-export me-1"></i>Generar acta de Desincorporación de Bien</Button>
                                     </div>
                                 </form>
                             </div>
