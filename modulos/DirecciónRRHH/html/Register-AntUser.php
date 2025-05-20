@@ -200,8 +200,39 @@
     <script>
         // Contador para identificar cada grupo de selects
         let contadorRangos = 0;
+
+        function verificarAntiguedadesUsuario(cedula) {
+            fetch(`../PHP/api/usuarios/tomar_antiguedades.php?cedula=${cedula}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Limpiar contenedor existente
+                    document.getElementById('antiguedades-container').innerHTML = '';
+                    contadorRangos = 0;
+                    
+                    // Agregar rangos existentes (si hay)
+                    if (data.length > 0) {
+                        data.forEach(antiguedad => {
+                            agregarRangoAntiguedad(
+                                antiguedad.ant_ani, 
+                                antiguedad.ant_anf, 
+                                antiguedad.ant_ide
+                            );
+                        });
+                    }
+                    
+                    // Siempre agregar un rango vacío para nuevos registros
+                    agregarRangoAntiguedad();
+                })
+                .catch(error => {
+                    console.error("Error al obtener antigüedades:", error);
+                    // Asegurarse de que haya al menos un rango vacío
+                    document.getElementById('antiguedades-container').innerHTML = '';
+                    contadorRangos = 0;
+                    agregarRangoAntiguedad();
+                });
+        }
         
-        function agregarRangoAntiguedad() {
+        function agregarRangoAntiguedad(fechaInicial = '', fechaFinal = '', antId = null) {
             contadorRangos++;
             
             // Crear el elemento contenedor del rango
@@ -214,15 +245,17 @@
                 <div class="row g-3 align-items-center">
                     <div class="col-md-5">
                         <label class="form-label">Fecha inicial</label>
-                        <input type="date" class="form-control" id="fecha-inicial-${contadorRangos}">
+                        <input type="date" class="form-control" id="fecha-inicial-${contadorRangos}" value="${fechaInicial}">
                     </div>
                     <div class="col-md-2 text-center">
                         <span class="fs-4">-</span>
                     </div>
                     <div class="col-md-5">
                         <label class="form-label">Fecha final</label>
-                        <input type="date" class="form-control" id="fecha-final-${contadorRangos}">
+                        <input type="date" class="form-control" id="fecha-final-${contadorRangos}" value="${fechaFinal}">
                     </div>
+                    <!-- Campo oculto para el ID de antigüedad (si existe) -->
+                    <input type="hidden" id="ant-ide-${contadorRangos}" value="${antId || ''}">
                 </div>
                 <div class="text-end mt-2">
                     <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarRango('rango-${contadorRangos}')">
@@ -257,7 +290,7 @@
                 $('#tablaUsuarios tbody').empty();
                 
                 // Cargar usuarios
-                fetch('../PHP/api/usuarios/get_usuarios.php')
+                fetch('../PHP/api/usuarios/tomar_usuarios.php')
                     .then(res => res.json())
                     .then(data => {
                         data.forEach(usuario => {
@@ -284,13 +317,16 @@
             $('#confirmarSeleccion').on('click', function() {
                 $('#cedulaSeleccionada').val(cedulaSeleccionada);
                 $('#modalUsuarios').modal('hide');
+                
+                // Verificar y cargar antigüedades existentes
+                verificarAntiguedadesUsuario(cedulaSeleccionada);
             });
         });
     </script>
 
     <script>
         document.getElementById('formAnt').addEventListener('submit', function (e) {
-            e.preventDefault(); 
+            e.preventDefault();
 
             const cedula = document.getElementById('cedulaSeleccionada').value;
             if (!cedula) {
@@ -299,39 +335,55 @@
             }
 
             const rangos = [];
+            const actualizaciones = [];
             const contenedores = document.querySelectorAll('.rango-antiguedad');
 
             contenedores.forEach((rangoDiv) => {
+                const id = rangoDiv.querySelector('input[id^="ant-ide"]')?.value;
                 const fechaInicial = rangoDiv.querySelector('input[id^="fecha-inicial"]').value;
                 const fechaFinal = rangoDiv.querySelector('input[id^="fecha-final"]').value;
 
                 if (fechaInicial && fechaFinal) {
-                    rangos.push({
-                        ant_ani: fechaInicial,
-                        ant_anf: fechaFinal
-                    });
+                    if (id) {
+                        // Es un registro existente (posible actualización)
+                        actualizaciones.push({
+                            ant_ide: id,
+                            ant_ani: fechaInicial,
+                            ant_anf: fechaFinal
+                        });
+                    } else {
+                        // Es un nuevo registro
+                        rangos.push({
+                            ant_ani: fechaInicial,
+                            ant_anf: fechaFinal
+                        });
+                    }
                 }
             });
 
-            if (rangos.length === 0) {
+            if (rangos.length === 0 && actualizaciones.length === 0) {
                 alert("Debe ingresar al menos un rango válido de fechas.");
                 return;
             }
 
+            // Enviar datos al servidor
             fetch('../PHP/api/usuarios/registrar_antiguedades.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ cedula, rangos })
+                body: JSON.stringify({
+                    cedula,
+                    nuevos: rangos,
+                    actualizaciones: actualizaciones
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    alert("Datos registrados correctamente.");
-                    document.getElementById('formAnt').reset();
-                    document.getElementById('antiguedades-container').innerHTML = '';
-                    agregarRangoAntiguedad();
+                    alert("Datos registrados/actualizados correctamente.");
+                    // Recargar las antigüedades para reflejar cambios
+                    verificarAntiguedadesUsuario(cedula);
                 } else {
                     alert("Error al registrar: " + data.message);
                 }
@@ -353,7 +405,7 @@
             const container = document.getElementById('antiguedades-container');
             container.innerHTML = '';
             contadorRangos = 0;
-            agregarRangoAntiguedad();
+            agregarRangoAntiguedad(); // Esto agregará un rango vacío
             
             $('#tablaUsuarios tr').removeClass('table-primary');
             cedulaSeleccionada = '';
