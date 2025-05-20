@@ -283,6 +283,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar confirmación de eliminación
     function showDeleteConfirmation(cedula) {
+        // Verificar si el usuario está intentando eliminarse a sí mismo
+        if (typeof LOGGED_USER_CI !== 'undefined' && cedula === LOGGED_USER_CI) {
+            const selfDeleteModalHTML = `
+            <div class="modal fade" id="selfDeleteModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-sm" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title text-white">Acción no permitida</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-3">
+                                <i class="bx bx-error-circle text-warning" style="font-size: 3rem;"></i>
+                            </div>
+                            <p class="text-center">No puede eliminarse a sí mismo del sistema.</p>
+                            <p class="text-center text-muted">Por razones de seguridad, esta acción está restringida.</p>
+                        </div>
+                        <div class="modal-footer justify-content-center">
+                            <button type="button" class="btn btn-warning text-white" data-bs-dismiss="modal">
+                                <i class="bx bx-check-circle me-1"></i> Entendido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', selfDeleteModalHTML);
+            
+            const selfDeleteModal = new bootstrap.Modal(document.getElementById('selfDeleteModal'));
+            selfDeleteModal.show();
+            
+            document.getElementById('selfDeleteModal').addEventListener('hidden.bs.modal', function() {
+                this.remove();
+            });
+            
+            return;
+        }
+        
+        // Si no es auto-eliminación, mostrar el modal normal de confirmación
         const modalHTML = `
         <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-sm" role="document">
