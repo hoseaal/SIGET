@@ -4,18 +4,12 @@
     header('Content-Type: application/json');
 
     try {
-        // Obtener el número total de trabajadores para la paginación
-        $totalQuery = $pdo->query("SELECT COUNT(*) as total FROM tmanom");
-        $totalData = $totalQuery->fetch();
-        $totalWorkers = $totalData['total'];
+        // Verificar si se solicita todos los registros (para búsquedas)
+        $all = isset($_GET['all']) && $_GET['all'] == 'true';
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-        // Obtener parámetros de paginación
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $perPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 7;
-        $offset = ($page - 1) * $perPage;
-
-        // Consulta para obtener los trabajadores paginados
-        $query = $pdo->prepare("
+        // Consulta base
+        $baseQuery = "
             SELECT 
                 t.nom_ced as cedula, 
                 t.nom_nom as nombres, 
@@ -24,35 +18,79 @@
                 COALESCE(d.dep_nom, 'Sin departamento') as departamento 
             FROM tmanom t
             LEFT JOIN tesdep d ON t.dep_ide = d.dep_ide
-            LIMIT :limit OFFSET :offset
-        ");
-        
-        $query->bindParam(':limit', $perPage, PDO::PARAM_INT);
-        $query->bindParam(':offset', $offset, PDO::PARAM_INT);
-        $query->execute();
-        
-        $workers = $query->fetchAll();
+        ";
 
-        // Verificar si hay datos
-        if (count($workers) === 0) {
-            echo json_encode([
-                'success' => true,
-                'workers' => [],
-                'total' => 0,
-                'message' => 'No hay registros en la base de datos'
-            ]);
-            exit;
+        // Añadir condiciones de búsqueda si hay término
+        $whereConditions = [];
+        $params = [];
+
+        if (!empty($search)) {
+            $whereConditions[] = "(
+                t.nom_ced LIKE :search OR
+                t.nom_nom LIKE :search OR
+                t.nom_ape LIKE :search OR
+                t.nom_gen LIKE :search OR
+                d.dep_nom LIKE :search
+            )";
+            $params[':search'] = "%$search%";
         }
 
-        // Devolver los datos en formato JSON
-        echo json_encode([
+        // Construir consulta final
+        $queryStr = $baseQuery;
+        if (!empty($whereConditions)) {
+            $queryStr .= " WHERE " . implode(" AND ", $whereConditions);
+        }
+
+        // Obtener el número total de registros (para paginación)
+        $countQuery = $pdo->prepare("SELECT COUNT(*) as total FROM ($queryStr) as subquery");
+        foreach ($params as $key => $value) {
+            $countQuery->bindValue($key, $value);
+        }
+        $countQuery->execute();
+        $totalData = $countQuery->fetch();
+        $totalWorkers = $totalData['total'];
+
+        // Manejar paginación a menos que se soliciten todos los registros
+        if (!$all) {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $perPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 7;
+            $offset = ($page - 1) * $perPage;
+            
+            $queryStr .= " LIMIT :limit OFFSET :offset";
+            $params[':limit'] = $perPage;
+            $params[':offset'] = $offset;
+        }
+
+        // Consulta principal
+        $query = $pdo->prepare($queryStr);
+        
+        // Vincular parámetros
+        foreach ($params as $key => $value) {
+            if ($key === ':limit' || $key === ':offset') {
+                $query->bindValue($key, $value, PDO::PARAM_INT);
+            } else {
+                $query->bindValue($key, $value);
+            }
+        }
+
+        $query->execute();
+        $workers = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        // Preparar respuesta
+        $response = [
             'success' => true,
             'workers' => $workers,
-            'total' => $totalWorkers,
-            'page' => $page,
-            'per_page' => $perPage,
-            'total_pages' => ceil($totalWorkers / $perPage)
-        ]);
+            'total' => $totalWorkers
+        ];
+
+        // Añadir información de paginación si no es una consulta de "todos"
+        if (!$all) {
+            $response['page'] = $page;
+            $response['per_page'] = $perPage;
+            $response['total_pages'] = ceil($totalWorkers / $perPage);
+        }
+
+        echo json_encode($response);
         
     } catch (PDOException $e) {
         echo json_encode([

@@ -103,7 +103,24 @@
               <!-- Tabla de Trabajadores dentro del Sistema -->
               <div class="col-md-12">
                 <div class="card mb-4">
-                  <h5 class="card-header">Tabla de Trabajadores dentro del Sistema</h5>
+                  <h5 class="card-header d-flex justify-content-between align-items-center">
+                      <!-- Título a la izquierda -->
+                      <span class="fw-semibold">Tabla de Trabajadores dentro del Sistema</span>
+                      
+                      <!-- Buscador a la derecha -->
+                      <div class="input-group input-group-merge" style="width: 280px;">
+                        <span class="input-group-text">
+                          <i class="bx bx-search"></i>
+                        </span>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="workersSearch"
+                          placeholder="Buscar trabajador..."
+                          aria-label="Buscar trabajador"
+                        >
+                      </div>
+                    </h5>
                   <div class="card-body">
                     <!-- Tabla de trabajadores -->
                     <div class="table-responsive text-nowrap fixed-height">

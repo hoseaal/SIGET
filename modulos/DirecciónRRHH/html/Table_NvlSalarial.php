@@ -82,7 +82,19 @@
               <!-- Tabla de Niveles Salariales -->
               <div class="col-md-12">
                 <div class="card mb-4">
-                  <h5 class="card-header">Tabla de Niveles Salariales</h5>
+                  <h5 class="card-header d-flex justify-content-between align-items-center">
+                    <span>Tabla de Niveles Salariales</span>
+                    <div class="input-group input-group-merge" style="width: 280px;">
+                      <span class="input-group-text"><i class="bx bx-search"></i></span>
+                      <input 
+                        type="text" 
+                        class="form-control" 
+                        id="salarySearch" 
+                        placeholder="Buscar nivel..." 
+                        aria-label="Buscar nivel salarial"
+                      >
+                    </div>
+                  </h5>
                   <div class="card-body">
                     <!-- Tabla de Salarios -->
                     <div class="table-responsive text-nowrap fixed-height">

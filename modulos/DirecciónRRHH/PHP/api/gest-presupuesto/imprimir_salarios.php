@@ -4,18 +4,12 @@
     header('Content-Type: application/json');
 
     try {
-        // Obtener parámetros de paginación
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $perPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 7;
-        $offset = ($page - 1) * $perPage;
+        // Verificar si se solicita todos los registros (para búsquedas)
+        $all = isset($_GET['all']) && $_GET['all'] == 'true';
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-        // Obtener el número total de registros
-        $totalQuery = $pdo->query("SELECT COUNT(*) as total FROM tesnvl");
-        $totalData = $totalQuery->fetch();
-        $totalSalaries = $totalData['total'];
-
-        // Consulta para obtener los niveles salariales con JOIN a tesona
-        $query = $pdo->prepare("
+        // Consulta base
+        $baseQuery = "
             SELECT 
                 t.nvl_ide,
                 t.nvl_ran,
@@ -23,14 +17,61 @@
                 o.ona_car
             FROM tesnvl t
             LEFT JOIN tesona o ON t.ona_ide = o.ona_ide
-            ORDER BY t.nvl_ide
-            LIMIT :limit OFFSET :offset
-        ");
+        ";
+
+        // Añadir condiciones de búsqueda si hay término
+        $whereConditions = [];
+        $params = [];
+
+        if (!empty($search)) {
+            $whereConditions[] = "(
+                t.nvl_ran LIKE :search OR
+                t.nvl_sal LIKE :search OR
+                o.ona_car LIKE :search
+            )";
+            $params[':search'] = "%$search%";
+        }
+
+        // Construir consulta final
+        $queryStr = $baseQuery;
+        if (!empty($whereConditions)) {
+            $queryStr .= " WHERE " . implode(" AND ", $whereConditions);
+        }
+        $queryStr .= " ORDER BY t.nvl_ide";
+
+        // Obtener el número total de registros (para paginación)
+        $countQuery = $pdo->prepare("SELECT COUNT(*) as total FROM ($queryStr) as subquery");
+        foreach ($params as $key => $value) {
+            $countQuery->bindValue($key, $value);
+        }
+        $countQuery->execute();
+        $totalData = $countQuery->fetch();
+        $totalSalaries = $totalData['total'];
+
+        // Manejar paginación a menos que se soliciten todos los registros
+        if (!$all) {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $perPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 7;
+            $offset = ($page - 1) * $perPage;
+            
+            $queryStr .= " LIMIT :limit OFFSET :offset";
+            $params[':limit'] = $perPage;
+            $params[':offset'] = $offset;
+        }
+
+        // Consulta principal
+        $query = $pdo->prepare($queryStr);
         
-        $query->bindParam(':limit', $perPage, PDO::PARAM_INT);
-        $query->bindParam(':offset', $offset, PDO::PARAM_INT);
+        // Vincular parámetros
+        foreach ($params as $key => $value) {
+            if ($key === ':limit' || $key === ':offset') {
+                $query->bindValue($key, $value, PDO::PARAM_INT);
+            } else {
+                $query->bindValue($key, $value);
+            }
+        }
+
         $query->execute();
-        
         $salaries = $query->fetchAll(PDO::FETCH_ASSOC);
 
         // Formatear salarios
@@ -38,14 +79,21 @@
             $salary['nvl_sal'] = (float)$salary['nvl_sal'];
         }
 
-        echo json_encode([
+        // Preparar respuesta
+        $response = [
             'success' => true,
             'salaries' => $salaries,
-            'total' => $totalSalaries,
-            'page' => $page,
-            'per_page' => $perPage,
-            'total_pages' => ceil($totalSalaries / $perPage)
-        ]);
+            'total' => $totalSalaries
+        ];
+
+        // Añadir información de paginación si no es una consulta de "todos"
+        if (!$all) {
+            $response['page'] = $page;
+            $response['per_page'] = $perPage;
+            $response['total_pages'] = ceil($totalSalaries / $perPage);
+        }
+
+        echo json_encode($response);
         
     } catch (PDOException $e) {
         echo json_encode([

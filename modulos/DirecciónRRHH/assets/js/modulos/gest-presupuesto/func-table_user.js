@@ -6,27 +6,81 @@ document.addEventListener('DOMContentLoaded', function() {
     let totalPages = 1;
     const tableBody = document.querySelector('#usersTable tbody');
     const paginationElement = document.getElementById('paginationUsers');
-    let allUsersData = []; // Almacenará todos los datos de usuarios
 
-    // Función para cargar los usuarios desde la API
-    async function fetchUsers(page) {
+    // Variables para búsqueda global
+    let allUsers = [];
+    let isSearching = false;
+    let currentSearchTerm = '';
+
+    // Función para cargar TODOS los usuarios desde la API (para búsqueda)
+    async function fetchAllUsers() {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_users.php?page=${page}&per_page=${rowsPerPage}`);
+            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_users.php?all=true`);
             const data = await response.json();
             
             if (data.success) {
-                totalUsers = data.total;
-                totalPages = data.total_pages;
-                allUsersData = data.users;
+                allUsers = data.users;
                 return data.users;
             } else {
-                console.error('Error al cargar usuarios:', data.message);
+                console.error('Error al cargar todos los usuarios:', data.message);
                 return [];
             }
         } catch (error) {
             console.error('Error en la solicitud:', error);
             return [];
         }
+    }
+
+    // Función para cargar los usuarios paginados desde la API
+    async function fetchUsers(page, searchTerm = '') {
+        try {
+            let url = `../PHP/api/gest-presupuesto/imprimir_users.php?page=${page}&per_page=${rowsPerPage}`;
+            if (searchTerm) {
+                url += `&search=${encodeURIComponent(searchTerm)}`;
+            }
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success) {
+                totalUsers = data.total;
+                totalPages = data.total_pages;
+                return {
+                    users: data.users,
+                    total: data.total,
+                    total_pages: data.total_pages
+                };
+            } else {
+                console.error('Error al cargar usuarios:', data.message);
+                return {
+                    users: [],
+                    total: 0,
+                    total_pages: 0
+                };
+            }
+        } catch (error) {
+            console.error('Error en la solicitud:', error);
+            return {
+                users: [],
+                total: 0,
+                total_pages: 0
+            };
+        }
+    }
+
+    // Función para filtrar usuarios localmente
+    function filterUsersLocally(users, searchTerm) {
+        if (!searchTerm) return users;
+        
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        return users.filter(user => {
+            return (
+                (user.nom_ced && user.nom_ced.toLowerCase().includes(lowerSearchTerm)) ||
+                (user.nom_nom && user.nom_nom.toLowerCase().includes(lowerSearchTerm)) ||
+                (user.nom_ape && user.nom_ape.toLowerCase().includes(lowerSearchTerm)) ||
+                (getUserTypeText(user.usu_tip) && getUserTypeText(user.usu_tip).toLowerCase().includes(lowerSearchTerm))
+            );
+        });
     }
 
     // Función para obtener los datos completos de un usuario
@@ -47,8 +101,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Función para convertir el tipo de usuario a texto
+    function getUserTypeText(type) {
+        const types = {
+            1: 'Administrador',
+            2: 'Trabajador',
+            3: 'Jefe de Área'
+        };
+        return types[type] || 'Desconocido';
+    }
+
     // Función para mostrar los usuarios en la página actual
-    async function displayUsers(page) {
+    async function displayUsers(page, usersToDisplay = null) {
+        const isFiltered = usersToDisplay !== null;
+        const result = isFiltered ? { users: usersToDisplay } : await fetchUsers(page);
+        const users = result.users;
+        totalUsers = isFiltered ? users.length : result.total;
+        totalPages = isFiltered ? Math.ceil(users.length / rowsPerPage) : result.total_pages;
+        
         // Mostrar loader mientras carga
         tableBody.innerHTML = `
             <tr>
@@ -60,7 +130,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `;
         
-        const users = await fetchUsers(page);
+        // Pequeño retraso para evitar parpadeo con cargas rápidas
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         tableBody.innerHTML = '';
         
@@ -71,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (i === 0) {
                     row.innerHTML = `
                         <td colspan="6" class="text-center empty-row">
-                            ${i === 0 ? 'No se encontraron usuarios' : '&nbsp;'}
+                            ${isFiltered ? 'No se encontraron coincidencias' : 'No se encontraron usuarios'}
                         </td>
                     `;
                 } else {
@@ -79,6 +150,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 tableBody.appendChild(row);
             }
+            
+            // Actualizar paginación para reflejar que no hay datos
+            setupPagination();
             return;
         }
 
@@ -121,6 +195,77 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Configurar eventos para los botones
+        setupEventListeners();
+        
+        // Actualizar paginación
+        setupPagination();
+    }
+
+    // Función para configurar el buscador
+    function setupSearch() {
+        const searchInput = document.getElementById('usersSearch');
+        let searchTimeout;
+        
+        // Cargar todos los registros al iniciar para búsquedas
+        fetchAllUsers();
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            
+            const searchTerm = this.value.trim();
+            currentSearchTerm = searchTerm;
+            
+            if (searchTerm.length === 0) {
+                // Si el buscador está vacío, volver a la paginación normal
+                isSearching = false;
+                currentPage = 1;
+                displayUsers(currentPage);
+                paginationElement.style.display = '';
+                return;
+            }
+            
+            // Pequeño retraso para no hacer búsquedas con cada tecla
+            searchTimeout = setTimeout(async () => {
+                isSearching = true;
+                
+                // Mostrar loader
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Buscando...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                
+                // Si no tenemos todos los registros cargados, intentar cargarlos
+                if (allUsers.length === 0) {
+                    allUsers = await fetchAllUsers();
+                }
+                
+                // Filtrar localmente con todos los datos
+                const filtered = filterUsersLocally(allUsers, searchTerm);
+                displayUsers(1, filtered);
+                paginationElement.style.display = filtered.length > rowsPerPage ? '' : 'none';
+            }, 300);
+        });
+        
+        // Restaurar paginación si se borra la búsqueda
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape' || this.value.trim() === '') {
+                this.value = '';
+                isSearching = false;
+                currentPage = 1;
+                displayUsers(currentPage);
+                paginationElement.style.display = '';
+            }
+        });
+    }
+
+    // Función para configurar los event listeners
+    function setupEventListeners() {
         // Agregar event listeners para los botones de editar
         document.querySelectorAll('.edit-user-btn').forEach(btn => {
             btn.addEventListener('click', async function() {
@@ -142,16 +287,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showDeleteConfirmation(userId, userName);
             });
         });
-    }
-
-    // Función para convertir el tipo de usuario a texto
-    function getUserTypeText(type) {
-        const types = {
-            1: 'Administrador',
-            2: 'Trabajador',
-            3: 'Jefe de Área'
-        };
-        return types[type] || 'Desconocido';
     }
 
     // Función para mostrar confirmación de eliminación
@@ -189,14 +324,162 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('confirmUserDeleteBtn').addEventListener('click', async function() {
             await deleteUser(userId);
             deleteModal.hide();
-            document.getElementById('deleteUserConfirmationModal').addEventListener('hidden.bs.modal', function() {
-                this.remove();
-            });
+            document.getElementById('deleteUserConfirmationModal').remove();
         });
         
         document.getElementById('deleteUserConfirmationModal').addEventListener('hidden.bs.modal', function() {
             this.remove();
         });
+    }
+
+    // Función para eliminar un usuario
+    async function deleteUser(userId) {
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
+        loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
+        loadingIndicator.style.zIndex = '1060';
+        loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
+        document.body.appendChild(loadingIndicator);
+        
+        try {
+            const response = await fetch('../PHP/api/gest-presupuesto/eliminar_users.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: userId })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || `Error HTTP: ${response.status}`);
+            }
+            
+            if (result.success) {
+                // Verificar si debemos cambiar de página
+                if (currentPage > 1 && (totalUsers - 1) <= ((currentPage - 1) * rowsPerPage)) {
+                    currentPage--;
+                }
+                
+                // Recargar la tabla
+                if (isSearching) {
+                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
+                    allUsers = await fetchAllUsers();
+                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
+                    displayUsers(1, filtered);
+                } else {
+                    // Si no, recargar la página actual normalmente
+                    await displaySalaries(currentPage);
+                }
+                alert(result.message || 'Usuario eliminado correctamente');
+            } else {
+                throw new Error(result.message || 'Error al eliminar el usuario');
+            }
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            alert('Error al eliminar: ' + error.message);
+        } finally {
+            loadingIndicator.remove();
+        }
+    }
+
+    // Función para configurar la paginación
+    function setupPagination() {
+        paginationElement.innerHTML = '';
+        
+        if (totalPages <= 1) return;
+        
+        // Botón Primera página
+        let li = document.createElement('li');
+        li.className = 'page-item first' + (currentPage === 1 ? ' disabled' : '');
+        li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-left"></i></a>`;
+        li.addEventListener('click', () => {
+            if (currentPage !== 1) {
+                currentPage = 1;
+                if (isSearching) {
+                    // Si estamos buscando, mostrar los primeros resultados filtrados
+                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
+                    displayUsers(1, filtered);
+                } else {
+                    displayUsers(currentPage);
+                }
+            }
+        });
+        paginationElement.appendChild(li);
+        
+        // Botón Página anterior
+        li = document.createElement('li');
+        li.className = 'page-item prev' + (currentPage === 1 ? ' disabled' : '');
+        li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-left"></i></a>`;
+        li.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                if (isSearching) {
+                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
+                    displayUsers(currentPage, filtered);
+                } else {
+                    displayUsers(currentPage);
+                }
+            }
+        });
+        paginationElement.appendChild(li);
+        
+        // Números de página
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+        
+        for (let i = startPage; i <= endPage; i++) {
+            li = document.createElement('li');
+            li.className = 'page-item' + (i === currentPage ? ' active' : '');
+            li.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
+            li.addEventListener('click', () => {
+                if (currentPage !== i) {
+                    currentPage = i;
+                    if (isSearching) {
+                        const filtered = filterUsersLocally(allUsers, currentSearchTerm);
+                        displayUsers(currentPage, filtered);
+                    } else {
+                        displayUsers(currentPage);
+                    }
+                }
+            });
+            paginationElement.appendChild(li);
+        }
+        
+        // Botón Página siguiente
+        li = document.createElement('li');
+        li.className = 'page-item next' + (currentPage === totalPages ? ' disabled' : '');
+        li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-right"></i></a>`;
+        li.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                if (isSearching) {
+                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
+                    displayUsers(currentPage, filtered);
+                } else {
+                    displayUsers(currentPage);
+                }
+            }
+        });
+        paginationElement.appendChild(li);
+        
+        // Botón Última página
+        li = document.createElement('li');
+        li.className = 'page-item last' + (currentPage === totalPages ? ' disabled' : '');
+        li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-right"></i></a>`;
+        li.addEventListener('click', () => {
+            if (currentPage !== totalPages) {
+                currentPage = totalPages;
+                if (isSearching) {
+                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
+                    displayUsers(currentPage, filtered);
+                } else {
+                    displayUsers(currentPage);
+                }
+            }
+        });
+        paginationElement.appendChild(li);
     }
 
     // Función para abrir el modal de edición con datos del usuario
@@ -212,7 +495,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const userTypeSelect = document.getElementById('cargocet');
         if (userTypeSelect) {
             userTypeSelect.value = userData.usu_tip.toString();
-            console.log('Valor seleccionado:', userTypeSelect.value);
         }
         
         // Configurar el botón de guardar
@@ -265,7 +547,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Cambios guardados exitosamente');
                 
                 // Recargar los datos
-                displayUsers(currentPage);
+                if (isSearching) {
+                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
+                    allUsers = await fetchAllUsers();
+                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
+                    displayUsers(1, filtered);
+                } else {
+                    // Si no, recargar la página actual normalmente
+                    await displayUsers(currentPage);
+                }
             } else {
                 throw new Error(result.message || 'Error al guardar los cambios');
             }
@@ -279,156 +569,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Función para eliminar un usuario
-    async function deleteUser(userId) {
-        try {
-            const loadingIndicator = document.createElement('div');
-            loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-            loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-            loadingIndicator.style.zIndex = '1060';
-            loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-            document.body.appendChild(loadingIndicator);
-            
-            const response = await fetch('../PHP/api/gest-presupuesto/eliminar_users.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ user_id: userId })
-            });
-            
-            const result = await response.json();
-            
-            loadingIndicator.remove();
-            
-            if (result.success) {
-                alert('Usuario eliminado correctamente');
-                displayUsers(currentPage);
-            } else {
-                throw new Error(result.message || 'Error al eliminar el usuario');
-            }
-        } catch (error) {
-            console.error('Error al eliminar usuario:', error);
-            alert('Error al eliminar: ' + error.message);
-        }
-    }
-
-    // Función para configurar la paginación
-    function setupPagination() {
-        paginationElement.innerHTML = '';
-        
-        // Botón Primera página
-        let li = document.createElement('li');
-        li.className = 'page-item first';
-        li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-left"></i></a>`;
-        li.addEventListener('click', () => {
-            if (currentPage !== 1) {
-                currentPage = 1;
-                displayUsers(currentPage);
-                updatePaginationButtons();
-            }
-        });
-        paginationElement.appendChild(li);
-        
-        // Botón Página anterior
-        li = document.createElement('li');
-        li.className = 'page-item prev';
-        li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-left"></i></a>`;
-        li.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displayUsers(currentPage);
-                updatePaginationButtons();
-            }
-        });
-        paginationElement.appendChild(li);
-        
-        // Números de página
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
-        
-        for (let i = startPage; i <= endPage; i++) {
-            li = document.createElement('li');
-            li.className = 'page-item';
-            if (i === currentPage) li.classList.add('active');
-            li.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
-            li.addEventListener('click', () => {
-                if (currentPage !== i) {
-                    currentPage = i;
-                    displayUsers(currentPage);
-                    updatePaginationButtons();
-                }
-            });
-            paginationElement.appendChild(li);
-        }
-        
-        // Botón Página siguiente
-        li = document.createElement('li');
-        li.className = 'page-item next';
-        li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-right"></i></a>`;
-        li.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                displayUsers(currentPage);
-                updatePaginationButtons();
-            }
-        });
-        paginationElement.appendChild(li);
-        
-        // Botón Última página
-        li = document.createElement('li');
-        li.className = 'page-item last';
-        li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-right"></i></a>`;
-        li.addEventListener('click', () => {
-            if (currentPage !== totalPages) {
-                currentPage = totalPages;
-                displayUsers(currentPage);
-                updatePaginationButtons();
-            }
-        });
-        paginationElement.appendChild(li);
-    }
-    
-    // Función para actualizar el estado de los botones de paginación
-    function updatePaginationButtons() {
-        const pageItems = paginationElement.querySelectorAll('.page-item');
-        
-        pageItems.forEach(item => {
-            item.classList.remove('active');
-        });
-        
-        pageItems.forEach(item => {
-            const pageLink = item.querySelector('.page-link');
-            if (pageLink && pageLink.textContent === currentPage.toString()) {
-                item.classList.add('active');
-            }
-        });
-        
-        const firstBtn = paginationElement.querySelector('.first');
-        const prevBtn = paginationElement.querySelector('.prev');
-        const nextBtn = paginationElement.querySelector('.next');
-        const lastBtn = paginationElement.querySelector('.last');
-        
-        if (currentPage === 1) {
-            firstBtn.classList.add('disabled');
-            prevBtn.classList.add('disabled');
-        } else {
-            firstBtn.classList.remove('disabled');
-            prevBtn.classList.remove('disabled');
-        }
-        
-        if (currentPage === totalPages) {
-            nextBtn.classList.add('disabled');
-            lastBtn.classList.add('disabled');
-        } else {
-            nextBtn.classList.remove('disabled');
-            lastBtn.classList.remove('disabled');
-        }
-    }
-
-    // Inicializar la tabla y paginación
+    // Inicializar la tabla, paginación y buscador
     displayUsers(currentPage).then(() => {
-        setupPagination();
-        updatePaginationButtons();
+        setupSearch();
     });
 });
