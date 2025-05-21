@@ -1,4 +1,5 @@
 <?php
+  require_once '../conexion/conexion.php';
   require_once '../PHP/api/validar-jwt.php';
 
   if ($decoded->data->tipo == '2') {
@@ -141,100 +142,65 @@
 
                 <!-- Últimas Modificaciones -->
                 <div class="col-md-6 col-lg-4 order-2 mb-4">
-                  <div class="card h-100">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                      <h5 class="card-title m-0 me-2">Últimas Modificaciones</h5>
-                      <div class="dropdown">
-                        <button
-                          class="btn p-0"
-                          type="button"
-                          id="payrollDropdown"
-                          data-bs-toggle="dropdown"
-                          aria-haspopup="true"
-                          aria-expanded="false"
-                        >
-                          <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="payrollDropdown">
-                          <a class="dropdown-item" href="javascript:void(0);">Ver más</a>
+                    <div class="card h-100">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h5 class="card-title m-0 me-2">Últimas Modificaciones</h5>
+                            <div class="dropdown">
+                                <button class="btn p-0" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item" href="logs_completos.php">Ver más</a>
+                                </div>
+                            </div>
                         </div>
-                      </div>
+                        <div class="card-body">
+                            <ul class="p-0 m-0">
+                                <?php
+                                $stmt = $pdo->query("
+                                    SELECT 
+                                        tabla_afectada,
+                                        operacion,
+                                        id_afectado,
+                                        usuario_responsable,
+                                        detalles,
+                                        fecha_registro
+                                    FROM logs_modificaciones
+                                    ORDER BY fecha_registro DESC
+                                    LIMIT 7
+                                ");
+                                $logs = $stmt->fetchAll();
+
+                                $iconos = [
+                                    'INSERT' => 'chart-success.png',
+                                    'UPDATE' => 'cc-warning.png',
+                                    'DELETE' => 'paypal.png'
+                                ];
+
+                                foreach ($logs as $log):
+                                    $icono = $iconos[$log['operacion']] ?? 'cc-success.png';
+                                    $detalles = json_decode($log['detalles'], true);
+                                ?>
+                                <li class="d-flex mb-4 pb-1">
+                                    <div class="avatar flex-shrink-0 me-3">
+                                        <img src="../assets/img/icons/unicons/<?= htmlspecialchars($icono) ?>" alt="<?= htmlspecialchars($log['operacion']) ?>" class="rounded">
+                                    </div>
+                                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <small class="text-muted d-block mb-1">
+                                                <?= htmlspecialchars(ucfirst(strtolower($log['operacion']))) ?> en <?= htmlspecialchars($log['tabla_afectada']) ?>
+                                            </small>
+                                            <h6 class="mb-0"><?= htmlspecialchars($log['usuario_responsable']) ?></h6>
+                                        </div>
+                                        <div class="user-progress d-flex align-items-center gap-1">
+                                            <h6 class="mb-0"><?= htmlspecialchars($log['id_afectado']) ?></h6>
+                                        </div>
+                                    </div>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="card-body">
-                      <ul class="p-0 m-0">
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/paypal.png" alt="Pago Nómina" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Inserción de un Usuario</small>
-                              <h6 class="mb-0">Juan Pérez</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">30458968</h6>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/wallet.png" alt="Bono" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Eliminación de un usuario</small>
-                              <h6 class="mb-0">María García</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">11452678</h6>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/chart.png" alt="Reintegro" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Actualización de Nómina</small>
-                              <h6 class="mb-0">Luis Fernández</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">35874951</h6>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/cc-success.png" alt="Pago Adicional" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Actualización de Deducción</small>
-                              <h6 class="mb-0">Ana Rodríguez</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">34865798</h6>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/wallet.png" alt="Pago Nómina" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Eliminación de departamento</small>
-                              <h6 class="mb-0">Carlos Ruiz</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">15478698</h6>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
                 </div>
                 <!--/ Últimas Modificaciones -->
 
