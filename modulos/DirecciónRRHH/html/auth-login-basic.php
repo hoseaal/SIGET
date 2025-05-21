@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html
-  lang="en"
+  lang="es"
   class="light-style customizer-hide"
   dir="ltr"
   data-theme="theme-default"
@@ -53,7 +53,6 @@
 
   <body>
     <!-- Content -->
-
     <div class="container-xxl">
       <div class="authentication-wrapper authentication-basic container-p-y">
         <div class="authentication-inner">
@@ -72,15 +71,18 @@
 
               <form id="formAuthentication" class="mb-3" method="POST">
                 <div class="mb-3">
-                  <label for="cedula" class="form-label">Cédula del Trabajador</label>
+                  <label for="nickname" class="form-label">Ingrese su Usuario</label>
                   <input
-                    type="text"
-                    class="form-control"
-                    id="cedula"
-                    name="cedula"
-                    placeholder="Ejem. 30297698"
-                    autofocus
-                    required
+                      type="text"
+                      class="form-control"
+                      id="nickname"
+                      name="nickname"
+                      placeholder="Ejem. Juan123"
+                      pattern="[a-zA-Z0-9]{1,10}"
+                      maxlength="10"
+                      title="Solo letras y números, máximo 10 caracteres"
+                      autofocus
+                      required
                   />
                 </div>
                 <div class="mb-3 form-password-toggle">
@@ -91,6 +93,9 @@
                       class="form-control"
                       name="password"
                       placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                      pattern="[a-zA-Z0-9@.]{1,16}"
+                      maxlength="16"
+                      title="Solo letras, números, @ y punto. Máximo 16 caracteres"
                       aria-describedby="password"
                       required
                     />
@@ -113,7 +118,6 @@
         </div>
       </div>
     </div>
-
     <!-- / Content -->
 
     <!-- Core JS -->
@@ -133,51 +137,63 @@
 
     <!-- Page JS -->
     <script>
-      document.getElementById('formAuthentication').addEventListener('submit', async function (e) {
+      document.getElementById('nickname').addEventListener('input', function(e) {
+          // Solo permite letras y números
+          this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
+      });
+
+      document.getElementById('formAuthentication').addEventListener('submit', async function(e) {
           e.preventDefault();
 
-          const cedula = document.getElementById('cedula').value;
+          const nickname = document.getElementById('nickname').value;
           const password = document.getElementById('password').value;
 
-          try {
-          const response = await fetch('../PHP/api/login.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ cedula, password }),
-          });
-
-          const text = await response.text(); // primero leemos como texto
-
-          try {
-            const result = JSON.parse(text); // luego intentamos parsear
-            if (result.success) {
-              const tipo = result.tipo;
-              if (tipo == 3) {
-                window.location.href = 'index.php';
-              } else if (tipo == 2) {
-                window.location.href = 'index_usur.php';
-              } else {
-                window.location.href = 'auth-login-basic.php';
-              }
-            } else {
-              alert(result.message);
-            }
-          } catch (parseError) {
-            console.error("Error al parsear JSON:", parseError);
-            console.error("Respuesta cruda del servidor:", text);
-            alert("Ocurrió un error inesperado del servidor.");
+          if (!/^[a-zA-Z0-9]{1,10}$/.test(nickname)) {
+              alert("El nombre de usuario solo puede contener letras y números (máximo 10 caracteres)");
+              return;
           }
 
-        } catch (error) {
-          console.error('Error en el login (fetch falló):', error);
-          alert('Ocurrió un error al iniciar sesión.');
-        }
-        });
-      </script>
+          if (!/^[a-zA-Z0-9@.]{1,16}$/.test(password)) {
+              alert("La contraseña solo puede contener letras, números, @ y punto (máximo 16 caracteres)");
+              return;
+          }
 
+          try {
+              const response = await fetch('../PHP/api/login.php', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ nickname, password }),
+              });
 
+              const text = await response.text();
+
+              try {
+                  const result = JSON.parse(text);
+                  if (result.success) {
+                      const tipo = result.tipo;
+                      if (tipo == 3) {
+                          window.location.href = 'index.php';
+                      } else if (tipo == 2) {
+                          window.location.href = 'index_usur.php';
+                      } else {
+                          window.location.href = 'auth-login-basic.php';
+                      }
+                  } else {
+                      alert(result.message);
+                  }
+              } catch (parseError) {
+                  console.error("Error al parsear JSON:", parseError);
+                  console.error("Respuesta cruda del servidor:", text);
+                  alert("Ocurrió un error inesperado del servidor.");
+              }
+          } catch (error) {
+              console.error('Error en el login (fetch falló):', error);
+              alert('Ocurrió un error al iniciar sesión.');
+          }
+      });
+    </script>
     <!-- / Page JS -->
 
     <!-- Place this tag in your head or just before your close body tag. -->

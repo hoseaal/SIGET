@@ -1,4 +1,5 @@
 <?php
+  require_once '../conexion/conexion.php';
   require_once '../PHP/api/validar-jwt.php';
 
   if ($decoded->data->tipo == '2') {
@@ -29,7 +30,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../../../home/src/img/logo-contraloria-home3.png" />
+    <link rel="icon" type="image/x-icon" href="../../../home/assets/img/logo-contraloria-home2.png" />
 
     <!-- Fonts -->
     <link
@@ -39,7 +40,6 @@
 
     <!-- Icons. Uncomment required icon fonts -->
     <link rel="stylesheet" href="../assets/vendor/fonts/boxicons.css" />
-
     <!-- Core CSS -->
     <link rel="stylesheet" href="../assets/vendor/css/core.css" class="template-customizer-core-css" />
     <link rel="stylesheet" href="../assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
@@ -142,105 +142,71 @@
 
                 <!-- Últimas Modificaciones -->
                 <div class="col-md-6 col-lg-4 order-2 mb-4">
-                  <div class="card h-100">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                      <h5 class="card-title m-0 me-2">Últimas Modificaciones</h5>
-                      <div class="dropdown">
-                        <button
-                          class="btn p-0"
-                          type="button"
-                          id="payrollDropdown"
-                          data-bs-toggle="dropdown"
-                          aria-haspopup="true"
-                          aria-expanded="false"
-                        >
-                          <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="payrollDropdown">
-                          <a class="dropdown-item" href="javascript:void(0);">Ver más</a>
+                    <div class="card h-100">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h5 class="card-title m-0 me-2">Últimas Modificaciones</h5>
+                            <div class="dropdown">
+                                <button class="btn p-0" type="button" id="payrollDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="payrollDropdown">
+                                    <a class="dropdown-item" href="javascript:void(0);">Ver más</a>
+                                </div>
+                            </div>
                         </div>
-                      </div>
+                        <div class="card-body">
+                            <ul class="p-0 m-0">
+                                <?php
+                                $stmt = $pdo->query("
+                                    SELECT 
+                                        bit_operacion,
+                                        bit_usu_ide,
+                                        bit_usuario_responsable,
+                                        bit_detalles,
+                                        bit_fecha
+                                    FROM bit_usu
+                                    ORDER BY bit_fecha DESC
+                                    LIMIT 7
+                                ");
+                                $modificaciones = $stmt->fetchAll();
+
+                                foreach ($modificaciones as $mod):
+                                    $icono = match($mod['bit_operacion']) {
+                                        'INSERT' => 'insert_usu.png',
+                                        'UPDATE' => 'update_usu.png',
+                                        'DELETE' => 'delete_usu.png',
+                                        default => 'cc-success.png'
+                                    };
+                                    $texto = match($mod['bit_operacion']) {
+                                        'INSERT' => 'Inserción de usuario',
+                                        'UPDATE' => 'Actualización de usuario',
+                                        'DELETE' => 'Eliminación de usuario'
+                                    };
+                                ?>
+                                <li class="d-flex mb-4 pb-1">
+                                    <div class="avatar flex-shrink-0 me-3">
+                                        <img src="../assets/img/icons/unicons/<?= $icono ?>" alt="<?= $mod['bit_operacion'] ?>" class="rounded">
+                                    </div>
+                                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <small class="text-muted d-block mb-1"><?= $texto ?></small>
+                                            <h6 class="mb-0">CI: <?= htmlspecialchars($mod['bit_usu_ide']) ?></h6>
+                                            <small>Realizado por: <?= htmlspecialchars($mod['bit_usuario_responsable']) ?></small>
+                                        </div>
+                                        <div class="user-progress">
+                                            <small class="text-muted"><?= date('d/m/Y H:i', strtotime($mod['bit_fecha'])) ?></small>
+                                        </div>
+                                    </div>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="card-body">
-                      <ul class="p-0 m-0">
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/paypal.png" alt="Pago Nómina" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Inserción de un Usuario</small>
-                              <h6 class="mb-0">Juan Pérez</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">30458968</h6>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/wallet.png" alt="Bono" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Eliminación de un usuario</small>
-                              <h6 class="mb-0">María García</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">11452678</h6>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/chart.png" alt="Reintegro" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Actualización de Nómina</small>
-                              <h6 class="mb-0">Luis Fernández</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">Fecha de Ingreso</h6>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/cc-success.png" alt="Pago Adicional" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Actualización de Deducción</small>
-                              <h6 class="mb-0">Ana Rodríguez</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">50%</h6>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/wallet.png" alt="Pago Nómina" class="rounded" />
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1">Eliminación de departamento</small>
-                              <h6 class="mb-0">Carlos Ruiz</h6>
-                            </div>
-                            <div class="user-progress d-flex align-items-center gap-1">
-                              <h6 class="mb-0">15478698</h6>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
                 </div>
                 <!--/ Últimas Modificaciones -->
 
 
-                <!-- Order Statistics -->
+                <!-- Empleado por departamento -->
                 <div class="col-md-6 col-lg-4 col-xl-4 order-2 mb-4">
                   <div class="card h-100">
                     <div class="card-header d-flex align-items-center justify-content-between pb-0">
@@ -249,78 +215,16 @@
                       </div>
                     </div>
                     <div class="card-body">
-                      <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex flex-column align-items-center gap-1">
-                          <h2 class="mb-2">110</h2>
-                          <span>Empleados totales</span>
-                        </div>
-                        <div id="orderStatisticsChart"></div>
+                      <div  class="d-flex justify-content-center mb-3">
+                        <div id="orderStatisticsChart" class="mx-auto"></div>
                       </div>
-                      <ul class="p-0 m-0">
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <span class="avatar-initial rounded bg-label-primary"
-                              ><i class="bx bx-mobile-alt"></i
-                            ></span>
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <h6 class="mb-0">RRHH</h6>
-                              <small class="text-muted">Dirección</small>
-                            </div>
-                            <div class="user-progress">
-                              <small class="fw-semibold">10</small>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <span class="avatar-initial rounded bg-label-success"><i class="bx bx-closet"></i></span>
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <h6 class="mb-0">Administración</h6>
-                              <small class="text-muted">Dirección</small>
-                            </div>
-                            <div class="user-progress">
-                              <small class="fw-semibold">8</small>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <span class="avatar-initial rounded bg-label-info"><i class="bx bx-home-alt"></i></span>
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <h6 class="mb-0">Consultoria Jurídica</h6>
-                              <small class="text-muted">Dirección</small>
-                            </div>
-                            <div class="user-progress">
-                              <small class="fw-semibold">7</small>
-                            </div>
-                          </div>
-                        </li>
-                        <li class="d-flex">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <span class="avatar-initial rounded bg-label-secondary"
-                              ><i class="bx bx-football"></i
-                            ></span>
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <h6 class="mb-0">Otros</h6>
-                            </div>
-                            <div class="user-progress">
-                              <small class="fw-semibold">6</small>
-                            </div>
-                          </div>
-                        </li>
+                      <ul class="p-0 m-0" id="lista-departamentos">
+                        <!-- Los departamentos se cargarán aquí dinámicamente -->
                       </ul>
                     </div>
                   </div>
                 </div>
-                <!--/ Order Statistics -->
+                <!--/ Empleado por departamento -->
                 
                 <div class="col-12 col-md-8 col-lg-4 order-3 order-md-2">
                   <div class="row">
@@ -424,6 +328,218 @@
                   document.getElementById('promedioArea').textContent = 'Error';
                   document.getElementById('totalNomina').textContent = 'Error';
               });
+      });
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Verificar si config está definida (debe estar definida en otro lugar de tu aplicación)
+        if (typeof config === 'undefined') {
+          console.error('La variable config no está definida');
+          return;
+        }
+
+        // Colores para la gráfica (usando la config existente)
+        const colors = {
+          primary: config.colors?.primary || '#696cff',
+          success: config.colors?.success || '#71dd37',
+          info: config.colors?.info || '#03c3ec',
+          secondary: config.colors?.secondary || '#8592a3'
+        };
+        
+        const cardColor = '#fff';
+        const headingColor = '#566a7f';
+        const axisColor = '#a1acb8';
+
+        fetch('../PHP/api/usuarios/empleados_departamentos.php')
+          .then(response => {
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+            return response.json();
+          })
+          .then(data => {
+            console.log('Datos recibidos:', data);
+            
+            // Actualizar total de empleados
+            const totalElement = document.getElementById('total-empleados');
+            if (totalElement) totalElement.textContent = data.total_empleados;
+            
+            // Procesar datos para gráfica (valores absolutos)
+            const chartData = processChartData(data);
+            renderOrderStatisticsChart(chartData, colors);
+            renderDepartmentList(data);
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showError('Error al cargar datos');
+          });
+
+        function processChartData(data) {
+          if (!data.chart_data) return null;
+          
+          // Filtrar departamentos con empleados
+          const result = { labels: [], series: [] };
+          data.chart_data.labels.forEach((label, i) => {
+            if (data.chart_data.series[i] > 0) {
+              result.labels.push(label);
+              result.series.push(data.chart_data.series[i]);
+            }
+          });
+          
+          // Caso especial: solo un departamento con empleados
+          if (result.series.length === 1) {
+            result.labels.push('');
+            result.series.push(0.001); // Valor mínimo para mostrar donut
+          }
+          
+          return result;
+        }
+
+        function renderOrderStatisticsChart(chartData, colors) {
+          const chartElement = document.getElementById('orderStatisticsChart');
+          if (!chartElement || !chartData) return;
+          
+          if (window.orderStatsChart) window.orderStatsChart.destroy();
+          
+          const options = {
+            chart: { 
+              height: 165, 
+              width: 130, 
+              type: 'donut' 
+            },
+            labels: chartData.labels,
+            series: chartData.series,
+            colors: [colors.primary, colors.success, colors.info, colors.secondary],
+            stroke: { 
+              width: 5, 
+              colors: cardColor 
+            },
+            dataLabels: { 
+              enabled: false 
+            },
+            legend: { 
+              show: false 
+            },
+            grid: { 
+              padding: { 
+                top: 0, 
+                bottom: 0, 
+                right: 15 
+              } 
+            },
+            // Tooltip NORMAL (muestra nombre departamento + valor)
+            tooltip: {
+              enabled: true,
+              y: {
+                formatter: function(value) {
+                  return value;
+                }
+              }
+            },
+            plotOptions: {
+              pie: {
+                donut: {
+                  size: '75%',
+                  labels: {
+                    show: true,
+                    value: {
+                      fontSize: '1.5rem',
+                      fontFamily: 'Public Sans',
+                      color: headingColor,
+                      offsetY: -15,
+                      formatter: function(val) {
+                        return val > 0 ? Math.round(val) : '';
+                      }
+                    },
+                    name: {
+                      offsetY: 20,
+                      fontFamily: 'Public Sans',
+                      formatter: function() {
+                        return 'Total';
+                      }
+                    },
+                    total: {
+                      show: true,
+                      fontSize: '0.8125rem',
+                      color: axisColor,
+                      label: 'Total',
+                      formatter: function(w) {
+                        const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                        return Math.round(total);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          };
+          
+          window.orderStatsChart = new ApexCharts(chartElement, options);
+          window.orderStatsChart.render();
+        }
+
+        function renderDepartmentList(data) {
+          const listElement = document.getElementById('lista-departamentos');
+          if (!listElement) return;
+          
+          listElement.innerHTML = '';
+          
+          const icons = ['bx-mobile-alt', 'bx-closet', 'bx-home-alt', 'bx-football'];
+          const bgColors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary'];
+          
+          // Filtrar departamentos con empleados
+          const departmentsWithEmployees = (data.departamentos || [])
+            .filter(dept => dept.cantidad > 0)
+            .slice(0, 3);
+          
+          // Agregar departamentos
+          departmentsWithEmployees.forEach((dept, index) => {
+            listElement.innerHTML += `
+              <li class="d-flex mb-4 pb-1">
+                <div class="avatar flex-shrink-0 me-3">
+                  <span class="avatar-initial rounded ${bgColors[index]}"><i class="bx ${icons[index]}"></i></span>
+                </div>
+                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="me-2">
+                    <small class="text-muted">Departamento</small>
+                    <h6 class="mb-0">${dept.nombre || 'Departamento'}</h6>
+                  </div>
+                  <div class="user-progress">
+                    <small class="fw-semibold">${dept.cantidad}</small>
+                  </div>
+                </div>
+              </li>
+            `;
+          });
+          
+          // Agregar "Otros" si aplica
+          if (data.otros > 0) {
+            listElement.innerHTML += `
+              <li class="d-flex">
+                <div class="avatar flex-shrink-0 me-3">
+                  <span class="avatar-initial rounded ${bgColors[3]}"><i class="bx ${icons[3]}"></i></span>
+                </div>
+                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="me-2">
+                    <h6 class="mb-0">Otros</h6>
+                  </div>
+                  <div class="user-progress">
+                    <small class="fw-semibold">${data.otros}</small>
+                  </div>
+                </div>
+              </li>
+            `;
+          }
+          
+          // Mensaje si no hay datos
+          if (departmentsWithEmployees.length === 0 && (!data.otros || data.otros === 0)) {
+            listElement.innerHTML = '<li class="text-center p-3">No hay empleados registrados</li>';
+          }
+        }
+        
+        function showError(message) {
+          const chartElement = document.getElementById('orderStatisticsChart');
+          if (chartElement) chartElement.innerHTML = `<div class="text-center text-danger p-3">${message}</div>`;
+        }
       });
     </script>
 

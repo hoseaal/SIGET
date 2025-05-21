@@ -79,7 +79,6 @@
           <!-- Content -->
           <div class="container-xxl flex-grow-1 container-p-y">
             <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Agregar /</span> Nuevo Trabajador</h4>
-
             <form id="formRegistro" action="../PHP/api/usuarios/procesar_registro.php" method="POST">
               <div class="row">
                 <!-- Datos Personales -->
