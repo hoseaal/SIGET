@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html
-  lang="en"
+  lang="es"
   class="light-style customizer-hide"
   dir="ltr"
   data-theme="theme-default"
@@ -53,7 +53,6 @@
 
   <body>
     <!-- Content -->
-
     <div class="container-xxl">
       <div class="authentication-wrapper authentication-basic container-p-y">
         <div class="authentication-inner">
@@ -79,6 +78,9 @@
                     id="cedula"
                     name="cedula"
                     placeholder="Ejem. 30297698"
+                    pattern="\d{1,10}"
+                    maxlength="10"
+                    title="Solo números, máximo 10 dígitos"
                     autofocus
                     required
                   />
@@ -91,6 +93,9 @@
                       class="form-control"
                       name="password"
                       placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                      pattern="[a-zA-Z0-9@.]{1,16}"
+                      maxlength="16"
+                      title="Solo letras, números, @ y punto. Máximo 16 caracteres"
                       aria-describedby="password"
                       required
                     />
@@ -113,7 +118,6 @@
         </div>
       </div>
     </div>
-
     <!-- / Content -->
 
     <!-- Core JS -->
@@ -133,13 +137,35 @@
 
     <!-- Page JS -->
     <script>
-      document.getElementById('formAuthentication').addEventListener('submit', async function (e) {
-          e.preventDefault();
+      // Validación para la cédula
+      document.getElementById('cedula').addEventListener('input', function(e) {
+        // Solo permite números y limita a 10 caracteres
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+      });
 
-          const cedula = document.getElementById('cedula').value;
-          const password = document.getElementById('password').value;
+      // Validación para la contraseña
+      document.getElementById('password').addEventListener('input', function(e) {
+        // Solo permite letras, números, @ y .
+        this.value = this.value.replace(/[^a-zA-Z0-9@.]/g, '').slice(0, 16);
+      });
 
-          try {
+      document.getElementById('formAuthentication').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const cedula = document.getElementById('cedula').value;
+        const password = document.getElementById('password').value;
+
+        if (!/^\d{1,10}$/.test(cedula)) {
+          alert("La cédula debe contener solo números (máximo 10 dígitos)");
+          return;
+        }
+
+        if (!/^[a-zA-Z0-9@.]{1,16}$/.test(password)) {
+          alert("La contraseña solo puede contener letras, números, @ y punto (máximo 16 caracteres)");
+          return;
+        }
+
+        try {
           const response = await fetch('../PHP/api/login.php', {
             method: 'POST',
             headers: {
@@ -148,10 +174,10 @@
             body: JSON.stringify({ cedula, password }),
           });
 
-          const text = await response.text(); // primero leemos como texto
+          const text = await response.text();
 
           try {
-            const result = JSON.parse(text); // luego intentamos parsear
+            const result = JSON.parse(text);
             if (result.success) {
               const tipo = result.tipo;
               if (tipo == 3) {
@@ -169,15 +195,12 @@
             console.error("Respuesta cruda del servidor:", text);
             alert("Ocurrió un error inesperado del servidor.");
           }
-
         } catch (error) {
           console.error('Error en el login (fetch falló):', error);
           alert('Ocurrió un error al iniciar sesión.');
         }
-        });
-      </script>
-
-
+      });
+    </script>
     <!-- / Page JS -->
 
     <!-- Place this tag in your head or just before your close body tag. -->

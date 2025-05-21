@@ -57,7 +57,6 @@
 
   <body>
     <!-- Content -->
-
     <div class="container-xxl">
       <div class="authentication-wrapper authentication-basic container-p-y">
         <div class="authentication-inner">
@@ -127,12 +126,12 @@
                 </a>
               </p>
             </div>
-            
           </div>
           <!-- Register Card -->
         </div>
       </div>
     </div>
+    <!--/ Content -->
 
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
@@ -151,30 +150,77 @@
 
     <!-- Page JS -->
     <script>
-        document.getElementById('formAuthentication').addEventListener('submit', function (e) {
-          e.preventDefault();
+      document.getElementById('formAuthentication').addEventListener('submit', function (e) {
+        e.preventDefault();
+        
+        // Validar cédula
+        const cedulaInput = document.getElementById('Cedula');
+        const cedulaValue = cedulaInput.value.trim();
+        
+        // Validación de cédula: solo números, máximo 10 dígitos
+        if (!/^\d{1,10}$/.test(cedulaValue)) {
+          alert('La cédula debe contener solo números (máximo 10 dígitos)');
+          cedulaInput.focus();
+          return;
+        }
+        
+        // Validar contraseña
+        const passwordInput = document.getElementById('password');
+        const passwordValue = passwordInput.value;
+        
+        // Validación de contraseña: letras, números, solo . y @ como caracteres especiales, máximo 16 caracteres
+        if (!/^[a-zA-Z0-9.@]{1,16}$/.test(passwordValue)) {
+          alert('La contraseña debe contener:\n- Letras y números\n- Solo puntos (.) y arrobas (@) como caracteres especiales\n- Máximo 16 caracteres');
+          passwordInput.focus();
+          return;
+        }
+        
+        // Validar rol seleccionado
+        const rolInput = document.getElementById('tip');
+        if (!rolInput.value) {
+          alert('Por favor seleccione un rol válido');
+          rolInput.focus();
+          return;
+        }
+        
+        // Si todas las validaciones pasan, proceder con el envío
+        const formData = new FormData(this);
 
-          const formData = new FormData(this);
-
-          fetch('../PHP/api/register.php', {
-            method: 'POST',
-            body: formData
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              alert(data.message); // Puedes quitar esto si no quieres el alert
-              window.location.href = data.redirect;
-            } else {
-              alert(data.message);
-            }
-          })
-          .catch(err => {
-            alert('Hubo un error en el registro.');
-            console.error(err);
-          });
+        fetch('../PHP/api/register.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert(data.message);
+            window.location.href = data.redirect;
+          } else {
+            alert(data.message);
+          }
+        })
+        .catch(err => {
+          alert('Hubo un error en el registro.');
+          console.error(err);
         });
-      </script>
+      });
+      
+      // Validación en tiempo real para la cédula (solo números)
+      document.getElementById('Cedula').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^\d]/g, '');
+        if (this.value.length > 10) {
+          this.value = this.value.slice(0, 10);
+        }
+      });
+      
+      // Validación en tiempo real para la contraseña (solo letras, números, . y @)
+      document.getElementById('password').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^a-zA-Z0-9.@]/g, '');
+        if (this.value.length > 16) {
+          this.value = this.value.slice(0, 16);
+        }
+      });
+    </script>
 
 
     <!-- Place this tag in your head or just before your close body tag. -->
