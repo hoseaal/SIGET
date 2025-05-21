@@ -146,11 +146,11 @@
                         <div class="card-header d-flex align-items-center justify-content-between">
                             <h5 class="card-title m-0 me-2">Últimas Modificaciones</h5>
                             <div class="dropdown">
-                                <button class="btn p-0" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button class="btn p-0" type="button" id="payrollDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                    <a class="dropdown-item" href="logs_completos.php">Ver más</a>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="payrollDropdown">
+                                    <a class="dropdown-item" href="javascript:void(0);">Ver más</a>
                                 </div>
                             </div>
                         </div>
@@ -159,41 +159,42 @@
                                 <?php
                                 $stmt = $pdo->query("
                                     SELECT 
-                                        tabla_afectada,
-                                        operacion,
-                                        id_afectado,
-                                        usuario_responsable,
-                                        detalles,
-                                        fecha_registro
-                                    FROM logs_modificaciones
-                                    ORDER BY fecha_registro DESC
+                                        bit_operacion,
+                                        bit_usu_ide,
+                                        bit_usuario_responsable,
+                                        bit_detalles,
+                                        bit_fecha
+                                    FROM bit_usu
+                                    ORDER BY bit_fecha DESC
                                     LIMIT 7
                                 ");
-                                $logs = $stmt->fetchAll();
+                                $modificaciones = $stmt->fetchAll();
 
-                                $iconos = [
-                                    'INSERT' => 'chart-success.png',
-                                    'UPDATE' => 'cc-warning.png',
-                                    'DELETE' => 'paypal.png'
-                                ];
-
-                                foreach ($logs as $log):
-                                    $icono = $iconos[$log['operacion']] ?? 'cc-success.png';
-                                    $detalles = json_decode($log['detalles'], true);
+                                foreach ($modificaciones as $mod):
+                                    $icono = match($mod['bit_operacion']) {
+                                        'INSERT' => 'insert_usu.png',
+                                        'UPDATE' => 'update_usu.png',
+                                        'DELETE' => 'delete_usu.png',
+                                        default => 'cc-success.png'
+                                    };
+                                    $texto = match($mod['bit_operacion']) {
+                                        'INSERT' => 'Inserción de usuario',
+                                        'UPDATE' => 'Actualización de usuario',
+                                        'DELETE' => 'Eliminación de usuario'
+                                    };
                                 ?>
                                 <li class="d-flex mb-4 pb-1">
                                     <div class="avatar flex-shrink-0 me-3">
-                                        <img src="../assets/img/icons/unicons/<?= htmlspecialchars($icono) ?>" alt="<?= htmlspecialchars($log['operacion']) ?>" class="rounded">
+                                        <img src="../assets/img/icons/unicons/<?= $icono ?>" alt="<?= $mod['bit_operacion'] ?>" class="rounded">
                                     </div>
                                     <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                                         <div class="me-2">
-                                            <small class="text-muted d-block mb-1">
-                                                <?= htmlspecialchars(ucfirst(strtolower($log['operacion']))) ?> en <?= htmlspecialchars($log['tabla_afectada']) ?>
-                                            </small>
-                                            <h6 class="mb-0"><?= htmlspecialchars($log['usuario_responsable']) ?></h6>
+                                            <small class="text-muted d-block mb-1"><?= $texto ?></small>
+                                            <h6 class="mb-0">CI: <?= htmlspecialchars($mod['bit_usu_ide']) ?></h6>
+                                            <small>Realizado por: <?= htmlspecialchars($mod['bit_usuario_responsable']) ?></small>
                                         </div>
-                                        <div class="user-progress d-flex align-items-center gap-1">
-                                            <h6 class="mb-0"><?= htmlspecialchars($log['id_afectado']) ?></h6>
+                                        <div class="user-progress">
+                                            <small class="text-muted"><?= date('d/m/Y H:i', strtotime($mod['bit_fecha'])) ?></small>
                                         </div>
                                     </div>
                                 </li>

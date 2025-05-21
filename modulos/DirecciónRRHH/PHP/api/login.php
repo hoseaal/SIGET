@@ -15,10 +15,10 @@
 
     $input = json_decode(file_get_contents("php://input"), true);
 
-    $cedula = $input['cedula'] ?? '';
+    $username = $input['nickname'] ?? '';
     $password = $input['password'] ?? '';
 
-    if (empty($cedula) || empty($password)) {
+    if (empty($username) || empty($password)) {
         echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
         exit;
     }
@@ -29,14 +29,13 @@
     }
 
     try {
-        // Buscar usuario por cédula
+        // Buscar usuario por username (usu_usu)
         $stmt = $pdo->prepare("
-            SELECT tu.nom_ced, tu.usu_con, tu.usu_tip, tn.nom_nom, tn.nom_ape
+            SELECT tu.usu_usu, tu.usu_con, tu.usu_tip, tu.nom_ced, tu.usu_nom, tu.usu_ape
             FROM tesusu tu
-            INNER JOIN tmanom tn ON tu.nom_ced = tn.nom_ced
-            WHERE tu.nom_ced = :cedula
+            WHERE tu.usu_usu = :username
         ");
-        $stmt->bindParam(':cedula', $cedula);
+        $stmt->bindParam(':username', $username);
         $stmt->execute();
 
         if ($stmt->rowCount() === 0) {
@@ -59,9 +58,10 @@
             'iat' => time(),
             'exp' => time() + (60 * 60 * 24 * 6),
             'data' => [
+                'username' => $user['usu_usu'],
                 'cedula' => $user['nom_ced'],
-                'nombre' => $user['nom_nom'],
-                'apellido' => $user['nom_ape'],
+                'nombre' => $user['usu_nom'],
+                'apellido' => $user['usu_ape'],
                 'tipo' => $user['usu_tip'],
             ]
         ];

@@ -1,5 +1,8 @@
 <?php
   require_once '../PHP/api/validar-jwt.php';
+
+  // Exponer la cédula del usuario logueado como variable JavaScript
+  echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -86,6 +89,21 @@
                   />
                 </div>
 
+                <div class="mb-3">
+                  <label for="nombre" class="form-label">Nombres</label>
+                  <input type="text" class="form-control" id="nombre" name="nombre" required/>
+                </div> 
+
+                <div class="mb-3">
+                  <label for="apellidos" class="form-label">Apellidos</label>
+                  <input type="text" class="form-control" id="apellidos" name="apellidos" required />
+                </div>
+
+                <div class="mb-3">
+                  <label for="username" class="form-label">Nombre de Usuario</label>
+                  <input type="text" class="form-control" id="username" name="username" required />
+                </div>
+
                 <div class="mb-3 form-password-toggle">
                   <label class="form-label" for="password">Contraseña</label>
                   <div class="input-group input-group-merge">
@@ -104,10 +122,23 @@
 
                 <div class="mb-3 form-password-toggle">
                   <label for="tip">Selecciona el rol:</label>
-                  <select id="tip" name="tip" required>
+                  <select id="tip" name="tip" class="form-select" required>
                     <option value="">-- Selecciona una opción --</option>
+                    <option value="4">Administrador</option>
                     <option value="3">Jefe de área</option>
                     <option value="2">Trabajador</option>
+                    <option value="1">Temporal</option>
+                    <option value="0">Solo Vistas</option>
+                  </select>
+                </div>
+
+                <div class="mb-3 form-password-toggle">
+                  <label for="moduloaccess">Selecciona módulos de acceso:</label>
+                  <select id="moduloaccess" name="moduloaccess" class="form-select" required>
+                    <option value="">-- Selecciona una opción --</option>
+                    <option value="2">Departamento de Bienes</option>
+                    <option value="1">Departamento de RRHH</option>
+                    <option value="0">Todos</option>
                   </select>
                 </div>
 

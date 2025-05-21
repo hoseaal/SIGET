@@ -1,33 +1,17 @@
 <?php
 require_once '../../conexion/conexion.php';
+require_once 'validar-jwt2.php';
 header('Content-Type: application/json');
 
-// Obtener el usuario actual del JWT
-$usuarioId = $GLOBALS['decoded']->data->cedula ?? 'sistema';
-
-// Debug: Verificar el valor del usuario (opcional)
-error_log("Usuario JWT: " . $usuarioId);
-
-// Establecer @usuario_php en la misma conexión
-try {
-    $pdo->exec("SET @usuario_php = '" . $usuarioId . "'");
-    
-    // Debug: Verificar la variable MySQL (opcional)
-    $debug = $pdo->query("SELECT @usuario_php AS usuario")->fetch();
-    error_log("Usuario en MySQL: " . $debug['usuario']);
-    
-} catch (PDOException $e) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Error al establecer contexto: ' . $e->getMessage()
-    ]);
-    exit;
-}
-
-// Validar datos del formulario
+// Obtener datos del formulario y JWT
 $cedula = $_POST['Cedula'] ?? '';
+$usuario = $_POST['username'] ?? '';
 $password = $_POST['password'] ?? '';
+$nombre = $_POST['nombre'] ?? '';
+$apellidos = $_POST['apellidos'] ?? '';
 $tip = $_POST['tip'] ?? '';
+$moduloaccess = $_POST['moduloaccess'] ?? '';
+$usuarioResponsable = $decoded->data->cedula;
 
 if (empty($cedula) || empty($password) || empty($tip)) {
     echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
@@ -35,46 +19,41 @@ if (empty($cedula) || empty($password) || empty($tip)) {
 }
 
 try {
-    // Verificar nómina
-    $verificarNomina = $pdo->prepare("SELECT * FROM tmanom WHERE nom_ced = :cedula");
-    $verificarNomina->execute([':cedula' => $cedula]);
+    // 1. Establecer el usuario responsable en MySQL
+    $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
-    if ($verificarNomina->rowCount() === 0) {
-        echo json_encode(['success' => false, 'message' => 'El usuario no existe en nómina.']);
-        exit;
-    }
-
-    // Verificar duplicados
+    // 2. Verificar si ya existe
     $check = $pdo->prepare("SELECT * FROM tesusu WHERE nom_ced = :cedula");
-    $check->execute([':cedula' => $cedula]);
+    $check->bindParam(':cedula', $cedula);
+    $check->execute();
 
     if ($check->rowCount() > 0) {
         echo json_encode(['success' => false, 'message' => 'La cédula ya está registrada.']);
         exit;
     }
 
-    // Insertar usuario
+    // 4. Insertar usuario
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO tesusu (usu_ide, usu_con, usu_tip, nom_ced) VALUES (:cedula, :contrasena, :tip, :cedula)");
-    $stmt->execute([
-        ':cedula' => $cedula,
-        ':contrasena' => $hashedPassword,
-        ':tip' => $tip
-    ]);
+    $stmt = $pdo->prepare("INSERT INTO tesusu (usu_ide, usu_usu, usu_con, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced) VALUES (:cedula, :usuario, :contrasena, :nombre, :apellidos, :tip, :moduloaccess, :cedula)");
+    $stmt->bindParam(':contrasena', $hashedPassword);
+    $stmt->bindParam(':tip', $tip);
+    $stmt->bindParam(':cedula', $cedula);
+    $stmt->bindParam(':usuario', $usuario);
+    $stmt->bindParam(':nombre', $nombre);
+    $stmt->bindParam(':apellidos', $apellidos);
+    $stmt->bindParam(':moduloaccess', $moduloaccess);
+    
+    $stmt->execute();
 
-    // Éxito
     echo json_encode([
         'success' => true,
         'message' => 'Usuario registrado correctamente.',
         'redirect' => 'auth-register-basic.php'
     ]);
-    exit; // Asegurar que el script termine aquí
 
 } catch (PDOException $e) {
-    // Error específico de la operación
     echo json_encode([
         'success' => false,
         'message' => 'Error al registrar el usuario: ' . $e->getMessage()
     ]);
-    exit;
 }

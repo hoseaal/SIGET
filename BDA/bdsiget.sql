@@ -146,8 +146,12 @@ CREATE TABLE `tessca` (
 
 CREATE TABLE `tesusu` (
   `usu_ide` varchar(10) NOT NULL COMMENT 'Identificador unico del usuario',
+  `usu_usu` varchar(10) NOT NULL COMMENT 'Nickname del usuario',
   `usu_con` varchar(255) NOT NULL COMMENT 'Contraseña del usuario (hashed)',
+  `usu_nom` varchar(50) NOT NULL COMMENT 'Nombres del Usuario',
+  `usu_ape` varchar(50) NOT NULL COMMENT 'Apellidos del usuario',
   `usu_tip` int(1) NOT NULL COMMENT 'Perfil o tipo de usuario',
+  `usu_mod` int(2) NOT NULL COMMENT 'Módulos de acceso',
   `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Referencia a empleado en tmanom'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -591,7 +595,17 @@ ADD CONSTRAINT `fk_bien_departamento`
     FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`)
     ON DELETE SET NULL
     ON UPDATE CASCADE;
-    
+
+CREATE TABLE `bit_usu` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada',
+  `bit_operacion` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_usu_ide` VARCHAR(10) COMMENT 'ID de usuario afectado (usu_ide)',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 /* VOLCADO DE LA BASE DE DATOS */
 
 -- TABLA TESCET
@@ -847,7 +861,12 @@ INSERT INTO `tespri` (`pri_raz`, `pri_por`) VALUES
 INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES 
 ('18845038', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '2023-02-01', 'M', '1', '2', '34', '16', 'I', '1');
 
--- FUTUROS VOLCADOS EN LA BASE DE DATOS
+-- TABLA TESUSU (Usuario del CONTRALOR: CONTRASEÑA ES 123)
+
+INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES 
+('18845038', 'LuisAgui23', '$2y$10$vnHEosbbVjV5ZHUaNHAK2ukKTKLKmyk5uWTq56/gOyl7TK81PYckO', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '3', '0', '18845038');
+
+-- TABLA TMACAT
 
 INSERT INTO `tmacat` (`cat_ide`, `cat_cat`) VALUES 
 (1, 'Maquinaria y demás equipos de contrucción campo industria y taller'),
@@ -856,6 +875,8 @@ INSERT INTO `tmacat` (`cat_ide`, `cat_cat`) VALUES
 (4, 'Equipos científicos religiosos de enseñanza y recreación'),
 (5, 'Equipos de defensa y seguridad del Estado'),
 (6, 'Máquinas muebles y demás equipos de oficina y de alojamiento');
+
+-- TABLA TESSCA
 
 INSERT INTO `tessca` (`sca_ide`, `sca_sca`, `cat_ide`) VALUES 
 (1, 'Mobiliario y equipos de oficina', 6),
@@ -896,6 +917,8 @@ INSERT INTO `tessca` (`sca_ide`, `sca_sca`, `cat_ide`) VALUES
 INSERT INTO `tessca` (`sca_ide`, `sca_sca`, `cat_ide`) VALUES 
 (27, 'Equipos y armamentos de defensa y seguridad pública', 5),
 (28, 'Otros equipos para la defensa y seguridad pública', 5);
+
+-- TABLA TESCAE
 
 INSERT INTO `tescae` (`cae_ide`, `cae_cae`, `sca_ide`) VALUES
 (1, 'Abecedarios de golpe (punzones)', 5),
@@ -1193,6 +1216,8 @@ INSERT INTO `tescae` (`cae_ide`, `cae_cae`, `sca_ide`) VALUES
 (293, 'Zanjadoras', 5),
 (294, 'Zorras', 5);
 
+-- TABLA TMAESU
+
 INSERT INTO `tmaesu` (`esu_ide`, `esu_esu`) VALUES
 (1, 'EN USO'),
 (2, 'EN COMODATO'),
@@ -1203,6 +1228,8 @@ INSERT INTO `tmaesu` (`esu_ide`, `esu_esu`) VALUES
 (7, 'PERMISO'),
 (8, 'AUTORIZACIÓN');
 
+-- TABLA TMACOM
+
 INSERT INTO `tmacon` (`con_ide`, `con_con`) VALUES
 (1, 'ÓPTIMO'),
 (2, 'BUENO'),
@@ -1212,6 +1239,8 @@ INSERT INTO `tmacon` (`con_ide`, `con_con`) VALUES
 (6, 'CHATARRA'),
 (7, 'NO OPERATIVO'),
 (8, 'OTRA CONDICIÓN FÍSICA');
+
+-- TABLA TMATIP
 
 INSERT INTO `tmatip` (`tip_ide`, `tip_tip`) VALUES
 (1, 'CPU'),
@@ -1244,6 +1273,8 @@ INSERT INTO `tmatip` (`tip_ide`, `tip_tip`) VALUES
 (28, 'ENGRAPADORA'),
 (29, 'SACAPUNTA');
 
+-- TABLA TMAFOA
+
 INSERT INTO `tmafoa` (`foa_ide`, `foa_nom`) VALUES
 (1, 'COMPRA'),
 (2, 'PERMUTA'),
@@ -1262,4 +1293,94 @@ INSERT INTO `tmafoa` (`foa_ide`, `foa_nom`) VALUES
 (15, 'CESION DE DERECHOS'),
 (16, 'ADJUDICACION');
 
+-- FUTUROS VOLCADOS EN LA BASE DE DATOS
 
+-- CIERRE DE FUTUROS VOLCADOS EN LA BASE DE DATOS
+
+/* DISPARADORES DE LA BASE DE DATOS */
+
+  /* INICIO DE TRIGGER'S DE LA TABLA TESUSU */
+    DELIMITER //
+
+    -- Trigger después de INSERT
+    CREATE TRIGGER `despues_insertar_usuario`
+    AFTER INSERT ON `tesusu`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_usu` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_usu_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesusu',
+            'INSERT',
+            NEW.usu_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'nuevo', JSON_OBJECT(
+                    'usu_con', '******',  -- No almacenar contraseñas
+                    'usu_tip', NEW.usu_tip,
+                    'nom_ced', NEW.nom_ced
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de UPDATE
+    CREATE TRIGGER `despues_actualizar_usuario`
+    AFTER UPDATE ON `tesusu`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_usu` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_usu_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesusu',
+            'UPDATE',
+            NEW.usu_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'antes', JSON_OBJECT(
+                    'usu_tip', OLD.usu_tip,
+                    'nom_ced', OLD.nom_ced
+                ),
+                'despues', JSON_OBJECT(
+                    'usu_tip', NEW.usu_tip,
+                    'nom_ced', NEW.nom_ced
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de DELETE
+    CREATE TRIGGER `despues_eliminar_usuario`
+    AFTER DELETE ON `tesusu`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_usu` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_usu_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesusu',
+            'DELETE',
+            OLD.usu_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'eliminado', JSON_OBJECT(
+                    'usu_tip', OLD.usu_tip,
+                    'nom_ced', OLD.nom_ced
+                )
+            )
+        );
+    END//
+
+    DELIMITER ;
+  /* FIN DE TRIGGER'S DE LA TABLA TESUSU */
