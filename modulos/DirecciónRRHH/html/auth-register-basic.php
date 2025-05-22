@@ -188,10 +188,39 @@
         const cedulaInput = document.getElementById('Cedula');
         const cedulaValue = cedulaInput.value.trim();
         
-        // Validación de cédula: solo números, máximo 10 dígitos
         if (!/^\d{1,10}$/.test(cedulaValue)) {
           alert('La cédula debe contener solo números (máximo 10 dígitos)');
           cedulaInput.focus();
+          return;
+        }
+        
+        // Validar nombres
+        const nombreInput = document.getElementById('nombre');
+        const nombreValue = nombreInput.value.trim();
+        
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{1,50}$/.test(nombreValue)) {
+          alert('Los nombres deben contener solo letras (incluyendo acentos) y no superar los 50 caracteres');
+          nombreInput.focus();
+          return;
+        }
+        
+        // Validar apellidos
+        const apellidosInput = document.getElementById('apellidos');
+        const apellidosValue = apellidosInput.value.trim();
+        
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{1,50}$/.test(apellidosValue)) {
+          alert('Los apellidos deben contener solo letras (incluyendo acentos) y no superar los 50 caracteres');
+          apellidosInput.focus();
+          return;
+        }
+        
+        // Validar nombre de usuario
+        const usernameInput = document.getElementById('username');
+        const usernameValue = usernameInput.value.trim();
+        
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]{1,50}$/.test(usernameValue)) {
+          alert('El nombre de usuario debe contener solo letras (incluyendo acentos) y números, sin caracteres especiales, y no superar los 50 caracteres');
+          usernameInput.focus();
           return;
         }
         
@@ -199,7 +228,6 @@
         const passwordInput = document.getElementById('password');
         const passwordValue = passwordInput.value;
         
-        // Validación de contraseña: letras, números, solo . y @ como caracteres especiales, máximo 16 caracteres
         if (!/^[a-zA-Z0-9.@]{1,16}$/.test(passwordValue)) {
           alert('La contraseña debe contener:\n- Letras y números\n- Solo puntos (.) y arrobas (@) como caracteres especiales\n- Máximo 16 caracteres');
           passwordInput.focus();
@@ -211,6 +239,14 @@
         if (!rolInput.value) {
           alert('Por favor seleccione un rol válido');
           rolInput.focus();
+          return;
+        }
+        
+        // Validar módulo de acceso seleccionado
+        const moduloInput = document.getElementById('moduloaccess');
+        if (!moduloInput.value) {
+          alert('Por favor seleccione un módulo de acceso válido');
+          moduloInput.focus();
           return;
         }
         
@@ -235,7 +271,7 @@
           console.error(err);
         });
       });
-      
+
       // Validación en tiempo real para la cédula (solo números)
       document.getElementById('Cedula').addEventListener('input', function(e) {
         this.value = this.value.replace(/[^\d]/g, '');
@@ -243,7 +279,31 @@
           this.value = this.value.slice(0, 10);
         }
       });
-      
+
+      // Validación en tiempo real para nombres (solo letras y espacios)
+      document.getElementById('nombre').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+        if (this.value.length > 50) {
+          this.value = this.value.slice(0, 50);
+        }
+      });
+
+      // Validación en tiempo real para apellidos (solo letras y espacios)
+      document.getElementById('apellidos').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+        if (this.value.length > 50) {
+          this.value = this.value.slice(0, 50);
+        }
+      });
+
+      // Validación en tiempo real para nombre de usuario (letras, números y espacios)
+      document.getElementById('username').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]/g, '');
+        if (this.value.length > 50) {
+          this.value = this.value.slice(0, 50);
+        }
+      });
+
       // Validación en tiempo real para la contraseña (solo letras, números, . y @)
       document.getElementById('password').addEventListener('input', function(e) {
         this.value = this.value.replace(/[^a-zA-Z0-9.@]/g, '');

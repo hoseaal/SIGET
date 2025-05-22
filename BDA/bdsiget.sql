@@ -152,7 +152,7 @@ CREATE TABLE `tesusu` (
   `usu_ape` varchar(50) NOT NULL COMMENT 'Apellidos del usuario',
   `usu_tip` int(1) NOT NULL COMMENT 'Perfil o tipo de usuario',
   `usu_mod` int(2) NOT NULL COMMENT 'Módulos de acceso',
-  `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Referencia a empleado en tmanom'
+  `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Cédula del empleado, usado en caso tal como referencia a empleado en tmanom'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -492,12 +492,6 @@ ALTER TABLE `tesmod`
 --
 ALTER TABLE `tessca`
   ADD CONSTRAINT `fk_tessca_tmacat` FOREIGN KEY (`cat_ide`) REFERENCES `tmacat` (`cat_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `tesusu`
---
-ALTER TABLE `tesusu`
-  ADD CONSTRAINT `fk_tesusu_tmanom` FOREIGN KEY (`nom_ced`) REFERENCES `tmanom` (`nom_ced`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Modificación para AI para la tabla `tesusu`
@@ -863,7 +857,7 @@ INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `no
 
 -- TABLA TESUSU (Usuario del CONTRALOR: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES (NULL, 'LuisAgui23', '$2y$12$zLekvZkVCw4Iy9TpkjOue.aCIBNdZgT.dwcAGOPxc7bW3CIInF3ku', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '4', '0', '18845038'); 
+INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('18845038', 'LuisAgui23', '$2y$12$zLekvZkVCw4Iy9TpkjOue.aCIBNdZgT.dwcAGOPxc7bW3CIInF3ku', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '4', '0', '18845038'); 
 
 -- TABLA TMACAT
 

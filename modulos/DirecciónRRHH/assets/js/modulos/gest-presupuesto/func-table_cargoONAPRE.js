@@ -336,13 +336,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para agregar un nuevo cargo ONAPRE
     document.getElementById('addOnaprePositionBtn').addEventListener('click', async function() {
-        const positionName = document.getElementById('newOnaprePosition').value.trim();
+        const positionInput = document.getElementById('newOnaprePosition');
+        const positionName = positionInput.value.trim();
+        
+        // Validación adicional por si el usuario pega texto no válido
+        const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{1,50}$/;
         
         if (!positionName) {
-            document.getElementById('newOnaprePosition').classList.add('is-invalid');
+            positionInput.classList.add('is-invalid');
+            return;
+        } else if (!regex.test(positionName)) {
+            positionInput.classList.add('is-invalid');
             return;
         } else {
-            document.getElementById('newOnaprePosition').classList.remove('is-invalid');
+            positionInput.classList.remove('is-invalid');
         }
         
         try {
@@ -395,8 +402,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const saveBtn = editModal.querySelector('.btn-primary');
         saveBtn.onclick = async function() {
             const newName = nameInput.value.trim();
+            const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{1,50}$/;
             
-            if (!newName) {
+            if (!newName || !regex.test(newName)) {
                 nameInput.classList.add('is-invalid');
                 return;
             }
@@ -450,6 +458,34 @@ document.addEventListener('DOMContentLoaded', function() {
             saveBtn.onclick = null;
         });
     }
+
+    // Validación en tiempo real para el input de nuevo cargo
+    document.getElementById('newOnaprePosition').addEventListener('input', function(e) {
+        // Expresión regular que solo permite letras (incluyendo acentos) y espacios
+        const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{0,50}$/;
+        
+        if (!regex.test(e.target.value)) {
+            // Si no cumple con la expresión regular, revertir al último valor válido
+            e.target.value = e.target.value.substring(0, e.target.value.length - 1);
+        }
+    });
+
+    // Validación en tiempo real para el input de edición
+    document.addEventListener('shown.bs.modal', function(e) {
+        if (e.target.id === 'ModalEditIONAPRE') {
+            const editInput = document.getElementById('nameBasic2');
+            
+            editInput.addEventListener('input', function(e) {
+                // Expresión regular que solo permite letras (incluyendo acentos) y espacios
+                const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{0,50}$/;
+                
+                if (!regex.test(e.target.value)) {
+                    // Si no cumple con la expresión regular, revertir al último valor válido
+                    e.target.value = e.target.value.substring(0, e.target.value.length - 1);
+                }
+            });
+        }
+    });
 
     // Inicializar la tabla ONAPRE
     displayOnaprePositions(onapreCurrentPage);

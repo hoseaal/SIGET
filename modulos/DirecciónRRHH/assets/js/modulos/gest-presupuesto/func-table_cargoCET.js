@@ -135,10 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Configurar evento para guardar cambios
                 newSaveBtn.addEventListener('click', async function() {
+                    const modalInput = document.querySelector('#ModalEditCET #nameBasic');
                     const newName = modalInput.value.trim();
                     
-                    if (!newName) {
-                        modalInput.classList.add('is-invalid');
+                    // Validaciones
+                    if (!isValidCargoName(newName)) {
+                        showInputError(modalInput, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
                         return;
                     }
                     
@@ -398,16 +400,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para agregar un nuevo cargo
     document.getElementById('addCetPositionBtn').addEventListener('click', async function() {
-        // Obtener el valor del input correcto (newCargoCET)
-        const positionName = document.getElementById('newCargoCET').value.trim();
+        const inputElement = document.getElementById('newCargoCET');
+        const positionName = inputElement.value.trim();
         
-        // Validar que se ingresó un nombre
-        if (!positionName) {
-            // Mostrar mensaje de error en el input
-            document.getElementById('newCargoCET').classList.add('is-invalid');
+        // Validaciones
+        if (!isValidCargoName(positionName)) {
+            showInputError(inputElement, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
             return;
-        } else {
-            document.getElementById('newCargoCET').classList.remove('is-invalid');
         }
         
         try {
@@ -456,6 +455,81 @@ document.addEventListener('DOMContentLoaded', function() {
             const btn = document.getElementById('addCetPositionBtn');
             btn.innerHTML = 'Añadir nuevo Cargo';
             btn.disabled = false;
+        }
+    });
+
+    // Función para validar el nombre del cargo
+    function isValidCargoChar(char) {
+        // Permite letras (mayúsculas y minúsculas), espacios, acentos y caracteres especiales del español
+        const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/;
+        return regex.test(char);
+    }
+
+    // Función para manejar la entrada en los campos
+    function handleCargoInput(event) {
+        const input = event.target;
+        let value = input.value;
+        let newValue = '';
+        
+        // Filtrar cada caracter
+        for (let i = 0; i < value.length; i++) {
+            if (isValidCargoChar(value[i])) {
+                newValue += value[i];
+            }
+        }
+        
+        // Limitar a 50 caracteres
+        if (newValue.length > 50) {
+            newValue = newValue.substring(0, 50);
+        }
+        
+        // Actualizar el valor solo si es diferente
+        if (value !== newValue) {
+            input.value = newValue;
+            
+            // Mostrar feedback visual
+            input.classList.add('invalid-input');
+            setTimeout(() => {
+                input.classList.remove('invalid-input');
+            }, 300);
+        }
+    }
+
+    // Función para validar el nombre completo del cargo
+    function isValidCargoName(name) {
+        return name.length > 0 && name.length <= 50;
+    }
+
+    document.getElementById('newCargoCET').addEventListener('input', handleCargoInput);
+    document.getElementById('nameBasic').addEventListener('input', handleCargoInput);
+
+    // Validación en tiempo real para el input de añadir
+    document.getElementById('newCargoCET').addEventListener('input', function() {
+        const inputValue = this.value;
+        
+        // Limpiar error mientras escribe
+        if (this.classList.contains('is-invalid')) {
+            clearInputError(this);
+        }
+        
+        // Validar longitud máxima
+        if (inputValue.length > 50) {
+            this.value = inputValue.substring(0, 50);
+        }
+    });
+
+    // Validación en tiempo real para el input de editar
+    document.getElementById('nameBasic').addEventListener('input', function() {
+        const inputValue = this.value;
+        
+        // Limpiar error mientras escribe
+        if (this.classList.contains('is-invalid')) {
+            clearInputError(this);
+        }
+        
+        // Validar longitud máxima
+        if (inputValue.length > 50) {
+            this.value = inputValue.substring(0, 50);
         }
     });
     
