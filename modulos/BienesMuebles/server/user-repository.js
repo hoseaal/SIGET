@@ -73,7 +73,10 @@ export class UserRepository {
     return {
       success: true,
       user: {
-        usu_ide: publicUser.usu_ide
+        usu_ide: publicUser.usu_ide,
+        usu_nom: publicUser.usu_nom,
+        usu_ape: publicUser.usu_ape,
+        usu_tip: publicUser.usu_tip
       }
     }
   }

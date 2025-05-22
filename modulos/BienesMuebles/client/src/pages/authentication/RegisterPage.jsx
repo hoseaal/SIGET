@@ -266,10 +266,10 @@ export const RegisterPage = () => {
                                     </div>
                                 </div>
                                 <div className="row justify-content-end">
-                                        <button aria-label='Click me' type="submit" className="btn btn-primary" onClick={handleSubmit}>Registrat</button>
+                                        <button aria-label='Click me' type="submit" className="btn btn-primary" onClick={handleSubmit}>Registrar</button>
                                         {mensajeMostrado && 
                                             <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
-                                            {formEnviado ? 'Inicedando sesion...' : `${errorMessage}`}
+                                            {formEnviado ? 'Registrado con Exito' : `${errorMessage}`}
                                         </Alert>
                                         }
                                 </div>

@@ -8,7 +8,6 @@ import { BsMenuApp, BsPerson, BsGear, BsCreditCard, BsPower } from 'react-icons/
 
 const Navbar = () => {
   const [userData, setUserData] = useState([]);
-  const [userDataa, setUserDataa] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -31,6 +30,8 @@ const Navbar = () => {
 
   const navigate = useNavigate();
 
+  console.log(userData)
+
   const handleLogout = async () => {
     try {
       const response = await axios.post(
@@ -50,14 +51,28 @@ const Navbar = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      const fetchUser = await fetchData('tmanom', '*', 'nom_ced', userData?.usu_ide);
-      setUserDataa(fetchUser);
-      console.log('userDataa', userDataa);
-    }
-    fetchAllData();
-  }, []);
+   const tipo = [
+                {
+                    "usu_tip": 0,
+                    "tipo": "Solo vistas"
+                },
+                {
+                    "usu_tip": 1,
+                    "tipo": "Temporal"
+                },
+                {
+                    "usu_tip": 2,
+                    "tipo": "Trabajador"
+                },
+                {
+                    "usu_tip": 3,
+                    "tipo": "Jefe de area"
+                },
+                {
+                    "usu_tip": 4,
+                    "tipo": "Administrador"
+                }
+            ];
 
   return (
     <BSNavbar expand="xl" className="layout-navbar container-xxl navbar-detached bg-navbar-theme">
@@ -68,7 +83,7 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-        {getGreetingMessage(userDataa[0]?.nom_nom + ' ' + userDataa[0]?.nom_ape)}
+        {getGreetingMessage(userData?.usu_nom + ' ' + userData?.usu_ape)}
         <Nav className="flex-row align-items-center ms-auto">
           <Dropdown as={Nav.Item} className="navbar-dropdown dropdown-user">
             <Dropdown.Toggle as={Nav.Link} className="dropdown-toggle hide-arrow">
@@ -96,8 +111,8 @@ const Navbar = () => {
                     </div>
                   </div>
                   <div className="flex-grow-1">
-                    <span className="fw-medium d-block">John Doe</span>
-                    <small className="text-muted">Admin</small>
+                    <span className="fw-medium d-block">{userData?.usu_nom + ' ' + userData?.usu_ape}</span>
+                    <small className="text-muted">{tipo.find(item => item.usu_tip === userData.usu_tip)?.tipo || "Desconocido"}</small>
                   </div>
                 </div>
               </Dropdown.Item>
