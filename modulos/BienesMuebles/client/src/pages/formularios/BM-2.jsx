@@ -6,8 +6,13 @@ import Alert from "../../components/atoms/Alert";
 import { fetchData } from '../../data/fetchData';
 import Select from 'react-select';
 import axios from 'axios';
+import ModalActaInc from '../Modales/modalActaInc';
 
 export const Bm2 = () => {
+
+    //Modal Actas de incorporación
+    const [showActInc, setShowActInc] = useState(false);
+
     const [relacion, setRelacion] = useState(true);
 
     const [formEnviado, setFormEnviado] = useState(false)
@@ -178,7 +183,7 @@ const handleSubmit = async (e) => {
         bim_color: formData.bim_color,
         bim_cod: formData.bim_cod,
         bim_obs: null,
-        bim_sede: 'PRICIPAL',
+        bim_sede: 'PRINCIPAL',
         est_ide: 4,
         tip_ide: formData.tip_ide,
         foa_ide: formData.foa_ide,
@@ -200,6 +205,12 @@ const handleSubmit = async (e) => {
     }
 
     try {
+
+        const CodBim = await fetchData('tmab_m', '*', 'bim_ide', formData.bim_ide);
+        if (CodBim.length > 0) {
+            throw new Error('Este código ya está asignado a un bien');
+        }
+
         const response = await axios.post('/api/insert', {
             table: 'tmab_m', 
             data: datosEnviar
@@ -210,44 +221,9 @@ const handleSubmit = async (e) => {
         if (response.status === 201) {
             setFormEnviado(true);
             setMensajeMostrado(true);
-            const datosActa = {
-                    fechaActualizacion: "DICIEMBRE 2023",
-                    numeroActa: "INC-2023-789",
-                    ciudad: "San Cristóbal",
-                    dia: "15",
-                    mes: "Noviembre",
-                    anio: "23",
-                    hora: "10:30 AM",
-                    nombreDirectorAdmin: "María Rodríguez",
-                    ciDirectorAdmin: "12345678",
-                    nombreDirectorAsignacion: "Carlos Pérez",
-                    ciDirectorAsignacion: "87654321",
-                    unidadAsignacion: "Dirección de Tecnología",
-                    nombreJefeCompras: "Juan González",
-                    ciJefeCompras: "11223344",
-                    nombreAnalistaBienes: "Ana López",
-                    ciAnalistaBienes: "44332211",
-                    descripcionIncorporacion: "Computador portátil marca HP, modelo EliteBook 840 G9",
-                    codigoBien: "TEC-2023-001",
-                    unidadDestino: "Departamento de Desarrollo de Software",
-                    nombreFuncionarioElabora: "Pedro Martínez"
-            };
-            const pdfResponse = await axios.post(
-                '/api/generar-acta',
-                datosActa,
-                { responseType: 'blob', withCredentials: true }
-            );
 
-            // Crear descarga automática
-            const url = window.URL.createObjectURL(new Blob([pdfResponse.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `acta_incorporacion_${formData.bim_cod}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            setShowActInc(true);
 
-            // Limpiar formulario
             setFormEnviado(true);
             setTimeout(() => setMensajeMostrado(false), 3000);
         }
@@ -257,27 +233,48 @@ const handleSubmit = async (e) => {
         setMensajeMostrado(true);
         setErrorMessage(error.response?.data?.error || error.message || 'Error desconocido');
         setTimeout(() => setMensajeMostrado(false), 3000);
+        setFormData({
+            bim_ide: ''
+        })
     }
 };
+
+//limpiar formulario
+  const limpiarFormulario = () => {
+    setFormData({
+        bim_ide: '',
+        bim_des: '',
+        bim_fec: '',
+        bim_ndo: '',
+        bim_val: '',
+        bim_moneda: '',
+        bim_color: '',
+        bim_cod: '',
+        bim_obs: null,
+        bim_sede: 'PRINCIPAL',
+        est_ide: 4,
+        tip_ide: '',
+        foa_ide: '',
+        con_ide: '',
+        esu_ide: '',
+        mar_ide: '',
+        mod_ide: '',
+        cat_ide: '',
+        sca_ide: '',
+        cae_ide: '',
+        com_ide: '',
+        dep_ide: ''
+    });
+  };
+
     return (
         <>
-            <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-2</h4>
-            <div className='row'>
-                <div className="col-xxl">
-                    <div className="card mb-4">
-                        <div className="card-header d-flex align-items-center justify-content-between">
-                            <h5 className="mb-0">Reportes</h5>
-                        </div>
-                        <div className="card-body">
-                            <div className="demo-inline-spacing mx-auto">
-                                <Button type='primary'>Generar Reporte de BM-2</Button>
-                                <Button type='primary'>Generar Acta de Incorporación de Bien</Button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-2</h4>
+                <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowActInc(true)}>
+                    <i className="bx bx-export me-1"></i> Generar acta de Incorporación de Bien
+                </button>
             </div>
-            
             <div className="row">
                 <div className="col-xxl">
                     <div className="card mb-4">
@@ -325,7 +322,7 @@ const handleSubmit = async (e) => {
                                     <div className="row mb-3">
                                         <label className="col-sm-2 col-form-label" htmlFor="basic-default-company">Descripción del Bien</label>
                                         <div className="col-sm-10">
-                                            <input
+                                            <textarea
                                                 type="text"
                                                 className="form-control"
                                                 id="basic-default-company"
@@ -471,7 +468,7 @@ const handleSubmit = async (e) => {
                                         </Form.Select>
                                     </Form.Group>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>mar_ide</Form.Label>
+                                        <Form.Label>Marca</Form.Label>
                                         <Form.Select 
                                             name='mar_ide'
                                             value={formData.mar_ide}
@@ -486,7 +483,7 @@ const handleSubmit = async (e) => {
                                         </Form.Select>
                                     </Form.Group>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>mod_ide</Form.Label>
+                                        <Form.Label>Modelo</Form.Label>
                                         <Form.Select 
                                             name='mod_ide'
                                             value={formData.mod_ide}
@@ -594,13 +591,20 @@ const handleSubmit = async (e) => {
                                     </Alert>
                                     }
                                 </form>
+                                                    <ModalActaInc show={showActInc}
+                                                        handleClose={() => setShowActInc(false)}
+                                                        BienId= {formData.bim_ide} 
+                                                        DataBien= {formData}
+                                                        limpiarFormulario = {() => limpiarFormulario()}
+                                                      />
                             </div>
                         ) : (
                             <div className="card-body">
                                 <form>
                                     {/* Aquí iría el formulario para Desincorporación */}
                                     <div className="row justify-content-end">
-                                        <Button type='primary'>Generar acta de Desincorporación de Bien</Button>
+                                        
+                                        <Button type='primary'> <i className="bx bx-export me-1"></i>Generar acta de Desincorporación de Bien</Button>
                                     </div>
                                 </form>
                             </div>

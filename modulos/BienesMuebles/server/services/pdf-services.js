@@ -12,27 +12,6 @@ export function generarActaIncorporacion (datos) {
       // Fuente base
       doc.font('Helvetica')
 
-      // Encabezado
-      doc.fontSize(11).text('MANUAL DE NORMAS Y PROCEDIMIENTOS', { align: 'center' })
-      doc.text('DIVISIÓN DE COMPRAS, BIENES E INVENTARIOS', { align: 'center' })
-      doc.text(`Fecha de Actualización: ${datos.fechaActualizacion || 'DICIEMBRE 2015'}`, { align: 'right' })
-
-      doc.moveDown()
-      doc.text('Código: DDA', { align: 'left' })
-      doc.text('DIRECCIÓN DE ADMINISTRACIÓN', { align: 'center' })
-      doc.text('Código: FDDA-DCBI/06', { align: 'right' })
-
-      doc.moveDown()
-      doc.text('ASUNTO: FORMATOS E INSTRUCTIVOS', { align: 'center' })
-      doc.text('Página 1 de 3', { align: 'right' })
-
-      // Títulos
-      doc.moveDown(2)
-      doc.fontSize(13).text('FIDA-DCBI/06 "ACTA DE INCORPORACIÓN DEL BIEN MUEBLE"', {
-        align: 'center',
-        underline: true
-      })
-      doc.moveDown(0.5)
       doc.fontSize(15).text('ACTA DE INCORPORACIÓN DEL BIEN MUEBLE', {
         align: 'center'
       })
@@ -41,11 +20,11 @@ export function generarActaIncorporacion (datos) {
 
       // Cuerpo
       doc.moveDown(1)
-      doc.fontSize(11).text(`En la ciudad de ${datos.ciudad || 'San Cristóbal'} a los ${datos.dia || '___ (1)___'} días del mes de ${datos.mes || '___ (2)___'} del año dos mil ${datos.anio || '___ (3)___'} siendo las ${datos.hora || '___ (4)___'} reunidos en la sede de la Contraloría del Estado Táchira, Municipio San Cristóbal, Parroquia La Concordia, en la Dirección de Administración, los abajo firmantes: ${datos.nombreDirectorAdmin || '___ (5)___'} titular de la cédula de identidad No. V.${datos.ciDirectorAdmin || '___ (6)___'} Director(a) de Administración; ${datos.nombreDirectorAsignacion || '___ (7)___'} titular de la Cédula de Identidad No. V.${datos.ciDirectorAsignacion || '___ (8)___'} Director(a) "${datos.unidadAsignacion || 'donde se asignará el bien mueble'}", ${datos.nombreJefeCompras || '___ (9)___'} titular de la Cédula de Identidad No. V.${datos.ciJefeCompras || '___ (10)___'} Jefe de la División de Compras, Bienes e Inventarios, ${datos.nombreAnalistaBienes || '___ (11)___'} titular de la cédula de identidad N° V.${datos.ciAnalistaBienes || '___ (12)___'} Analista de Bienes e Inventarios IV, para dejar constancia por medio de la presente acta de la INCORPORACIÓN ${datos.descripcionIncorporacion || '___ (13)___'} del bien que se detalla a continuación:`)
+      doc.fontSize(11).text(`En la ciudad de ${datos.ciudad || 'San Cristóbal'} a los ${datos.dia || '___ (1)___'} días del mes de ${datos.mes || '___ (2)___'} del año dos mil ${datos.anio || '___ (3)___'} siendo las ${datos.hora || '___ (4)___'} reunidos en la sede de la Contraloría del Estado Táchira, Municipio San Cristóbal, Parroquia La Concordia, en la Dirección de Administración, los abajo firmantes: ${datos.nombreDirectorAdmin || '___ (5)___'} titular de la cédula de identidad No. V.${datos.ciDirectorAdmin || '___ (6)___'} Director(a) de Administración; ${datos.nombreDirectorAsignacion || '___ (7)___'} titular de la Cédula de Identidad No. V.${datos.ciDirectorAsignacion || '___ (8)___'} Director(a) "${datos.unidadAsignacion || 'donde se asignará el bien mueble'}", ${datos.nombreJefeCompras || '___ (9)___'} titular de la Cédula de Identidad No. V.${datos.ciJefeCompras || '___ (10)___'} Jefe de la División de Compras, Bienes e Inventarios, ${datos.nombreAnalistaBienes || '___ (11)___'} titular de la cédula de identidad N° V.${datos.ciAnalistaBienes || '___ (12)___'} Analista de Bienes e Inventarios IV, para dejar constancia por medio de la presente acta de la INCORPORACIÓN de ${datos.descripcionIncorporacion || '___ (13)___'} del bien que se detalla a continuación:`)
 
       doc.moveDown()
       doc.text(`Código: ${datos.codigoBien || '___ (14)___'}`)
-      doc.text(`Se incorpora el anterior bien a la ${datos.unidadDestino || '___ (15)___'} (Dirección ó Unidad Administrativa donde se asignará el bien mueble).`)
+      doc.text(`Se incorpora el anterior bien a la ${datos.unidadDestino || '___ (15)___'}.`)
 
       doc.moveDown()
       doc.text('En fe de lo expuesto, se elaboran tres ejemplares a un solo tenor y un mismo efecto y en conformidad firman:')
@@ -67,23 +46,58 @@ export function generarActaIncorporacion (datos) {
       doc.text('Director(a) ó Jefe de Oficina', 330, firmaY, { underline: true })
       doc.text('Analista de Bienes e Inventarios IV', 330, firmaY + 40, { underline: true })
 
-      // Pie de revisores
-      const pieY = firmaY + 140
-      const colW = 130
-      doc.fontSize(9)
+      doc.end()
 
-      doc.text('Elaborado por:', 50, pieY, { underline: true })
-      doc.text('Revisado por:', 50 + colW, pieY, { underline: true })
-      doc.text('Revisado por:', 50 + colW * 2, pieY, { underline: true })
-      doc.text('Aprobado por:', 50 + colW * 3, pieY, { underline: true })
+      stream.on('finish', () => resolve(outputPath))
+      stream.on('error', reject)
+    } catch (error) {
+      reject(error)
+    }
+  })
+}
 
-      doc.text('Analista de Organización y Métodos', 50, pieY + 20)
-      doc.text('Director(a) Técnico', 50 + colW, pieY + 20)
-      doc.text('Director(a) de Administración', 50 + colW * 2, pieY + 20)
-      doc.text('Contralor(a) del Estado Táchira', 50 + colW * 3, pieY + 20)
+export function generarActaCET (datos) {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ margin: 40, size: 'A4' })
+      const outputPath = `acta_cet_${Date.now()}.pdf`
+      const stream = fs.createWriteStream(outputPath)
+      doc.pipe(stream)
 
-      doc.text('Resolución C.E.T. Nº 420', 50 + colW * 3, pieY + 40)
-      doc.text('Fecha: 21/12/2015', 50 + colW * 3, pieY + 55)
+      doc.font('Helvetica')
+
+      doc.fontSize(15).text('ACTA C.E.T.', { align: 'center' })
+      doc.moveDown(0.5)
+      doc.fontSize(12).text(`No. ${datos.numeroActa || 'xxx-20XX'}`, { align: 'center' })
+
+      doc.moveDown(1)
+      doc.fontSize(11).text(`En la ciudad de ${datos.ciudad || 'San Cristóbal'}, a los ${datos.dia || '___'} días del mes de ${datos.mes || '___'} de ${datos.anio || '____'}, siendo las ${datos.hora || '___'}, reunidos en la sede de la Contraloría del Estado Táchira, Municipio San Cristóbal, Parroquia la Concordia, en la Dirección de Administración, los Ciudadanos: ${datos.nombreDirectorAdmin || '___'} titular de la cédula de identidad Nº V-${datos.ciDirectorAdmin || '__________'}, ${datos.nombreJefeCompras || '___'}, titular de la cédula de identidad Nº V-${datos.ciJefeCompras || '__________'}, Jefe de División General Bienes Compras e Inventarios; y ${datos.nombreDirectorServicios || '___'}, titular de Cédula de Identidad Nº V-${datos.ciDirectorServicios || '__________'}, Director de Servicios Generales, Seguridad y Transporte, para dejar constancia por medio de la presente acta de la INCORPORACIÓN, BAJO EL CONCEPTO DE ${datos.conceptoMovimiento || 'COMPRA'} (Código 0${datos.cod_conceptoMov || '03'}), del bien que se detalla a continuación:`)
+
+      doc.moveDown()
+      doc.text(`Código: ${datos.codigoBien || '___'}`)
+
+      doc.moveDown(0.5)
+      doc.text(`${datos.descripcionIncorporacion || '___'}. Marca: ${datos.marca || '___'}, Modelo: ${datos.modelo || '___'}, Color: ${datos.color || '___'}.`)
+
+      doc.moveDown(1)
+      doc.text(`Se incorpora el anterior bien a la ${datos.unidadDestino || '___'}.`)
+
+      doc.moveDown()
+      doc.text('En fe de lo expuesto, se elaboran tres ejemplares a un solo tenor y un mismo efecto y en conformidad firman:')
+
+      // Firmas
+      doc.moveDown(2)
+      const firmaY = doc.y
+
+      doc.text(`${datos.nombreDirectorAdmin || '___'}`, 70, firmaY)
+      doc.text('Directora de Administración', 70, firmaY + 15)
+
+      doc.text(`${datos.nombreJefeCompras || '___'}`, 330, firmaY)
+      doc.text('Jefe de Bienes Compras e Inventarios', 330, firmaY + 15)
+
+      doc.moveDown(4)
+      doc.text(`${datos.nombreDirectorServicios || '___'}`, { align: 'center' })
+      doc.text('Director de Servicios Generales, Seguridad y Transporte', { align: 'center' })
 
       doc.end()
 

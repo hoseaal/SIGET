@@ -8,7 +8,7 @@ import { UserRepository } from './user-repository.js'
 import authenticate from './authenticate.js'
 import { selectData, selectWhereData, getTableColumns, insertData, updateData, deleteData } from './cruds.js'
 import { getConnection } from './conn.js'
-import { generarActaIncorporacion } from './services/pdf-services.js'
+import { generarActaIncorporacion, generarActaCET } from './services/pdf-services.js'
 import fs from 'fs'
 
 const router = express.Router()
@@ -250,6 +250,27 @@ app.post('/api/generar-acta', async (req, res) => {
   } catch (error) {
     console.error('Error al generar acta:', error)
     res.status(500).json({ error: 'Error al generar el acta' })
+  }
+})
+
+app.post('/api/generar-acta-CET', async (req, res) => {
+  try {
+    const datosActa = req.body
+
+    const pdfPath = await generarActaCET(datosActa)
+
+    res.download(pdfPath, `acta_CET_${datosActa.numeroActa || 'generada'}.pdf`, (err) => {
+      if (err) {
+        console.error('Error al enviar el archivo:', err)
+        res.status(500).json({ error: 'Error al enviar el PDF' })
+      }
+      fs.unlink(pdfPath, (unlinkErr) => {
+        if (unlinkErr) console.error('Error al eliminar el archivo temporal:', unlinkErr)
+      })
+    })
+  } catch (error) {
+    console.error('Error al generar acta CET:', error)
+    res.status(500).json({ error: 'Error al generar el acta CET' })
   }
 })
 
