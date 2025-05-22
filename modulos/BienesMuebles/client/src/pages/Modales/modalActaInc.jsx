@@ -6,7 +6,7 @@ import axios from 'axios';
 import Alert from "../../components/atoms/Alert";
 import { fetchData } from '../../data/fetchData';
 
-function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdministrativa, limpiarFormulario }) {
+function ModalActaInc({ show, handleClose, BienId, DataBien, limpiarFormulario }) {
   const [formData, setFormData] = useState({});
   const [formEnviado, setFormEnviado] = useState(false);
   const [mensajeMostrado, setMensajeMostrado] = useState(false);
@@ -30,13 +30,29 @@ function ModalActaInc({ show, handleClose, BienId, descripcionBien, unidadAdmini
   };
 
   const [unidadAdmin, setUnidadAdmin] = useState([]);
+  const [marca, setMarca] = useState([]);
+  const [modelo, setMod] = useState([]);
+  const [concepto, setConcepto] = useState([]);
 
 useEffect(() => {
   const fetchAllData = async () => {
+    console.log(DataBien)
     try {
-      if (BienId && unidadAdministrativa) {
-        const unidadAdminData = await fetchData('tesdep', '*', 'dep_ide', unidadAdministrativa);
+      if (BienId ) {
+        const unidadAdminData = await fetchData('tesdep', '*', 'dep_ide', DataBien.dep_ide);
         setUnidadAdmin(unidadAdminData || []);
+
+        const marcaData = await fetchData('tmamar', '*', 'mar_ide', DataBien.mar_ide);
+        setMarca(marcaData || []);
+
+        const modelosData = await fetchData('tesmod', '*', 'mod_ide', DataBien.mod_ide);
+        setMod(modelosData || []);
+
+        const conceptoData = await fetchData('tmacom', '*', 'com_ide', DataBien.com_ide);
+        setConcepto(conceptoData || []);
+
+        console.log(concepto)
+
       }
 
       if (!BienId) {
@@ -66,6 +82,7 @@ const handleSelectBien = async (e) => {
     const unidadAdminData = await fetchData('tesdep', '*', 'dep_ide', bien.dep_ide);
     const marcaData = await fetchData('tmamar', '*', 'mar_ide', bien.mar_ide);
     const modeloData = await fetchData('tesmod', '*', 'mod_ide', bien.mod_ide);
+    const conceptoData = await fetchData('tmacom', '*', 'com_ide', DataBien.com_ide);
 
     setBienSeleccionado({
       id: bien.bim_ide,
@@ -73,7 +90,8 @@ const handleSelectBien = async (e) => {
       unidadAdministrativa: unidadAdminData?.[0]?.dep_nom || 'No disponible',
       marca: marcaData?.[0]?.mar_mar,
       modelo: modeloData?.[0]?.mod_mod,
-      color: bien.bim_color
+      color: bien.bim_color,
+      concepto: conceptoData?.[0]?.com_com
     });
   } catch (error) {
     console.error('Error al cargar datos del bien:', error);
@@ -99,10 +117,10 @@ const handleSelectBien = async (e) => {
       ciJefeCompras: formData.ciJefeCompras,
       nombreAnalistaBienes: formData.nombreAnalistaBienes,
       ciAnalistaBienes: formData.ciAnalistaBienes,
-      descripcionIncorporacion: descripcionBien || bienSeleccionado?.descripcion,
+      descripcionIncorporacion: DataBien.bim_des || bienSeleccionado?.descripcion,
       codigoBien: BienId || bienSeleccionado?.id || formData.codigoBien,
       unidadDestino: unidadAdmin[0]?.dep_nom,
-      nombreFuncionarioElabora: formData.nombreFuncionarioElabora,
+      nombreFuncionarioElabora: formData.nombreFuncionarioElabora
     };
 
     const datosActaCET = {
@@ -120,13 +138,15 @@ const handleSelectBien = async (e) => {
       unidadAsignacion: unidadAdmin[0]?.dep_nom,
       nombreJefeCompras: formData.nombreJefeCompras,
       ciJefeCompras: formData.ciJefeCompras,
-      descripcionIncorporacion: descripcionBien || bienSeleccionado?.descripcion,
+      descripcionIncorporacion: DataBien.bim_des || bienSeleccionado?.descripcion,
       codigoBien: BienId || bienSeleccionado?.id || formData.codigoBien,
-      modelo: bienSeleccionado?.modelo, // Nuevo campo
-      marca: bienSeleccionado?.marca, // Nuevo campo
-      color: bienSeleccionado?.color, // Nuevo campo
+      modelo: bienSeleccionado?.modelo || modelo[0]?.mod_mod, // Nuevo campo
+      marca: bienSeleccionado?.marca || marca[0]?.mar_mar, // Nuevo campo
+      color: bienSeleccionado?.color || DataBien.bim_color, // Nuevo campo
       unidadDestino: unidadAdmin[0]?.dep_nom,
       nombreFuncionarioElabora: formData.nombreFuncionarioElabora,
+      conceptoMovimiento: bienSeleccionado?.concepto || concepto[0]?.com_com,
+      cod_conceptoMov: DataBien.com_ide
     };
 
     try {
@@ -181,12 +201,28 @@ const handleSelectBien = async (e) => {
 
               <Form.Group className="mb-2">
                 <Form.Label>Descripción del Bien</Form.Label>
-                <Form.Control type="text" value={descripcionBien} disabled />
+                <Form.Control type="text" value={DataBien.bim_des} disabled />
               </Form.Group>
 
               <Form.Group className="mb-2">
                 <Form.Label>Unidad Administrativa</Form.Label>
-                <Form.Control type="text" value={unidadAdmin[0]?.dep_nom} disabled />
+                <Form.Control type="text" value={unidadAdmin[0]?.dep_nom || DataBien.dep_ide} disabled />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Label>Marca</Form.Label>
+                <Form.Control type="text" value={marca[0]?.mar_mar} disabled />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Label>Modelo</Form.Label>
+                <Form.Control type="text" value={modelo[0]?.mod_mod} disabled />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Label>Color</Form.Label>
+                <Form.Control type="text" value={DataBien.bim_color} disabled />
+              </Form.Group>
+              <Form.Group className="mb-2">
+                <Form.Label>Concepto de Movimiento</Form.Label>
+                <Form.Control type="text" value={concepto[0]?.com_com} disabled />
               </Form.Group>
             </>
           ) : (
@@ -213,6 +249,26 @@ const handleSelectBien = async (e) => {
                   <Form.Group className="mb-2">
                     <Form.Label>Unidad Administrativa</Form.Label>
                     <Form.Control type="text" value={bienSeleccionado.unidadAdministrativa || unidadAdmin} disabled />
+                  </Form.Group>
+
+                  <Form.Group className="mb-2">
+                    <Form.Label>Marca</Form.Label>
+                    <Form.Control type="text" value={bienSeleccionado.marca} disabled />
+                  </Form.Group>
+
+                  <Form.Group className="mb-2">
+                    <Form.Label>Modelo</Form.Label>
+                    <Form.Control type="text" value={bienSeleccionado.modelo} disabled />
+                  </Form.Group>
+
+                  <Form.Group className="mb-2">
+                    <Form.Label>Color</Form.Label>
+                    <Form.Control type="text" value={bienSeleccionado.color} disabled />
+                  </Form.Group>
+
+                  <Form.Group className="mb-2">
+                    <Form.Label>Concepto de Movimiento</Form.Label>
+                    <Form.Control type="text" value={bienSeleccionado.concepto} disabled />
                   </Form.Group>
                 </>
               )}

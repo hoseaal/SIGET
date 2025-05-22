@@ -594,8 +594,7 @@ const handleSubmit = async (e) => {
                                                     <ModalActaInc show={showActInc}
                                                         handleClose={() => setShowActInc(false)}
                                                         BienId= {formData.bim_ide} 
-                                                        descripcionBien= {formData.bim_des}
-                                                        unidadAdministrativa= {formData.dep_ide}
+                                                        DataBien= {formData}
                                                         limpiarFormulario = {() => limpiarFormulario()}
                                                       />
                             </div>
