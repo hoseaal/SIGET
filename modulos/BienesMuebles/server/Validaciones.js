@@ -1,15 +1,11 @@
 export class Validaciones {
-  static username (ci) {
-    if (typeof ci !== 'string') throw new Error('El CI está vacío')
-    if (ci.length < 3) throw new Error('El CI debe tener mínimo 3 caracteres')
+  static username (username) {
+    if (typeof username !== 'string') throw new Error('El username está vacío')
+    if (username.length < 3) throw new Error('El username debe tener mínimo 3 caracteres')
   }
 
   static password (password) {
     if (typeof password !== 'string') throw new Error('La contraseña está vacía')
-  }
-
-  static terms (terms) {
-    if (terms !== true) throw new Error('Debes aceptar los términos y condiciones')
   }
 
   static errors (error) {

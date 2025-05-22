@@ -34,7 +34,10 @@ app.get('/api/verify-auth', authenticate, (req, res) => {
   res.json({
     success: true,
     user: {
-      usu_ide: req.user.usu_ide
+      usu_ide: req.user.usu_ide,
+      usu_nom: req.user.usu_nom,
+      usu_ape: req.user.usu_ape,
+      usu_tip: req.user.usu_tip
     }
   })
 })
@@ -56,7 +59,10 @@ app.post('/api/login', async (req, res) => {
     // Generar token con más datos del usuario si es necesario
     const token = jwt.sign(
       {
-        usu_ide: result.user.usu_ide
+        usu_ide: result.user.usu_ide,
+        usu_nom: result.user.usu_nom,
+        usu_ape: result.user.usu_ape,
+        usu_tip: result.user.usu_tip
       },
       config.SECRET_KEY,
       { expiresIn: '1h' }
@@ -85,14 +91,14 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/register', async (req, res) => {
   try {
-    if (!req.body.ci || !req.body.password) {
-      return res.status(400).json({ error: 'CI y password son requeridos' })
-    }
-
     const user = await UserRepository.create({
-      ci: req.body.ci,
-      password: req.body.password,
-      terms: req.body.terms
+      ced: req.body.ced,
+      password1: req.body.password1,
+      usu_usu: req.body.usu_usu,
+      nombre: req.body.nombre,
+      ape: req.body.ape,
+      tipoUsuario: req.body.tipoUsuario,
+      modulo: req.body.modulo
     })
 
     res.status(201).json(user)

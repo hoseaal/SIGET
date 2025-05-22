@@ -24,16 +24,6 @@ export const DashboardPage = () => {
   
       fetchUserData();
     }, []);
-
-    useEffect(() => {
-          const fetchAllData = async () => {
-            const fetchUser = await fetchData('tmanom', '*', 'nom_ced', userData?.usu_ide);
-            setUserDataa(fetchUser);
-            console.log('userDataa', userDataa);
-          }
-          fetchAllData();
-        }, [userData]);
-
   
     if (!userData) {
       return <div>Cargando datos de usuario...</div>;
@@ -48,7 +38,7 @@ export const DashboardPage = () => {
                             <div className="col-sm-7">
                                 <div className="card-body">
                                     <h5 className="card-title text-primary">
-                                        Congratulations {userDataa[0]?.nom_nom + ' ' + userDataa[0]?.nom_ape} 🎉
+                                        Congratulations {userData?.usu_nom + ' ' + userData?.usu_ape} 🎉
                                     </h5>
                                     <p className="mb-4">
                                         You have done <span className="fw-medium">72%</span> more

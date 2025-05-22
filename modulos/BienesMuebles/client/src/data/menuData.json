@@ -111,6 +111,24 @@
                         "link": " "
                     }
                 ]
+            },
+            {
+                "text": "Usuarios",
+                "icon": "bx bx-user-plus",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Registrar Nuevo Usuario",
+                        "available": true,
+                        "link": "/Configuracion/NuevoUsuario"
+                    },
+                    {
+                        "text": "Usuarios",
+                        "available": true,
+                        "link": "/Configuracion/Usuarios"
+                    }
+                ]
             }
         ]
     },
