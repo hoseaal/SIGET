@@ -53,9 +53,15 @@ $tipo = $decoded->data->tipo ?? '';
                             <small class="text-muted">
                               <?php
                                 if ($tipo == 3) {
-                                  echo "jefe de área";
+                                  echo "Jefe de Área";
                                 } elseif ($tipo == 2) {
-                                  echo "trabajador";
+                                  echo "Trabajador";
+                                } elseif ($tipo == 4) {
+                                  echo "Administrador";
+                                } elseif ($tipo == 0) {
+                                  echo "Visualizador";
+                                } elseif ($tipo == 1) {
+                                  echo "Temporal";
                                 } else {
                                   echo "desconocido";
                                 }

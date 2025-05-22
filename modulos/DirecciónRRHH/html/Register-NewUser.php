@@ -238,6 +238,91 @@
 
     <script>
       $(document).ready(function() {
+        // Función para validar solo números (sin caracteres especiales)
+        function validarSoloNumeros(event) {
+            const charCode = event.which ? event.which : event.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+
+        // Función para validar solo letras (con acentos)
+        function validarSoloLetras(event) {
+            const charCode = event.which ? event.which : event.keyCode;
+            // Permitir teclas de control (backspace, delete, etc.)
+            if (charCode <= 32 || (charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122)) {
+                return true;
+            }
+            // Permitir letras con acentos (á, é, í, ó, ú, ñ, etc.)
+            if (charCode >= 192 && charCode <= 255) {
+                return true;
+            }
+            event.preventDefault();
+            return false;
+        }
+
+        // Validación para la cédula (solo números, máximo 10 caracteres)
+        $('#cedula').on('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 10) {
+                this.value = this.value.slice(0, 10);
+            }
+        }).on('keypress', validarSoloNumeros);
+
+        // Validación para nombres (solo letras y acentos, máximo 50 caracteres)
+        $('#nombre').on('input', function() {
+            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            if (this.value.length > 50) {
+                this.value = this.value.slice(0, 50);
+            }
+        }).on('keypress', validarSoloLetras);
+
+        // Validación para apellidos (solo letras y acentos, máximo 50 caracteres)
+        $('#apellidos').on('input', function() {
+            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            if (this.value.length > 50) {
+                this.value = this.value.slice(0, 50);
+            }
+        }).on('keypress', validarSoloLetras);
+
+        // Validación para fecha de ingreso (no mayor a hoy)
+        $('#fechaingreso').on('change', function() {
+            const fechaSeleccionada = new Date(this.value);
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            
+            if (fechaSeleccionada > hoy) {
+                alert('La fecha de ingreso no puede ser mayor a la fecha actual');
+                this.value = '';
+            }
+        });
+
+        // Validación para género del empleado (al menos uno seleccionado)
+        $('#formRegistro').on('submit', function(e) {
+            let isValid = true;
+            
+            // Validar género
+            if (!$('input[name="generoEmpleado"]:checked').val()) {
+                alert('Por favor seleccione el género del empleado');
+                isValid = false;
+            }
+            
+            // Validar selects (que no sea la opción por defecto)
+            const selects = ['#cargocet', '#cargoonapre', '#nivelsalarial', '#nivelprof', '#departamentoasig'];
+            selects.forEach(select => {
+                if (!$(select).val()) {
+                    alert(`Por favor seleccione una opción válida para ${$(select).prev('label').text()}`);
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
           // Función para limpiar todos los campos del formulario
           function limpiarFormulario() {
               // Resetear el formulario (esto limpia inputs básicos)

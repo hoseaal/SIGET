@@ -116,6 +116,7 @@
                                                   class="form-control"
                                                   id="newCargoCET"
                                                   placeholder="Ej: ANALISTA PIII"
+                                                  maxlength="50"
                                                   required
                                               >
                                               <div class="invalid-feedback">
@@ -198,15 +199,17 @@
                                 <div class="col-12 mb-3">
                                   <label for="newOnaprePosition" class="form-label">Nombre del nuevo cargo ONAPRE</label>
                                   <input
-                                    type="text"
-                                    class="form-control"
-                                    id="newOnaprePosition"
-                                    name="newOnaprePosition"
-                                    placeholder="Ej: PROFESIONAL IV (PIV)"
-                                    required
+                                      type="text"
+                                      class="form-control"
+                                      id="newOnaprePosition"
+                                      name="newOnaprePosition"
+                                      placeholder="Ej: PROFESIONAL IV (PIV)"
+                                      pattern="[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{1,50}"
+                                      title="Solo letras (mayúsculas o minúsculas) y espacios, máximo 50 caracteres"
+                                      required
                                   >
                                   <div class="invalid-feedback">
-                                    Por favor ingrese el nombre del cargo.
+                                      Solo se permiten letras (mayúsculas o minúsculas) y espacios, sin números ni caracteres especiales. Máximo 50 caracteres.
                                   </div>
                                 </div>
                               </div>
@@ -310,7 +313,14 @@
                 <div class="row">
                   <div class="col mb-3">
                     <label for="nameBasic" class="form-label">Nombre del Cargo</label>
-                    <input type="text" id="nameBasic" class="form-control" placeholder="Ingrese el nombre" />
+                    <input 
+                        type="text" 
+                        id="nameBasic" 
+                        class="form-control" 
+                        placeholder="Ingrese el nombre"
+                        maxlength="50"
+                        required
+                    >
                   </div>
                 </div>
               </div>
@@ -335,9 +345,17 @@
                         <div class="row">
                             <div class="col mb-3">
                                 <label for="nameBasic2" class="form-label">Nombre del Cargo</label>
-                                <input type="text" id="nameBasic2" class="form-control" placeholder="Ingrese el nombre" required />
+                                <input 
+                                    type="text" 
+                                    id="nameBasic2" 
+                                    class="form-control" 
+                                    placeholder="Ingrese el nombre" 
+                                    pattern="[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{1,50}"
+                                    title="Solo letras (mayúsculas o minúsculas) y espacios, máximo 50 caracteres"
+                                    required
+                                >
                                 <div class="invalid-feedback">
-                                    Por favor ingrese el nombre del cargo.
+                                    Solo se permiten letras (mayúsculas o minúsculas) y espacios, sin números ni caracteres especiales. Máximo 50 caracteres.
                                 </div>
                             </div>
                         </div>
