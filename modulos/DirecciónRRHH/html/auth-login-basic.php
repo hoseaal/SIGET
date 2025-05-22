@@ -173,9 +173,15 @@
                   const result = JSON.parse(text);
                   if (result.success) {
                       const tipo = result.tipo;
-                      if (tipo == 3) {
+                      if (tipo == 4) {
+                          window.location.href = 'index.php';
+                      } else if (tipo == 3) {
                           window.location.href = 'index.php';
                       } else if (tipo == 2) {
+                          window.location.href = 'index_usur.php';
+                      } else if (tipo == 1) {
+                          window.location.href = 'index_usur.php';
+                      } else if (tipo == 0) {
                           window.location.href = 'index_usur.php';
                       } else {
                           window.location.href = 'auth-login-basic.php';
