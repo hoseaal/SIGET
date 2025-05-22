@@ -21,7 +21,7 @@ export class UserRepository {
         throw new Error('El usuario ya existe')
       }
 
-      const hashedPassword = bcrypt.hashSync(password, 10)
+      const hashedPassword = bcrypt.hashSync(password, 12)
 
       // Insertar nuevo usuario
       // eslint-disable-next-line no-unused-vars
@@ -44,7 +44,7 @@ export class UserRepository {
     Validaciones.username(ci)
     Validaciones.password(password)
     const [existingUsers] = await conn.query(
-      'SELECT * FROM tesusu WHERE nom_ced = ?',
+      'SELECT * FROM tesusu WHERE usu_ide = ?',
       [ci]
     )
 
