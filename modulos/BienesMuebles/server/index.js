@@ -85,14 +85,14 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/register', async (req, res) => {
   try {
-    if (!req.body.ci || !req.body.password) {
-      return res.status(400).json({ error: 'CI y password son requeridos' })
-    }
-
     const user = await UserRepository.create({
-      ci: req.body.ci,
-      password: req.body.password,
-      terms: req.body.terms
+      ced: req.body.ced,
+      password1: req.body.password1,
+      usu_usu: req.body.usu_usu,
+      nombre: req.body.nombre,
+      ape: req.body.ape,
+      tipoUsuario: req.body.tipoUsuario,
+      modulo: req.body.modulo
     })
 
     res.status(201).json(user)

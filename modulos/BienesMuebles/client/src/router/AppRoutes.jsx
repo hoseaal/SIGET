@@ -93,6 +93,8 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
+            <Route path="/Configuracion/NuevoUsuario" element={<RegisterPage />} />
+
             <Route path="/ui/accordion" element={<AccordionPage />} />
             <Route path="/ui/alerts" element={<AlertPage />} />
             <Route path="/ui/badges" element={<BadgesPage />} />
@@ -115,7 +117,7 @@ const AppRoutes = () => {
             <Route path="/ui/typography" element={<TypographyPage />} />
 
             <Route path="/Login" element={<LoginPage />} />
-            <Route path="/Register" element={<RegisterPage />} />
+            
             <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
 
             <Route path="/account/settings" element={<AccountPage />} />

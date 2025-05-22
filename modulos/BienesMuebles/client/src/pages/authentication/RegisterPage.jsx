@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"
 import './page-auth.css'
-import { AuthWrapper } from "./AuthWrapper";
+import Form from 'react-bootstrap/Form';
 import Alert from "../../components/atoms/Alert";
 import axios from "axios";
 
@@ -11,10 +11,53 @@ export const RegisterPage = () => {
     const [errorMessage, setErrorMessage] = useState(false); 
 
     const [formData, setFormData] = useState({
-        ci: '',
-        password: '',
-        terms: false,
+        ced: '',
+        password1: '',
+        password2: '',
+        usu_usu: '',
+        nombre: '',
+        ape: '',
+        tipoUsuario: '',
+        modulo: ''
     });
+
+    const tipo = [
+                {
+                    "usu_tip": 0,
+                    "tipo": "Solo vistas"
+                },
+                {
+                    "usu_tip": 1,
+                    "tipo": "Temporal"
+                },
+                {
+                    "usu_tip": 2,
+                    "tipo": "Trabajador"
+                },
+                {
+                    "usu_tip": 3,
+                    "tipo": "Jefe de area"
+                },
+                {
+                    "usu_tip": 4,
+                    "tipo": "Administrador"
+                }
+            ];
+
+            const modulos = [
+                {
+                    "usu_mod": 0,
+                    "mod": "Todos"
+                },
+                {
+                    "usu_mod": 1,
+                    "mod": "RRHH"
+                },
+                {
+                    "usu_mod": 2,
+                    "mod": "Bienes Muebles"
+                }
+            ];
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -27,6 +70,7 @@ export const RegisterPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if(formData.password1 !== formData.password2) throw new Error('Las contraseñas no concuerdan')
         try {
           const response = await axios.post('/api/register', formData);
           setFormEnviado(true); 
@@ -43,75 +87,198 @@ export const RegisterPage = () => {
       };
 
     return (
-        <AuthWrapper>
+        <>
 
-            <h4 className="mb-2">Registrate 🚀</h4>
-            <p className="mb-4">Modulo de Gestion de Bienes Muebles! </p>
+        <h4 className="py-3 mb-4"><span className="text-muted fw-light">Configuracedon/</span> Nuevo Usuario</h4>
 
-            <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>
-            <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Cedula de identidad</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="ci"
-                        value={formData.ci}
-                        onChange={handleChange}
-                        name="ci"
-                        placeholder="ej. 12345678"
-                        autoFocus />
-                </div>
-                <div className="mb-3 form-password-toggle">
-                    <div className="d-flex justify-content-between">
-                        <label className="form-label" htmlFor="password">Contraseña</label>
+            <div className="row">
+                 <div className="col-xxl">
+                    <div className="card mb-4">
+                        <div className="card-header d-flex align-items-center justify-content-between">
+                            <h5 className="mb-0">Registrar nuevo Usuario</h5>
+                        </div>
+                        <div className="card-body">
+                            <form onSubmit={handleSubmit}>
+                                <div className="row mb-3">
+                                    <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">Cedula</label>
+                                    <div className="col-sm-10">
+                                        <div className="input-group input-group-merge">
+                                            <span id="basic-icon-default-fullname2" className="input-group-text"
+                                            ><i className="bx bx-user"></i
+                                            ></span>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                id="ced"
+                                                value={formData.ced}
+                                                onChange={handleChange}
+                                                name="ced"
+                                                placeholder="ej. 12345678"
+                                                autoFocus />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
+                                    <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">Nombre</label>
+                                    <div className="col-sm-10">
+                                        <div className="input-group input-group-merge">
+                                            <span id="basic-icon-default-fullname2" className="input-group-text"
+                                            ><i className="bx bx-user"></i
+                                            ></span>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                id="nombre"
+                                                value={formData.nombre}
+                                                onChange={handleChange}
+                                                name="nombre"
+                                                placeholder="Ingresa el Nombre"
+                                                autoFocus />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
+                                    <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">Apellido</label>
+                                    <div className="col-sm-10">
+                                        <div className="input-group input-group-merge">
+                                            <span id="basic-icon-default-fullname2" className="input-group-text"
+                                            ><i className="bx bx-user"></i
+                                            ></span>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                id="ape"
+                                                value={formData.ape}
+                                                onChange={handleChange}
+                                                name="ape"
+                                                placeholder="Ingresa el Apellido"
+                                                autoFocus />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
+                                    <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">Tipo de Usuario</label>
+                                    <div className="col-sm-10">
+                                        <div className="input-group input-group-merge">
+                                            <span id="basic-icon-default-fullname2" className="input-group-text"
+                                            ><i className="bx bx-user"></i
+                                            ></span>
+                                            <Form.Group >
+                                                <Form.Select 
+                                                className="form-control"
+                                                    name='tipoUsuario'
+                                                    value={formData.tipoUsuario}
+                                                    onChange={handleChange}
+                                                >
+                                                    <option value="">Seleccedone una opcedón</option>
+                                                {tipo.map((item) => (
+                                                    <option key={item.tip_usu} value={item.tip_usu}>
+                                                        {item.tipo}
+                                                    </option>
+                                                ))}
+                                                </Form.Select>
+                                            </Form.Group>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
+                                    <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">Modulo al que tiene Acceso</label>
+                                    <div className="col-sm-10">
+                                        <div className="input-group input-group-merge">
+                                            <span id="basic-icon-default-fullname2" className="input-group-text"
+                                            ><i className="bx bx-user"></i
+                                            ></span>
+                                            <Form.Group >
+                                                <Form.Select 
+                                                className="form-control"
+                                                    name='modulo'
+                                                    value={formData.modulo}
+                                                    onChange={handleChange}
+                                                >
+                                                    <option value="">Seleccedone una opcedón</option>
+                                                    {modulos.map((item) => (
+                                                    <option key={item.usu_mod} value={item.usu_mod}>
+                                                        {item.mod}
+                                                    </option>
+                                                ))}
+                                                </Form.Select>
+                                            </Form.Group>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
+                                    <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">User Name</label>
+                                    <div className="col-sm-10">
+                                        <div className="input-group input-group-merge">
+                                            <span id="basic-icon-default-fullname2" className="input-group-text"
+                                            ><i className="bx bx-user"></i
+                                            ></span>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                id="usu_usu"
+                                                value={formData.usu_usu}
+                                                onChange={handleChange}
+                                                name="usu_usu"
+                                                placeholder="Ingresa el usuario"
+                                                autoFocus />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
+                                    <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">Contraseña</label>
+                                    <div className="col-sm-10">
+                                        <div className="input-group input-group-merge">
+                                            <span id="basic-icon-default-fullname2" className="input-group-text"
+                                            ><i className="bx bx-user"></i
+                                            ></span>
+                                            <input
+                                                type="password"
+                                                autoComplete="true"
+                                                id="password1"
+                                                value={formData.password1}
+                                                onChange={handleChange}
+                                                className="form-control"
+                                                name="password1"
+                                                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                                aria-describedby="password1" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
+                                    <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">Confimar Contraseña</label>
+                                    <div className="col-sm-10">
+                                        <div className="input-group input-group-merge">
+                                            <span id="basic-icon-default-fullname2" className="input-group-text"
+                                            ><i className="bx bx-user"></i
+                                            ></span>
+                                            <input
+                                                type="password"
+                                                autoComplete="true"
+                                                id="password2"
+                                                value={formData.password2}
+                                                onChange={handleChange}
+                                                className="form-control"
+                                                name="password2"
+                                                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                                aria-describedby="password2" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row justify-content-end">
+                                        <button aria-label='Click me' type="submit" className="btn btn-primary" onClick={handleSubmit}>Registrat</button>
+                                        {mensajeMostrado && 
+                                            <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
+                                            {formEnviado ? 'Inicedando sesion...' : `${errorMessage}`}
+                                        </Alert>
+                                        }
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div className="input-group input-group-merge">
-                        <input
-                            type="password"
-                            autoComplete="true"
-                            id="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="form-control"
-                            name="password"
-                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                            aria-describedby="password" />
-                        <span className="input-group-text cursor-pointer"></span>
-                    </div>
                 </div>
+            </div>
 
-                <div className="mb-3">
-                    <div className="form-check">
-                        <input
-                            className="form-check-input"
-                            type="checkbox" id="terms-conditions"
-                            name="terms"
-                            value={formData.terms}
-                            onChange={handleChange}
-                        />
-                        <label className="form-check-label" htmlFor="terms-conditions">
-                            I agree to
-                            <a aria-label="pricacy policy and terms" href="#"> privacy policy & terms</a>
-                        </label>
-                    </div>
-                </div>
-                <button aria-label='Click me' className="btn btn-primary d-grid w-100">Sign up</button>
-                <br></br>
-                {mensajeMostrado && 
-                <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
-                {formEnviado ? 'Iniciando sesion...' : `${errorMessage}`}
-            </Alert>
-              }
-            </form>
-
-            <p className="text-center">
-                <span>Already have an account?</span>
-                <Link aria-label="Go to Login Page" to="/Login" className="d-flex align-items-center justify-content-center">
-                    <i className="bx bx-chevron-left scaleX-n1-rtl bx-sm"></i>
-                    Back to login
-                </Link>
-            </p>
-
-        </AuthWrapper>
+        </>
     )
 }
