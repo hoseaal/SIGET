@@ -861,10 +861,9 @@ INSERT INTO `tespri` (`pri_raz`, `pri_por`) VALUES
 INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES 
 ('18845038', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '2023-02-01', 'M', '1', '2', '34', '16', 'I', '1');
 
--- TABLA TESUSU (Usuario del CONTRALOR: CONTRASEÑA ES 123)
+-- TABLA TESUSU (Usuario del CONTRALOR: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES 
-('18845038', 'LuisAgui23', '$2y$10$vnHEosbbVjV5ZHUaNHAK2ukKTKLKmyk5uWTq56/gOyl7TK81PYckO', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '3', '0', '18845038');
+INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES (NULL, 'LuisAgui23', '$2y$12$zLekvZkVCw4Iy9TpkjOue.aCIBNdZgT.dwcAGOPxc7bW3CIInF3ku', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '4', '0', '18845038'); 
 
 -- TABLA TMACAT
 
