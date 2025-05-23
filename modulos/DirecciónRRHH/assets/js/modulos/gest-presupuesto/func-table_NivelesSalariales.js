@@ -463,6 +463,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para abrir el modal de edición con datos
     async function openEditModal(salaryData) {
+
+        // Limpiar validaciones previas
+        cleanModalValidations();
+
         // Cargar los cargos ONAPRE primero
         const cargosOnapre = await fetchCargosOnapre();
         if (!cargosOnapre) {
@@ -490,10 +494,30 @@ document.addEventListener('DOMContentLoaded', function() {
             selectOnapre.value = salaryData.ona_ide;
         }
 
+        // Agregar event listeners para validación en tiempo real
+        document.getElementById('tipoNlvSalarial').addEventListener('input', function() {
+            validateTipoNivelInput(this);
+        });
+
+        document.getElementById('salarioAsig').addEventListener('input', function() {
+            validateSalarioInput(this);
+        });
+
+        document.getElementById('OnapreAsig').addEventListener('change', function() {
+            validateOnapreSelect(this);
+        });
+
         // Configurar el botón de guardar
-        const saveButton = document.querySelector('#ModalNivelSalarial .btn-primary');
+        const saveButton = document.getElementById('confirmChangesBtn');
         saveButton.onclick = async function() {
-            await updateSalary(salaryData.nvl_ide);
+            if (validateForm()) {
+                await updateSalary(salaryData.nvl_ide);
+            } else {
+                // Mostrar todos los mensajes de error
+                validateTipoNivelInput(document.getElementById('tipoNlvSalarial'));
+                validateSalarioInput(document.getElementById('salarioAsig'));
+                validateOnapreSelect(document.getElementById('OnapreAsig'));
+            }
         };
 
         // Mostrar el modal
@@ -582,6 +606,95 @@ document.addEventListener('DOMContentLoaded', function() {
             saveButton.innerHTML = originalText;
             saveButton.disabled = false;
         }
+    }
+
+    // Función para validar el input de Tipo de Nivel Salarial
+    function validateTipoNivelInput(input) {
+        // Eliminar cualquier carácter no permitido (solo letras)
+        const sanitizedValue = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+        
+        // Limitar a 5 caracteres
+        if (sanitizedValue.length > 5) {
+            input.value = sanitizedValue.substring(0, 5);
+        } else {
+            input.value = sanitizedValue;
+        }
+        
+        // Validar el campo
+        if (input.value.trim() === '') {
+            input.classList.add('is-invalid');
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            return true;
+        }
+    }
+
+    // Función para validar el input de Salario
+    function validateSalarioInput(input) {
+        // Obtener el valor actual
+        let value = input.value;
+        
+        // Eliminar cualquier carácter que no sea número o punto
+        let sanitizedValue = value.replace(/[^0-9.]/g, '');
+        
+        // Manejar múltiples puntos decimales
+        const parts = sanitizedValue.split('.');
+        if (parts.length > 2) {
+            // Si hay más de un punto, mantener solo el primero
+            sanitizedValue = parts[0] + '.' + parts.slice(1).join('');
+        }
+        
+        // Limitar decimales a 2
+        if (parts.length === 2) {
+            parts[1] = parts[1].substring(0, 2);
+            sanitizedValue = parts[0] + '.' + parts[1];
+        }
+        
+        // Limitar a 10 caracteres en total
+        if (sanitizedValue.length > 10) {
+            sanitizedValue = sanitizedValue.substring(0, 10);
+        }
+        
+        // Actualizar el valor del input
+        input.value = sanitizedValue;
+        
+        // Validar el campo
+        if (input.value.trim() === '' || isNaN(Number(input.value))) {
+            input.classList.add('is-invalid');
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            return true;
+        }
+    }
+
+    // Función para validar el select de ONAPRE
+    function validateOnapreSelect(select) {
+        if (select.value === "") {
+            select.classList.add('is-invalid');
+            return false;
+        } else {
+            select.classList.remove('is-invalid');
+            return true;
+        }
+    }
+
+    // Función para validar todo el formulario antes de guardar
+    function validateForm() {
+        const tipoNivelValid = validateTipoNivelInput(document.getElementById('tipoNlvSalarial'));
+        const salarioValid = validateSalarioInput(document.getElementById('salarioAsig'));
+        const onapreValid = validateOnapreSelect(document.getElementById('OnapreAsig'));
+        
+        return tipoNivelValid && salarioValid && onapreValid;
+    }
+
+    // Función para limpiar todas las validaciones del modal
+    function cleanModalValidations() {
+        const inputs = document.querySelectorAll('#ModalNivelSalarial .form-control, #ModalNivelSalarial .form-select');
+        inputs.forEach(input => {
+            input.classList.remove('is-invalid');
+        });
     }
 
     // Inicializar la tabla, paginación y buscador

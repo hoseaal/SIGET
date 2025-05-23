@@ -132,7 +132,7 @@
                     </div>
                 </div>
                 </div>
-            </div> <!-- Cierre de .row -->
+            </div> <!-- Cierre de .row -->c
             </div>
             <!-- / Content -->
           <div class="content-backdrop fade"></div>

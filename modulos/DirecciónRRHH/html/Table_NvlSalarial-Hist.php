@@ -190,7 +190,7 @@
             <!-- Fecha de Modificación -->
             <div class="mb-3">
               <label for="fechamodificacion" class="form-label">Fecha de Modificación</label>
-              <input type="date" class="form-control" id="fechamodificacion" name="fechamodificacion" disabled required />
+              <input type="date" class="form-control" id="fechamodificacion" name="fechamodificacion" required />
             </div>
           </div>
           <div class="modal-footer">

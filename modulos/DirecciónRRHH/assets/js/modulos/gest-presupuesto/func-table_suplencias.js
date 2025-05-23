@@ -378,20 +378,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar una suplencia
     async function updateSupplement(sup_ide, originalData) {
+        // Validar antes de proceder
+        if (!validateEditSupplementForm()) {
+            return;
+        }
+
         const saveButton = document.querySelector('#ModalSuplencia .btn-primary');
         const originalText = saveButton.innerHTML;
         
-        // Mostrar spinner y deshabilitar botón
         saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
         saveButton.disabled = true;
         
         try {
-            // Obtener los datos del formulario
             const newActiveStatus = document.getElementById('estadoSuplencia').checked ? 1 : 0;
             const newFechaInicio = document.getElementById('fechaInicio').value;
-            const today = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
+            const today = new Date().toISOString().split('T')[0];
             
-            // Determinar si el estado cambió
             const estadoCambio = originalData.sup_activa !== newActiveStatus;
             
             const updatedData = {
@@ -399,27 +401,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 nom_ced: document.getElementById('empleadoCedula').value,
                 sup_fec_ini: newFechaInicio,
                 sup_activa: newActiveStatus,
-                // Solo enviar sup_fec_fin si el estado cambió de activo a inactivo
                 sup_fec_fin: (originalData.sup_activa === 1 && newActiveStatus === 0) ? today : null,
-                // Enviar campos originales para comparación
                 original_fec_ini: originalData.sup_fec_ini,
                 original_activa: originalData.sup_activa
             };
 
-            // Validar si realmente hay cambios (fecha o estado)
             const fechaCambio = originalData.sup_fec_ini !== newFechaInicio;
             if (!estadoCambio && !fechaCambio) {
                 alert('No se detectaron cambios en los campos editables');
                 return;
             }
 
-            // Validación básica
-            if (!updatedData.nom_ced || !updatedData.sup_fec_ini) {
-                alert('Por favor complete todos los campos requeridos');
-                return;
-            }
-            
-            // Llamada a la API para guardar cambios
             const response = await fetch('../PHP/api/gest-presupuesto/actualizar_suplencias-hist.php', {
                 method: 'POST',
                 headers: {
@@ -431,13 +423,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             
             if (result.success) {
-                // Cerrar el modal
                 bootstrap.Modal.getInstance(document.getElementById('ModalSuplencia')).hide();
-                
-                // Mostrar mensaje de éxito
                 alert('Cambios guardados exitosamente');
-                
-                // Recargar los datos
                 displaySupplements(currentPage);
             } else {
                 alert('Error al guardar: ' + (result.message || 'Error desconocido'));
@@ -446,7 +433,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error al guardar:', error);
             alert('Error al conectar con el servidor');
         } finally {
-            // Restaurar el botón
             saveButton.innerHTML = originalText;
             saveButton.disabled = false;
         }
@@ -491,6 +477,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para crear una nueva suplencia
     async function createNewSupplement() {
+        // Validar antes de proceder
+        if (!validateNewSupplementForm()) {
+            return;
+        }
+
         const saveButton = document.getElementById('confirmarNuevaSuplencia');
         const originalText = saveButton.innerHTML;
         
@@ -518,11 +509,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(newData)
             });
             
-            // Primero obtener el texto crudo de la respuesta
             const responseText = await response.text();
             console.log('Respuesta cruda del servidor:', responseText);
             
-            // Luego intentar parsear como JSON
             const result = JSON.parse(responseText);
             
             if (result.success) {
@@ -584,6 +573,155 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('nuevoCargoOnapreSelect').dispatchEvent(new Event('change'));
         }
     }
+
+    // Función para validar los campos del modal de nueva suplencia
+    function validateNewSupplementForm() {
+        const empleado = document.getElementById('nuevoEmpleadoSelect').value;
+        const fechaInicio = document.getElementById('nuevaFechaInicio').value;
+        const cargoCet = document.getElementById('nuevoCargoCetSelect').value;
+        const cargoOnapre = document.getElementById('nuevoCargoOnapreSelect').value;
+        const nivelSalarial = document.getElementById('nuevoNivelSalarial').value;
+        const departamento = document.getElementById('nuevoDepartamentoSelect').value;
+        const estadoSuplencia = document.getElementById('nuevoEstadoSuplencia').checked;
+
+        // Validar campos obligatorios
+        if (!empleado) {
+            showValidationError('nuevoEmpleadoSelect', 'Debe seleccionar un empleado');
+            return false;
+        }
+        
+        if (!fechaInicio) {
+            showValidationError('nuevaFechaInicio', 'Debe seleccionar una fecha de inicio');
+            return false;
+        }
+        
+        if (!cargoCet) {
+            showValidationError('nuevoCargoCetSelect', 'Debe seleccionar un cargo CET');
+            return false;
+        }
+        
+        if (!cargoOnapre) {
+            showValidationError('nuevoCargoOnapreSelect', 'Debe seleccionar un cargo ONAPRE');
+            return false;
+        }
+        
+        if (!nivelSalarial) {
+            showValidationError('nuevoNivelSalarial', 'Debe seleccionar un nivel salarial');
+            return false;
+        }
+        
+        if (!departamento) {
+            showValidationError('nuevoDepartamentoSelect', 'Debe seleccionar un departamento');
+            return false;
+        }
+
+        // Validar fecha no sea futura (opcional)
+        const today = new Date();
+        const selectedDate = new Date(fechaInicio);
+        if (selectedDate > today) {
+            showValidationError('nuevaFechaInicio', 'La fecha no puede ser futura');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Función para validar los campos del modal de edición
+    function validateEditSupplementForm() {
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const estadoSuplencia = document.getElementById('estadoSuplencia').checked;
+
+        if (!fechaInicio) {
+            showValidationError('fechaInicio', 'Debe seleccionar una fecha de inicio');
+            return false;
+        }
+
+        // Validar fecha no sea futura (opcional)
+        const today = new Date();
+        const selectedDate = new Date(fechaInicio);
+        if (selectedDate > today) {
+            showValidationError('fechaInicio', 'La fecha no puede ser futura');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Función para mostrar errores de validación
+    function showValidationError(elementId, message) {
+        const element = document.getElementById(elementId);
+        const feedbackId = `${elementId}-feedback`;
+        
+        // Remover feedback existente si lo hay
+        const existingFeedback = document.getElementById(feedbackId);
+        if (existingFeedback) {
+            existingFeedback.remove();
+        }
+        
+        // Agregar clase de error al input
+        element.classList.add('is-invalid');
+        
+        // Crear elemento de feedback
+        const feedback = document.createElement('div');
+        feedback.id = feedbackId;
+        feedback.className = 'invalid-feedback';
+        feedback.textContent = message;
+        
+        // Insertar después del elemento
+        element.parentNode.appendChild(feedback);
+        
+        // Hacer scroll al primer error
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.focus();
+    }
+
+    // Función para limpiar validaciones
+    function clearValidations() {
+        // Para el modal de nueva suplencia
+        const newModalElements = [
+            'nuevoEmpleadoSelect', 'nuevaFechaInicio', 'nuevoCargoCetSelect',
+            'nuevoCargoOnapreSelect', 'nuevoNivelSalarial', 'nuevoDepartamentoSelect'
+        ];
+        
+        newModalElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.remove('is-invalid');
+                const feedback = document.getElementById(`${id}-feedback`);
+                if (feedback) feedback.remove();
+            }
+        });
+        
+        // Para el modal de edición
+        const editModalElements = ['fechaInicio'];
+        editModalElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.remove('is-invalid');
+                const feedback = document.getElementById(`${id}-feedback`);
+                if (feedback) feedback.remove();
+            }
+        });
+    }
+
+    document.getElementById('ModalNuevaSuplencia').addEventListener('hidden.bs.modal', clearValidations);
+    document.getElementById('ModalSuplencia').addEventListener('hidden.bs.modal', clearValidations);
+
+    document.getElementById('nuevoEmpleadoSelect')?.addEventListener('change', function() {
+        if (this.value) {
+            this.classList.remove('is-invalid');
+            const feedback = document.getElementById(`${this.id}-feedback`);
+            if (feedback) feedback.remove();
+        }
+    });
+
+    document.getElementById('nuevaFechaInicio')?.addEventListener('change', function() {
+        if (this.value) {
+            this.classList.remove('is-invalid');
+            const feedback = document.getElementById(`${this.id}-feedback`);
+            if (feedback) feedback.remove();
+        }
+    });
 
     // Event listener para el botón de nueva suplencia
     document.getElementById('ModalnuevaSuplencia').addEventListener('click', openNewSupplementModal);

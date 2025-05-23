@@ -183,22 +183,25 @@
             <div class="row">
               <div class="col mb-3">
                 <label for="tipoNlvSalarial" class="form-label">Tipo de Nivel Salarial</label>
-                <input type="text" id="tipoNlvSalarial" class="form-control" placeholder="Ej. I, II, III" />
+                <input type="text" id="tipoNlvSalarial" class="form-control" placeholder="Ej. I, II, III" maxlength="5" />
+                <div class="invalid-feedback">Solo se permiten letras (máximo 5 caracteres)</div>
               </div>
             </div>
             <div class="row">
               <div class="col mb-3">
                 <label for="salarioAsig" class="form-label">Salario Correspondiente</label>
-                <input type="number" id="salarioAsig" class="form-control" placeholder="Ej. 150.00" step="0.01" min="0" />
+                <input type="text" id="salarioAsig" class="form-control" placeholder="Ej. 150.00" />
+                <div class="invalid-feedback">Solo se permiten números con máximo 2 decimales (máximo 10 caracteres)</div>
               </div>
             </div>
             <div class="row">
               <div class="col mb-3">
                 <label for="OnapreAsig" class="form-label">Seleccionar cargo ONAPRE correspondiente</label>
-                <select id="OnapreAsig" class="form-select">
+                <select id="OnapreAsig" class="form-select" required>
                   <option value="">Seleccione</option>
                   <!-- Las opciones se llenarán dinámicamente -->
                 </select>
+                <div class="invalid-feedback">Debe seleccionar un cargo ONAPRE</div>
               </div>
             </div>
           </div>
@@ -206,7 +209,7 @@
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               Cerrar
             </button>
-            <button type="button" class="btn btn-primary">Confirmar Cambios</button>
+            <button type="button" class="btn btn-primary" id="confirmChangesBtn">Confirmar Cambios</button>
           </div>
         </div>
       </div>
