@@ -1,6 +1,7 @@
 <?php
     header('Content-Type: application/json');
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     try {
         $data = json_decode(file_get_contents('php://input'), true);
@@ -10,6 +11,11 @@
         }
 
         $cep_ide = $data['cep_ide'];
+
+        $usuarioResponsable = $decoded->data->cedula; // Cédula del usuario logueado desde JWT
+
+        // Establecer usuario responsable para el trigger
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         // Verificar si existe el registro
         $checkQuery = "SELECT COUNT(*) FROM tescep WHERE cep_ide = :cep_ide";

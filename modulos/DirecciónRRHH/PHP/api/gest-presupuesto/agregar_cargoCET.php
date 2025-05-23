@@ -1,5 +1,6 @@
 <?php
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     header('Content-Type: application/json');
 
@@ -9,6 +10,10 @@
         if (!$data || !isset($data['position_name']) || empty(trim($data['position_name']))) {
             throw new Exception('Nombre del cargo no recibido o inválido');
         }
+
+        // Establecer usuario responsable desde JWT
+        $usuarioResponsable = $decoded->data->cedula;
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         $positionName = trim($data['position_name']);
 
@@ -21,7 +26,7 @@
             throw new Exception('El cargo ya existe');
         }
 
-        // Insertar nuevo cargo
+        // Insertar nuevo cargo (el trigger registrará automáticamente el cambio)
         $query = $pdo->prepare("INSERT INTO tescet (cet_car) VALUES (:position_name)");
         $query->bindParam(':position_name', $positionName);
         

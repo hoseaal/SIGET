@@ -532,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Validación básica
             if (!updatedData.nom_ced) {
-                throw new Error('Por favor seleccione un trabajador');
+                throw new Error('Seleccione un trabajador');
             }
             
             // Llamada a la API para guardar cambios
@@ -592,7 +592,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const estado = document.getElementById('nuevoEstadoCajaAhorro').checked ? 1 : 0;
 
             if (!nuevoTrabajador) {
-                throw new Error('Por favor seleccione un trabajador');
+                throw new Error('Seleccione un trabajador');
             }
 
             const response = await fetch('../PHP/api/gest-presupuesto/agregar_caja-ahorro.php', {
@@ -634,7 +634,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error al agregar:', error);
-            alert('Error: ' + error.message);
+            alert('Por favor: ' + error.message);
         } finally {
             // Restaurar el botón
             agregarBtn.innerHTML = originalText;

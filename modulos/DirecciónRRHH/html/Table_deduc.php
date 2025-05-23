@@ -6,6 +6,9 @@
       echo 'Acceso denegado.';
       exit;
   }
+
+  // Exponer la cédula del usuario logueado como variable JavaScript
+  echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +33,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../../../home/src/img/logo-contraloria-home3.png" />
+    <link rel="icon" type="image/x-icon" href="../../../home/assets/img/logo-contraloria-home2.png" />
 
     <!-- Fonts -->
     <link
@@ -153,7 +156,7 @@
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="../js/buttons.js"></script>
 
-    <!-- Funcionamiento de la tabla de Niveles Salariales -->
+    <!-- Funcionamiento de la tabla de Deducciones -->
     <script src="../assets/js/modulos/gest-presupuesto/func-table_deduc.js"></script>
 
     <!-- Modal de Editar Deducciones -->
@@ -170,12 +173,20 @@
               <div class="col mb-3">
                 <label for="tipoDeduccion" class="form-label">Nombre de la Deducción</label>
                 <input type="text" id="tipoDeduccion" class="form-control" placeholder="Ej. Seguro del Empleado" disabled required />
+                <div class="invalid-feedback">Por favor ingrese un nombre válido</div>
               </div>
             </div>
             <div class="row">
               <div class="col mb-3">
                 <label for="porcentajeDeduccion" class="form-label">Porcentaje de Deducción</label>
-                <input type="number" id="porcentajeDeduccion" class="form-control" placeholder="Ej. 4.00" step="0.01" min="0" max="100" required />
+                <input type="text" id="porcentajeDeduccion" class="form-control" 
+                      placeholder="Ej. 4.00" 
+                      pattern="^\d{1,7}(\.\d{1,2})?$"
+                      maxlength="10"
+                      required />
+                <div class="invalid-feedback">
+                  Por favor ingrese un porcentaje válido (máximo 2 decimales, sin caracteres especiales)
+                </div>
               </div>
             </div>
           </div>
