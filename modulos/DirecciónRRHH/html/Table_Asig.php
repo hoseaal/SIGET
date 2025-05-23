@@ -6,6 +6,9 @@
       echo 'Acceso denegado.';
       exit;
   }
+
+  // Exponer la cédula del usuario logueado como variable JavaScript
+  echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -158,35 +161,43 @@
 
     <!-- Modal de Editar Asignaciones -->
     <div class="modal fade" id="ModalAsignaciones" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel1">Editar Asignación</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-            <input type="hidden" id="asignacionId">
-            <div class="row">
-            <div class="col mb-3">
-                <label for="tipoAsignacion" class="form-label">Nombre de la Asignación</label>
-                <input type="text" id="tipoAsignacion" class="form-control" placeholder="Prima por..." required disabled />
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel1">Editar Asignación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="asignacionId">
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label for="tipoAsignacion" class="form-label">Nombre de la Asignación</label>
+                            <input type="text" id="tipoAsignacion" class="form-control" placeholder="Prima por..." required disabled />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label for="primaAsignacion" class="form-label">Valor de la Asignación</label>
+                            <input type="text" id="primaAsignacion" class="form-control" 
+                                  placeholder="Ej. 4.00" 
+                                  maxlength="10"
+                                  pattern="^[0-9]*\.?[0-9]*$"
+                                  title="Solo se permiten números y un punto decimal"
+                                  required />
+                            <div class="invalid-feedback">
+                                Solo se permiten números y un punto decimal (máximo 10 caracteres)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cerrar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmEditAsignacion">Confirmar Cambios</button>
+                </div>
             </div>
-            </div>
-            <div class="row">
-            <div class="col mb-3">
-                <label for="primaAsignacion" class="form-label">Valor de la Asignación</label>
-                <input type="number" id="primaAsignacion" class="form-control" placeholder="Ej. 4.00" step="0.01" min="0" max="100" required />
-            </div>
-            </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-            Cerrar
-            </button>
-            <button type="button" class="btn btn-primary" id="confirmEditAsignacion">Confirmar Cambios</button>
-        </div>
-        </div>
-    </div>
     </div>
 
   </body>

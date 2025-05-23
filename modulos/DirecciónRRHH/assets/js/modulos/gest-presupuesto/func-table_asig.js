@@ -387,70 +387,96 @@
 
     // Función para guardar los cambios de la asignación
     async function saveAssignmentChanges(originalId) {
-    const saveButton = document.getElementById('confirmEditAsignacion');
-    const originalText = saveButton.innerHTML;
-
-    // Mostrar spinner y deshabilitar botón
-    saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-    saveButton.disabled = true;
-
-    try {
-        // Obtener los datos del formulario
-        const updatedData = {
-            pri_ide: originalId,
-            pri_raz: document.getElementById('tipoAsignacion').value,
-            pri_por: document.getElementById('primaAsignacion').value
-        };
+        const saveButton = document.getElementById('confirmEditAsignacion');
+        const originalText = saveButton.innerHTML;
+        const primaInput = document.getElementById('primaAsignacion');
         
-        // Validación básica
-        if (!updatedData.pri_raz || !updatedData.pri_por) {
-            alert('Por favor complete todos los campos requeridos');
+        // Validar el formato del valor
+        if (!/^\d*\.?\d*$/.test(primaInput.value)) {
+            primaInput.classList.add('is-invalid');
+            primaInput.focus();
             return;
-        }
-        
-        // Llamada a la API para guardar cambios
-        const response = await fetch('../PHP/api/gest-presupuesto/actualizar_asig.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updatedData)
-        });
-        
-        // Verificar si la respuesta es JSON válido
-        let result;
-        try {
-            result = await response.json();
-        } catch (jsonError) {
-            throw new Error('La respuesta del servidor no es JSON válido');
-        }
-        
-        // Verificar el estado HTTP
-        if (!response.ok) {
-            throw new Error(result.message || `Error HTTP: ${response.status}`);
-        }
-        
-        if (result.success) {
-            // Cerrar el modal
-            bootstrap.Modal.getInstance(document.getElementById('ModalAsignaciones')).hide();
-            
-            // Mostrar mensaje de éxito
-            alert('Cambios guardados exitosamente');
-            
-            // Recargar los datos
-            displayAssignments(currentPage);
         } else {
-            throw new Error(result.message || 'Error al guardar los cambios');
+            primaInput.classList.remove('is-invalid');
         }
-    } catch (error) {
-        console.error('Error al guardar:', error);
-        alert('Error al guardar: ' + error.message);
-    } finally {
-        // Restaurar el botón
-        saveButton.innerHTML = originalText;
-        saveButton.disabled = false;
+
+        // Mostrar spinner y deshabilitar botón
+        saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+        saveButton.disabled = true;
+
+        try {
+            // Obtener los datos del formulario
+            const updatedData = {
+                pri_ide: originalId,
+                pri_raz: document.getElementById('tipoAsignacion').value,
+                pri_por: document.getElementById('primaAsignacion').value
+            };
+            
+            // Validación básica
+            if (!updatedData.pri_raz || !updatedData.pri_por) {
+                alert('Por favor complete todos los campos requeridos');
+                return;
+            }
+            
+            // Llamada a la API para guardar cambios
+            const response = await fetch('../PHP/api/gest-presupuesto/actualizar_asig.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData)
+            });
+            
+            // Verificar si la respuesta es JSON válido
+            let result;
+            try {
+                result = await response.json();
+            } catch (jsonError) {
+                throw new Error('La respuesta del servidor no es JSON válido');
+            }
+            
+            // Verificar el estado HTTP
+            if (!response.ok) {
+                throw new Error(result.message || `Error HTTP: ${response.status}`);
+            }
+            
+            if (result.success) {
+                // Cerrar el modal
+                bootstrap.Modal.getInstance(document.getElementById('ModalAsignaciones')).hide();
+                
+                // Mostrar mensaje de éxito
+                alert('Cambios guardados exitosamente');
+                
+                // Recargar los datos
+                displayAssignments(currentPage);
+            } else {
+                throw new Error(result.message || 'Error al guardar los cambios');
+            }
+        } catch (error) {
+            console.error('Error al guardar:', error);
+            alert('Error al guardar: ' + error.message);
+        } finally {
+            // Restaurar el botón
+            saveButton.innerHTML = originalText;
+            saveButton.disabled = false;
+        }
     }
-    }
+
+    // Validación en tiempo real para el input de valor de asignación
+    document.getElementById('primaAsignacion')?.addEventListener('input', function(e) {
+        // Eliminar cualquier caracter que no sea número o punto
+        this.value = this.value.replace(/[^0-9.]/g, '');
+        
+        // Validar que no haya más de un punto
+        if ((this.value.match(/\./g) || []).length > 1) {
+            this.value = this.value.substring(0, this.value.length - 1);
+        }
+        
+        // Limitar a 10 caracteres
+        if (this.value.length > 10) {
+            this.value = this.value.substring(0, 10);
+        }
+    });
 
     // Inicializar la tabla y paginación
     displayAssignments(currentPage).then(() => {

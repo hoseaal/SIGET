@@ -358,10 +358,15 @@ document.addEventListener('DOMContentLoaded', function() {
             selectOnapre.value = salaryData.ona_ide;
         }
 
+        // Configurar validaciones en los inputs
+        setupInputValidations();
+
         // Configurar el botón de guardar
         const saveButton = document.querySelector('#ModalNivelSalarial .btn-primary');
         saveButton.onclick = async function() {
-            await updateSalary(salaryData.nvl_ide);
+            if (validateForm()) {
+                await updateSalary(salaryData.nvl_ide);
+            }
         };
 
         // Mostrar el modal
@@ -443,6 +448,103 @@ document.addEventListener('DOMContentLoaded', function() {
             saveButton.innerHTML = originalText;
             saveButton.disabled = false;
         }
+    }
+
+    // Función para configurar las validaciones de los inputs
+    function setupInputValidations() {
+        const tipoNivelInput = document.getElementById('tipoNlvSalarial');
+        const salarioInput = document.getElementById('salarioAsig');
+        const onapreSelect = document.getElementById('OnapreAsig');
+        const fechaInput = document.getElementById('fechamodificacion');
+
+        // Validación para Tipo de Nivel Salarial (solo letras, máximo 5 caracteres)
+        tipoNivelInput.addEventListener('input', function(e) {
+            // Eliminar cualquier carácter que no sea letra
+            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/g, '');
+            
+            // Limitar a 5 caracteres
+            if (this.value.length > 5) {
+                this.value = this.value.substring(0, 5);
+            }
+        });
+
+        // Validación para Salario Correspondiente (solo números, máximo 10 dígitos, máximo 2 decimales)
+        salarioInput.addEventListener('input', function(e) {
+            // Eliminar cualquier carácter que no sea número o punto decimal
+            this.value = this.value.replace(/[^0-9.]/g, '');
+            
+            // Limitar a 10 caracteres en total
+            if (this.value.length > 10) {
+                this.value = this.value.substring(0, 10);
+            }
+            
+            // Manejar decimales
+            if ((this.value.match(/\./g) || []).length > 1) {
+                // Si hay más de un punto, eliminar el último ingresado
+                this.value = this.value.substring(0, this.value.length - 1);
+            }
+            
+            // Limitar a 2 decimales
+            const parts = this.value.split('.');
+            if (parts.length > 1 && parts[1].length > 2) {
+                this.value = parts[0] + '.' + parts[1].substring(0, 2);
+            }
+        });
+
+        // Validación para evitar que se pegue texto no válido
+        tipoNivelInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+        });
+
+        salarioInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+        });
+    }
+
+    // Función para validar el formulario antes de enviar
+    function validateForm() {
+        const tipoNivelInput = document.getElementById('tipoNlvSalarial');
+        const salarioInput = document.getElementById('salarioAsig');
+        const onapreSelect = document.getElementById('OnapreAsig');
+        const fechaInput = document.getElementById('fechamodificacion');
+        let isValid = true;
+
+        // Validar Tipo de Nivel Salarial
+        if (!tipoNivelInput.value.trim()) {
+            alert('Por favor ingrese el Tipo de Nivel Salarial');
+            tipoNivelInput.focus();
+            return false;
+        }
+
+        // Validar Salario Correspondiente
+        if (!salarioInput.value.trim()) {
+            alert('Por favor ingrese el Salario Correspondiente');
+            salarioInput.focus();
+            return false;
+        }
+
+        // Validar que el salario sea un número válido
+        if (isNaN(parseFloat(salarioInput.value))) {
+            alert('Por favor ingrese un valor numérico válido para el salario');
+            salarioInput.focus();
+            return false;
+        }
+
+        // Validar Cargo ONAPRE
+        if (!onapreSelect.value) {
+            alert('Por favor seleccione un Cargo ONAPRE');
+            onapreSelect.focus();
+            return false;
+        }
+
+        // Validar Fecha de Modificación
+        if (!fechaInput.value) {
+            alert('Por favor ingrese la Fecha de Modificación');
+            fechaInput.focus();
+            return false;
+        }
+
+        return true;
     }
 
     // Inicializar la tabla

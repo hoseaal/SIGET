@@ -670,6 +670,16 @@ CREATE TABLE `bit_ded` (
   `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `bit_pri` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada (tespri)',
+  `bit_operacion` ENUM('UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_pri_ide` INT NOT NULL COMMENT 'ID de prima afectada (pri_ide)',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 /* VOLCADO DE LA BASE DE DATOS */
 
 -- TABLA TESCET
