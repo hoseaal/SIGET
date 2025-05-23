@@ -1,7 +1,12 @@
 <?php
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     header('Content-Type: application/json');
+
+    if (http_response_code() !== 200) {
+        exit; 
+    }
 
     try {
         $data = json_decode(file_get_contents('php://input'), true);
@@ -12,6 +17,10 @@
 
         $userId = $data['user_id'];
         $userType = $data['user_type'];
+        $usuarioResponsable = $decoded->data->cedula;
+
+        // 1. Establecer el usuario responsable en MySQL
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         // Verificar si el usuario existe
         $checkQuery = $pdo->prepare("SELECT COUNT(*) FROM tesusu WHERE usu_ide = :user_id");

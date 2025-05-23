@@ -468,6 +468,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Llenar los selects del formulario
+        console.log('Empleados cargados:', empleados);
         fillSelect(document.getElementById('nuevoEmpleadoSelect'), empleados, 'nom_ced', 'nom_nom');
         fillSelect(document.getElementById('nuevoCargoCetSelect'), cargosCet, 'cet_ide', 'cet_car');
         fillSelect(document.getElementById('nuevoCargoOnapreSelect'), cargosOnapre, 'ona_ide', 'ona_car');
@@ -493,30 +494,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const saveButton = document.getElementById('confirmarNuevaSuplencia');
         const originalText = saveButton.innerHTML;
         
-        // Mostrar spinner y deshabilitar botón
         saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
         saveButton.disabled = true;
         
         try {
-            // Obtener los datos del formulario
             const newData = {
                 nom_ced: document.getElementById('nuevoEmpleadoSelect').value,
                 sup_fec_ini: document.getElementById('nuevaFechaInicio').value,
                 cet_ide: document.getElementById('nuevoCargoCetSelect').value || null,
                 ona_ide: document.getElementById('nuevoCargoOnapreSelect').value || null,
-                nvl_ran: document.getElementById('nuevoNivelSalarial').value || null, // Ahora es un select
+                nvl_ran: document.getElementById('nuevoNivelSalarial').value || null,
                 dep_ide: document.getElementById('nuevoDepartamentoSelect').value || null,
                 sup_activa: document.getElementById('nuevoEstadoSuplencia').checked ? 1 : 0
             };
 
-            // Validación básica
-            if (!newData.nom_ced || !newData.sup_fec_ini || !newData.nvl_ran) {
-                alert('Por favor complete todos los campos requeridos');
-                return;
-            }
-            
-            // Llamada a la API para crear nueva suplencia
-            const response = await fetch('../PHP/api/gest-presupuesto/agregar_suplencia.php', {
+            console.log('Datos a enviar:', newData);
+
+            const response = await fetch('../../../../PHP/api/gest-presupuesto/agregar_suplencia.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -524,26 +518,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(newData)
             });
             
-            const result = await response.json();
+            // Primero obtener el texto crudo de la respuesta
+            const responseText = await response.text();
+            console.log('Respuesta cruda del servidor:', responseText);
+            
+            // Luego intentar parsear como JSON
+            const result = JSON.parse(responseText);
             
             if (result.success) {
-                // Cerrar el modal
                 bootstrap.Modal.getInstance(document.getElementById('ModalNuevaSuplencia')).hide();
-                
-                // Mostrar mensaje de éxito
                 alert('Suplencia creada correctamente');
-                
-                // Recargar los datos (volver a la primera página)
                 currentPage = 1;
                 displaySupplements(currentPage);
             } else {
                 alert('Error al crear: ' + (result.message || 'Error desconocido'));
             }
         } catch (error) {
-            console.error('Error al crear:', error);
-            alert('Error al conectar con el servidor');
+            console.error('Error completo:', error);
+            alert('Error al conectar con el servidor: ' + error.message);
         } finally {
-            // Restaurar el botón
             saveButton.innerHTML = originalText;
             saveButton.disabled = false;
         }

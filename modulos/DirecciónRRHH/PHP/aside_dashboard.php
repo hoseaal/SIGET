@@ -110,7 +110,7 @@
               <ul class="menu-sub">
                 <li class="menu-item">
                   <a href="#" class="menu-link" target="_blank">
-                    <div data-i18n="Basic">Otorgar Permisos</div>
+                    <div data-i18n="Basic">Vista de Permisos</div>
                   </a>
                 </li>
               </ul>

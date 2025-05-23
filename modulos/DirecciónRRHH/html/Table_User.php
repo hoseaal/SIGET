@@ -33,7 +33,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../../../home/src/img/logo-contraloria-home3.png" />
+    <link rel="icon" type="image/x-icon" href="../../../home/assets/img/logo-contraloria-home2.png" />
 
     <!-- Fonts -->
     <link
@@ -224,9 +224,11 @@
                         <label for="userType" class="form-label">Tipo de Usuario</label>
                         <select id="cargocet" name="cargocet" class="form-select" required>
                           <option value="">Seleccione</option>
-                          <option value="1">Administrador</option>
-                          <option value="2">Trabajador</option>
+                          <option value="4">Administrador</option>
                           <option value="3">Jefe de Área</option>
+                          <option value="2">Trabajador</option>
+                          <option value="1">Temporal</option>
+                          <option value="0">Visualizador</option>
                         </select>
                       </div>
                     </div>

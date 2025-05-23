@@ -1,5 +1,6 @@
 <?php
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     header('Content-Type: application/json');
 
@@ -9,6 +10,10 @@
         if (!$data || !isset($data['position_id'])) {
             throw new Exception('Datos no recibidos o incompletos');
         }
+
+        // Establecer usuario responsable desde JWT
+        $usuarioResponsable = $decoded->data->cedula;
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         $positionId = $data['position_id'];
 

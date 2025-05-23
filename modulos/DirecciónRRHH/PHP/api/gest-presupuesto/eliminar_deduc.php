@@ -1,10 +1,12 @@
 <?php
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     header('Content-Type: application/json');
 
     try {
         $data = json_decode(file_get_contents('php://input'), true);
+        $usuarioResponsable = $decoded->data->cedula; // Usuario del JWT
         
         if (!$data || !isset($data['ded_id'])) {
             throw new Exception('Datos no recibidos o incompletos');
@@ -25,6 +27,10 @@
         $pdo->beginTransaction();
 
         try {
+
+            // Establecer usuario responsable en MySQL
+            $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
+            
             // Preparar la consulta de eliminación
             $query = $pdo->prepare("DELETE FROM tesded WHERE ded_ide = :ded_id");
             $query->bindParam(':ded_id', $dedId, PDO::PARAM_INT);

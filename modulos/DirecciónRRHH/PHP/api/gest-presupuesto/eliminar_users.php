@@ -1,5 +1,6 @@
 <?php
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     header('Content-Type: application/json');
 
@@ -11,6 +12,9 @@
         }
 
         $userId = $data['user_id'];
+        $usuarioResponsable = $decoded->data->cedula;
+
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         // Verificar si el usuario existe
         $checkQuery = $pdo->prepare("SELECT COUNT(*) FROM tesusu WHERE usu_ide = :user_id");

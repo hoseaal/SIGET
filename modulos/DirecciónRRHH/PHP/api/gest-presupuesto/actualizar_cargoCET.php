@@ -4,6 +4,7 @@
 
     header('Content-Type: application/json');
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     // Limpiar cualquier output buffer
     ob_end_clean();
@@ -37,6 +38,10 @@
         if (empty($newName)) {
             throw new Exception('El nombre no puede estar vacío');
         }
+
+        // Establecer usuario responsable desde JWT
+        $usuarioResponsable = $decoded->data->cedula;
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         // Verificar si el cargo existe
         $stmt = $pdo->prepare("SELECT cet_ide FROM tescet WHERE cet_ide = ?");

@@ -10,9 +10,8 @@
 
         // Consulta base
         $baseQuery = "
-            SELECT u.usu_ide, u.usu_tip, u.nom_ced, m.nom_nom, m.nom_ape 
+            SELECT u.usu_ide, u.usu_tip, u.nom_ced, u.usu_nom, u.usu_ape 
             FROM tesusu u
-            LEFT JOIN tmanom m ON u.nom_ced = m.nom_ced
         ";
 
         // Añadir condiciones de búsqueda si hay término
@@ -22,8 +21,8 @@
         if (!empty($search)) {
             $whereConditions[] = "(
                 u.nom_ced LIKE :search OR
-                m.nom_nom LIKE :search OR
-                m.nom_ape LIKE :search OR
+                u.usu_nom LIKE :search OR
+                u.usu_ape LIKE :search OR
                 u.usu_tip LIKE :search
             )";
             $params[':search'] = "%$search%";

@@ -1,5 +1,6 @@
 <?php
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     header('Content-Type: application/json');
 
@@ -18,6 +19,7 @@
         $dedId = (int)$data['ded_id'];
         $dedRaz = trim($data['ded_raz']);
         $dedPor = (float)$data['ded_por'];
+        $usuarioResponsable = $decoded->data->cedula; // Usuario del JWT
 
         if (empty($dedRaz) || $dedPor < 0) {
             throw new Exception('Datos inválidos');
@@ -27,6 +29,9 @@
         $pdo->beginTransaction();
 
         try {
+            // Establecer usuario responsable en MySQL
+            $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
+
             // Verificar si la deducción existe
             $checkQuery = $pdo->prepare("SELECT COUNT(*) FROM tesded WHERE ded_ide = :ded_id");
             $checkQuery->bindParam(':ded_id', $dedId, PDO::PARAM_INT);
@@ -36,7 +41,7 @@
                 throw new Exception('La deducción no existe');
             }
 
-            // Actualizar la deducción
+            // Actualizar la deducción (el trigger registrará el cambio)
             $query = $pdo->prepare("
                 UPDATE tesded SET
                     ded_raz = :ded_raz,

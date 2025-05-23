@@ -1,16 +1,21 @@
 <?php
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     header('Content-Type: application/json');
 
     try {
         $data = json_decode(file_get_contents('php://input'), true);
+        $usuarioResponsable = $decoded->data->cedula; // Cédula del JWT
         
         if (!$data || !isset($data['nvl_ide'])) {
             throw new Exception('Datos no recibidos o incompletos');
         }
 
         $nvl_ide = $data['nvl_ide'];
+
+        // Establecer usuario responsable en MySQL
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         // Verificar si el registro existe
         $checkQuery = $pdo->prepare("SELECT COUNT(*) FROM tesnvl WHERE nvl_ide = :nvl_ide");

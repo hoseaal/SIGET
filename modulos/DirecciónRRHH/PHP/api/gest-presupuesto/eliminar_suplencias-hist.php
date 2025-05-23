@@ -1,8 +1,10 @@
 <?php
     header('Content-Type: application/json');
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     $data = json_decode(file_get_contents('php://input'), true);
+    $usuarioResponsable = $decoded->data->cedula; // Cédula del usuario logueado desde JWT
 
     if (!isset($data['sup_ide'])) {
         echo json_encode(['success' => false, 'message' => 'ID de suplencia no proporcionado']);
@@ -12,6 +14,10 @@
     $sup_ide = $data['sup_ide'];
 
     try {
+
+        // Establecer el usuario responsable en MySQL
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
+
         // Verificar si existe la suplencia
         $checkStmt = $pdo->prepare("SELECT sup_ide FROM tessup WHERE sup_ide = ?");
         $checkStmt->execute([$sup_ide]);
