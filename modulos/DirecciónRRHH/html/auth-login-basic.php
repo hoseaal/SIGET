@@ -86,7 +86,6 @@
                   />
                 </div>
                 <div class="mb-3 form-password-toggle">
-                  <label for="password" class="form-label">Ingrese su Contraseña</label>
                   <div class="input-group input-group-merge">
                     <input
                       type="password"
@@ -103,6 +102,12 @@
                     <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                   </div>
                 </div>
+                <div class="d-flex justify-content-between">
+                    <label class="form-label" for="password">¿Problemas con su contraseña?</label>
+                    <a href="#">
+                      <small>Restablecer</small>
+                    </a>
+                  </div>
                 <div class="mb-3">
                   <button class="btn btn-primary d-grid w-100" type="submit">Iniciar Sesión</button>
                 </div>
@@ -171,7 +176,7 @@
                       if (tipo == 4) {
                           window.location.href = 'index.php';
                       } else if (tipo == 3) {
-                          window.location.href = 'index_usur.php';
+                          window.location.href = 'index.php';
                       } else if (tipo == 2) {
                           window.location.href = 'index_usur.php';
                       } else if (tipo == 1) {

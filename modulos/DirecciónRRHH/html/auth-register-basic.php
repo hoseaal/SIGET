@@ -1,18 +1,6 @@
 <?php
   require_once '../PHP/api/validar-jwt.php';
 
-  // Verificar si el token es válido y está presente
-  if (!isset($decoded) || !isset($decoded->data->tipo)) {
-      header('Location: auth-login-basic.php');
-      exit;
-  }
-
-  // Verificar si el tipo de usuario es 4
-  if ($decoded->data->tipo != '4') {
-      header('Location: auth-login-basic.php');
-      exit;
-  }
-
   // Exponer la cédula del usuario logueado como variable JavaScript
   echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
 ?>
