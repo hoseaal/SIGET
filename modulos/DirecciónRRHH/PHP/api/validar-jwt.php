@@ -10,8 +10,7 @@
     $token = $_COOKIE['token'] ?? null;
 
     if (!$token) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token no proporcionado.']);
+        header('Location: auth-login-basic.php');
         exit;
     }
 
@@ -22,7 +21,6 @@
         $GLOBALS['decoded'] = $decoded;
 
     } catch (Exception $e) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token inválido: ' . $e->getMessage()]);
+        header('Location: auth-login-basic.php');
         exit;
     }
