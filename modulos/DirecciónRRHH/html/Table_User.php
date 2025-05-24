@@ -1,9 +1,15 @@
 <?php
   require_once '../PHP/api/validar-jwt.php';
 
-  if ($decoded->data->tipo == '2') {
-      http_response_code(403);
-      echo 'Acceso denegado.';
+  // Verificar si el token es válido y está presente
+  if (!isset($decoded) || !isset($decoded->data->tipo)) {
+      header('Location: auth-login-basic.php');
+      exit;
+  }
+
+  // Verificar si el tipo de usuario es 4
+  if ($decoded->data->tipo != '4') {
+      header('Location: auth-login-basic.php');
       exit;
   }
 
