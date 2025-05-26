@@ -189,7 +189,7 @@
     $sheet->setCellValue('U1', 'DIFERENCIA DE JERARQUÍA');
     $sheet->setCellValue('V1', 'TOTAL DE ASIGNACIONES');
     $sheet->setCellValue('W1', 'TOTAL DE DEDUCCIONES');
-    $sheet->setCellValue('X1', 'SALARIO NETO'); // NUEVA COLUMNA AÑADIDA
+    $sheet->setCellValue('X1', 'SALARIO NETO');
     $sheet->setCellValue('Y1', 'ASIGNACIÓN MENSUAL');
     $sheet->setCellValue('Z1', 'SEMANAL PARA EL IVSS');
     $sheet->setCellValue('AA1', 'SEGURO EMPLEADO');
@@ -219,6 +219,25 @@
     ];
 
     $sheet->getStyle('A1:AH1')->applyFromArray($headerStyle);
+
+    // Arrays para el mapeo
+    $escala_antiguedad = [
+        23 => 0.30,  22 => 0.296, 21 => 0.278, 20 => 0.26,
+        19 => 0.244, 18 => 0.228, 17 => 0.212, 16 => 0.196,
+        15 => 0.18,  14 => 0.166, 13 => 0.152, 12 => 0.138,
+        11 => 0.124, 10 => 0.11,   9 => 0.098,  8 => 0.086,
+        7 => 0.074,  6 => 0.062,   5 => 0.05,   4 => 0.04,
+        3 => 0.03,   2 => 0.02,    1 => 0.01
+    ];
+
+    $escala_reconocimiento = [
+        23 => 0.60,  22 => 0.59, 21 => 0.56, 20 => 0.52,
+        19 => 0.49,  18 => 0.46, 17 => 0.42, 16 => 0.39,
+        15 => 0.36,  14 => 0.33, 13 => 0.30, 12 => 0.28,
+        11 => 0.25,  10 => 0.22,  9 => 0.20,  8 => 0.17,
+        7 => 0.15,   6 => 0.12,   5 => 0.10,  4 => 0.08,
+        3 => 0.06,   2 => 0.04,   1 => 0.02
+    ];
 
     // Llenar datos
     $row = 2;
@@ -279,106 +298,12 @@
             $anos_antiguedad = floor($dias_recientes / 365);
         }
         
-        $porcentaje_antiguedad = 0;
-        if ($anos_antiguedad >= 23) {
-            $porcentaje_antiguedad = 0.3;
-        } elseif ($anos_antiguedad == 22) {
-            $porcentaje_antiguedad = 0.296;
-        } elseif ($anos_antiguedad == 21) {
-            $porcentaje_antiguedad = 0.278;
-        } elseif ($anos_antiguedad == 20) {
-            $porcentaje_antiguedad = 0.26;
-        } elseif ($anos_antiguedad == 19) {
-            $porcentaje_antiguedad = 0.244;
-        } elseif ($anos_antiguedad == 18) {
-            $porcentaje_antiguedad = 0.228;
-        } elseif ($anos_antiguedad == 17) {
-            $porcentaje_antiguedad = 0.212;
-        } elseif ($anos_antiguedad == 16) {
-            $porcentaje_antiguedad = 0.196;
-        } elseif ($anos_antiguedad == 15) {
-            $porcentaje_antiguedad = 0.18;
-        } elseif ($anos_antiguedad == 14) {
-            $porcentaje_antiguedad = 0.166;
-        } elseif ($anos_antiguedad == 13) {
-            $porcentaje_antiguedad = 0.152;
-        } elseif ($anos_antiguedad == 12) {
-            $porcentaje_antiguedad = 0.138;
-        } elseif ($anos_antiguedad == 11) {
-            $porcentaje_antiguedad = 0.124;
-        } elseif ($anos_antiguedad == 10) {
-            $porcentaje_antiguedad = 0.11;
-        } elseif ($anos_antiguedad == 9) {
-            $porcentaje_antiguedad = 0.098;
-        } elseif ($anos_antiguedad == 8) {
-            $porcentaje_antiguedad = 0.086;
-        } elseif ($anos_antiguedad == 7) {
-            $porcentaje_antiguedad = 0.074;
-        } elseif ($anos_antiguedad == 6) {
-            $porcentaje_antiguedad = 0.062;
-        } elseif ($anos_antiguedad == 5) {
-            $porcentaje_antiguedad = 0.05;
-        } elseif ($anos_antiguedad == 4) {
-            $porcentaje_antiguedad = 0.04;
-        } elseif ($anos_antiguedad == 3) {
-            $porcentaje_antiguedad = 0.03;
-        } elseif ($anos_antiguedad == 2) {
-            $porcentaje_antiguedad = 0.02;
-        } elseif ($anos_antiguedad == 1) {
-            $porcentaje_antiguedad = 0.01;
-        }
-        
+        // Cálculo optimizado de porcentaje de antigüedad
+        $porcentaje_antiguedad = $escala_antiguedad[$anos_antiguedad] ?? ($anos_antiguedad >= 23 ? 0.30 : 0);
         $antiguedad_quincenal = round(($data['salario_base'] * $porcentaje_antiguedad) / 2, 2);
         
-        $porcentaje_reconocimiento = 0;
-        if ($anos_antiguedad >= 23) {
-            $porcentaje_reconocimiento = 0.60;
-        } elseif ($anos_antiguedad == 22) {
-            $porcentaje_reconocimiento = 0.59;
-        } elseif ($anos_antiguedad == 21) {
-            $porcentaje_reconocimiento = 0.56;
-        } elseif ($anos_antiguedad == 20) {
-            $porcentaje_reconocimiento = 0.52;
-        } elseif ($anos_antiguedad == 19) {
-            $porcentaje_reconocimiento = 0.49;
-        } elseif ($anos_antiguedad == 18) {
-            $porcentaje_reconocimiento = 0.46;
-        } elseif ($anos_antiguedad == 17) {
-            $porcentaje_reconocimiento = 0.42;
-        } elseif ($anos_antiguedad == 16) {
-            $porcentaje_reconocimiento = 0.39;
-        } elseif ($anos_antiguedad == 15) {
-            $porcentaje_reconocimiento = 0.36;
-        } elseif ($anos_antiguedad == 14) {
-            $porcentaje_reconocimiento = 0.33;
-        } elseif ($anos_antiguedad == 13) {
-            $porcentaje_reconocimiento = 0.30;
-        } elseif ($anos_antiguedad == 12) {
-            $porcentaje_reconocimiento = 0.28;
-        } elseif ($anos_antiguedad == 11) {
-            $porcentaje_reconocimiento = 0.25;
-        } elseif ($anos_antiguedad == 10) {
-            $porcentaje_reconocimiento = 0.22;
-        } elseif ($anos_antiguedad == 9) {
-            $porcentaje_reconocimiento = 0.20;
-        } elseif ($anos_antiguedad == 8) {
-            $porcentaje_reconocimiento = 0.17;
-        } elseif ($anos_antiguedad == 7) {
-            $porcentaje_reconocimiento = 0.15;
-        } elseif ($anos_antiguedad == 6) {
-            $porcentaje_reconocimiento = 0.12;
-        } elseif ($anos_antiguedad == 5) {
-            $porcentaje_reconocimiento = 0.10;
-        } elseif ($anos_antiguedad == 4) {
-            $porcentaje_reconocimiento = 0.08;
-        } elseif ($anos_antiguedad == 3) {
-            $porcentaje_reconocimiento = 0.06;
-        } elseif ($anos_antiguedad == 2) {
-            $porcentaje_reconocimiento = 0.04;
-        } elseif ($anos_antiguedad == 1) {
-            $porcentaje_reconocimiento = 0.02;
-        }
-        
+        // Cálculo optimizado de prima de reconocimiento
+        $porcentaje_reconocimiento = $escala_reconocimiento[$anos_antiguedad] ?? ($anos_antiguedad >= 23 ? 0.60 : 0);
         $prima_reconocimiento = round(($data['salario_historico'] * $porcentaje_reconocimiento) / 2, 2);
 
         // Cálculo de diferencias por suplencia
@@ -538,7 +463,7 @@
         
         $total_deducciones = round($total_deducciones, 2);
 
-        // CÁLCULO DEL SALARIO NETO (NUEVA COLUMNA)
+        // CÁLCULO DEL SALARIO NETO
         $salario_neto = round($total_asignaciones - $total_deducciones, 2);
 
         $sheet->setCellValue('A' . $row, $contador);
@@ -565,7 +490,7 @@
         $sheet->setCellValue('U' . $row, $diferencia_jerarquia);
         $sheet->setCellValue('V' . $row, $total_asignaciones);
         $sheet->setCellValue('W' . $row, $total_deducciones);
-        $sheet->setCellValue('X' . $row, $salario_neto); // NUEVA COLUMNA AÑADIDA
+        $sheet->setCellValue('X' . $row, $salario_neto);
         $sheet->setCellValue('Y' . $row, $asignacion_mensual);
         $sheet->setCellValue('Z' . $row, $semanal_ivss);
         $sheet->setCellValue('AA' . $row, $seguro_empleado);
@@ -617,7 +542,7 @@
     $sheet->getColumnDimension('U')->setWidth(23); // DIFERENCIA DE JERARQUÍA
     $sheet->getColumnDimension('V')->setWidth(12); // TOTAL DE ASIGNACIONES
     $sheet->getColumnDimension('W')->setWidth(12); // TOTAL DE DEDUCCIONES
-    $sheet->getColumnDimension('X')->setWidth(12); // SALARIO NETO (NUEVA COLUMNA)
+    $sheet->getColumnDimension('X')->setWidth(12); // SALARIO NETO
     $sheet->getColumnDimension('Y')->setWidth(12); // ASIGNACIÓN MENSUAL
     $sheet->getColumnDimension('Z')->setWidth(12); // SEMANAL PARA EL IVSS
     $sheet->getColumnDimension('AA')->setWidth(12); // SEGURO EMPLEADO

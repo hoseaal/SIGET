@@ -1,6 +1,7 @@
 <?php
     header('Content-Type: application/json');
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     try {
         // Obtener datos del cuerpo de la solicitud
@@ -11,6 +12,12 @@
             throw new Exception('ID del cargo es requerido');
         }
         
+        // Obtener usuario responsable del JWT
+        $usuarioResponsable = $decoded->data->cedula;
+        
+        // Establecer variable de usuario en MySQL
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
+
         $positionId = (int)$data['position_id'];
         
         // Verificar si el cargo existe

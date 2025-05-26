@@ -105,12 +105,17 @@
             <li class="menu-item">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-lock-open"></i>
-                <div data-i18n="permisos">Permisologia</div>
+                <div data-i18n="permisos">Privilegios</div>
               </a>
               <ul class="menu-sub">
                 <li class="menu-item">
                   <a href="#" class="menu-link" target="_blank">
-                    <div data-i18n="Basic">Otorgar Permisos</div>
+                    <div data-i18n="Basic">Vista de Permisos</div>
+                  </a>
+                </li>
+                <li class="menu-item">
+                  <a href="Table_Mod.php" class="menu-link" target="_blank">
+                    <div data-i18n="Basic">Tabla de Modificaciones</div>
                   </a>
                 </li>
               </ul>

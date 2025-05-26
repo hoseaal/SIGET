@@ -2,9 +2,15 @@
   require_once '../conexion/conexion.php';
   require_once '../PHP/api/validar-jwt.php';
 
-  if ($decoded->data->tipo == '2') {
-      http_response_code(403);
-      echo 'Acceso denegado.';
+  // Verificar si el token es válido y está presente
+  if (!isset($decoded) || !isset($decoded->data->tipo)) {
+      header('Location: auth-login-basic.php');
+      exit;
+  }
+
+  // Verificar si el tipo de usuario es 4
+  if ($decoded->data->tipo != '4') {
+      header('Location: auth-login-basic.php');
       exit;
   }
 ?>
@@ -145,43 +151,104 @@
                     <div class="card h-100">
                         <div class="card-header d-flex align-items-center justify-content-between">
                             <h5 class="card-title m-0 me-2">Últimas Modificaciones</h5>
-                            <div class="dropdown">
-                                <button class="btn p-0" type="button" id="payrollDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="payrollDropdown">
-                                    <a class="dropdown-item" href="javascript:void(0);">Ver más</a>
-                                </div>
-                            </div>
                         </div>
                         <div class="card-body">
                             <ul class="p-0 m-0">
                                 <?php
-                                $stmt = $pdo->query("
-                                    SELECT 
-                                        bit_operacion,
-                                        bit_usu_ide,
-                                        bit_usuario_responsable,
-                                        bit_detalles,
-                                        bit_fecha
-                                    FROM bit_usu
+                                // Consulta unificada para todas las tablas de bitácora
+                                $query = "
+                                    (SELECT 'usu' as tipo, bit_operacion, bit_usu_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_usu)
+                                    UNION ALL
+                                    (SELECT 'nom' as tipo, bit_operacion, bit_nom_ced as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_nom)
+                                    UNION ALL
+                                    (SELECT 'cet' as tipo, bit_operacion, bit_cet_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_cet)
+                                    UNION ALL
+                                    (SELECT 'ona' as tipo, bit_operacion, bit_ona_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_ona)
+                                    UNION ALL
+                                    (SELECT 'nvl' as tipo, bit_operacion, bit_nvl_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_nvl)
+                                    UNION ALL
+                                    (SELECT 'sup' as tipo, bit_operacion, bit_sup_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_sup)
+                                    UNION ALL
+                                    (SELECT 'cep' as tipo, bit_operacion, bit_cep_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_cep)
+                                    UNION ALL
+                                    (SELECT 'ded' as tipo, bit_operacion, bit_ded_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_ded)
+                                    UNION ALL
+                                    (SELECT 'pri' as tipo, bit_operacion, bit_pri_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_pri)
                                     ORDER BY bit_fecha DESC
-                                    LIMIT 7
-                                ");
+                                    LIMIT 3
+                                ";
+                                
+                                $stmt = $pdo->query($query);
                                 $modificaciones = $stmt->fetchAll();
 
-                                foreach ($modificaciones as $mod):
-                                    $icono = match($mod['bit_operacion']) {
-                                        'INSERT' => 'insert_usu.png',
-                                        'UPDATE' => 'update_usu.png',
-                                        'DELETE' => 'delete_usu.png',
-                                        default => 'cc-success.png'
-                                    };
-                                    $texto = match($mod['bit_operacion']) {
-                                        'INSERT' => 'Inserción de usuario',
-                                        'UPDATE' => 'Actualización de usuario',
-                                        'DELETE' => 'Eliminación de usuario'
-                                    };
+                                if (empty($modificaciones)): ?>
+                                    <li class="d-flex mb-4 pb-1 justify-content-center">
+                                        <div class="text-center">
+                                            <small class="text-muted">No han ocurrido cambios en el sistema</small>
+                                        </div>
+                                    </li>
+                                <?php else:
+                                    foreach ($modificaciones as $mod):
+                                        // Determinar icono y texto según el tipo de operación y tabla
+                                        $icono = match($mod['bit_operacion']) {
+                                            'INSERT' => 'insert_usu.png',
+                                            'UPDATE' => 'update_usu.png',
+                                            'DELETE' => 'delete_usu.png',
+                                            default => 'cc-success.png'
+                                        };
+                                        
+                                        // Texto descriptivo según la tabla y operación
+                                        $texto = match($mod['tipo']) {
+                                            'usu' => match($mod['bit_operacion']) {
+                                                'INSERT' => 'Inserción de usuario',
+                                                'UPDATE' => 'Actualización de usuario',
+                                                'DELETE' => 'Eliminación de usuario'
+                                            },
+                                            'nom' => match($mod['bit_operacion']) {
+                                                'INSERT' => 'Inserción en nómina',
+                                                'UPDATE' => 'Actualización en nómina',
+                                                'DELETE' => 'Eliminación en nómina'
+                                            },
+                                            'cet' => match($mod['bit_operacion']) {
+                                                'INSERT' => 'Nuevo cargo CET',
+                                                'UPDATE' => 'Actualización de cargo CET',
+                                                'DELETE' => 'Eliminación de cargo CET'
+                                            },
+                                            'ona' => match($mod['bit_operacion']) {
+                                                'INSERT' => 'Nuevo cargo ONAPRE',
+                                                'UPDATE' => 'Actualización de cargo ONAPRE',
+                                                'DELETE' => 'Eliminación de cargo ONAPRE'
+                                            },
+                                            'nvl' => match($mod['bit_operacion']) {
+                                                'UPDATE' => 'Actualización de nivel',
+                                                'DELETE' => 'Eliminación de nivel'
+                                            },
+                                            'sup' => match($mod['bit_operacion']) {
+                                                'INSERT' => 'Nueva suplencia',
+                                                'UPDATE' => 'Actualización de suplencia',
+                                                'DELETE' => 'Eliminación de suplencia'
+                                            },
+                                            'cep' => match($mod['bit_operacion']) {
+                                                'INSERT' => 'Nuevo registro CEP',
+                                                'UPDATE' => 'Actualización de registro CEP',
+                                                'DELETE' => 'Eliminación de registro CEP'
+                                            },
+                                            'ded' => match($mod['bit_operacion']) {
+                                                'UPDATE' => 'Actualización de deducción',
+                                                'DELETE' => 'Eliminación de deducción'
+                                            },
+                                            'pri' => match($mod['bit_operacion']) {
+                                                'UPDATE' => 'Actualización de prima',
+                                                'DELETE' => 'Eliminación de prima'
+                                            },
+                                            default => 'Modificación en el sistema'
+                                        };
+                                        
+                                        // Mostrar ID según el tipo de registro
+                                        $idTexto = match($mod['tipo']) {
+                                            'usu', 'nom' => 'CI: ' . htmlspecialchars($mod['id']),
+                                            default => 'ID: ' . htmlspecialchars($mod['id'])
+                                        };
                                 ?>
                                 <li class="d-flex mb-4 pb-1">
                                     <div class="avatar flex-shrink-0 me-3">
@@ -190,7 +257,7 @@
                                     <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                                         <div class="me-2">
                                             <small class="text-muted d-block mb-1"><?= $texto ?></small>
-                                            <h6 class="mb-0">CI: <?= htmlspecialchars($mod['bit_usu_ide']) ?></h6>
+                                            <h6 class="mb-0"><?= $idTexto ?></h6>
                                             <small>Realizado por: <?= htmlspecialchars($mod['bit_usuario_responsable']) ?></small>
                                         </div>
                                         <div class="user-progress">
@@ -198,7 +265,10 @@
                                         </div>
                                     </div>
                                 </li>
-                                <?php endforeach; ?>
+                                <?php 
+                                    endforeach;
+                                endif; 
+                                ?>
                             </ul>
                         </div>
                     </div>

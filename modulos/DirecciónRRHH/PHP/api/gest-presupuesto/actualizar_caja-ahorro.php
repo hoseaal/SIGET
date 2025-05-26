@@ -1,6 +1,7 @@
 <?php
     header('Content-Type: application/json');
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     try {
         $data = json_decode(file_get_contents('php://input'), true);
@@ -13,6 +14,11 @@
         $cep_ide = $data['cep_ide'];
         $nom_ced = $data['nom_ced'];
         $cep_activa = isset($data['cep_activa']) ? (int)$data['cep_activa'] : 1;
+
+        $usuarioResponsable = $decoded->data->cedula; // Cédula del usuario logueado desde JWT
+
+        // Establecer usuario responsable para el trigger
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         // Verificar si la cédula existe en tmanom
         $checkCedula = "SELECT COUNT(*) FROM tmanom WHERE nom_ced = :nom_ced";

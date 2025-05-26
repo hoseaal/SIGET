@@ -600,6 +600,86 @@ CREATE TABLE `bit_usu` (
   `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `bit_nom` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada (tmanom)',
+  `bit_operacion` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_nom_ced` VARCHAR(10) COMMENT 'Cédula del empleado afectado',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `bit_cet` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada',
+  `bit_operacion` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_cet_ide` INT COMMENT 'ID de cargo CET afectado',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `bit_ona` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada',
+  `bit_operacion` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_ona_ide` INT COMMENT 'ID de cargo ONAPRE afectado',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `bit_nvl` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada',
+  `bit_operacion` ENUM('UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_nvl_ide` INT COMMENT 'ID de nivel afectado (nvl_ide)',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `bit_sup` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada (tessup)',
+  `bit_operacion` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_sup_ide` INT COMMENT 'ID de suplencia afectada (sup_ide)',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `bit_cep` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada (tescep)',
+  `bit_operacion` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_cep_ide` INT COMMENT 'ID de registro afectado (cep_ide)',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Bitácora de cambios en tescep';
+
+CREATE TABLE `bit_ded` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada (tesded)',
+  `bit_operacion` ENUM('UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_ded_ide` INT COMMENT 'ID de deducción afectada (ded_ide)',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `bit_pri` (
+  `bit_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada (tespri)',
+  `bit_operacion` ENUM('UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
+  `bit_pri_ide` INT NOT NULL COMMENT 'ID de prima afectada (pri_ide)',
+  `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
+  `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
+  `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 /* VOLCADO DE LA BASE DE DATOS */
 
 -- TABLA TESCET
@@ -1377,3 +1457,631 @@ INSERT INTO `tmafoa` (`foa_ide`, `foa_nom`) VALUES
 
     DELIMITER ;
   /* FIN DE TRIGGER'S DE LA TABLA TESUSU */
+
+  /* INICIO DE TRIGGER'S DE LA TABLA TMANOM*/
+    DELIMITER //
+
+    -- Trigger después de INSERT
+    CREATE TRIGGER `despues_insertar_nomina`
+    AFTER INSERT ON `tmanom`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_nom` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_nom_ced`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tmanom',
+            'INSERT',
+            NEW.nom_ced,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'nuevo', JSON_OBJECT(
+                    'nombre', NEW.nom_nom,
+                    'apellidos', NEW.nom_ape,
+                    'departamento', NEW.dep_ide
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de UPDATE
+    CREATE TRIGGER `despues_actualizar_nomina`
+    AFTER UPDATE ON `tmanom`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_nom` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_nom_ced`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tmanom',
+            'UPDATE',
+            NEW.nom_ced,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'antes', JSON_OBJECT(
+                    'nombre', OLD.nom_nom,
+                    'apellidos', OLD.nom_ape,
+                    'departamento', OLD.dep_ide
+                ),
+                'despues', JSON_OBJECT(
+                    'nombre', NEW.nom_nom,
+                    'apellidos', NEW.nom_ape,
+                    'departamento', NEW.dep_ide
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de DELETE
+    CREATE TRIGGER `despues_eliminar_nomina`
+    AFTER DELETE ON `tmanom`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_nom` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_nom_ced`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tmanom',
+            'DELETE',
+            OLD.nom_ced,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'eliminado', JSON_OBJECT(
+                    'nombre', OLD.nom_nom,
+                    'apellidos', OLD.nom_ape,
+                    'departamento', OLD.dep_ide
+                )
+            )
+        );
+    END//
+
+    DELIMITER ;
+  /* FIN DE TRIGGER'S DE LA TABLA TMANOM*/
+
+  /* INICIO DE TRIGGER'S DE LA TABLA TESCET*/
+    DELIMITER //
+
+    -- Trigger después de INSERT
+    CREATE TRIGGER `despues_insertar_cargo_cet`
+    AFTER INSERT ON `tescet`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_cet` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_cet_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tescet',
+            'INSERT',
+            NEW.cet_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'nuevo', JSON_OBJECT(
+                    'cet_car', NEW.cet_car
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de UPDATE
+    CREATE TRIGGER `despues_actualizar_cargo_cet`
+    AFTER UPDATE ON `tescet`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_cet` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_cet_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tescet',
+            'UPDATE',
+            NEW.cet_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'antes', JSON_OBJECT(
+                    'cet_car', OLD.cet_car
+                ),
+                'despues', JSON_OBJECT(
+                    'cet_car', NEW.cet_car
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de DELETE
+    CREATE TRIGGER `despues_eliminar_cargo_cet`
+    AFTER DELETE ON `tescet`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_cet` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_cet_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tescet',
+            'DELETE',
+            OLD.cet_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'eliminado', JSON_OBJECT(
+                    'cet_car', OLD.cet_car
+                )
+            )
+        );
+    END//
+
+    DELIMITER ;
+  /* FIN DE TRIGGER'S DE LA TABLA TESCET*/
+
+  /* INICIO DE TRIGGER'S DE LA TABLA TESONA*/
+    DELIMITER //
+
+    -- Trigger después de INSERT
+    CREATE TRIGGER `despues_insertar_cargo_onapre`
+    AFTER INSERT ON `tesona`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_ona` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_ona_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesona',
+            'INSERT',
+            NEW.ona_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'nuevo', JSON_OBJECT(
+                    'ona_car', NEW.ona_car
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de UPDATE
+    CREATE TRIGGER `despues_actualizar_cargo_onapre`
+    AFTER UPDATE ON `tesona`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_ona` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_ona_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesona',
+            'UPDATE',
+            NEW.ona_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'antes', JSON_OBJECT(
+                    'ona_car', OLD.ona_car
+                ),
+                'despues', JSON_OBJECT(
+                    'ona_car', NEW.ona_car
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de DELETE
+    CREATE TRIGGER `despues_eliminar_cargo_onapre`
+    AFTER DELETE ON `tesona`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_ona` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_ona_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesona',
+            'DELETE',
+            OLD.ona_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'eliminado', JSON_OBJECT(
+                    'ona_car', OLD.ona_car
+                )
+            )
+        );
+    END//
+
+    DELIMITER ;
+  /* FIN DE TRIGGER'S DE LA TABLA TESONA*/
+
+  /* INICIO DE TRIGGER'S DE LA TABLA TESNVL*/
+    DELIMITER //
+
+    -- Trigger después de UPDATE
+    CREATE TRIGGER `despues_actualizar_nivel`
+    AFTER UPDATE ON `tesnvl`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_nvl` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_nvl_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesnvl',
+            'UPDATE',
+            NEW.nvl_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'antes', JSON_OBJECT(
+                    'nvl_ran', OLD.nvl_ran,
+                    'nvl_sal', OLD.nvl_sal,
+                    'ona_ide', OLD.ona_ide
+                ),
+                'despues', JSON_OBJECT(
+                    'nvl_ran', NEW.nvl_ran,
+                    'nvl_sal', NEW.nvl_sal,
+                    'ona_ide', NEW.ona_ide
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de DELETE
+    CREATE TRIGGER `despues_eliminar_nivel`
+    AFTER DELETE ON `tesnvl`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_nvl` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_nvl_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesnvl',
+            'DELETE',
+            OLD.nvl_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'eliminado', JSON_OBJECT(
+                    'nvl_ran', OLD.nvl_ran,
+                    'nvl_sal', OLD.nvl_sal,
+                    'ona_ide', OLD.ona_ide
+                )
+            )
+        );
+    END//
+
+    DELIMITER ;
+  /* FIN DE TRIGGER'S DE LA TABLA TESNVL*/
+
+  /* INICIO DE TRIGGER'S DE LA TABLA TESSUP*/
+    DELIMITER //
+
+    -- Trigger después de INSERT
+    CREATE TRIGGER `despues_insertar_suplencia`
+    AFTER INSERT ON `tessup`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_sup` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_sup_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tessup',
+            'INSERT',
+            NEW.sup_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'nuevo', JSON_OBJECT(
+                    'nom_ced', NEW.nom_ced,
+                    'sup_fec_ini', NEW.sup_fec_ini,
+                    'sup_fec_fin', NEW.sup_fec_fin,
+                    'cet_ide', NEW.cet_ide,
+                    'ona_ide', NEW.ona_ide,
+                    'nvl_ran', NEW.nvl_ran,
+                    'dep_ide', NEW.dep_ide,
+                    'sup_activa', NEW.sup_activa
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de UPDATE
+    CREATE TRIGGER `despues_actualizar_suplencia`
+    AFTER UPDATE ON `tessup`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_sup` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_sup_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tessup',
+            'UPDATE',
+            NEW.sup_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'antes', JSON_OBJECT(
+                    'nom_ced', OLD.nom_ced,
+                    'sup_fec_ini', OLD.sup_fec_ini,
+                    'sup_fec_fin', OLD.sup_fec_fin,
+                    'cet_ide', OLD.cet_ide,
+                    'ona_ide', OLD.ona_ide,
+                    'nvl_ran', OLD.nvl_ran,
+                    'dep_ide', OLD.dep_ide,
+                    'sup_activa', OLD.sup_activa
+                ),
+                'despues', JSON_OBJECT(
+                    'nom_ced', NEW.nom_ced,
+                    'sup_fec_ini', NEW.sup_fec_ini,
+                    'sup_fec_fin', NEW.sup_fec_fin,
+                    'cet_ide', NEW.cet_ide,
+                    'ona_ide', NEW.ona_ide,
+                    'nvl_ran', NEW.nvl_ran,
+                    'dep_ide', NEW.dep_ide,
+                    'sup_activa', NEW.sup_activa
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de DELETE
+    CREATE TRIGGER `despues_eliminar_suplencia`
+    AFTER DELETE ON `tessup`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_sup` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_sup_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tessup',
+            'DELETE',
+            OLD.sup_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'eliminado', JSON_OBJECT(
+                    'nom_ced', OLD.nom_ced,
+                    'sup_fec_ini', OLD.sup_fec_ini,
+                    'sup_fec_fin', OLD.sup_fec_fin,
+                    'cet_ide', OLD.cet_ide,
+                    'ona_ide', OLD.ona_ide,
+                    'nvl_ran', OLD.nvl_ran,
+                    'dep_ide', OLD.dep_ide,
+                    'sup_activa', OLD.sup_activa
+                )
+            )
+        );
+    END//
+
+    DELIMITER ;
+  /* FIN DE TRIGGER'S DE LA TABLA TESSUP*/
+
+  /* INICIO DE TRIGGER'S DE LA TABLA TESCEP*/
+  DELIMITER //
+
+  -- Trigger después de INSERT
+  CREATE TRIGGER `despues_insertar_caja_ahorro`
+  AFTER INSERT ON `tescep`
+  FOR EACH ROW
+  BEGIN
+      INSERT INTO `bit_cep` (
+          `bit_tabla`,
+          `bit_operacion`,
+          `bit_cep_ide`,
+          `bit_usuario_responsable`,
+          `bit_detalles`
+      ) VALUES (
+          'tescep',
+          'INSERT',
+          NEW.cep_ide,
+          IFNULL(@usuario_php, 'SISTEMA'),
+          JSON_OBJECT(
+              'nuevo', JSON_OBJECT(
+                  'cep_activa', NEW.cep_activa,
+                  'nom_ced', NEW.nom_ced
+              )
+          )
+      );
+  END//
+
+  -- Trigger después de UPDATE
+  CREATE TRIGGER `despues_actualizar_caja_ahorro`
+  AFTER UPDATE ON `tescep`
+  FOR EACH ROW
+  BEGIN
+      INSERT INTO `bit_cep` (
+          `bit_tabla`,
+          `bit_operacion`,
+          `bit_cep_ide`,
+          `bit_usuario_responsable`,
+          `bit_detalles`
+      ) VALUES (
+          'tescep',
+          'UPDATE',
+          NEW.cep_ide,
+          IFNULL(@usuario_php, 'SISTEMA'),
+          JSON_OBJECT(
+              'antes', JSON_OBJECT(
+                  'cep_activa', OLD.cep_activa,
+                  'nom_ced', OLD.nom_ced
+              ),
+              'despues', JSON_OBJECT(
+                  'cep_activa', NEW.cep_activa,
+                  'nom_ced', NEW.nom_ced
+              )
+          )
+      );
+  END//
+
+  -- Trigger después de DELETE
+  CREATE TRIGGER `despues_eliminar_caja_ahorro`
+  AFTER DELETE ON `tescep`
+  FOR EACH ROW
+  BEGIN
+      INSERT INTO `bit_cep` (
+          `bit_tabla`,
+          `bit_operacion`,
+          `bit_cep_ide`,
+          `bit_usuario_responsable`,
+          `bit_detalles`
+      ) VALUES (
+          'tescep',
+          'DELETE',
+          OLD.cep_ide,
+          IFNULL(@usuario_php, 'SISTEMA'),
+          JSON_OBJECT(
+              'eliminado', JSON_OBJECT(
+                  'cep_activa', OLD.cep_activa,
+                  'nom_ced', OLD.nom_ced
+              )
+          )
+      );
+  END//
+
+  DELIMITER ;
+  /* FIN DE TRIGGER'S DE LA TABLA TESCEP*/
+
+  /* INICIO DE TRIGGER'S DE LA TABLA TESDED*/
+    DELIMITER //
+
+    -- Trigger después de ACTUALIZAR deducción
+    CREATE TRIGGER `despues_actualizar_deduccion`
+    AFTER UPDATE ON `tesded`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_ded` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_ded_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesded',
+            'UPDATE',
+            NEW.ded_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'antes', JSON_OBJECT(
+                    'ded_raz', OLD.ded_raz,
+                    'ded_por', OLD.ded_por
+                ),
+                'despues', JSON_OBJECT(
+                    'ded_raz', NEW.ded_raz,
+                    'ded_por', NEW.ded_por
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de ELIMINAR deducción
+    CREATE TRIGGER `despues_eliminar_deduccion`
+    AFTER DELETE ON `tesded`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_ded` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_ded_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tesded',
+            'DELETE',
+            OLD.ded_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'eliminado', JSON_OBJECT(
+                    'ded_raz', OLD.ded_raz,
+                    'ded_por', OLD.ded_por
+                )
+            )
+        );
+    END//
+
+    DELIMITER ;
+  /* FIN DE TRIGGER'S DE LA TABLA TESDED*/
+
+  /* INICIO DE TRIGGER'S DE LA TABLA TESPRI*/
+    DELIMITER //
+
+    -- Trigger después de UPDATE
+    CREATE TRIGGER `despues_actualizar_prima`
+    AFTER UPDATE ON `tespri`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_pri` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_pri_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tespri',
+            'UPDATE',
+            NEW.pri_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'antes', JSON_OBJECT(
+                    'pri_raz', OLD.pri_raz,
+                    'pri_por', OLD.pri_por
+                ),
+                'despues', JSON_OBJECT(
+                    'pri_raz', NEW.pri_raz,
+                    'pri_por', NEW.pri_por
+                )
+            )
+        );
+    END//
+
+    -- Trigger después de DELETE
+    CREATE TRIGGER `despues_eliminar_prima`
+    AFTER DELETE ON `tespri`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_pri` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_pri_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tespri',
+            'DELETE',
+            OLD.pri_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'eliminado', JSON_OBJECT(
+                    'pri_raz', OLD.pri_raz,
+                    'pri_por', OLD.pri_por
+                )
+            )
+        );
+    END//
+
+    DELIMITER ;
+  /* FIN DE TRIGGER'S DE LA TABLA TESPRI*/

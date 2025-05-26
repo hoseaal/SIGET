@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return users.filter(user => {
             return (
                 (user.nom_ced && user.nom_ced.toLowerCase().includes(lowerSearchTerm)) ||
-                (user.nom_nom && user.nom_nom.toLowerCase().includes(lowerSearchTerm)) ||
-                (user.nom_ape && user.nom_ape.toLowerCase().includes(lowerSearchTerm)) ||
+                (user.usu_nom && user.usu_nom.toLowerCase().includes(lowerSearchTerm)) ||
+                (user.usu_ape && user.usu_ape.toLowerCase().includes(lowerSearchTerm)) ||
                 (getUserTypeText(user.usu_tip) && getUserTypeText(user.usu_tip).toLowerCase().includes(lowerSearchTerm))
             );
         });
@@ -104,9 +104,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para convertir el tipo de usuario a texto
     function getUserTypeText(type) {
         const types = {
-            1: 'Administrador',
+            4: 'Administrador',
+            3: 'Jefe de Área',
             2: 'Trabajador',
-            3: 'Jefe de Área'
+            1: 'Temporal',
+            0: 'Visualizador'
+            
         };
         return types[type] || 'Desconocido';
     }
@@ -163,8 +166,8 @@ document.addEventListener('DOMContentLoaded', function() {
             row.innerHTML = `
                 <td><strong>${rowNumber}</strong></td>
                 <td>${user.nom_ced}</td>
-                <td>${user.nom_nom}</td>
-                <td>${user.nom_ape}</td>
+                <td>${user.usu_nom}</td>
+                <td>${user.usu_ape}</td>
                 <td>${getUserTypeText(user.usu_tip)}</td>
                 <td>
                     <div class="dropdown">
@@ -175,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <a class="dropdown-item edit-user-btn" href="javascript:void(0);" data-userid="${user.usu_ide}">
                                 <i class="bx bx-edit-alt me-1"></i> Editar
                             </a>
-                            <a class="dropdown-item delete-user-btn" href="javascript:void(0);" data-userid="${user.usu_ide}" data-name="${user.nom_nom} ${user.nom_ape}">
+                            <a class="dropdown-item delete-user-btn" href="javascript:void(0);" data-userid="${user.usu_ide}" data-name="${user.usu_nom} ${user.usu_ape}">
                                 <i class="bx bx-trash me-1"></i> Eliminar
                             </a>
                         </div>
@@ -528,8 +531,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // datos personales (solo lectura)
         document.getElementById('cedula').value = userData.nom_ced || '';
-        document.getElementById('nombre').value = userData.nom_nom || '';
-        document.getElementById('apellidos').value = userData.nom_ape || '';
+        document.getElementById('nombre').value = userData.usu_nom || '';
+        document.getElementById('apellidos').value = userData.usu_ape || '';
         
         // Llenar tipo de usuario (editable)
         const userTypeSelect = document.getElementById('cargocet');
@@ -565,7 +568,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Validación básica
             if (!updatedData.user_type) {
-                throw new Error('Por favor seleccione un tipo de usuario');
+                throw new Error('Seleccione un tipo de usuario');
             }
             
             // Llamada a la API para guardar cambios
@@ -600,8 +603,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(result.message || 'Error al guardar los cambios');
             }
         } catch (error) {
-            console.error('Error al guardar:', error);
-            alert('Error al guardar: ' + error.message);
+            console.error('Por favor:', error);
+            alert('Por favor: ' + error.message);
         } finally {
             // Restaurar el botón
             saveButton.innerHTML = originalText;

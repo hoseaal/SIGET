@@ -1,29 +1,28 @@
 <?php
     require_once '../../../conexion/conexion.php';
-
+    require_once '../validar-jwt-js.php';
     header('Content-Type: application/json');
 
     try {
         $data = json_decode(file_get_contents('php://input'), true);
+        $usuarioResponsable = $decoded->data->cedula; // Cédula del JWT
         
         if (!$data || !isset($data['pri_ide']) || !isset($data['pri_raz']) || !isset($data['pri_por'])) {
-            throw new Exception('Datos incompletos para la actualización');
+            throw new Exception('Datos incompletos');
         }
-
-        $pri_ide = $data['pri_ide'];
-        $pri_raz = $data['pri_raz'];
-        $pri_por = $data['pri_por'];
 
         // Validar datos
-        if (empty($pri_raz) || !is_numeric($pri_por)) {
+        if (empty($data['pri_raz']) || !is_numeric($data['pri_por'])) {
             throw new Exception('Datos inválidos');
         }
+
+        // Establecer usuario responsable
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         // Iniciar transacción
         $pdo->beginTransaction();
 
         try {
-            // Preparar la consulta de actualización
             $query = $pdo->prepare("
                 UPDATE tespri SET
                     pri_raz = :pri_raz,
@@ -31,20 +30,18 @@
                 WHERE pri_ide = :pri_ide
             ");
             
-            $query->bindParam(':pri_raz', $pri_raz);
-            $query->bindParam(':pri_por', $pri_por);
-            $query->bindParam(':pri_ide', $pri_ide);
-            
-            if (!$query->execute()) {
-                throw new Exception('Error al ejecutar la actualización');
-            }
+            $query->execute([
+                ':pri_raz' => $data['pri_raz'],
+                ':pri_por' => $data['pri_por'],
+                ':pri_ide' => $data['pri_ide']
+            ]);
 
             $pdo->commit();
 
             echo json_encode([
                 'success' => true,
                 'message' => 'Asignación actualizada correctamente',
-                'pri_ide' => $pri_ide
+                'pri_ide' => $data['pri_ide']
             ]);
             
         } catch (Exception $e) {

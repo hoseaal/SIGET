@@ -11,18 +11,20 @@
 
     if (!$token) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token no proporcionado.']);
-        exit;
+        header('Content-Type: application/json');
+        die(json_encode(['success' => false, 'message' => 'Token no proporcionado.']));
     }
 
     try {
-        // Hacemos que $decoded esté disponible globalmente
         $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-        // Lo guardamos en una variable global para usarla en otras partes
         $GLOBALS['decoded'] = $decoded;
-
+        
+        // Restablecer código de respuesta exitoso
+        http_response_code(200);
+        
     } catch (Exception $e) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token inválido: ' . $e->getMessage()]);
-        exit;
+        header('Content-Type: application/json');
+        die(json_encode(['success' => false, 'message' => 'Token inválido: ' . $e->getMessage()]));
     }
+?>

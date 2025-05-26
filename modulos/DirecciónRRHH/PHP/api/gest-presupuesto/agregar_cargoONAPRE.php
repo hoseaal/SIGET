@@ -1,8 +1,15 @@
 <?php
     header('Content-Type: application/json');
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     try {
+        // Obtener usuario responsable del JWT
+        $usuarioResponsable = $decoded->data->cedula;
+        
+        // Establecer variable de usuario en MySQL
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
+
         // Obtener datos del cuerpo de la solicitud
         $data = json_decode(file_get_contents('php://input'), true);
         
@@ -22,7 +29,7 @@
             throw new Exception('El cargo ONAPRE ya existe');
         }
         
-        // Insertar nuevo cargo
+        // Insertar nuevo cargo (el trigger registrará automáticamente el cambio)
         $stmt = $pdo->prepare("INSERT INTO tesona (ona_car) VALUES (:positionName)");
         $stmt->bindParam(':positionName', $positionName);
         $stmt->execute();

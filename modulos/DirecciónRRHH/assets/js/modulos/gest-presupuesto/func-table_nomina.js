@@ -12,6 +12,31 @@ document.addEventListener('DOMContentLoaded', function() {
     let isSearching = false;
     let currentSearchTerm = '';
 
+    // Función para validar solo números (sin caracteres especiales)
+    function validarSoloNumeros(event) {
+        const charCode = event.which ? event.which : event.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar solo letras (con acentos)
+    function validarSoloLetras(event) {
+        const charCode = event.which ? event.which : event.keyCode;
+        // Permitir teclas de control (backspace, delete, etc.)
+        if (charCode <= 32 || (charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122)) {
+            return true;
+        }
+        // Permitir letras con acentos (á, é, í, ó, ú, ñ, etc.)
+        if (charCode >= 192 && charCode <= 255) {
+            return true;
+        }
+        event.preventDefault();
+        return false;
+    }
+
     // Función para cargar TODOS los trabajadores desde la API (para búsqueda)
     async function fetchAllWorkers() {
         try {
@@ -420,6 +445,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function openEditModal(worker) {
         const editModal = new bootstrap.Modal(document.getElementById('largeModal'));
         
+        // Limpiar validaciones previas
+        $('#largeModal input').off('input keypress');
+        $('#largeModal select').off('change');
+        
+        // Configurar campos con los datos del trabajador
         document.getElementById('cedula').value = worker.cedula || '';
         document.getElementById('nombre').value = worker.nombres || '';
         document.getElementById('apellidos').value = worker.apellidos || '';
@@ -448,9 +478,49 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('departamentoasig').value = worker.dep_ide;
         }
         
+        // Configurar validaciones
+        // Validación para la cédula (solo números, máximo 10 caracteres)
+        $('#cedula').on('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 10) {
+                this.value = this.value.slice(0, 10);
+            }
+        }).on('keypress', validarSoloNumeros);
+
+        // Validación para nombres (solo letras y acentos, máximo 50 caracteres)
+        $('#nombre').on('input', function() {
+            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            if (this.value.length > 50) {
+                this.value = this.value.slice(0, 50);
+            }
+        }).on('keypress', validarSoloLetras);
+
+        // Validación para apellidos (solo letras y acentos, máximo 50 caracteres)
+        $('#apellidos').on('input', function() {
+            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            if (this.value.length > 50) {
+                this.value = this.value.slice(0, 50);
+            }
+        }).on('keypress', validarSoloLetras);
+
+        // Validación para fecha de ingreso (no mayor a hoy)
+        $('#fechaingreso').on('change', function() {
+            const fechaSeleccionada = new Date(this.value);
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            
+            if (fechaSeleccionada > hoy) {
+                alert('La fecha de ingreso no puede ser mayor a la fecha actual');
+                this.value = worker.fecha_ingreso || ''; // Restaurar valor anterior
+            }
+        });
+
+        // Configurar el botón de guardar
         const saveButton = document.querySelector('#largeModal .btn-primary');
         saveButton.onclick = function() {
-            saveWorkerChanges(worker.cedula);
+            if (validateForm()) {
+                saveWorkerChanges(worker.cedula);
+            }
         };
         
         editModal.show();
@@ -480,6 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dep_ide: document.getElementById('departamentoasig').value
             };
             
+            // Validación adicional por si acaso
             if (!updatedData.nombres || !updatedData.apellidos || !updatedData.cedula) {
                 alert('Por favor complete todos los campos requeridos');
                 return;
@@ -501,12 +572,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Recargar los datos
                 if (isSearching) {
-                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
                     allWorkers = await fetchAllWorkers();
                     const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
                     displayWorkers(1, filtered);
                 } else {
-                    // Si no, recargar la página actual normalmente
                     await displayWorkers(currentPage);
                 }
             } else {
@@ -514,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error al guardar:', error);
-            alert('Error al conectar con el servidor');
+            alert('Error al conectar con el servidor: ' + error.message);
         } finally {
             saveButton.innerHTML = originalText;
             saveButton.disabled = false;
@@ -616,6 +685,51 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         paginationElement.appendChild(li);
+    }
+
+    // Función para validar el formulario completo
+    function validateForm() {
+        let isValid = true;
+        
+        // Validar cédula (requerida y exactamente entre 6 y 10 dígitos)
+        const cedula = $('#cedula').val();
+        if (!cedula || cedula.length < 6 || cedula.length > 10) {
+            alert('La cédula debe tener entre 6 y 10 dígitos');
+            $('#cedula').focus();
+            return false;
+        }
+        
+        // Validar nombres (requerido)
+        if (!$('#nombre').val()) {
+            alert('Por favor ingrese los nombres del trabajador');
+            $('#nombre').focus();
+            return false;
+        }
+        
+        // Validar apellidos (requerido)
+        if (!$('#apellidos').val()) {
+            alert('Por favor ingrese los apellidos del trabajador');
+            $('#apellidos').focus();
+            return false;
+        }
+        
+        // Validar género
+        if (!$('input[name="generoEmpleado"]:checked').val()) {
+            alert('Por favor seleccione el género del empleado');
+            return false;
+        }
+        
+        // Validar selects (que no sea la opción por defecto)
+        const selects = ['#cargocet', '#cargoonapre', '#nivelsalarial', '#nivelprof', '#departamentoasig'];
+        for (const select of selects) {
+            if (!$(select).val()) {
+                alert(`Por favor seleccione una opción válida para ${$(select).prev('label').text()}`);
+                $(select).focus();
+                return false;
+            }
+        }
+        
+        return isValid;
     }
 
     // Inicializar la tabla, paginación y buscador

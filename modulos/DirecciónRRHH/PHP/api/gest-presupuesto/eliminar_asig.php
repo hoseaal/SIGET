@@ -1,10 +1,12 @@
 <?php
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     header('Content-Type: application/json');
 
     try {
         $data = json_decode(file_get_contents('php://input'), true);
+        $usuarioResponsable = $decoded->data->cedula; // Cédula del JWT
         
         if (!$data || !isset($data['pri_ide'])) {
             throw new Exception('Datos no recibidos o incompletos');
@@ -20,6 +22,9 @@
         if ($checkQuery->fetchColumn() == 0) {
             throw new Exception('La asignación no existe');
         }
+
+        // Establecer usuario responsable
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         // Iniciar transacción
         $pdo->beginTransaction();

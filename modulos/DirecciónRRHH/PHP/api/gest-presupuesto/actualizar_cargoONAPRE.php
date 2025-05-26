@@ -1,6 +1,7 @@
 <?php
     header('Content-Type: application/json');
     require_once '../../../conexion/conexion.php';
+    require_once '../validar-jwt-js.php';
 
     $input = json_decode(file_get_contents('php://input'), true);
 
@@ -18,6 +19,12 @@
     }
 
     try {
+        // Obtener usuario responsable del JWT
+        $usuarioResponsable = $decoded->data->cedula;
+        
+        // Establecer variable de usuario en MySQL
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
+
         // Verificar si el cargo existe
         $stmt = $pdo->prepare("SELECT ona_ide FROM tesona WHERE ona_ide = ?");
         $stmt->execute([$positionId]);

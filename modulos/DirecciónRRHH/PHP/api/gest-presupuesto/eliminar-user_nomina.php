@@ -1,5 +1,6 @@
 <?php
     require_once '../../../conexion/conexion.php';
+    require '../validar-jwt-js.php';
 
     // Asegurarnos de que estamos recibiendo datos JSON
     header('Content-Type: application/json');
@@ -27,6 +28,9 @@
         }
 
         $cedula = $data['cedula'];
+        // Establecer usuario responsable desde JWT
+        $usuarioResponsable = $decoded->data->cedula;
+        $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
 
         // Verificar si el trabajador existe
         $checkQuery = $pdo->prepare("SELECT COUNT(*) FROM tmanom WHERE nom_ced = :cedula");

@@ -370,6 +370,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para abrir el modal de edición con datos de la deducción
     function openEditModal(deduction) {
         const editModal = new bootstrap.Modal(document.getElementById('ModalDeducciones'));
+        const modalElement = document.getElementById('ModalDeducciones');
+        const porcentajeInput = document.getElementById('porcentajeDeduccion');
+        
+        // Resetear las validaciones cada vez que se abre el modal
+        porcentajeInput.classList.remove('is-invalid');
+        
+        // Resetear el contenido del modal cuando se cierra
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            porcentajeInput.classList.remove('is-invalid');
+        });
         
         // Llenar los campos del modal con los datos de la deducción
         document.getElementById('deductionId').value = deduction.ded_ide;
@@ -389,6 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function saveDeductionChanges(dedId) {
         const saveButton = document.getElementById('confirmEditDeduction');
         const originalText = saveButton.innerHTML;
+        const porcentajeInput = document.getElementById('porcentajeDeduccion');
         
         // Mostrar spinner y deshabilitar botón
         saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
@@ -397,17 +408,41 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Validar campos
             const nombre = document.getElementById('tipoDeduccion').value.trim();
-            const porcentaje = parseFloat(document.getElementById('porcentajeDeduccion').value);
+            const porcentaje = porcentajeInput.value.trim();
             
-            if (!nombre || isNaN(porcentaje)) {
-                throw new Error('Por favor complete todos los campos correctamente');
+            // Validar que el porcentaje no esté vacío
+            if (porcentaje === '') {
+                porcentajeInput.classList.add('is-invalid');
+                throw new Error('Por favor ingrese un porcentaje válido');
+            }
+            
+            // Convertir a número
+            const porcentajeNum = parseFloat(porcentaje);
+            
+            // Validar que sea un número válido
+            if (isNaN(porcentajeNum)) {
+                porcentajeInput.classList.add('is-invalid');
+                throw new Error('Por favor ingrese un número válido');
+            }
+            
+            // Validar que no sea mayor a 100
+            if (porcentajeNum > 100) {
+                porcentajeInput.classList.add('is-invalid');
+                throw new Error('El porcentaje no puede ser mayor a 100');
+            }
+            
+            // Validar que no tenga más de 2 decimales
+            const decimalParts = porcentaje.split('.');
+            if (decimalParts.length === 2 && decimalParts[1].length > 2) {
+                porcentajeInput.classList.add('is-invalid');
+                throw new Error('El porcentaje no puede tener más de 2 decimales');
             }
             
             // Obtener los datos del formulario
             const updatedData = {
                 ded_id: dedId,
                 ded_raz: nombre,
-                ded_por: porcentaje
+                ded_por: porcentajeNum
             };
             
             // Llamada a la API para guardar cambios
@@ -458,5 +493,60 @@ document.addEventListener('DOMContentLoaded', function() {
     displayDeductions(currentPage).then(() => {
         setupPagination();
         updatePaginationButtons();
+    });
+
+    // Validaciones para los inputs del modal
+    document.getElementById('porcentajeDeduccion').addEventListener('input', function(e) {
+        // Eliminar cualquier carácter que no sea número o punto
+        let value = this.value.replace(/[^\d.]/g, '');
+        
+        // Eliminar puntos adicionales (solo permitir uno)
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+        }
+        
+        // Limitar a 2 decimales
+        if (parts.length === 2 && parts[1].length > 2) {
+            value = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+        
+        // Limitar la longitud total a 10 caracteres
+        if (value.length > 10) {
+            value = value.substring(0, 10);
+        }
+        
+        // Validar que no empiece con punto
+        if (value.startsWith('.')) {
+            value = '';
+        }
+        
+        // Validar que no sea mayor a 100
+        const numericValue = parseFloat(value);
+        if (!isNaN(numericValue) && numericValue > 100) {
+            value = '100';
+        }
+        
+        this.value = value;
+    });
+
+    // Validación al perder el foco
+    document.getElementById('porcentajeDeduccion').addEventListener('blur', function() {
+        const value = this.value.trim();
+        const numericValue = parseFloat(value);
+        
+        if (value === '' || isNaN(numericValue)) {
+            this.classList.add('is-invalid');
+            return;
+        }
+        
+        // Validar formato de decimales
+        const decimalParts = value.split('.');
+        if (decimalParts.length === 2 && decimalParts[1].length > 2) {
+            this.classList.add('is-invalid');
+            return;
+        }
+        
+        this.classList.remove('is-invalid');
     });
 });

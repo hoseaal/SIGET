@@ -1,11 +1,22 @@
 <?php
   require_once '../PHP/api/validar-jwt.php';
 
-  if ($decoded->data->tipo == '2') {
-      http_response_code(403);
-      echo 'Acceso denegado.';
+  if (!isset($decoded) || !isset($decoded->data->tipo)) {
+      header('Location: auth-login-basic.php');
       exit;
   }
+
+  // Lista de tipos de usuario permitidos (0, 1, 2, 3, 4)
+  $tiposPermitidos = ['0', '1', '2', '3', '4'];
+
+  // Redirige al login
+  if (!in_array($decoded->data->tipo, $tiposPermitidos)) {
+      header('Location: auth-login-basic.php');
+      exit;
+  }
+
+  // Exponer la cédula del usuario logueado como variable JavaScript
+  echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +41,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../../../home/src/img/logo-contraloria-home3.png" />
+    <link rel="icon" type="image/x-icon" href="../../../home/assets/img/logo-contraloria-home2.png" />
 
     <!-- Fonts -->
     <link
@@ -180,22 +191,25 @@
             <div class="row">
               <div class="col mb-3">
                 <label for="tipoNlvSalarial" class="form-label">Tipo de Nivel Salarial</label>
-                <input type="text" id="tipoNlvSalarial" class="form-control" placeholder="Ej. I, II, III" />
+                <input type="text" id="tipoNlvSalarial" class="form-control" placeholder="Ej. I, II, III" maxlength="5" />
+                <div class="invalid-feedback">Solo se permiten letras (máximo 5 caracteres)</div>
               </div>
             </div>
             <div class="row">
               <div class="col mb-3">
                 <label for="salarioAsig" class="form-label">Salario Correspondiente</label>
-                <input type="number" id="salarioAsig" class="form-control" placeholder="Ej. 150.00" step="0.01" min="0" />
+                <input type="text" id="salarioAsig" class="form-control" placeholder="Ej. 150.00" />
+                <div class="invalid-feedback">Solo se permiten números con máximo 2 decimales (máximo 10 caracteres)</div>
               </div>
             </div>
             <div class="row">
               <div class="col mb-3">
                 <label for="OnapreAsig" class="form-label">Seleccionar cargo ONAPRE correspondiente</label>
-                <select id="OnapreAsig" class="form-select">
+                <select id="OnapreAsig" class="form-select" required>
                   <option value="">Seleccione</option>
                   <!-- Las opciones se llenarán dinámicamente -->
                 </select>
+                <div class="invalid-feedback">Debe seleccionar un cargo ONAPRE</div>
               </div>
             </div>
           </div>
@@ -203,7 +217,7 @@
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               Cerrar
             </button>
-            <button type="button" class="btn btn-primary">Confirmar Cambios</button>
+            <button type="button" class="btn btn-primary" id="confirmChangesBtn">Confirmar Cambios</button>
           </div>
         </div>
       </div>

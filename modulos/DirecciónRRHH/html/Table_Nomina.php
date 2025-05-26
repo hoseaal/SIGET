@@ -1,9 +1,17 @@
 <?php
   require_once '../PHP/api/validar-jwt.php';
 
-  if ($decoded->data->tipo == '2') {
-      http_response_code(403);
-      echo 'Acceso denegado.';
+  if (!isset($decoded) || !isset($decoded->data->tipo)) {
+      header('Location: auth-login-basic.php');
+      exit;
+  }
+
+  // Lista de tipos de usuario permitidos (0, 1, 2, 3, 4)
+  $tiposPermitidos = ['0', '1', '2', '3', '4'];
+
+  // Redirige al login
+  if (!in_array($decoded->data->tipo, $tiposPermitidos)) {
+      header('Location: auth-login-basic.php');
       exit;
   }
 
@@ -33,7 +41,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../../../home/src/img/logo-contraloria-home3.png" />
+    <link rel="icon" type="image/x-icon" href="../../../home/assets/img/logo-contraloria-home2.png" />
 
     <!-- Fonts -->
     <link
