@@ -115,7 +115,7 @@
                                 <div class="card-title d-flex align-items-start justify-content-between">
                                     <div class="avatar flex-shrink-0">
                                         <img
-                                            src="../assets/img/icons/unicons/chart-success.png"
+                                            src="../assets/img/icons/unicons/Total_usuarios.png"
                                             alt="chart success"
                                             class="rounded"
                                         />
@@ -132,7 +132,7 @@
                                 <div class="card-title d-flex align-items-start justify-content-between">
                                     <div class="avatar flex-shrink-0">
                                         <img
-                                            src="../assets/img/icons/unicons/wallet-info.png"
+                                            src="../assets/img/icons/unicons/Total_emp.png"
                                             alt="Credit Card"
                                             class="rounded"
                                         />
@@ -303,7 +303,7 @@
                               <div class="card-body">
                                   <div class="card-title d-flex align-items-start justify-content-between">
                                       <div class="avatar flex-shrink-0">
-                                          <img src="../assets/img/icons/unicons/paypal.png" alt="Credit Card" class="rounded" />
+                                          <img src="../assets/img/icons/unicons/Porcen_area.png" alt="Credit Card" class="rounded" />
                                       </div>
                                   </div>
                                   <span class="d-block mb-1">% por Área</span>
@@ -316,7 +316,7 @@
                               <div class="card-body">
                                   <div class="card-title d-flex align-items-start justify-content-between">
                                       <div class="avatar flex-shrink-0">
-                                          <img src="../assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
+                                          <img src="../assets/img/icons/unicons/Salida_nominaT.png" alt="Credit Card" class="rounded" />
                                       </div>
                                   </div>
                                   <span class="fw-semibold d-block mb-1">Salida total de nómina</span>
