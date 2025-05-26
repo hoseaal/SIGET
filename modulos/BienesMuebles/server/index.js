@@ -8,7 +8,7 @@ import { UserRepository } from './user-repository.js'
 import authenticate from './authenticate.js'
 import { selectData, selectWhereData, getTableColumns, insertData, updateData, deleteData } from './cruds.js'
 import { getConnection } from './conn.js'
-import { generarActaIncorporacion, generarActaCET } from './services/pdf-services.js'
+import { generarActaIncorporacion, generarActaCET, generarReporteBM2 } from './services/pdf-services.js'
 import fs from 'fs'
 
 const router = express.Router()
@@ -277,6 +277,27 @@ app.post('/api/generar-acta-CET', async (req, res) => {
   } catch (error) {
     console.error('Error al generar acta CET:', error)
     res.status(500).json({ error: 'Error al generar el acta CET' })
+  }
+})
+
+app.post('/api/ReporteBm2', async (req, res) => {
+  try {
+    const datosReporte = req.body
+
+    const pdfPath = await generarReporteBM2(datosReporte)
+
+    res.download(pdfPath, 'reporte_BM2.pdf', (err) => {
+      if (err) {
+        console.error('Error al enviar el archivo:', err)
+        res.status(500).json({ error: 'Error al enviar el PDF' })
+      }
+      fs.unlink(pdfPath, (unlinkErr) => {
+        if (unlinkErr) console.error('Error al eliminar el archivo temporal:', unlinkErr)
+      })
+    })
+  } catch (error) {
+    console.error('Error al generar reporte BM-2:', error)
+    res.status(500).json({ error: 'Error al generar el reporte BM-2' })
   }
 })
 

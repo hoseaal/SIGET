@@ -56,7 +56,7 @@ useEffect(() => {
       }
 
       if (!BienId) {
-        const bienesData = await fetchData('tmab_m', '*');
+        const bienesData = await fetchData('tmab_m', '*', 'bim_inc', 1);
         setBienes(bienesData || []);
       }
     } catch (error) {

@@ -2089,3 +2089,5 @@ INSERT INTO `tescep` (`cep_ide`, `cep_activa`, `nom_ced`) VALUES ('1', '1', '188
 
     DELIMITER ;
   /* FIN DE TRIGGER'S DE LA TABLA TESPRI*/
+
+  INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('1','OPTIMO')
