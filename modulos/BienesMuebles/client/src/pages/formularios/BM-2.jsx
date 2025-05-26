@@ -7,11 +7,15 @@ import { fetchData } from '../../data/fetchData';
 import Select from 'react-select';
 import axios from 'axios';
 import ModalActaInc from '../Modales/modalActaInc';
+import ModalRepBm2 from '../Modales/modalRepBm2';
 
 export const Bm2 = () => {
 
     //Modal Actas de incorporación
     const [showActInc, setShowActInc] = useState(false);
+
+    //Modal Reporte Mensual de BM-2
+    const [showRepBm2, setShowRepBm2] = useState(false);
 
     const [relacion, setRelacion] = useState(true);
 
@@ -274,6 +278,13 @@ const handleSubmit = async (e) => {
                 <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowActInc(true)}>
                     <i className="bx bx-export me-1"></i> Generar acta de Incorporación de Bien
                 </button>
+                <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowRepBm2(true)}>
+                    <i className="bx bx-export me-1"></i> Generar Relacion de Movimiento de BM2
+                </button>
+                <ModalRepBm2
+                    show= {showRepBm2}
+                    handleClose={() => setShowRepBm2(false)}
+                />
             </div>
             <div className="row">
                 <div className="col-xxl">

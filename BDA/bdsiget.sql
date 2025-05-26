@@ -176,7 +176,9 @@ CREATE TABLE `tmab_m` (
   `con_ide` int(11) NOT NULL COMMENT 'Referencia a condición en tmacon',
   `esu_ide` int(11) NOT NULL COMMENT 'Referencia a estado uso en tmaesu',
   `mod_ide` varchar(10) DEFAULT NULL COMMENT 'Referencia a modelo en tesmod',
-  `cae_ide` varchar(10) DEFAULT NULL COMMENT 'Referencia a categoría específica en tescae'
+  `cae_ide` varchar(10) DEFAULT NULL COMMENT 'Referencia a categoría específica en tescae',
+  `bim_inc` TINYINT(1) DEFAULT 1 COMMENT "Estado de Bien incorporado(1) o desincoparado(0)",
+  `bim_fed` date DEFAULT NULL COMMENT "fecha de desincorporación"
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -1366,6 +1368,8 @@ INSERT INTO `tmafoa` (`foa_ide`, `foa_nom`) VALUES
 (15, 'CESION DE DERECHOS'),
 (16, 'ADJUDICACION');
 
+INSERT INTO `tescep` (`cep_ide`, `cep_activa`, `nom_ced`) VALUES ('1', '1', '18845038');
+
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
 
 -- CIERRE DE FUTUROS VOLCADOS EN LA BASE DE DATOS
@@ -2085,3 +2089,5 @@ INSERT INTO `tmafoa` (`foa_ide`, `foa_nom`) VALUES
 
     DELIMITER ;
   /* FIN DE TRIGGER'S DE LA TABLA TESPRI*/
+
+  INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('1','OPTIMO')

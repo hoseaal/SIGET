@@ -108,3 +108,70 @@ export function generarActaCET (datos) {
     }
   })
 }
+
+export async function generarReporteBM2 ({ datos, nombreJefe }) {
+  return new Promise((resolve, reject) => {
+    const fileName = `reporte_BM2_${Date.now()}.pdf`
+    const doc = new PDFDocument({ margin: 40, size: 'A4' })
+    const stream = fs.createWriteStream(fileName)
+    doc.pipe(stream)
+
+    // Cabecera
+    doc.fontSize(12).text('FORMULARIO BM-2', { align: 'center' })
+    doc.moveDown()
+    doc.text('RELACIÓN DEL MOVIMIENTO DE BIENES MUEBLES', { align: 'center' })
+    doc.moveDown()
+    doc.text('ESTADO: Táchira')
+    doc.text('MUNICIPIO: San Cristóbal')
+    doc.text('PARROQUIA: La Concordia')
+    doc.text('Dirección o Lugar: Prolongación 5TA. Avenida, Edif. Cremco, La Concordia, San Cristóbal.')
+    doc.text('DEPENDENCIA: Contraloría del Estado Táchira')
+    doc.text('SERVICIO: Dirección de Administración')
+    doc.text('UNIDAD DE TRABAJO: Contraloría del Estado Táchira')
+    doc.moveDown()
+
+    // Tabla
+    doc.fontSize(10)
+    const headers = ['Grupo', 'Subgrupo', 'Concepto', 'Cantidad', 'ID', 'Descripción', 'Incorp. Bs.', 'Desincorp. Bs.']
+    const startY = doc.y
+    headers.forEach((h, i) => {
+      doc.text(h, 50 + i * 65, startY)
+    })
+
+    doc.moveDown()
+
+    datos.forEach((item, idx) => {
+      const y = doc.y
+      doc.text(item.grupo || '', 50, y)
+      doc.text(item.subgrupo || '', 115, y)
+      doc.text(item.com_ide || '', 180, y)
+      doc.text('01', 245, y)
+      doc.text(item.bim_ide || '', 310, y)
+      doc.text(item.bim_des || '', 375, y, { width: 100 })
+      doc.text(item.bim_inc === 1 ? item.bim_val : '', 480, y)
+      doc.text(item.bim_inc === 0 ? item.bim_val : '', 545, y)
+    })
+
+    const totalIncorp = datos
+      .filter(i => i.bim_inc === 1)
+      .reduce((sum, i) => sum + (parseFloat(i.bim_val) || 0), 0)
+
+    const totalDesinc = datos
+      .filter(i => i.bim_inc === 0)
+      .reduce((sum, i) => sum + (parseFloat(i.bim_val) || 0), 0)
+
+    doc.moveDown()
+    doc.text(`TOTAL INCORPORACIONES: ${totalIncorp.toFixed(2)} Bs.`)
+    doc.text(`TOTAL DESINCORPORACIONES: ${totalDesinc.toFixed(2)} Bs.`)
+
+    // Firma
+    doc.moveDown(2)
+    doc.text('FIRMA DEL JEFE DE LA UNIDAD DE TRABAJO: ________________________________')
+    doc.text(`Lcda. ${nombreJefe || '________________'}`)
+
+    doc.end()
+
+    stream.on('finish', () => resolve(fileName))
+    stream.on('error', reject)
+  })
+}
