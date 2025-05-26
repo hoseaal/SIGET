@@ -109,7 +109,7 @@
               </a>
               <ul class="menu-sub">
                 <li class="menu-item">
-                  <a href="#" class="menu-link" target="_blank">
+                  <a href="Vista_roles.php" class="menu-link" target="_blank">
                     <div data-i18n="Basic">Vista de Permisos</div>
                   </a>
                 </li>
