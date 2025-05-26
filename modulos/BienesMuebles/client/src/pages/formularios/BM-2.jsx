@@ -13,6 +13,9 @@ export const Bm2 = () => {
     //Modal Actas de incorporación
     const [showActInc, setShowActInc] = useState(false);
 
+    //Modal Reporte Mensual de BM-2
+    const [showRepBm2, setShowRepBm2] = useState(false);
+
     const [relacion, setRelacion] = useState(true);
 
     const [formEnviado, setFormEnviado] = useState(false)
@@ -273,6 +276,9 @@ const handleSubmit = async (e) => {
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-2</h4>
                 <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowActInc(true)}>
                     <i className="bx bx-export me-1"></i> Generar acta de Incorporación de Bien
+                </button>
+                <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowRepBm2(true)}>
+                    <i className="bx bx-export me-1"></i> Generar Relacion de Movimiento de BM2
                 </button>
             </div>
             <div className="row">
