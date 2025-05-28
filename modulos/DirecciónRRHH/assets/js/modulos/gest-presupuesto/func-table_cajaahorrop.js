@@ -588,7 +588,8 @@ document.addEventListener('DOMContentLoaded', function() {
         agregarBtn.disabled = true;
         
         try {
-            const nuevoTrabajador = document.getElementById('nuevoTrabajadorSelect').value;
+            // Obtener el valor seleccionado de Select2
+            const nuevoTrabajador = $('#nuevoTrabajadorSelect').val();
             const estado = document.getElementById('nuevoEstadoCajaAhorro').checked ? 1 : 0;
 
             if (!nuevoTrabajador) {
@@ -660,7 +661,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const selectTrabajador = document.getElementById('nuevoTrabajadorSelect');
-            selectTrabajador.innerHTML = '<option value="">Seleccione un trabajador</option>';
+            selectTrabajador.innerHTML = '<option value=""></option>'; // Select2 necesita option vacío
             
             if (!data.trabajadores || data.trabajadores.length === 0) {
                 console.warn("No hay trabajadores disponibles para agregar");
@@ -679,12 +680,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
 
+            // Inicializar Select2 para el select de trabajadores
+            $('#nuevoTrabajadorSelect').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Buscar trabajador...',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#modalAgregarCajaAhorro'), // IMPORTANTE para que funcione en modal
+                language: {
+                    noResults: function() {
+                        return "No se encontraron trabajadores";
+                    }
+                },
+                templateResult: function(trabajador) {
+                    if (!trabajador.id) return trabajador.text;
+                    const option = selectTrabajador.querySelector(`option[value="${trabajador.id}"]`);
+                    return option ? option.text : trabajador.text;
+                },
+                templateSelection: function(trabajador) {
+                    if (!trabajador.id) return trabajador.text;
+                    const option = selectTrabajador.querySelector(`option[value="${trabajador.id}"]`);
+                    return option ? option.text : trabajador.text;
+                }
+            });
+
             // Configurar el botón de agregar
             document.getElementById('confirmarAgregarBtn').onclick = agregarTrabajador;
 
             // Mostrar el modal
             const addModal = new bootstrap.Modal(document.getElementById('modalAgregarCajaAhorro'));
             addModal.show();
+
+            // Manejar el cierre del modal
+            $('#modalAgregarCajaAhorro').on('hidden.bs.modal', function () {
+                $('#nuevoTrabajadorSelect').select2('destroy');
+            });
 
         } catch (error) {
             console.error('Error al abrir modal de agregar:', error);
