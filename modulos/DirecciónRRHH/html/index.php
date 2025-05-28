@@ -78,241 +78,238 @@
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
-            <div class="container-xxl flex-grow-1 container-p-y">
-              <div class="row">
-                <!-- Primera fila de métricas (ahora en la parte superior) -->
-                <div class="col-md-6 col-lg-3 mb-4">
-                  <div class="card h-100">
-                    <div class="card-body">
-                      <div class="card-title d-flex align-items-start justify-content-between">
-                        <div class="avatar flex-shrink-0">
-                          <img src="../assets/img/icons/unicons/Total_usuarios.png" alt="Usuarios" class="rounded"/>
+              <div class="container-xxl flex-grow-1 container-p-y">
+                <div class="row">
+                  <!-- Primera fila de métricas -->
+                  <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                          <div class="avatar flex-shrink-0">
+                            <img src="../assets/img/icons/unicons/Total_usuarios.png" alt="Usuarios" class="rounded"/>
+                          </div>
                         </div>
+                        <span class="fw-semibold d-block mb-1">Total de Usuarios</span>
+                        <h3 class="card-title mb-2" id="total-usuarios"></h3>
                       </div>
-                      <span class="fw-semibold d-block mb-1">Total de Usuarios</span>
-                      <h3 class="card-title mb-2" id="total-usuarios"></h3>
                     </div>
                   </div>
-                </div>
-                
-                <div class="col-md-6 col-lg-3 mb-4">
-                  <div class="card h-100">
-                    <div class="card-body">
-                      <div class="card-title d-flex align-items-start justify-content-between">
-                        <div class="avatar flex-shrink-0">
-                          <img src="../assets/img/icons/unicons/Total_emp.png" alt="Empleados" class="rounded"/>
+                  
+                  <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                          <div class="avatar flex-shrink-0">
+                            <img src="../assets/img/icons/unicons/Total_emp.png" alt="Empleados" class="rounded"/>
+                          </div>
                         </div>
+                        <span class="fw-semibold d-block mb-1">Total de empleados</span>
+                        <h3 class="card-title mb-2" id="total-empleados"></h3>
                       </div>
-                      <span class="fw-semibold d-block mb-1">Total de empleados</span>
-                      <h3 class="card-title mb-2" id="total-empleados"></h3>
                     </div>
                   </div>
-                </div>
-                
-                <div class="col-md-6 col-lg-3 mb-4">
-                  <div class="card h-100">
-                    <div class="card-body">
-                      <div class="card-title d-flex align-items-start justify-content-between">
-                        <div class="avatar flex-shrink-0">
-                          <img src="../assets/img/icons/unicons/Porcen_area.png" alt="Áreas" class="rounded"/>
+                  
+                  <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                          <div class="avatar flex-shrink-0">
+                            <img src="../assets/img/icons/unicons/Porcen_area.png" alt="Áreas" class="rounded"/>
+                          </div>
                         </div>
+                        <span class="fw-semibold d-block mb-1">% por Área</span>
+                        <h3 class="card-title mb-2" id="promedioArea">Cargando...</h3>
                       </div>
-                      <span class="fw-semibold d-block mb-1">% por Área</span>
-                      <h3 class="card-title mb-2" id="promedioArea">Cargando...</h3>
                     </div>
                   </div>
-                </div>
-                
-                <div class="col-md-6 col-lg-3 mb-4">
-                  <div class="card h-100">
-                    <div class="card-body">
-                      <div class="card-title d-flex align-items-start justify-content-between">
-                        <div class="avatar flex-shrink-0">
-                          <img src="../assets/img/icons/unicons/Salida_nominaT.png" alt="Nómina" class="rounded"/>
+                  
+                  <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <div class="card-title d-flex align-items-start justify-content-between">
+                          <div class="avatar flex-shrink-0">
+                            <img src="../assets/img/icons/unicons/Salida_nominaT.png" alt="Nómina" class="rounded"/>
+                          </div>
                         </div>
+                        <span class="fw-semibold d-block mb-1">Salida total de nómina</span>
+                        <h3 class="card-title mb-2" id="totalNomina">Cargando...</h3>
                       </div>
-                      <span class="fw-semibold d-block mb-1">Salida total de nómina</span>
-                      <h3 class="card-title mb-2" id="totalNomina">Cargando...</h3>
                     </div>
                   </div>
-                </div>
 
-                <!-- Tarjeta de Bienvenida (ahora después de las métricas) -->
-                <div class="col-12 mb-4">
-                  <div class="card">
-                    <div class="d-flex align-items-end row">
-                      <div class="col-sm-7">
-                        <div class="card-body">
-                          <h5 class="card-title text-primary">Bienvenido al Sistema 🎉</h5>
-                          <p class="mb-4">
-                            Automatiza las <span class="fw-bold">nóminas</span> para un trabajo mucho más eficiente y seguro.
-                          </p>
-                          <a href="Table_Nomina.php" class="btn btn-sm btn-outline-primary">Acceder a nóminas</a>
-                        </div>
-                      </div>
-                      <div class="col-sm-5 text-center text-sm-left">
-                        <div class="card-body pb-0 px-0 px-md-4">
+                  <!-- Segunda fila - 3 columnas del mismo tamaño -->
+                  <div class="col-lg-4 mb-4">
+                    <!-- Bienvenida -->
+                    <div class="card h-100">
+                      <div class="card-body d-flex flex-column">
+                        <div class="text-center mb-3">
                           <img
                             src="../assets/img/illustrations/man-with-laptop-light.png"
-                            height="140"
+                            height="120"
                             alt="View Badge User"
                             data-app-dark-img="illustrations/man-with-laptop-dark.png"
                             data-app-light-img="illustrations/man-with-laptop-light.png"
+                            class="mb-3"
                           />
+                          <h5 class="card-title text-primary">Bienvenido al Sistema 🎉</h5>
+                        </div>
+                        <p class="mb-4 text-center">
+                          Automatiza las <span class="fw-bold">nóminas</span> para un trabajo mucho más eficiente y seguro.
+                        </p>
+                        <div class="text-center mt-auto">
+                          <a href="Table_Nomina.php" class="btn btn-sm btn-outline-primary">Acceder a nóminas</a>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                <!-- Tercera fila - Gráficos y modificaciones -->
-                <div class="col-lg-8 mb-4">
-                  <div class="card h-100">
-                    <div class="card-header d-flex align-items-center justify-content-between pb-0">
-                      <div class="card-title mb-0">
-                        <h5 class="m-0 me-2">Empleados por departamentos</h5>
+                  
+                  <div class="col-lg-4 mb-4">
+                    <!-- Últimas Modificaciones -->
+                    <div class="card h-100">
+                      <div class="card-header d-flex align-items-center justify-content-between">
+                        <h5 class="card-title m-0 me-2">Últimas Modificaciones</h5>
                       </div>
-                    </div>
-                    <div class="card-body">
-                      <div class="d-flex justify-content-center mb-3">
-                        <div id="orderStatisticsChart" class="mx-auto" style="width: 100%; height: 300px;"></div>
+                      <div class="card-body">
+                        <ul class="p-0 m-0">
+                          <?php
+                              // Consulta unificada para todas las tablas de bitácora
+                              $query = "
+                                  (SELECT 'usu' as tipo, bit_operacion, bit_usu_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_usu)
+                                  UNION ALL
+                                  (SELECT 'nom' as tipo, bit_operacion, bit_nom_ced as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_nom)
+                                  UNION ALL
+                                  (SELECT 'cet' as tipo, bit_operacion, bit_cet_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_cet)
+                                  UNION ALL
+                                  (SELECT 'ona' as tipo, bit_operacion, bit_ona_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_ona)
+                                  UNION ALL
+                                  (SELECT 'nvl' as tipo, bit_operacion, bit_nvl_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_nvl)
+                                  UNION ALL
+                                  (SELECT 'sup' as tipo, bit_operacion, bit_sup_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_sup)
+                                  UNION ALL
+                                  (SELECT 'cep' as tipo, bit_operacion, bit_cep_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_cep)
+                                  UNION ALL
+                                  (SELECT 'ded' as tipo, bit_operacion, bit_ded_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_ded)
+                                  UNION ALL
+                                  (SELECT 'pri' as tipo, bit_operacion, bit_pri_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_pri)
+                                  ORDER BY bit_fecha DESC
+                                  LIMIT 3
+                              ";
+
+                              $stmt = $pdo->query($query);
+                              $modificaciones = $stmt->fetchAll();
+
+                              if (empty($modificaciones)): ?>
+                                  <li class="d-flex mb-4 pb-1 justify-content-center">
+                                      <div class="text-center">
+                                          <small class="text-muted">No han ocurrido cambios en el sistema</small>
+                                      </div>
+                                  </li>
+                              <?php else:
+                                  foreach ($modificaciones as $mod):
+                                      // Determinar icono y texto según el tipo de operación y tabla
+                                      $icono = match($mod['bit_operacion']) {
+                                          'INSERT' => 'insert_usu.png',
+                                          'UPDATE' => 'update_usu.png',
+                                          'DELETE' => 'delete_usu.png',
+                                          default => 'cc-success.png'
+                                      };
+                                      
+                                      // Texto descriptivo según la tabla y operación
+                                      $texto = match($mod['tipo']) {
+                                          'usu' => match($mod['bit_operacion']) {
+                                              'INSERT' => 'Inserción de usuario',
+                                              'UPDATE' => 'Actualización de usuario',
+                                              'DELETE' => 'Eliminación de usuario'
+                                          },
+                                          'nom' => match($mod['bit_operacion']) {
+                                              'INSERT' => 'Inserción en nómina',
+                                              'UPDATE' => 'Actualización en nómina',
+                                              'DELETE' => 'Eliminación en nómina'
+                                          },
+                                          'cet' => match($mod['bit_operacion']) {
+                                              'INSERT' => 'Nuevo cargo CET',
+                                              'UPDATE' => 'Actualización de cargo CET',
+                                              'DELETE' => 'Eliminación de cargo CET'
+                                          },
+                                          'ona' => match($mod['bit_operacion']) {
+                                              'INSERT' => 'Nuevo cargo ONAPRE',
+                                              'UPDATE' => 'Actualización de cargo ONAPRE',
+                                              'DELETE' => 'Eliminación de cargo ONAPRE'
+                                          },
+                                          'nvl' => match($mod['bit_operacion']) {
+                                              'UPDATE' => 'Actualización de nivel',
+                                              'DELETE' => 'Eliminación de nivel'
+                                          },
+                                          'sup' => match($mod['bit_operacion']) {
+                                              'INSERT' => 'Nueva suplencia',
+                                              'UPDATE' => 'Actualización de suplencia',
+                                              'DELETE' => 'Eliminación de suplencia'
+                                          },
+                                          'cep' => match($mod['bit_operacion']) {
+                                              'INSERT' => 'Nuevo registro CEP',
+                                              'UPDATE' => 'Actualización de registro CEP',
+                                              'DELETE' => 'Eliminación de registro CEP'
+                                          },
+                                          'ded' => match($mod['bit_operacion']) {
+                                              'UPDATE' => 'Actualización de deducción',
+                                              'DELETE' => 'Eliminación de deducción'
+                                          },
+                                          'pri' => match($mod['bit_operacion']) {
+                                              'UPDATE' => 'Actualización de prima',
+                                              'DELETE' => 'Eliminación de prima'
+                                          },
+                                          default => 'Modificación en el sistema'
+                                      };
+                                      
+                                      // Mostrar ID según el tipo de registro
+                                      $idTexto = match($mod['tipo']) {
+                                          'usu', 'nom' => 'CI: ' . htmlspecialchars($mod['id']),
+                                          default => 'ID: ' . htmlspecialchars($mod['id'])
+                                      };
+                          ?>
+                          <li class="d-flex mb-4 pb-1">
+                            <div class="avatar flex-shrink-0 me-3">
+                              <img src="../assets/img/icons/unicons/<?= $icono ?>" alt="<?= $mod['bit_operacion'] ?>" class="rounded">
+                            </div>
+                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                              <div class="me-2">
+                                <small class="text-muted d-block mb-1"><?= $texto ?></small>
+                                <h6 class="mb-0"><?= $idTexto ?></h6>
+                                <small>Realizado por: <?= htmlspecialchars($mod['bit_usuario_responsable']) ?></small>
+                              </div>
+                              <div class="user-progress">
+                                <small class="text-muted"><?= date('d/m/Y H:i', strtotime($mod['bit_fecha'])) ?></small>
+                              </div>
+                            </div>
+                          </li>
+                          <?php 
+                              endforeach;
+                          endif; 
+                          ?>
+                        </ul>
                       </div>
-                      <ul class="p-0 m-0" id="lista-departamentos">
-                        <!-- Los departamentos se cargarán aquí dinámicamente -->
-                      </ul>
                     </div>
                   </div>
-                </div>
-                
-                <div class="col-lg-4 mb-4">
-                  <div class="card h-100">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                      <h5 class="card-title m-0 me-2">Últimas Modificaciones</h5>
-                    </div>
-                    <div class="card-body">
-                      <ul class="p-0 m-0">
-                        <?php
-                        // Consulta unificada para todas las tablas de bitácora
-                        $query = "
-                            (SELECT 'usu' as tipo, bit_operacion, bit_usu_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_usu)
-                            UNION ALL
-                            (SELECT 'nom' as tipo, bit_operacion, bit_nom_ced as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_nom)
-                            UNION ALL
-                            (SELECT 'cet' as tipo, bit_operacion, bit_cet_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_cet)
-                            UNION ALL
-                            (SELECT 'ona' as tipo, bit_operacion, bit_ona_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_ona)
-                            UNION ALL
-                            (SELECT 'nvl' as tipo, bit_operacion, bit_nvl_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_nvl)
-                            UNION ALL
-                            (SELECT 'sup' as tipo, bit_operacion, bit_sup_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_sup)
-                            UNION ALL
-                            (SELECT 'cep' as tipo, bit_operacion, bit_cep_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_cep)
-                            UNION ALL
-                            (SELECT 'ded' as tipo, bit_operacion, bit_ded_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_ded)
-                            UNION ALL
-                            (SELECT 'pri' as tipo, bit_operacion, bit_pri_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_pri)
-                            ORDER BY bit_fecha DESC
-                            LIMIT 3
-                        ";
-                        
-                        $stmt = $pdo->query($query);
-                        $modificaciones = $stmt->fetchAll();
-
-                        if (empty($modificaciones)): ?>
-                            <li class="d-flex mb-4 pb-1 justify-content-center">
-                                <div class="text-center">
-                                    <small class="text-muted">No han ocurrido cambios en el sistema</small>
-                                </div>
-                            </li>
-                        <?php else:
-                            foreach ($modificaciones as $mod):
-                                // Determinar icono y texto según el tipo de operación y tabla
-                                $icono = match($mod['bit_operacion']) {
-                                    'INSERT' => 'insert_usu.png',
-                                    'UPDATE' => 'update_usu.png',
-                                    'DELETE' => 'delete_usu.png',
-                                    default => 'cc-success.png'
-                                };
-                                
-                                // Texto descriptivo según la tabla y operación
-                                $texto = match($mod['tipo']) {
-                                    'usu' => match($mod['bit_operacion']) {
-                                        'INSERT' => 'Inserción de usuario',
-                                        'UPDATE' => 'Actualización de usuario',
-                                        'DELETE' => 'Eliminación de usuario'
-                                    },
-                                    'nom' => match($mod['bit_operacion']) {
-                                        'INSERT' => 'Inserción en nómina',
-                                        'UPDATE' => 'Actualización en nómina',
-                                        'DELETE' => 'Eliminación en nómina'
-                                    },
-                                    'cet' => match($mod['bit_operacion']) {
-                                        'INSERT' => 'Nuevo cargo CET',
-                                        'UPDATE' => 'Actualización de cargo CET',
-                                        'DELETE' => 'Eliminación de cargo CET'
-                                    },
-                                    'ona' => match($mod['bit_operacion']) {
-                                        'INSERT' => 'Nuevo cargo ONAPRE',
-                                        'UPDATE' => 'Actualización de cargo ONAPRE',
-                                        'DELETE' => 'Eliminación de cargo ONAPRE'
-                                    },
-                                    'nvl' => match($mod['bit_operacion']) {
-                                        'UPDATE' => 'Actualización de nivel',
-                                        'DELETE' => 'Eliminación de nivel'
-                                    },
-                                    'sup' => match($mod['bit_operacion']) {
-                                        'INSERT' => 'Nueva suplencia',
-                                        'UPDATE' => 'Actualización de suplencia',
-                                        'DELETE' => 'Eliminación de suplencia'
-                                    },
-                                    'cep' => match($mod['bit_operacion']) {
-                                        'INSERT' => 'Nuevo registro CEP',
-                                        'UPDATE' => 'Actualización de registro CEP',
-                                        'DELETE' => 'Eliminación de registro CEP'
-                                    },
-                                    'ded' => match($mod['bit_operacion']) {
-                                        'UPDATE' => 'Actualización de deducción',
-                                        'DELETE' => 'Eliminación de deducción'
-                                    },
-                                    'pri' => match($mod['bit_operacion']) {
-                                        'UPDATE' => 'Actualización de prima',
-                                        'DELETE' => 'Eliminación de prima'
-                                    },
-                                    default => 'Modificación en el sistema'
-                                };
-                                
-                                // Mostrar ID según el tipo de registro
-                                $idTexto = match($mod['tipo']) {
-                                    'usu', 'nom' => 'CI: ' . htmlspecialchars($mod['id']),
-                                    default => 'ID: ' . htmlspecialchars($mod['id'])
-                                };
-                        ?>
-                        <li class="d-flex mb-4 pb-1">
-                          <div class="avatar flex-shrink-0 me-3">
-                            <img src="../assets/img/icons/unicons/<?= $icono ?>" alt="<?= $mod['bit_operacion'] ?>" class="rounded">
-                          </div>
-                          <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                            <div class="me-2">
-                              <small class="text-muted d-block mb-1"><?= $texto ?></small>
-                              <h6 class="mb-0"><?= $idTexto ?></h6>
-                              <small>Realizado por: <?= htmlspecialchars($mod['bit_usuario_responsable']) ?></small>
-                            </div>
-                            <div class="user-progress">
-                              <small class="text-muted"><?= date('d/m/Y H:i', strtotime($mod['bit_fecha'])) ?></small>
-                            </div>
-                          </div>
-                        </li>
-                        <?php 
-                            endforeach;
-                        endif; 
-                        ?>
-                      </ul>
+                  
+                  <div class="col-lg-4 mb-4">
+                    <!-- Empleados por departamento -->
+                    <div class="card h-100">
+                      <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                        <h5 class="card-title m-0 me-2">Empleados por departamentos</h5>
+                      </div>
+                      <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-center align-items-center flex-grow-1">
+                          <div id="orderStatisticsChart"></div>
+                        </div>
+                        <ul class="p-0 m-0 mt-3" id="lista-departamentos">
+                          <!-- Los departamentos se cargarán aquí dinámicamente -->
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <!-- / Content -->
+              <!-- / Content -->
             <div class="content-backdrop fade"></div>
           </div>
           <!-- Content wrapper -->

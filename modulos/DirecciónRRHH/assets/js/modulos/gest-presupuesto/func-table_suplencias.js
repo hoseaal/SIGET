@@ -363,12 +363,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función auxiliar para llenar selects
     function fillSelect(selectElement, items, valueField, textField, selectedValue) {
-        selectElement.innerHTML = '<option value="">Seleccione</option>';
+        selectElement.innerHTML = '<option value=""></option>';
         
         items.forEach(item => {
             const option = document.createElement('option');
             option.value = item[valueField];
-            option.textContent = item[textField];
+            option.textContent = `${item[textField]} - ${item[valueField]}`;
             if (selectedValue && item[valueField] == selectedValue) {
                 option.selected = true;
             }
@@ -453,26 +453,62 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Llenar los selects del formulario
-        console.log('Empleados cargados:', empleados);
+        // Llenar el select de empleados
         fillSelect(document.getElementById('nuevoEmpleadoSelect'), empleados, 'nom_ced', 'nom_nom');
+
+        // Inicializar Select2 para el select de empleados
+        $('#nuevoEmpleadoSelect').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Buscar empleado...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#ModalNuevaSuplencia'), // IMPORTANTE: Esto evita problemas con el modal
+            language: {
+                noResults: function() {
+                    return "No se encontraron empleados";
+                }
+            },
+            templateResult: function(employee) {
+                // Si es el placeholder
+                if (!employee.id) return employee.text;
+                
+                // Buscar el empleado en los datos cargados
+                const emp = empleados.find(e => e.nom_ced === employee.id);
+                if (!emp) return employee.text;
+                
+                // Mostrar nombre y cédula
+                return $('<span>').text(`${emp.nom_nom} - ${emp.nom_ced}`);
+            },
+            templateSelection: function(employee) {
+                // Cómo se muestra el elemento seleccionado
+                if (!employee.id) return employee.text;
+                
+                const emp = empleados.find(e => e.nom_ced === employee.id);
+                if (!emp) return employee.text;
+                
+                return $('<span>').text(`${emp.nom_nom} - ${emp.nom_ced}`);
+            }
+        });
+
+        // Configurar el resto del formulario
         fillSelect(document.getElementById('nuevoCargoCetSelect'), cargosCet, 'cet_ide', 'cet_car');
         fillSelect(document.getElementById('nuevoCargoOnapreSelect'), cargosOnapre, 'ona_ide', 'ona_car');
         fillSelect(document.getElementById('nuevoDepartamentoSelect'), departamentos, 'dep_ide', 'dep_nom');
 
-        // Configurar la lógica de niveles salariales
         setupSalaryLevelLogic();
 
-        // Establecer fecha actual como fecha de inicio por defecto
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('nuevaFechaInicio').value = today;
 
-        // Configurar el botón de guardar
         document.getElementById('confirmarNuevaSuplencia').onclick = createNewSupplement;
 
-        // Mostrar el modal
         const newModal = new bootstrap.Modal(document.getElementById('ModalNuevaSuplencia'));
         newModal.show();
+
+        // Manejar el cierre del modal
+        $('#ModalNuevaSuplencia').on('hidden.bs.modal', function () {
+            $('#nuevoEmpleadoSelect').select2('destroy');
+        });
     }
 
     // Función para crear una nueva suplencia
@@ -501,7 +537,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             console.log('Datos a enviar:', newData);
 
-            const response = await fetch('../../../../PHP/api/gest-presupuesto/agregar_suplencia.php', {
+            // Corrige la ruta según tu estructura de directorios
+            const response = await fetch('../PHP/api/gest-presupuesto/agregar_suplencia.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -509,10 +546,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(newData)
             });
             
+            // Verifica si la respuesta es JSON válido
             const responseText = await response.text();
-            console.log('Respuesta cruda del servidor:', responseText);
-            
-            const result = JSON.parse(responseText);
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (e) {
+                console.error('Respuesta no es JSON válido:', responseText);
+                throw new Error('Respuesta inesperada del servidor');
+            }
             
             if (result.success) {
                 bootstrap.Modal.getInstance(document.getElementById('ModalNuevaSuplencia')).hide();

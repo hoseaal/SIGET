@@ -62,7 +62,15 @@
 
     <link rel="stylesheet" href="../assets/vendor/libs/apex-charts/apex-charts.css" />
 
-    <!-- Page CSS -->
+    <!-- jQuery (requerido por Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- Helpers -->
     <script src="../assets/vendor/js/helpers.js"></script>
@@ -165,7 +173,6 @@
 
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
-    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
     <script src="../assets/vendor/libs/popper/popper.js"></script>
     <script src="../assets/vendor/js/bootstrap.js"></script>
     <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
@@ -234,8 +241,8 @@
             <div class="row">
               <div class="col mb-3">
                 <label for="nuevoTrabajadorSelect" class="form-label">Seleccionar Trabajador</label>
-                <select id="nuevoTrabajadorSelect" class="form-select">
-                  <option value="">Seleccione un trabajador</option>
+                <select id="nuevoTrabajadorSelect" class="form-select select2-trabajadores">
+                  <option value=""></option> <!-- Select2 necesita un option vacío -->
                   <!-- Las opciones se llenarán dinámicamente -->
                 </select>
               </div>
