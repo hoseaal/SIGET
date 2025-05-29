@@ -533,7 +533,7 @@
           
           listElement.innerHTML = '';
           
-          const icons = ['bx-mobile-alt', 'bx-closet', 'bx-home-alt', 'bx-football'];
+          const icons = ['bx-book-alt', 'bx-briefcase-alt', 'bx-cabinet', 'bx-dots-vertical'];
           const bgColors = ['bg-label-primary', 'bg-label-success', 'bg-label-info', 'bg-label-secondary'];
           
           // Filtrar departamentos con empleados

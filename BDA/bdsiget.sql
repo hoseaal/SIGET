@@ -932,14 +932,45 @@ INSERT INTO `tespri` (`pri_raz`, `pri_por`) VALUES
 ('Complemento de Alimentación', 5.00),
 ('Prima por Hijos', 12.50);
 
--- TABLA TMANOM (Contralor DATA REAL SIN USUARIO)
+-- TABLA TMANOM (Contralor: Luis Aguilar DATA REAL)
 
 INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES 
 ('18845038', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '2023-02-01', 'M', '1', '2', '34', '16', 'I', '1');
 
+-- TABLA TMANOM (Directora General: Eliana Ramirez DATA REAL)
+
+INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES ('17368181', 'ELIANA CRISTINA', 'RAMIREZ DE GUERRERO', '2023-11-01', 'F', '2', '2', '22', '11', 'I', '4');
+
+-- TABLA TMANOM (Jefe de RRHH: Luis Arias DATA REAL)
+
+INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES ('15028510', 'LUIS GERARDO', 'ARIAS NIÑO', '2019-02-18', 'M', '1', '2', '24', '9', 'I', '8');
+
+-- TABLA TMANOM (Jefe de Bienes: Ender Mogollon DATA REAL)
+
+INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES ('26403363', 'ENDER NICOLAY', 'MOGOLLON MARQUEZ', '2021-03-16', 'M', '0', '2', '26', '12', 'I', '9');
+
+-- TABLA TMANOM (Jefe Área Técnica: Jesus Salamanca DATA REAL)
+
+INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES ('14502107', 'JESUS DAVID', 'SALAMANCA CARVAJAL', '2023-03-01', 'M', '1', '2', '26', '15', 'I', '4');
+
 -- TABLA TESUSU (Usuario del CONTRALOR: CONTRASEÑA ES 12345)
 
 INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('18845038', 'LuisAgui23', '$2y$12$zLekvZkVCw4Iy9TpkjOue.aCIBNdZgT.dwcAGOPxc7bW3CIInF3ku', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '4', '0', '18845038'); 
+
+-- TABLA TESUSU (Usuario de Director General: CONTRASEÑA ES 12345)
+
+INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('17368181', 'EliCris23', '$2y$12$JzctV2PntXoUkksVmfSMXOdOpMyCHHnvNyOgMiW/DFbjPsPTMSZlW', 'ELIANA CRISTINA', 'RAMIREZ DE GUERRERO', '3', '0', '17368181');
+
+-- TABLA TESUSU (Usuario de Jefe de RRHH: CONTRASEÑA ES 12345)
+
+INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('15028510', 'LuisArias1', '$2y$12$2gsERLg2ZUdQ6/GfQ0Wos.492R3p/SGhKGpFdnKvZ4fUj1BOK4TvS', 'LUIS GERARDO', 'ARIAS NIÑO', '3', '1', '15028510');
+
+-- TABLA TESUSU (Usuario de Jefe de Bienes: CONTRASEÑA ES 12345)
+
+INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('26403363', 'EnderMar21', '$2y$12$oUKu3BId/VnUQ20cdAUzcO2.j6Y.yKpaClmYurBdCi719xjJ33l4a', 'ENDER NICOLAY', 'MOGOLLON MARQUEZ', '3', '2', '26403363');
+
+-- TABLA TESUSU (Usuario de Área Técnica: CONTRASEÑA ES 12345)
+INSERT INTO `tesusu` (`usu_ide`, `usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('14502107', 'JesusCar23', '$2y$12$/FSFzNj8rdiyN9EELET45.rRcUUp5raL7jXmd4x/o8TPzi0RrxqNm', 'JESUS DAVID', 'SALAMANCA CARVAJAL', '4', '0', '14502107');
 
 -- TABLA TMACAT
 
@@ -1368,7 +1399,17 @@ INSERT INTO `tmafoa` (`foa_ide`, `foa_nom`) VALUES
 (15, 'CESION DE DERECHOS'),
 (16, 'ADJUDICACION');
 
+-- TABLA TESCEP (CAJA DE AHORRO)
+
 INSERT INTO `tescep` (`cep_ide`, `cep_activa`, `nom_ced`) VALUES ('1', '1', '18845038');
+INSERT INTO `tescep` (`cep_ide`, `cep_activa`, `nom_ced`) VALUES ('2', '1', '17368181');
+
+-- TABLA TESANT (ANTIGUEDADES DE LOS EMPLEADOS)
+
+INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('1', '2014-01-07', '2014-09-30', '17368181');
+INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('2', '2019-03-14', '2022-01-17', '17368181');
+INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('3', '2008-09-11', '2011-05-20', '17368181');
+INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('4', '2011-02-09', '2011-03-10', '17368181');
 
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
 
