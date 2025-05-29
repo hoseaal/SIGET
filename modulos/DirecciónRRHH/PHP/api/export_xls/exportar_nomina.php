@@ -66,28 +66,39 @@
     $stmt_cajas = $pdo->query($sql_cajas);
     $cajas_ahorro = $stmt_cajas->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 
-    // Calcular cantidad de lunes según periodo del mes
-    $dia_actual = date('j');
-    $mes_actual = date('n');
-    $ano_actual = date('Y');
-    
-    $cantidad_lunes = 0;
-    if ($dia_actual <= 15) {
-        $fecha_inicio = new DateTime("$ano_actual-$mes_actual-01");
-        $fecha_fin = new DateTime("$ano_actual-$mes_actual-15");
-    } else {
-        $fecha_inicio = new DateTime("$ano_actual-$mes_actual-16");
-        $fecha_fin = new DateTime("last day of $ano_actual-$mes_actual");
-    }
-    
-    $intervalo = new DateInterval('P1D');
-    $periodo = new DatePeriod($fecha_inicio, $intervalo, $fecha_fin);
-    
-    foreach ($periodo as $fecha) {
-        if ($fecha->format('N') == 1) {
-            $cantidad_lunes++;
+    // Función para contar lunes en un rango de fechas
+    function contarLunes($fechaInicio, $fechaFin) {
+        $cantidad_lunes = 0;
+        $intervalo = new DateInterval('P1D');
+        $fechaFinInclusiva = clone $fechaFin;
+        $fechaFinInclusiva->modify('+1 day');
+        $periodo = new DatePeriod($fechaInicio, $intervalo, $fechaFinInclusiva);
+        
+        foreach ($periodo as $fecha) {
+            if ($fecha->format('N') == 1) { // 1 = Lunes
+                $cantidad_lunes++;
+            }
         }
+        return $cantidad_lunes;
     }
+
+    // Determinar el próximo mes
+    $fecha_actual = new DateTime();
+    $proximo_mes = clone $fecha_actual;
+    $proximo_mes->modify('first day of next month');
+    
+    $ano_proximo_mes = $proximo_mes->format('Y');
+    $mes_proximo_mes = $proximo_mes->format('n');
+    
+    // Calcular cantidad de lunes para la primera quincena del próximo mes (1-15)
+    $fecha_inicio_primera = new DateTime("$ano_proximo_mes-$mes_proximo_mes-01");
+    $fecha_fin_primera = new DateTime("$ano_proximo_mes-$mes_proximo_mes-15");
+    $cantidad_lunes_primera = contarLunes($fecha_inicio_primera, $fecha_fin_primera);
+    
+    // Calcular cantidad de lunes para la segunda quincena del próximo mes (16-fin de mes)
+    $fecha_inicio_segunda = new DateTime("$ano_proximo_mes-$mes_proximo_mes-16");
+    $fecha_fin_segunda = new DateTime("last day of $ano_proximo_mes-$mes_proximo_mes");
+    $cantidad_lunes_segunda = contarLunes($fecha_inicio_segunda, $fecha_fin_segunda);
 
     // Consulta SQL para obtener datos de nómina
     $sql = "
@@ -161,65 +172,6 @@
     $stmt_sup = $pdo->query($sql_suplencias);
     $suplencias = $stmt_sup->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 
-    // Crear un nuevo Spreadsheet
-    $spreadsheet = new Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-
-    // Encabezados del Excel con estilo
-    $sheet->setCellValue('A1', 'N°');
-    $sheet->setCellValue('B1', 'CÉDULA');
-    $sheet->setCellValue('C1', 'NOMBRE');
-    $sheet->setCellValue('D1', 'APELLIDO');
-    $sheet->setCellValue('E1', 'CARGO CET');
-    $sheet->setCellValue('F1', 'CARGO ONAPRE');
-    $sheet->setCellValue('G1', 'FECHA INGRESO');
-    $sheet->setCellValue('H1', 'SALARIO BASE');
-    $sheet->setCellValue('I1', 'SALARIO BASE QUINCENAL');
-    $sheet->setCellValue('J1', 'ANTIGUEDAD QUINCENAL');
-    $sheet->setCellValue('K1', 'PROFESIONALIZACIÓN QUINCENAL');
-    $sheet->setCellValue('L1', 'PRIMA POR JERARQUÍA');
-    $sheet->setCellValue('M1', 'PRIMA DE TRANSPORTE');
-    $sheet->setCellValue('N1', 'PRIMA DE RECONOCIMIENTO');
-    $sheet->setCellValue('O1', 'PRIMA DE HOGARES');
-    $sheet->setCellValue('P1', 'COMPLEMENTO DE ALIMENTACIÓN');
-    $sheet->setCellValue('Q1', 'PRIMA POR HIJOS');
-    $sheet->setCellValue('R1', 'DIFERENCIA DE SUELDO BÁSICO');
-    $sheet->setCellValue('S1', 'DIFERENCIA DE ANTIGUEDAD');
-    $sheet->setCellValue('T1', 'DIFERENCIA DE PROFESIONALIZACIÓN');
-    $sheet->setCellValue('U1', 'DIFERENCIA DE JERARQUÍA');
-    $sheet->setCellValue('V1', 'TOTAL DE ASIGNACIONES');
-    $sheet->setCellValue('W1', 'TOTAL DE DEDUCCIONES');
-    $sheet->setCellValue('X1', 'SALARIO NETO');
-    $sheet->setCellValue('Y1', 'ASIGNACIÓN MENSUAL');
-    $sheet->setCellValue('Z1', 'SEMANAL PARA EL IVSS');
-    $sheet->setCellValue('AA1', 'SEGURO EMPLEADO');
-    $sheet->setCellValue('AB1', 'SEGURO PATRONAL');
-    $sheet->setCellValue('AC1', 'R.P.E EMPLEADO');
-    $sheet->setCellValue('AD1', 'R.P.E PATRONAL');
-    $sheet->setCellValue('AE1', 'FAOV EMPLEADO');
-    $sheet->setCellValue('AF1', 'FAOV PATRONAL');
-    $sheet->setCellValue('AG1', 'FEJP EMPLEADO Y PATRONAL');
-    $sheet->setCellValue('AH1', 'CAJA EMPLEADO Y PATRONAL');
-
-    // Estilo para los encabezados
-    $headerStyle = [
-        'font' => [
-            'bold' => true,
-            'color' => ['rgb' => 'FFFFFF'],
-        ],
-        'fill' => [
-            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-            'startColor' => ['rgb' => '4472C4'],
-        ],
-        'alignment' => [
-            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-            'wrapText' => true,
-        ],
-    ];
-
-    $sheet->getStyle('A1:AH1')->applyFromArray($headerStyle);
-
     // Arrays para el mapeo
     $escala_antiguedad = [
         23 => 0.30,  22 => 0.296, 21 => 0.278, 20 => 0.26,
@@ -239,342 +191,456 @@
         3 => 0.06,   2 => 0.04,   1 => 0.02
     ];
 
-    // Llenar datos
-    $row = 2;
-    $contador = 1;
-    $fecha_actual = new DateTime();
-    
-    foreach ($resultados as $data) {
-        $sueldo_quincenal = round($data['salario_base'] / 2, 2);
-        
-        // Cálculo de profesionalización
-        $porcentaje = 0.00;
-        if (isset($data['profesionalizacion'])) {
-            switch ((string)$data['profesionalizacion']) {
-                case '1': $porcentaje = 0.20; break;
-                case '2': $porcentaje = 0.25; break;
-                case '3': $porcentaje = 0.30; break;
-                case '4': $porcentaje = 0.35; break;
-                case '5': $porcentaje = 0.40; break;
-            }
-        }
-        $profesionalizacion = round($sueldo_quincenal * $porcentaje, 2);
-        
-        // Cálculo de prima de transporte
-        $prima_transporte = isset($data['prima_transporte_porcentaje']) ? 
-            round($data['prima_transporte_porcentaje'] / 2, 2) : 0;
-        
-        // Cálculo de prima por hogares
-        $prima_hogares = isset($data['prima_hogares_porcentaje']) ? 
-            round($data['prima_hogares_porcentaje'] / 2, 2) : 0;
-        
-        // Cálculo de complemento de alimentación
-        $complemento_alimentacion = isset($data['complemento_alimentacion_porcentaje']) ? 
-            round($data['complemento_alimentacion_porcentaje'] / 2 * $data['numero_hijos'], 2) : 0;
-        
-        // Cálculo de prima por hijos
-        $prima_hijos = isset($data['prima_hijos_porcentaje']) ? 
-            round($data['prima_hijos_porcentaje'] / 2 * $data['numero_hijos'], 2) : 0;
+    // Función para generar el reporte de una quincena
+    function generarReporte($resultados, $antiguedades, $suplencias, $cajas_ahorro, $escala_antiguedad, $escala_reconocimiento, $cantidad_lunes, $quincena, $mes_proximo_mes, $ano_proximo_mes, $porcentajes) {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-        // Cálculo de antigüedad quincenal
-        $antiguedad_quincenal = 0;
-        $prima_reconocimiento = 0;
-        
-        $fecha_ingreso = new DateTime($data['fecha_ingreso']);
-        $dias_recientes = $fecha_actual->diff($fecha_ingreso)->days;
-        
-        if (isset($antiguedades[$data['cedula']])) {
-            $dias_antiguedad = 0;
-            
-            foreach ($antiguedades[$data['cedula']] as $ant) {
-                $fecha_ini = new DateTime($ant['ant_ani']);
-                $fecha_fin = new DateTime($ant['ant_anf']);
-                $dias_antiguedad += $fecha_fin->diff($fecha_ini)->days;
-            }
-            
-            $total_dias = $dias_antiguedad + $dias_recientes;
-            $anos_antiguedad = floor($total_dias / 365);
-        } else {
-            $anos_antiguedad = floor($dias_recientes / 365);
-        }
-        
-        // Cálculo optimizado de porcentaje de antigüedad
-        $porcentaje_antiguedad = $escala_antiguedad[$anos_antiguedad] ?? ($anos_antiguedad >= 23 ? 0.30 : 0);
-        $antiguedad_quincenal = round(($data['salario_base'] * $porcentaje_antiguedad) / 2, 2);
-        
-        // Cálculo optimizado de prima de reconocimiento
-        $porcentaje_reconocimiento = $escala_reconocimiento[$anos_antiguedad] ?? ($anos_antiguedad >= 23 ? 0.60 : 0);
-        $prima_reconocimiento = round(($data['salario_historico'] * $porcentaje_reconocimiento) / 2, 2);
+        // Extraer porcentajes del array
+        extract($porcentajes);
 
-        // Cálculo de diferencias por suplencia
-        $diferencia_sueldo = 'SIN SUPLENCIA ACTIVA';
-        $diferencia_antiguedad = 'SIN SUPLENCIA ACTIVA';
-        $diferencia_profesionalizacion = 'SIN SUPLENCIA ACTIVA';
-        $diferencia_jerarquia = 'SIN SUPLENCIA ACTIVA';
-        $salario_suplencia = 0;
+        // Encabezados del Excel con estilo
+        $sheet->setCellValue('A1', 'N°');
+        $sheet->setCellValue('B1', 'CÉDULA');
+        $sheet->setCellValue('C1', 'NOMBRE');
+        $sheet->setCellValue('D1', 'APELLIDO');
+        $sheet->setCellValue('E1', 'CARGO CET');
+        $sheet->setCellValue('F1', 'CARGO ONAPRE');
+        $sheet->setCellValue('G1', 'FECHA INGRESO');
+        $sheet->setCellValue('H1', 'SALARIO BASE');
+        $sheet->setCellValue('I1', 'SALARIO BASE QUINCENAL');
+        $sheet->setCellValue('J1', 'ANTIGUEDAD QUINCENAL');
+        $sheet->setCellValue('K1', 'PROFESIONALIZACIÓN QUINCENAL');
+        $sheet->setCellValue('L1', 'PRIMA POR JERARQUÍA');
+        $sheet->setCellValue('M1', 'PRIMA DE TRANSPORTE');
+        $sheet->setCellValue('N1', 'PRIMA DE RECONOCIMIENTO');
+        $sheet->setCellValue('O1', 'PRIMA DE HOGARES');
+        $sheet->setCellValue('P1', 'COMPLEMENTO DE ALIMENTACIÓN');
+        $sheet->setCellValue('Q1', 'PRIMA POR HIJOS');
+        $sheet->setCellValue('R1', 'DIFERENCIA DE SUELDO BÁSICO');
+        $sheet->setCellValue('S1', 'DIFERENCIA DE ANTIGUEDAD');
+        $sheet->setCellValue('T1', 'DIFERENCIA DE PROFESIONALIZACIÓN');
+        $sheet->setCellValue('U1', 'DIFERENCIA DE JERARQUÍA');
+        $sheet->setCellValue('V1', 'TOTAL DE ASIGNACIONES');
+        $sheet->setCellValue('W1', 'TOTAL DE DEDUCCIONES');
+        $sheet->setCellValue('X1', 'SALARIO NETO');
+        $sheet->setCellValue('Y1', 'ASIGNACIÓN MENSUAL');
+        $sheet->setCellValue('Z1', 'SEMANAL PARA EL IVSS');
+        $sheet->setCellValue('AA1', 'SEGURO EMPLEADO');
+        $sheet->setCellValue('AB1', 'SEGURO PATRONAL');
+        $sheet->setCellValue('AC1', 'R.P.E EMPLEADO');
+        $sheet->setCellValue('AD1', 'R.P.E PATRONAL');
+        $sheet->setCellValue('AE1', 'FAOV EMPLEADO');
+        $sheet->setCellValue('AF1', 'FAOV PATRONAL');
+        $sheet->setCellValue('AG1', 'FEJP EMPLEADO Y PATRONAL');
+        $sheet->setCellValue('AH1', 'CAJA EMPLEADO Y PATRONAL');
+
+        // Estilo para los encabezados
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4472C4'],
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                'wrapText' => true,
+            ],
+        ];
+
+        $sheet->getStyle('A1:AH1')->applyFromArray($headerStyle);
+
+        // Llenar datos
+        $row = 2;
+        $contador = 1;
+        $fecha_actual = new DateTime();
         
-        if (isset($suplencias[$data['cedula']])) {
-            foreach ($suplencias[$data['cedula']] as $suplencia) {
-                if ($suplencia['sup_activa'] == 1) {
-                    $salario_suplencia = $suplencia['salario_suplencia'];
-                    
-                    $diferencia = max($salario_suplencia, $data['salario_base']) - min($salario_suplencia, $data['salario_base']);
-                    $diferencia_sueldo = round($diferencia / 2, 2);
-                    
-                    $antiguedad_suplencia = round(($salario_suplencia * $porcentaje_antiguedad) / 2, 2);
-                    $diferencia_antiguedad = round($antiguedad_suplencia - $antiguedad_quincenal, 2);
-                    
-                    $profesionalizacion_suplencia = round(($salario_suplencia / 2) * $porcentaje, 2);
-                    $diferencia_profesionalizacion = round($profesionalizacion_suplencia - $profesionalizacion, 2);
-                    
-                    $porcentaje_jerarquia_suplencia = 0;
-                    if (isset($suplencia['cargo_suplencia'])) {
-                        $cargo_suplencia = $suplencia['cargo_suplencia'];
-                        if (stripos($cargo_suplencia, 'Contralor') !== false) {
-                            $porcentaje_jerarquia_suplencia = 95.00;
-                        } elseif ($cargo_suplencia == 'DIRECTOR(A) GENERAL') {
-                            $porcentaje_jerarquia_suplencia = 93.00;
-                        } elseif (stripos($cargo_suplencia, 'Director') !== false) {
-                            $porcentaje_jerarquia_suplencia = 90.00;
-                        } elseif (stripos($cargo_suplencia, 'Jefe de división general') !== false) {
-                            $porcentaje_jerarquia_suplencia = 85.00;
-                        } elseif (stripos($cargo_suplencia, 'Coordinador') !== false || 
-                                 stripos($cargo_suplencia, 'Supervisor') !== false || 
-                                 stripos($cargo_suplencia, 'Jefe de División') !== false) {
-                            $porcentaje_jerarquia_suplencia = 80.00;
-                        }
-                    }
-                    
-                    $prima_jerarquia_suplencia = round(($suplencia['salario_historico_suplencia'] * $porcentaje_jerarquia_suplencia / 100 / 2), 2);
-                    $diferencia_jerarquia = round($prima_jerarquia_suplencia - $data['prima_jerarquia'], 2);
-                    
-                    break;
+        foreach ($resultados as $data) {
+            $sueldo_quincenal = round($data['salario_base'] / 2, 2);
+            
+            // Cálculo de profesionalización
+            $porcentaje = 0.00;
+            if (isset($data['profesionalizacion'])) {
+                switch ((string)$data['profesionalizacion']) {
+                    case '1': $porcentaje = 0.20; break;
+                    case '2': $porcentaje = 0.25; break;
+                    case '3': $porcentaje = 0.30; break;
+                    case '4': $porcentaje = 0.35; break;
+                    case '5': $porcentaje = 0.40; break;
                 }
             }
-        }
-
-        // Cálculo del total de asignaciones
-        $total_asignaciones = round($sueldo_quincenal + $antiguedad_quincenal + $profesionalizacion + $data['prima_jerarquia'] + 
-                             $prima_transporte + $prima_reconocimiento + $prima_hogares + $complemento_alimentacion + $prima_hijos, 2);
-        
-        $total_asignaciones += is_numeric($diferencia_sueldo) ? $diferencia_sueldo : 0;
-        $total_asignaciones += is_numeric($diferencia_antiguedad) ? $diferencia_antiguedad : 0;
-        $total_asignaciones += is_numeric($diferencia_profesionalizacion) ? $diferencia_profesionalizacion : 0;
-        $total_asignaciones += is_numeric($diferencia_jerarquia) ? $diferencia_jerarquia : 0;
-
-        $total_asignaciones = round($total_asignaciones, 2);
-
-        // Cálculo de la asignación mensual
-        $asignacion_mensual = round((
-            $sueldo_quincenal + 
-            $antiguedad_quincenal + 
-            $profesionalizacion + 
-            $data['prima_jerarquia'] + 
-            $prima_transporte + 
-            $prima_reconocimiento + 
-            $prima_hogares
-        ) * 2, 2);
-
-        // Cálculo del semanal para IVSS
-        $semanal_ivss = 0;
-        if ($asignacion_mensual > 650.00) {
-            $semanal_ivss = 150.00;
-        } else {
-            $semanal_ivss = round((($asignacion_mensual / 2) * 24) / 52, 2);
-        }
-
-        // Cálculo del seguro del empleado
-        $seguro_empleado = 0;
-        if ($asignacion_mensual > 650.00) {
-            $base_calculo = 650.00;
-            $seguro_empleado = round((($base_calculo * 12) / 52) * $porcentaje_seguro_empleado * $cantidad_lunes, 2);
-        } else {
-            $base_calculo = $asignacion_mensual / 2;
-            $seguro_empleado = round((($base_calculo * 24) / 52) * $porcentaje_seguro_empleado * $cantidad_lunes, 2);
-        }
-
-        // Cálculo del seguro patronal
-        $seguro_patronal = 0;
-        if ($asignacion_mensual > 650.00) {
-            $base_calculo = 650.00;
-            $seguro_patronal = round((($base_calculo * 12) / 52) * $porcentaje_seguro_patronal * $cantidad_lunes, 2);
-        } else {
-            $base_calculo = $asignacion_mensual / 2;
-            $seguro_patronal = round((($base_calculo * 24) / 52) * $porcentaje_seguro_patronal * $cantidad_lunes, 2);
-        }
-
-        // Cálculo del R.P.E Empleado
-        $rpe_empleado = 0;
-        $limite_rpe = 130 * 10;
-        
-        if ($asignacion_mensual > $limite_rpe) {
-            $base_calculo = $limite_rpe;
-            $rpe_empleado = round((($base_calculo * 12) / 52) * $porcentaje_rpe_empleado * $cantidad_lunes, 2);
-        } else {
-            $base_calculo = $asignacion_mensual / 2;
-            $rpe_empleado = round((($base_calculo * 24) / 52) * $porcentaje_rpe_empleado * $cantidad_lunes, 2);
-        }
-
-        // Cálculo del R.P.E Patronal
-        $rpe_patronal = 0;
-        if ($asignacion_mensual > $limite_rpe) {
-            $base_calculo = $limite_rpe;
-            $rpe_patronal = round((($base_calculo * 12) / 52) * $porcentaje_rpe_patronal * $cantidad_lunes, 2);
-        } else {
-            $base_calculo = $asignacion_mensual / 2;
-            $rpe_patronal = round((($base_calculo * 24) / 52) * $porcentaje_rpe_patronal * $cantidad_lunes, 2);
-        }
-
-        // Cálculo del FAOV Empleado
-        $faov_empleado = round($total_asignaciones * $porcentaje_faov_empleado, 2);
-
-        // Cálculo del FAOV Patronal
-        $faov_patronal = round($faov_empleado * $porcentaje_faov_patronal, 2);
-
-        // Cálculo del FEJP Empleado y Patronal
-        $base_fejp = $sueldo_quincenal + $antiguedad_quincenal;
-        
-        $base_fejp += is_numeric($diferencia_sueldo) ? $diferencia_sueldo : 0;
-        $base_fejp += is_numeric($diferencia_antiguedad) ? $diferencia_antiguedad : 0;
-        
-        $fejp = round($base_fejp * $porcentaje_fejp, 2);
-
-        // Cálculo de Caja Empleado y Patronal
-        $caja_ahorro = 'No está en caja de ahorro';
-        
-        if (isset($cajas_ahorro[$data['cedula']])) {
-            $cep_activa = $cajas_ahorro[$data['cedula']][0]['cep_activa'];
+            $profesionalizacion = round($sueldo_quincenal * $porcentaje, 2);
             
-            if ($cep_activa == 1) {
-                $base_caja = $sueldo_quincenal;
-                $base_caja += is_numeric($diferencia_sueldo) ? $diferencia_sueldo : 0;
-                $caja_ahorro = round($base_caja * $porcentaje_caja, 2);
+            // Cálculo de prima de transporte
+            $prima_transporte = isset($data['prima_transporte_porcentaje']) ? 
+                round($data['prima_transporte_porcentaje'] / 2, 2) : 0;
+            
+            // Cálculo de prima por hogares
+            $prima_hogares = isset($data['prima_hogares_porcentaje']) ? 
+                round($data['prima_hogares_porcentaje'] / 2, 2) : 0;
+            
+            // Cálculo de complemento de alimentación
+            $complemento_alimentacion = isset($data['complemento_alimentacion_porcentaje']) ? 
+                round($data['complemento_alimentacion_porcentaje'] / 2 * $data['numero_hijos'], 2) : 0;
+            
+            // Cálculo de prima por hijos
+            $prima_hijos = isset($data['prima_hijos_porcentaje']) ? 
+                round($data['prima_hijos_porcentaje'] / 2 * $data['numero_hijos'], 2) : 0;
+
+            // Cálculo de antigüedad quincenal
+            $antiguedad_quincenal = 0;
+            $prima_reconocimiento = 0;
+            
+            $fecha_ingreso = new DateTime($data['fecha_ingreso']);
+            $dias_recientes = $fecha_actual->diff($fecha_ingreso)->days;
+            
+            if (isset($antiguedades[$data['cedula']])) {
+                $dias_antiguedad = 0;
+                
+                foreach ($antiguedades[$data['cedula']] as $ant) {
+                    $fecha_ini = new DateTime($ant['ant_ani']);
+                    $fecha_fin = new DateTime($ant['ant_anf']);
+                    $dias_antiguedad += $fecha_fin->diff($fecha_ini)->days;
+                }
+                
+                $total_dias = $dias_antiguedad + $dias_recientes;
+                $anos_antiguedad = floor($total_dias / 365);
+            } else {
+                $anos_antiguedad = floor($dias_recientes / 365);
             }
+            
+            // Cálculo optimizado de porcentaje de antigüedad
+            $porcentaje_antiguedad = $escala_antiguedad[$anos_antiguedad] ?? ($anos_antiguedad >= 23 ? 0.30 : 0);
+            $antiguedad_quincenal = round(($data['salario_base'] * $porcentaje_antiguedad) / 2, 2);
+            
+            // Cálculo optimizado de prima de reconocimiento
+            $porcentaje_reconocimiento = $escala_reconocimiento[$anos_antiguedad] ?? ($anos_antiguedad >= 23 ? 0.60 : 0);
+            $prima_reconocimiento = round(($data['salario_historico'] * $porcentaje_reconocimiento) / 2, 2);
+
+            // Cálculo de diferencias por suplencia
+            $diferencia_sueldo = 'SIN SUPLENCIA ACTIVA';
+            $diferencia_antiguedad = 'SIN SUPLENCIA ACTIVA';
+            $diferencia_profesionalizacion = 'SIN SUPLENCIA ACTIVA';
+            $diferencia_jerarquia = 'SIN SUPLENCIA ACTIVA';
+            $salario_suplencia = 0;
+            
+            if (isset($suplencias[$data['cedula']])) {
+                foreach ($suplencias[$data['cedula']] as $suplencia) {
+                    if ($suplencia['sup_activa'] == 1) {
+                        $salario_suplencia = $suplencia['salario_suplencia'];
+                        
+                        $diferencia = max($salario_suplencia, $data['salario_base']) - min($salario_suplencia, $data['salario_base']);
+                        $diferencia_sueldo = round($diferencia / 2, 2);
+                        
+                        $antiguedad_suplencia = round(($salario_suplencia * $porcentaje_antiguedad) / 2, 2);
+                        $diferencia_antiguedad = round($antiguedad_suplencia - $antiguedad_quincenal, 2);
+                        
+                        $profesionalizacion_suplencia = round(($salario_suplencia / 2) * $porcentaje, 2);
+                        $diferencia_profesionalizacion = round($profesionalizacion_suplencia - $profesionalizacion, 2);
+                        
+                        $porcentaje_jerarquia_suplencia = 0;
+                        if (isset($suplencia['cargo_suplencia'])) {
+                            $cargo_suplencia = $suplencia['cargo_suplencia'];
+                            if (stripos($cargo_suplencia, 'Contralor') !== false) {
+                                $porcentaje_jerarquia_suplencia = 95.00;
+                            } elseif ($cargo_suplencia == 'DIRECTOR(A) GENERAL') {
+                                $porcentaje_jerarquia_suplencia = 93.00;
+                            } elseif (stripos($cargo_suplencia, 'Director') !== false) {
+                                $porcentaje_jerarquia_suplencia = 90.00;
+                            } elseif (stripos($cargo_suplencia, 'Jefe de división general') !== false) {
+                                $porcentaje_jerarquia_suplencia = 85.00;
+                            } elseif (stripos($cargo_suplencia, 'Coordinador') !== false || 
+                                     stripos($cargo_suplencia, 'Supervisor') !== false || 
+                                     stripos($cargo_suplencia, 'Jefe de División') !== false) {
+                                $porcentaje_jerarquia_suplencia = 80.00;
+                            }
+                        }
+                        
+                        $prima_jerarquia_suplencia = round(($suplencia['salario_historico_suplencia'] * $porcentaje_jerarquia_suplencia / 100 / 2), 2);
+                        $diferencia_jerarquia = round($prima_jerarquia_suplencia - $data['prima_jerarquia'], 2);
+                        
+                        break;
+                    }
+                }
+            }
+
+            // Cálculo del total de asignaciones
+            $total_asignaciones = round($sueldo_quincenal + $antiguedad_quincenal + $profesionalizacion + $data['prima_jerarquia'] + 
+                                 $prima_transporte + $prima_reconocimiento + $prima_hogares + $complemento_alimentacion + $prima_hijos, 2);
+            
+            $total_asignaciones += is_numeric($diferencia_sueldo) ? $diferencia_sueldo : 0;
+            $total_asignaciones += is_numeric($diferencia_antiguedad) ? $diferencia_antiguedad : 0;
+            $total_asignaciones += is_numeric($diferencia_profesionalizacion) ? $diferencia_profesionalizacion : 0;
+            $total_asignaciones += is_numeric($diferencia_jerarquia) ? $diferencia_jerarquia : 0;
+
+            $total_asignaciones = round($total_asignaciones, 2);
+
+            // Cálculo de la asignación mensual
+            $asignacion_mensual = round((
+                $sueldo_quincenal + 
+                $antiguedad_quincenal + 
+                $profesionalizacion + 
+                $data['prima_jerarquia'] + 
+                $prima_transporte + 
+                $prima_reconocimiento + 
+                $prima_hogares
+            ) * 2, 2);
+
+            // Cálculo del semanal para IVSS
+            $semanal_ivss = 0;
+            if ($asignacion_mensual > 650.00) {
+                $semanal_ivss = 150.00;
+            } else {
+                $semanal_ivss = round((($asignacion_mensual / 2) * 24) / 52, 2);
+            }
+
+            // Cálculo del seguro del empleado
+            $seguro_empleado = 0;
+            if ($asignacion_mensual > 650.00) {
+                $base_calculo = 650.00;
+                $seguro_empleado = round((($base_calculo * 12) / 52) * $porcentaje_seguro_empleado * $cantidad_lunes, 2);
+            } else {
+                $base_calculo = $asignacion_mensual / 2;
+                $seguro_empleado = round((($base_calculo * 24) / 52) * $porcentaje_seguro_empleado * $cantidad_lunes, 2);
+            }
+
+            // Cálculo del seguro patronal
+            $seguro_patronal = 0;
+            if ($asignacion_mensual > 650.00) {
+                $base_calculo = 650.00;
+                $seguro_patronal = round((($base_calculo * 12) / 52) * $porcentaje_seguro_patronal * $cantidad_lunes, 2);
+            } else {
+                $base_calculo = $asignacion_mensual / 2;
+                $seguro_patronal = round((($base_calculo * 24) / 52) * $porcentaje_seguro_patronal * $cantidad_lunes, 2);
+            }
+
+            // Cálculo del R.P.E Empleado
+            $rpe_empleado = 0;
+            $limite_rpe = 130 * 10;
+            
+            if ($asignacion_mensual > $limite_rpe) {
+                $base_calculo = $limite_rpe;
+                $rpe_empleado = round((($base_calculo * 12) / 52) * $porcentaje_rpe_empleado * $cantidad_lunes, 2);
+            } else {
+                $base_calculo = $asignacion_mensual / 2;
+                $rpe_empleado = round((($base_calculo * 24) / 52) * $porcentaje_rpe_empleado * $cantidad_lunes, 2);
+            }
+
+            // Cálculo del R.P.E Patronal
+            $rpe_patronal = 0;
+            if ($asignacion_mensual > $limite_rpe) {
+                $base_calculo = $limite_rpe;
+                $rpe_patronal = round((($base_calculo * 12) / 52) * $porcentaje_rpe_patronal * $cantidad_lunes, 2);
+            } else {
+                $base_calculo = $asignacion_mensual / 2;
+                $rpe_patronal = round((($base_calculo * 24) / 52) * $porcentaje_rpe_patronal * $cantidad_lunes, 2);
+            }
+
+            // Cálculo del FAOV Empleado
+            $faov_empleado = round($total_asignaciones * $porcentaje_faov_empleado, 2);
+
+            // Cálculo del FAOV Patronal
+            $faov_patronal = round($faov_empleado * $porcentaje_faov_patronal, 2);
+
+            // Cálculo del FEJP Empleado y Patronal
+            $base_fejp = $sueldo_quincenal + $antiguedad_quincenal;
+            
+            $base_fejp += is_numeric($diferencia_sueldo) ? $diferencia_sueldo : 0;
+            $base_fejp += is_numeric($diferencia_antiguedad) ? $diferencia_antiguedad : 0;
+            
+            $fejp = round($base_fejp * $porcentaje_fejp, 2);
+
+            // Cálculo de Caja Empleado y Patronal
+            $caja_ahorro = 'No está en caja de ahorro';
+            
+            if (isset($cajas_ahorro[$data['cedula']])) {
+                $cep_activa = $cajas_ahorro[$data['cedula']][0]['cep_activa'];
+                
+                if ($cep_activa == 1) {
+                    $base_caja = $sueldo_quincenal;
+                    $base_caja += is_numeric($diferencia_sueldo) ? $diferencia_sueldo : 0;
+                    $caja_ahorro = round($base_caja * $porcentaje_caja, 2);
+                }
+            }
+
+            // Cálculo del total de deducciones
+            $total_deducciones = 0;
+            
+            if (is_numeric($seguro_empleado)) $total_deducciones += $seguro_empleado;
+            if (is_numeric($rpe_empleado)) $total_deducciones += $rpe_empleado;
+            if (is_numeric($faov_empleado)) $total_deducciones += $faov_empleado;
+            if (is_numeric($fejp)) $total_deducciones += $fejp;
+            if (is_numeric($caja_ahorro)) $total_deducciones += $caja_ahorro;
+            
+            $total_deducciones = round($total_deducciones, 2);
+
+            // CÁLCULO DEL SALARIO NETO
+            $salario_neto = round($total_asignaciones - $total_deducciones, 2);
+
+            $sheet->setCellValue('A' . $row, $contador);
+            $sheet->setCellValue('B' . $row, $data['cedula']);
+            $sheet->setCellValue('C' . $row, $data['nombre']);
+            $sheet->setCellValue('D' . $row, $data['apellido']);
+            $sheet->setCellValue('E' . $row, $data['cargo_cet']);
+            $sheet->setCellValue('F' . $row, $data['cargo_onapre']);
+            $sheet->setCellValue('G' . $row, Date::PHPToExcel($data['fecha_ingreso']));
+            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
+            $sheet->setCellValue('H' . $row, $data['salario_base']);
+            $sheet->setCellValue('I' . $row, $sueldo_quincenal);
+            $sheet->setCellValue('J' . $row, $antiguedad_quincenal);
+            $sheet->setCellValue('K' . $row, $profesionalizacion);
+            $sheet->setCellValue('L' . $row, $data['prima_jerarquia']);
+            $sheet->setCellValue('M' . $row, $prima_transporte);
+            $sheet->setCellValue('N' . $row, $prima_reconocimiento);
+            $sheet->setCellValue('O' . $row, $prima_hogares);
+            $sheet->setCellValue('P' . $row, $complemento_alimentacion);
+            $sheet->setCellValue('Q' . $row, $prima_hijos);
+            $sheet->setCellValue('R' . $row, $diferencia_sueldo);
+            $sheet->setCellValue('S' . $row, $diferencia_antiguedad);
+            $sheet->setCellValue('T' . $row, $diferencia_profesionalizacion);
+            $sheet->setCellValue('U' . $row, $diferencia_jerarquia);
+            $sheet->setCellValue('V' . $row, $total_asignaciones);
+            $sheet->setCellValue('W' . $row, $total_deducciones);
+            $sheet->setCellValue('X' . $row, $salario_neto);
+            $sheet->setCellValue('Y' . $row, $asignacion_mensual);
+            $sheet->setCellValue('Z' . $row, $semanal_ivss);
+            $sheet->setCellValue('AA' . $row, $seguro_empleado);
+            $sheet->setCellValue('AB' . $row, $seguro_patronal);
+            $sheet->setCellValue('AC' . $row, $rpe_empleado);
+            $sheet->setCellValue('AD' . $row, $rpe_patronal);
+            $sheet->setCellValue('AE' . $row, $faov_empleado);
+            $sheet->setCellValue('AF' . $row, $faov_patronal);
+            $sheet->setCellValue('AG' . $row, $fejp);
+            $sheet->setCellValue('AH' . $row, $caja_ahorro);
+            
+            $row++;
+            $contador++;
         }
 
-        // Cálculo del total de deducciones
-        $total_deducciones = 0;
-        
-        if (is_numeric($seguro_empleado)) $total_deducciones += $seguro_empleado;
-        if (is_numeric($rpe_empleado)) $total_deducciones += $rpe_empleado;
-        if (is_numeric($faov_empleado)) $total_deducciones += $faov_empleado;
-        if (is_numeric($fejp)) $total_deducciones += $fejp;
-        if (is_numeric($caja_ahorro)) $total_deducciones += $caja_ahorro;
-        
-        $total_deducciones = round($total_deducciones, 2);
+        // Aplicar formato numérico a las columnas numéricas
+        $sheet->getStyle('H2:AH' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
 
-        // CÁLCULO DEL SALARIO NETO
-        $salario_neto = round($total_asignaciones - $total_deducciones, 2);
+        // Estilo para el contenido
+        $contentStyle = [
+            'alignment' => [
+                'wrapText' => true,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
+            ],
+        ];
+        $sheet->getStyle('A2:AH' . $row)->applyFromArray($contentStyle);
 
-        $sheet->setCellValue('A' . $row, $contador);
-        $sheet->setCellValue('B' . $row, $data['cedula']);
-        $sheet->setCellValue('C' . $row, $data['nombre']);
-        $sheet->setCellValue('D' . $row, $data['apellido']);
-        $sheet->setCellValue('E' . $row, $data['cargo_cet']);
-        $sheet->setCellValue('F' . $row, $data['cargo_onapre']);
-        $sheet->setCellValue('G' . $row, Date::PHPToExcel($data['fecha_ingreso']));
-        $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('dd/mm/yyyy');
-        $sheet->setCellValue('H' . $row, $data['salario_base']);
-        $sheet->setCellValue('I' . $row, $sueldo_quincenal);
-        $sheet->setCellValue('J' . $row, $antiguedad_quincenal);
-        $sheet->setCellValue('K' . $row, $profesionalizacion);
-        $sheet->setCellValue('L' . $row, $data['prima_jerarquia']);
-        $sheet->setCellValue('M' . $row, $prima_transporte);
-        $sheet->setCellValue('N' . $row, $prima_reconocimiento);
-        $sheet->setCellValue('O' . $row, $prima_hogares);
-        $sheet->setCellValue('P' . $row, $complemento_alimentacion);
-        $sheet->setCellValue('Q' . $row, $prima_hijos);
-        $sheet->setCellValue('R' . $row, $diferencia_sueldo);
-        $sheet->setCellValue('S' . $row, $diferencia_antiguedad);
-        $sheet->setCellValue('T' . $row, $diferencia_profesionalizacion);
-        $sheet->setCellValue('U' . $row, $diferencia_jerarquia);
-        $sheet->setCellValue('V' . $row, $total_asignaciones);
-        $sheet->setCellValue('W' . $row, $total_deducciones);
-        $sheet->setCellValue('X' . $row, $salario_neto);
-        $sheet->setCellValue('Y' . $row, $asignacion_mensual);
-        $sheet->setCellValue('Z' . $row, $semanal_ivss);
-        $sheet->setCellValue('AA' . $row, $seguro_empleado);
-        $sheet->setCellValue('AB' . $row, $seguro_patronal);
-        $sheet->setCellValue('AC' . $row, $rpe_empleado);
-        $sheet->setCellValue('AD' . $row, $rpe_patronal);
-        $sheet->setCellValue('AE' . $row, $faov_empleado);
-        $sheet->setCellValue('AF' . $row, $faov_patronal);
-        $sheet->setCellValue('AG' . $row, $fejp);
-        $sheet->setCellValue('AH' . $row, $caja_ahorro);
+        // Visualización
+        $sheet->getColumnDimension('A')->setWidth(5);  // N°
+        $sheet->getColumnDimension('B')->setWidth(12); // CÉDULA
+        $sheet->getColumnDimension('C')->setWidth(20); // NOMBRE
+        $sheet->getColumnDimension('D')->setWidth(20); // APELLIDO
+        $sheet->getColumnDimension('E')->setWidth(30); // CARGO CET
+        $sheet->getColumnDimension('F')->setWidth(30); // CARGO ONAPRE
+        $sheet->getColumnDimension('G')->setWidth(12); // FECHA INGRESO
+        $sheet->getColumnDimension('H')->setWidth(12); // SALARIO BASE
+        $sheet->getColumnDimension('I')->setWidth(12); // SALARIO BASE QUINCENAL
+        $sheet->getColumnDimension('J')->setWidth(12); // ANTIGUEDAD QUINCENAL
+        $sheet->getColumnDimension('K')->setWidth(12); // PROFESIONALIZACIÓN QUINCENAL
+        $sheet->getColumnDimension('L')->setWidth(12); // PRIMA POR JERARQUÍA
+        $sheet->getColumnDimension('M')->setWidth(12); // PRIMA DE TRANSPORTE
+        $sheet->getColumnDimension('N')->setWidth(12); // PRIMA DE RECONOCIMIENTO
+        $sheet->getColumnDimension('O')->setWidth(12); // PRIMA DE HOGARES
+        $sheet->getColumnDimension('P')->setWidth(12); // COMPLEMENTO DE ALIMENTACIÓN
+        $sheet->getColumnDimension('Q')->setWidth(12); // PRIMA POR HIJOS
+        $sheet->getColumnDimension('R')->setWidth(23); // DIFERENCIA DE SUELDO BÁSICO
+        $sheet->getColumnDimension('S')->setWidth(23); // DIFERENCIA DE ANTIGUEDAD
+        $sheet->getColumnDimension('T')->setWidth(23); // DIFERENCIA DE PROFESIONALIZACIÓN
+        $sheet->getColumnDimension('U')->setWidth(23); // DIFERENCIA DE JERARQUÍA
+        $sheet->getColumnDimension('V')->setWidth(12); // TOTAL DE ASIGNACIONES
+        $sheet->getColumnDimension('W')->setWidth(12); // TOTAL DE DEDUCCIONES
+        $sheet->getColumnDimension('X')->setWidth(12); // SALARIO NETO
+        $sheet->getColumnDimension('Y')->setWidth(12); // ASIGNACIÓN MENSUAL
+        $sheet->getColumnDimension('Z')->setWidth(12); // SEMANAL PARA EL IVSS
+        $sheet->getColumnDimension('AA')->setWidth(12); // SEGURO EMPLEADO
+        $sheet->getColumnDimension('AB')->setWidth(12); // SEGURO PATRONAL
+        $sheet->getColumnDimension('AC')->setWidth(12); // R.P.E EMPLEADO
+        $sheet->getColumnDimension('AD')->setWidth(12); // R.P.E PATRONAL
+        $sheet->getColumnDimension('AE')->setWidth(12); // FAOV EMPLEADO
+        $sheet->getColumnDimension('AF')->setWidth(12); // FAOV PATRONAL
+        $sheet->getColumnDimension('AG')->setWidth(12); // FEJP EMPLEADO Y PATRONAL
+        $sheet->getColumnDimension('AH')->setWidth(20); // CAJA EMPLEADO Y PATRONAL
+
+        // Congelar la primera fila (encabezados)
+        $sheet->freezePane('A2');
+
+        // Generar nombre del archivo
+        $meses = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+        ];
         
-        $row++;
-        $contador++;
+        $fecha_descarga = (new DateTime())->format('d-m-Y');
+        $nombre_mes = $meses[$mes_proximo_mes];
+        $quincena_texto = ($quincena == 1) ? 'Primera_Quincena' : 'Segunda_Quincena';
+        
+        $nombre_archivo = $nombre_mes . '_Contralor_y_Funcionarios_' . $quincena_texto . '_' . $fecha_descarga . '.xlsx';
+
+        // Crear un writer temporal
+        $writer = new Xlsx($spreadsheet);
+        
+        // Guardar en un archivo temporal
+        $temp_file = tempnam(sys_get_temp_dir(), 'php');
+        $writer->save($temp_file);
+        
+        return [
+            'nombre' => $nombre_archivo,
+            'ruta' => $temp_file
+        ];
     }
 
-    // Aplicar formato numérico a las columnas numéricas
-    $sheet->getStyle('H2:AH' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
-
-    // Estilo para el contenido
-    $contentStyle = [
-        'alignment' => [
-            'wrapText' => true,
-            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
-        ],
+    // Agrupar todos los porcentajes en un array para pasarlos a la función
+    $porcentajes = [
+        'porcentaje_seguro_empleado' => $porcentaje_seguro_empleado,
+        'porcentaje_seguro_patronal' => $porcentaje_seguro_patronal,
+        'porcentaje_rpe_empleado' => $porcentaje_rpe_empleado,
+        'porcentaje_rpe_patronal' => $porcentaje_rpe_patronal,
+        'porcentaje_faov_empleado' => $porcentaje_faov_empleado,
+        'porcentaje_faov_patronal' => $porcentaje_faov_patronal,
+        'porcentaje_fejp' => $porcentaje_fejp,
+        'porcentaje_caja' => $porcentaje_caja
     ];
-    $sheet->getStyle('A2:AH' . $row)->applyFromArray($contentStyle);
 
-    // Configurar anchos de columnas específicas para mejor visualización
-    $sheet->getColumnDimension('A')->setWidth(5);  // N°
-    $sheet->getColumnDimension('B')->setWidth(12); // CÉDULA
-    $sheet->getColumnDimension('C')->setWidth(20); // NOMBRE
-    $sheet->getColumnDimension('D')->setWidth(20); // APELLIDO
-    $sheet->getColumnDimension('E')->setWidth(30); // CARGO CET
-    $sheet->getColumnDimension('F')->setWidth(30); // CARGO ONAPRE
-    $sheet->getColumnDimension('G')->setWidth(12); // FECHA INGRESO
-    $sheet->getColumnDimension('H')->setWidth(12); // SALARIO BASE
-    $sheet->getColumnDimension('I')->setWidth(12); // SALARIO BASE QUINCENAL
-    $sheet->getColumnDimension('J')->setWidth(12); // ANTIGUEDAD QUINCENAL
-    $sheet->getColumnDimension('K')->setWidth(12); // PROFESIONALIZACIÓN QUINCENAL
-    $sheet->getColumnDimension('L')->setWidth(12); // PRIMA POR JERARQUÍA
-    $sheet->getColumnDimension('M')->setWidth(12); // PRIMA DE TRANSPORTE
-    $sheet->getColumnDimension('N')->setWidth(12); // PRIMA DE RECONOCIMIENTO
-    $sheet->getColumnDimension('O')->setWidth(12); // PRIMA DE HOGARES
-    $sheet->getColumnDimension('P')->setWidth(12); // COMPLEMENTO DE ALIMENTACIÓN
-    $sheet->getColumnDimension('Q')->setWidth(12); // PRIMA POR HIJOS
-    $sheet->getColumnDimension('R')->setWidth(23); // DIFERENCIA DE SUELDO BÁSICO
-    $sheet->getColumnDimension('S')->setWidth(23); // DIFERENCIA DE ANTIGUEDAD
-    $sheet->getColumnDimension('T')->setWidth(23); // DIFERENCIA DE PROFESIONALIZACIÓN
-    $sheet->getColumnDimension('U')->setWidth(23); // DIFERENCIA DE JERARQUÍA
-    $sheet->getColumnDimension('V')->setWidth(12); // TOTAL DE ASIGNACIONES
-    $sheet->getColumnDimension('W')->setWidth(12); // TOTAL DE DEDUCCIONES
-    $sheet->getColumnDimension('X')->setWidth(12); // SALARIO NETO
-    $sheet->getColumnDimension('Y')->setWidth(12); // ASIGNACIÓN MENSUAL
-    $sheet->getColumnDimension('Z')->setWidth(12); // SEMANAL PARA EL IVSS
-    $sheet->getColumnDimension('AA')->setWidth(12); // SEGURO EMPLEADO
-    $sheet->getColumnDimension('AB')->setWidth(12); // SEGURO PATRONAL
-    $sheet->getColumnDimension('AC')->setWidth(12); // R.P.E EMPLEADO
-    $sheet->getColumnDimension('AD')->setWidth(12); // R.P.E PATRONAL
-    $sheet->getColumnDimension('AE')->setWidth(12); // FAOV EMPLEADO
-    $sheet->getColumnDimension('AF')->setWidth(12); // FAOV PATRONAL
-    $sheet->getColumnDimension('AG')->setWidth(12); // FEJP EMPLEADO Y PATRONAL
-    $sheet->getColumnDimension('AH')->setWidth(20); // CAJA EMPLEADO Y PATRONAL
-
-    // Congelar la primera fila (encabezados)
-    $sheet->freezePane('A2');
-
-    // Generar nombre del archivo con formato: Mes_Contralor y Funcionarios_Fecha
-    $meses = [
-        1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
-        5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
-        9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
-    ];
-    $fecha_actual = new DateTime('now', new DateTimeZone('America/Caracas'));
-    $mes_actual = $meses[(int)$fecha_actual->format('n')];
-    $fecha_descarga = $fecha_actual->format('d-m-Y');
+    // Generar ambos reportes
+    $reporte_primera = generarReporte($resultados, $antiguedades, $suplencias, $cajas_ahorro, 
+                                     $escala_antiguedad, $escala_reconocimiento, 
+                                     $cantidad_lunes_primera, 1, $mes_proximo_mes, $ano_proximo_mes, $porcentajes);
     
-    $nombre_archivo = $mes_actual . '_Contralor y Funcionarios_' . $fecha_descarga . '.xlsx';
+    $reporte_segunda = generarReporte($resultados, $antiguedades, $suplencias, $cajas_ahorro, 
+                                      $escala_antiguedad, $escala_reconocimiento, 
+                                      $cantidad_lunes_segunda, 2, $mes_proximo_mes, $ano_proximo_mes, $porcentajes);
 
-    // Configurar el writer y descargar el archivo
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="' . $nombre_archivo . '"');
-    header('Cache-Control: max-age=0');
-
-    $writer = new Xlsx($spreadsheet);
-    $writer->save('php://output');
+    // Crear un archivo ZIP que contendrá ambos reportes
+    $zip = new ZipArchive();
+    $zip_filename = 'Reportes_Quincenales_' . $meses[$mes_proximo_mes] . '_' . (new DateTime())->format('d-m-Y') . '.zip';
+    $temp_zip = tempnam(sys_get_temp_dir(), 'zip');
+    
+    if ($zip->open($temp_zip, ZipArchive::CREATE) === TRUE) {
+        $zip->addFile($reporte_primera['ruta'], $reporte_primera['nombre']);
+        $zip->addFile($reporte_segunda['ruta'], $reporte_segunda['nombre']);
+        $zip->close();
+        
+        // Configurar headers para descargar el ZIP
+        header('Content-Type: application/zip');
+        header('Content-Disposition: attachment;filename="' . $zip_filename . '"');
+        header('Cache-Control: max-age=0');
+        readfile($temp_zip);
+        
+        // Eliminar archivos temporales
+        unlink($temp_zip);
+        unlink($reporte_primera['ruta']);
+        unlink($reporte_segunda['ruta']);
+    } else {
+        echo 'Error al crear el archivo ZIP';
+    }
     exit;
 ?>
