@@ -1,16 +1,21 @@
 import axios from 'axios';
 
-export const fetchData = async (table, columns, conditionColumn, conditionValue) => {
-
+export const fetchData = async (table, columns, conditionColumn, conditionValue, signal) => {
   const params = conditionColumn && conditionValue
     ? { table, columns, fk: conditionColumn, dato: conditionValue }
     : { table, columns };
 
   try {
-    const response = await axios.get('/api/selects', { params });
-    
+    const response = await axios.get('/api/selects', { 
+      params,
+      signal // Pasa la señal de cancelación
+    });
     return response.data;
   } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log('Petición cancelada:', table);
+      return [];
+    }
     console.error(`Error al obtener datos de ${table}:`, error.message);
     return [];
   }

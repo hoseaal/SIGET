@@ -52,21 +52,15 @@ export const Tipos = () => {
             }
         };
         loadData();
-    }, [showTiposModal]);
-
-
-    const TiposMap = data.reduce((acc, mar) => {
-        acc[mar.mar_ide] = mar.mar_mar; // Asume que cat_cat es el nombre
-        return acc;
-    }, {});
-
+    }, []);
 
     // Cargar datos de Tipos
     useEffect(() => {
+        const controller = new AbortController();
         if (columns.length > 0) {
             const fetchAllData = async () => {
                 try {
-                    const registrosData = await fetchData('tmatip', '*');
+                    const registrosData = await fetchData('tmatip', '*',  controller.signal);
                     setData(registrosData);
                     console.log(data)
                 } catch (error) {
@@ -76,7 +70,10 @@ export const Tipos = () => {
             fetchAllData();
         }
 
-    }, [columns, showTiposModal, refreshKey]);
+        return () => {
+            controller.abort(); // Cancela la petición al desmontar el componente
+        };
+    }, [columns, refreshKey]);
 
 
    return (

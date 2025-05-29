@@ -142,27 +142,36 @@ export const Categorias = () => {
 
     // Cargar datos de categoría
     useEffect(() => {
+        const controller = new AbortController();
+        
+        const fetchAllData = async () => {
+            try {
+            const registrosData = await fetchData('tmacat', '*', controller.signal);
+            setData(registrosData);
+            } catch (error) {
+            if (!axios.isCancel(error)) {
+                console.error("Error cargando datos:", error);
+            }
+            }
+        };
+
         if (columns.length > 0) {
-            const fetchAllData = async () => {
-                try {
-                    const registrosData = await fetchData('tmacat', '*');
-                    setData(registrosData);
-                    console.log(data)
-                } catch (error) {
-                    console.error("Error cargando datos:", error);
-                }
-            };
             fetchAllData();
         }
 
-    }, [columns, showCatModal, refreshKey]);
+        return () => {
+            controller.abort(); // Cancela la petición al desmontar el componente
+        };
+    }, [columns, refreshKey]);
 
     // Cargar datos de subcategoría
     useEffect(() => {
+        const controller = new AbortController();
+
         if (columns2.length > 0) {
             const fetchAllData = async () => {
                 try {
-                    const registrosData2 = await fetchData('tessca', '*');
+                    const registrosData2 = await fetchData('tessca', '*',  controller.signal);
                     setData2(registrosData2);
                 } catch (error) {
                     console.error("Error cargando datos:", error);
@@ -170,14 +179,20 @@ export const Categorias = () => {
             };
             fetchAllData();
         }
+
+        return () => {
+            controller.abort(); // Cancela la petición al desmontar el componente
+        };
     }, [columns2, showSubcatModal, refreshKey]);
 
     // Cargar datos de categoría especifica
     useEffect(() => {
+         const controller = new AbortController();
+
         if (columns3.length > 0) {
             const fetchAllData = async () => {
                 try {
-                    const registrosData = await fetchData('tescae', '*');
+                    const registrosData = await fetchData('tescae', '*',  controller.signal);
                     setData3(registrosData);
                 } catch (error) {
                     console.error("Error cargando datos:", error);
@@ -186,6 +201,9 @@ export const Categorias = () => {
             fetchAllData();
         }
 
+          return () => {
+            controller.abort(); // Cancela la petición al desmontar el componente
+        };
     }, [columns3, showcatEsModal, refreshKey]);
 
     console.log("cat", data)

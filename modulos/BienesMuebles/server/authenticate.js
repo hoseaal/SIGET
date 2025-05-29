@@ -15,7 +15,13 @@ const authenticate = (req, res, next) => {
     const data = jwt.verify(token, config.SECRET_KEY)
     req.user = data
     next()
-  } catch {}
+  } catch (err) {
+    console.error('Error verifying token:', err)
+    return res.status(401).json({
+      success: false,
+      error: 'Token inválido o expirado'
+    })
+  }
 }
 
 export default authenticate

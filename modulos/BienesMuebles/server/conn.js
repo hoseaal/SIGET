@@ -1,7 +1,5 @@
 import { createPool } from 'mysql2/promise'
 
-let client = null
-
 const pool = createPool({
   host: 'localhost',
   user: 'root',
@@ -12,25 +10,27 @@ const pool = createPool({
   queueLimit: 0
 })
 
-const connectDB = async (user, password) => {
-  if (!client) {
-    client = createPool(user, password)
-    try {
-      await pool.connect()
-      console.log('Conexión exitosa a phpMyAdmin MySQL')
-    } catch (error) {
-      console.error('Error al conectar a la base de datos:', error)
-      client = null
-      throw error
-    }
-  } else {
-    console.log('Conexión ya establecida')
+const connectDB = async () => {
+  try {
+    const connection = await pool.getConnection()
+    await connection.ping() // Verifica que está viva la conexión
+    connection.release()
+    console.log('✅ Conexión exitosa a MySQL')
+  } catch (error) {
+    console.error('❌ Error al conectar a la base de datos:', error)
+    throw error
   }
 }
 
 const getConnection = async () => {
   try {
     const connection = await pool.getConnection()
+    console.log(' Conexión obtenida')
+    const originalRelease = connection.release.bind(connection)
+    connection.release = () => {
+      console.log(' Conexión liberada')
+      originalRelease()
+    }
     return connection
   } catch (error) {
     console.error('Error al obtener conexión:', error.message)

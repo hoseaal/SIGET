@@ -29,9 +29,22 @@ app.get('/api', (req, res) => {
   res.json({ message: '¡Backend conectado con React! Contraloria uwu' })
 })
 
+// Cache simple para evitar verificaciones redundantes
+const authCache = new Map()
+
 app.get('/api/verify-auth', authenticate, (req, res) => {
+  const cacheKey = req.cookies.access_token
+  // Verificar si tenemos una respuesta en caché
+  if (authCache.has(cacheKey)) {
+    const cachedResponse = authCache.get(cacheKey)
+    if (Date.now() < cachedResponse.expires) {
+      return res.json(cachedResponse.data)
+    }
+    authCache.delete(cacheKey)
+  }
+
   console.log('Verificando autenticación...' + req.user.usu_ide)
-  res.json({
+  const response = {
     success: true,
     user: {
       usu_ide: req.user.usu_ide,
@@ -39,7 +52,15 @@ app.get('/api/verify-auth', authenticate, (req, res) => {
       usu_ape: req.user.usu_ape,
       usu_tip: req.user.usu_tip
     }
+  }
+
+  // Almacenar en caché por 30 segundos
+  authCache.set(cacheKey, {
+    data: response,
+    expires: Date.now() + 30000 // 30 segundos
   })
+
+  res.json(response)
 })
 
 app.post('/api/login', async (req, res) => {
@@ -113,8 +134,11 @@ app.post('/api/logout', (req, res) => {
 })
 
 app.get('/api/selects', async (req, res) => {
+  console.log('Recibida petición /api/selects')
   try {
     const { table, columns, fk, dato } = req.query
+
+    console.log(`➡️ Params: table = ${table}, columns = ${columns}, fk = ${fk}, dato = ${dato}`)
 
     // Validación básica
     if (!table) {
@@ -128,9 +152,10 @@ app.get('/api/selects', async (req, res) => {
       data = await selectData(table, columns)
     }
 
+    console.log('✅ Enviando respuesta /api/selects')
     res.json(data)
   } catch (err) {
-    console.error('Error en /api/selects:', err)
+    console.error('❌ Error en /api/selects:', err)
     res.status(500).json({
       error: 'Error al obtener datos',
       details: process.env.NODE_ENV === 'development' ? err.message : undefined

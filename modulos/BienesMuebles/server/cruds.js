@@ -5,26 +5,51 @@ import { getConnection } from './conn.js' // Importa la conexión existente
 
 export const selectData = async (table, columns = '*') => {
   const connection = await getConnection()
+  console.log('🔌 Conexión obtenida en selectData')
   try {
-    const [rows] = await connection.query(
-      `SELECT ${columns} FROM ${table}`
-    )
+    const safeColumns = columns && typeof columns === 'string' ? columns : '*'
+    const query = `SELECT ${safeColumns} FROM ${table}`
+    console.log('🛠 Ejecutando:', query)
+
+    const [rows] = await connection.query(query)
     return rows
+  } catch (err) {
+    console.error('❌ Error en selectData:', err)
+    throw err
   } finally {
-    if (connection) connection.release()
+    if (connection) {
+      try {
+        connection.release()
+        console.log('🔓 Conexión liberada en selectData')
+      } catch (releaseErr) {
+        console.error('❌ Error al liberar conexión en selectData:', releaseErr)
+      }
+    }
   }
 }
 
-export const selectWhereData = async (table, columns = '*', conditionColumn, conditionValue) => {
+export const selectWhereData = async (table, columns = '*', fk, dato) => {
   const connection = await getConnection()
+  console.log('🔌 Conexión obtenida en selectWhereData')
   try {
-    const [rows] = await connection.query(
-      `SELECT ${columns} FROM ${table} WHERE ${conditionColumn} = ?`,
-      [conditionValue]
-    )
+    const safeColumns = columns && typeof columns === 'string' ? columns : '*'
+    const query = `SELECT ${safeColumns} FROM ${table} WHERE ${fk} = ?`
+    console.log('🛠 Ejecutando:', query, 'con dato:', dato)
+
+    const [rows] = await connection.query(query, [dato])
     return rows
+  } catch (err) {
+    console.error('❌ Error en selectWhereData:', err)
+    throw err
   } finally {
-    if (connection) connection.release()
+    if (connection) {
+      try {
+        connection.release()
+        console.log('🔓 Conexión liberada en selectWhereData')
+      } catch (releaseErr) {
+        console.error('❌ Error al liberar conexión en selectWhereData:', releaseErr)
+      }
+    }
   }
 }
 
@@ -179,7 +204,7 @@ export const updateData = async (table, id, data) => {
       message: 'Error al actualizar datos'
     }
   } finally {
-    if (connection) await connection.release()
+    if (connection) connection.release()
   }
 }
 
@@ -213,6 +238,6 @@ export const deleteData = async (table, id, idColumn) => {
       message: 'Error al eliminar datos'
     }
   } finally {
-    if (connection) await connection.release()
+    if (connection) connection.release()
   }
 }

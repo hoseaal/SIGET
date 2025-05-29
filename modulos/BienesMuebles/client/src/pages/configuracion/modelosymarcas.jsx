@@ -101,10 +101,12 @@ export const ModelosyMarcas = () => {
 
     // Cargar datos de Marca
     useEffect(() => {
+        const controller = new AbortController();
+
         if (columns.length > 0) {
             const fetchAllData = async () => {
                 try {
-                    const registrosData = await fetchData('tmamar', '*');
+                    const registrosData = await fetchData('tmamar', '*',  controller.signal);
                     setData(registrosData);
                     console.log(data)
                 } catch (error) {
@@ -114,14 +116,18 @@ export const ModelosyMarcas = () => {
             fetchAllData();
         }
 
+        return () => {
+            controller.abort(); // Cancela la petición al desmontar el componente
+        };
     }, [columns, showMarcasModal, refreshKey]);
 
     // Cargar datos de Modelos
     useEffect(() => {
+        const controller = new AbortController();
         if (columns2.length > 0) {
             const fetchAllData = async () => {
                 try {
-                    const registrosData2 = await fetchData('tesmod', '*');
+                    const registrosData2 = await fetchData('tesmod', '*',  controller.signal);
                     setData2(registrosData2);
                 } catch (error) {
                     console.error("Error cargando datos:", error);
@@ -129,6 +135,10 @@ export const ModelosyMarcas = () => {
             };
             fetchAllData();
         }
+
+        return () => {
+            controller.abort(); // Cancela la petición al desmontar el componente
+        };
     }, [columns2, showModModal, refreshKey]);
 
 
