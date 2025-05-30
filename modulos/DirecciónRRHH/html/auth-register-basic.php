@@ -140,7 +140,7 @@
                     <option value="3">Jefe de área</option>
                     <option value="2">Trabajador</option>
                     <option value="1">Temporal</option>
-                    <option value="0">Solo Vistas</option>
+                    <option value="0">Visualizador</option>
                   </select>
                 </div>
 
@@ -243,14 +243,6 @@
         if (!/^[a-zA-Z0-9.@]{1,16}$/.test(passwordValue)) {
           alert('La contraseña debe contener:\n- Letras y números\n- Solo puntos (.) y arrobas (@) como caracteres especiales\n- Máximo 16 caracteres');
           passwordInput.focus();
-          return;
-        }
-        
-        // Validar rol seleccionado
-        const rolInput = document.getElementById('tip');
-        if (!rolInput.value) {
-          alert('Por favor seleccione un rol válido');
-          rolInput.focus();
           return;
         }
         

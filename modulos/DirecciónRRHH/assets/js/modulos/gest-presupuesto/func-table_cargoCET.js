@@ -80,25 +80,56 @@ document.addEventListener('DOMContentLoaded', function() {
         positions.forEach((position, index) => {
             const rowNumber = (page - 1) * rowsPerPage + index + 1;
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${rowNumber}</td>
-                <td>${position.cet_car}</td>
-                <td>
-                    <div class="dropdown">
-                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item edit-position-btn" href="javascript:void(0);" data-id="${position.cet_ide}">
-                                <i class="bx bx-edit-alt me-1"></i> Editar
-                            </a>
-                            <a class="dropdown-item delete-position-btn" href="javascript:void(0);" data-id="${position.cet_ide}" data-name="${position.cet_car}">
-                                <i class="bx bx-trash me-1"></i> Eliminar
-                            </a>
+            
+            // Usuario tipo "0" - solo 2 columnas
+            if (LOGGED_USER_TYPE === '0') {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td>${position.cet_car}</td>
+                `;
+            } 
+            // Usuario tipo "1" o "2" - 3 columnas (sin eliminar)
+            else if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td>${position.cet_car}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-position-btn" href="javascript:void(0);" data-id="${position.cet_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </td>
-            `;
+                    </td>
+                `;
+            } 
+            // Usuario tipo "3" o "4" - 3 columnas con todas las acciones
+            else {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td>${position.cet_car}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-position-btn" href="javascript:void(0);" data-id="${position.cet_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                                <a class="dropdown-item delete-position-btn" href="javascript:void(0);" data-id="${position.cet_ide}" data-name="${position.cet_car}">
+                                    <i class="bx bx-trash me-1"></i> Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                `;
+            }
+            
             tableBody.appendChild(row);
         });
 
@@ -113,90 +144,96 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Configurar event listeners solo si el usuario tiene permisos
+        if (LOGGED_USER_TYPE !== '0') {
+            // Configurar event listeners para editar
+            document.querySelectorAll('.edit-position-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const positionId = this.getAttribute('data-id');
+                    const positionName = this.closest('tr').querySelector('td:nth-child(2)').textContent;
+                    
+                    // Cargar datos en el modal de edición
+                    const editModal = new bootstrap.Modal(document.getElementById('ModalEditCET'));
+                    const modalInput = document.querySelector('#ModalEditCET #nameBasic');
+                    const saveBtn = document.querySelector('#ModalEditCET .btn-primary');
+                    
+                    // Limpiar eventos anteriores para evitar duplicados
+                    const newSaveBtn = saveBtn.cloneNode(true);
+                    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+                    
+                    // Configurar valores del modal
+                    modalInput.value = positionName;
+                    
+                    // Configurar evento para guardar cambios
+                    newSaveBtn.addEventListener('click', async function() {
+                        const modalInput = document.querySelector('#ModalEditCET #nameBasic');
+                        const newName = modalInput.value.trim();
+                        
+                        // Validaciones
+                        if (!isValidCargoName(newName)) {
+                            showInputError(modalInput, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
+                            return;
+                        }
+                        
+                        try {
+                            // Mostrar loader
+                            const originalButtonText = newSaveBtn.innerHTML;
+                            newSaveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+                            newSaveBtn.disabled = true;
+                            
+                            // Enviar solicitud al servidor
+                            const response = await fetch('../PHP/api/gest-presupuesto/actualizar_cargoCET.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ 
+                                    position_id: positionId,
+                                    new_name: newName
+                                })
+                            });
+                            
+                            const result = await response.json();
+                            
+                            // Restaurar botón
+                            newSaveBtn.innerHTML = originalButtonText;
+                            newSaveBtn.disabled = false;
+                            
+                            if (result.success) {
+                                // Cerrar el modal
+                                editModal.hide();
+                                // Recargar la tabla
+                                displayPositions(currentPage);
+                            } else {
+                                throw new Error(result.message || 'Error al actualizar el cargo');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('Error al actualizar: ' + error.message);
+                            newSaveBtn.innerHTML = 'Guardar Cambios';
+                            newSaveBtn.disabled = false;
+                        }
+                    });
+                    
+                    // Mostrar el modal
+                    editModal.show();
+                });
+            });
+
+            // Agregar event listeners para los botones de eliminar (solo para tipos 3 y 4)
+            if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+                document.querySelectorAll('.delete-position-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const positionId = this.getAttribute('data-id');
+                        const positionName = this.getAttribute('data-name');
+                        showDeleteConfirmation(positionId, positionName);
+                    });
+                });
+            }
+        }
+
         // Configurar la paginación
         setupPagination();
-
-        document.querySelectorAll('.edit-position-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const positionId = this.getAttribute('data-id');
-                const positionName = this.closest('tr').querySelector('td:nth-child(2)').textContent;
-                
-                // Cargar datos en el modal de edición
-                const editModal = new bootstrap.Modal(document.getElementById('ModalEditCET'));
-                const modalInput = document.querySelector('#ModalEditCET #nameBasic');
-                const saveBtn = document.querySelector('#ModalEditCET .btn-primary');
-                
-                // Limpiar eventos anteriores para evitar duplicados
-                const newSaveBtn = saveBtn.cloneNode(true);
-                saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-                
-                // Configurar valores del modal
-                modalInput.value = positionName;
-                
-                // Configurar evento para guardar cambios
-                newSaveBtn.addEventListener('click', async function() {
-                    const modalInput = document.querySelector('#ModalEditCET #nameBasic');
-                    const newName = modalInput.value.trim();
-                    
-                    // Validaciones
-                    if (!isValidCargoName(newName)) {
-                        showInputError(modalInput, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
-                        return;
-                    }
-                    
-                    try {
-                        // Mostrar loader
-                        const originalButtonText = newSaveBtn.innerHTML;
-                        newSaveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-                        newSaveBtn.disabled = true;
-                        
-                        // Enviar solicitud al servidor
-                        const response = await fetch('../PHP/api/gest-presupuesto/actualizar_cargoCET.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ 
-                                position_id: positionId,
-                                new_name: newName
-                            })
-                        });
-                        
-                        const result = await response.json();
-                        
-                        // Restaurar botón
-                        newSaveBtn.innerHTML = originalButtonText;
-                        newSaveBtn.disabled = false;
-                        
-                        if (result.success) {
-                            // Cerrar el modal
-                            editModal.hide();
-                            // Recargar la tabla
-                            displayPositions(currentPage);
-                        } else {
-                            throw new Error(result.message || 'Error al actualizar el cargo');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        alert('Error al actualizar: ' + error.message);
-                        newSaveBtn.innerHTML = 'Guardar Cambios';
-                        newSaveBtn.disabled = false;
-                    }
-                });
-                
-                // Mostrar el modal
-                editModal.show();
-            });
-        });
-
-        // Agregar event listeners para los botones de eliminar
-        document.querySelectorAll('.delete-position-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const positionId = this.getAttribute('data-id');
-                const positionName = this.getAttribute('data-name');
-                showDeleteConfirmation(positionId, positionName);
-            });
-        });
     }
 
     // Función para configurar la paginación
