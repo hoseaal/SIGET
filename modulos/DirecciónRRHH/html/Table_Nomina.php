@@ -15,8 +15,9 @@
       exit;
   }
 
-  // Exponer la cédula del usuario logueado como variable JavaScript
+  // Variables de usuario JWT para el JS
   echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
+  echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -104,10 +105,14 @@
           <!-- Content -->
           <div class="container-xxl flex-grow-1 container-p-y">
             <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Gestión de Presupuesto /</span> Nómina</h4>
-              <button id="exportToExcel" class="btn btn-primary">
-                <i class="bx bx-export me-1"></i> Exportar salarios de nómina
-              </button>
+                <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Gestión de Presupuesto /</span> Nómina</h4>
+                <?php 
+                if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { 
+                ?>
+                    <button id="exportToExcel" class="btn btn-primary">
+                        <i class="bx bx-export me-1"></i> Exportar salarios de nómina
+                    </button>
+                <?php } ?>
             </div>
             
             <div class="row">
@@ -143,7 +148,7 @@
                             <th>Apellidos</th>
                             <th>Género</th>
                             <th>Departamento</th>
-                            <th>Acciones</th>
+                            <th id="actionsColumnHeader" style="display: none;">Acciones</th>
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">
