@@ -1,7 +1,8 @@
-import config from './config.js'
 import jwt from 'jsonwebtoken'
+import config from '../utils/config.js'
+import { cache } from '../utils/cache.js'
 
-const authenticate = (req, res, next) => {
+export const authenticate = (req, res, next) => {
   const token = req.cookies.access_token
 
   if (!token) {
@@ -14,6 +15,12 @@ const authenticate = (req, res, next) => {
   try {
     const data = jwt.verify(token, config.SECRET_KEY)
     req.user = data
+
+    // Verificar caché (opcional)
+    if (cache.has(token)) {
+      return res.json(cache.get(token).data)
+    }
+
     next()
   } catch (err) {
     console.error('Error verifying token:', err)
@@ -24,4 +31,9 @@ const authenticate = (req, res, next) => {
   }
 }
 
-export default authenticate
+export const checkRole = (rolesPermitidos) => (req, res, next) => {
+  if (!rolesPermitidos.includes(req.user.usu_tip)) {
+    return res.status(403).json({ error: 'Acceso prohibido' })
+  }
+  next()
+}
