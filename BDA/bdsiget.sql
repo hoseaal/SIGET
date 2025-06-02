@@ -32,9 +32,9 @@ CREATE TABLE `tesant` (
 --
 
 CREATE TABLE `tescae` (
-  `cae_ide` INT NOT NULL COMMENT 'Identificador de categoría especifica',
+  `cae_ide` INT(11) NOT NULL COMMENT 'Identificador de categoría especifica',
   `cae_cae` varchar(100) NOT NULL COMMENT 'descripcion de categoría especifica',
-  `sca_ide` INT NOT NULL COMMENT 'Referencia a subcategoría en tessca'
+  `sca_ide` INT(11) NOT NULL COMMENT 'Referencia a subcategoría en tessca'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -133,9 +133,9 @@ CREATE TABLE `tespri` (
 --
 
 CREATE TABLE `tessca` (
-  `sca_ide` INT NOT NULL COMMENT 'Identificador de sub-categoria',
+  `sca_ide` INT(11) NOT NULL COMMENT 'Identificador de sub-categoria',
   `sca_sca` varchar(100) NOT NULL COMMENT 'descripcion de sub-categoria',
-  `cat_ide` INT NOT NULL COMMENT 'Referencia a categoría en tmacat'
+  `cat_ide` INT(11) NOT NULL COMMENT 'Referencia a categoría en tmacat'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -176,7 +176,7 @@ CREATE TABLE `tmab_m` (
   `con_ide` int(11) NOT NULL COMMENT 'Referencia a condición en tmacon',
   `esu_ide` int(11) NOT NULL COMMENT 'Referencia a estado uso en tmaesu',
   `mod_ide` varchar(10) DEFAULT NULL COMMENT 'Referencia a modelo en tesmod',
-  `cae_ide` varchar(10) DEFAULT NULL COMMENT 'Referencia a categoría específica en tescae',
+  `cae_ide` INT(11) DEFAULT NULL COMMENT 'Referencia a categoría específica en tescae',
   `bim_inc` TINYINT(1) DEFAULT 1 COMMENT "Estado de Bien incorporado(1) o desincoparado(0)",
   `bim_fed` date DEFAULT NULL COMMENT "fecha de desincorporación"
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
