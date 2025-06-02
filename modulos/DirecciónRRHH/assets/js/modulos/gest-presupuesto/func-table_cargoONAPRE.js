@@ -80,25 +80,56 @@ document.addEventListener('DOMContentLoaded', function() {
         positions.forEach((position, index) => {
             const rowNumber = (page - 1) * onapreRowsPerPage + index + 1;
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${rowNumber}</td>
-                <td>${position.ona_car}</td>
-                <td>
-                    <div class="dropdown">
-                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item edit-onapre-btn" href="javascript:void(0);" data-id="${position.ona_ide}">
-                                <i class="bx bx-edit-alt me-1"></i> Editar
-                            </a>
-                            <a class="dropdown-item delete-onapre-btn" href="javascript:void(0);" data-id="${position.ona_ide}" data-name="${position.ona_car}">
-                                <i class="bx bx-trash me-1"></i> Eliminar
-                            </a>
+            
+            // Usuario tipo "0" - solo 2 columnas
+            if (LOGGED_USER_TYPE === '0') {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td>${position.ona_car}</td>
+                `;
+            } 
+            // Usuario tipo "1" o "2" - 3 columnas (sin eliminar)
+            else if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td>${position.ona_car}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-onapre-btn" href="javascript:void(0);" data-id="${position.ona_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </td>
-            `;
+                    </td>
+                `;
+            } 
+            // Usuario tipo "3" o "4" - 3 columnas con todas las acciones
+            else {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td>${position.ona_car}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-onapre-btn" href="javascript:void(0);" data-id="${position.ona_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                                <a class="dropdown-item delete-onapre-btn" href="javascript:void(0);" data-id="${position.ona_ide}" data-name="${position.ona_car}">
+                                    <i class="bx bx-trash me-1"></i> Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                `;
+            }
+            
             onapreTableBody.appendChild(row);
         });
 
@@ -110,6 +141,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.innerHTML = '<td colspan="3" class="empty-row">&nbsp;</td>';
                 row.style.height = '3.5rem';
                 onapreTableBody.appendChild(row);
+            }
+        }
+
+        // Configurar event listeners solo si el usuario tiene permisos
+        if (LOGGED_USER_TYPE !== '0') {
+            // Agregar event listeners para los botones de editar
+            document.querySelectorAll('.edit-onapre-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const positionId = this.getAttribute('data-id');
+                    const positionName = this.closest('tr').querySelector('td:nth-child(2)').textContent;
+                    showOnapreEditModal(positionId, positionName);
+                });
+            });
+
+            // Agregar event listeners para los botones de eliminar (solo para tipos 3 y 4)
+            if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+                document.querySelectorAll('.delete-onapre-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const positionId = this.getAttribute('data-id');
+                        const positionName = this.getAttribute('data-name');
+                        showOnapreDeleteConfirmation(positionId, positionName);
+                    });
+                });
             }
         }
 

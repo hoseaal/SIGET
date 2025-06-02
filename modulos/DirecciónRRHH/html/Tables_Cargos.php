@@ -17,6 +17,7 @@
 
   // Exponer la cédula del usuario logueado como variable JavaScript
   echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
+  echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -97,14 +98,16 @@
                   <div class="card-body">
                     <!-- Tabla de Cargos CET -->
                     <div class="table-responsive text-nowrap">
-                      <button
-                          type="button"
-                          class="btn btn-primary mb-3"
-                          data-bs-toggle="modal"
-                          data-bs-target="#basicModal"
-                      >
-                          Añadir
-                      </button>
+                      <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { ?>
+                          <button
+                              type="button"
+                              class="btn btn-primary mb-3"
+                              data-bs-toggle="modal"
+                              data-bs-target="#basicModal"
+                          >
+                              Añadir
+                          </button>
+                      <?php } ?>
                       <!-- Modal -->
                       <div class="modal fade" id="basicModal" tabindex="-1" aria-hidden="true">
                           <div class="modal-dialog" role="document">
@@ -151,7 +154,9 @@
                           <tr>
                             <th>N°</th>
                             <th>Nombre</th>
-                            <th>Acción</th>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { ?>
+                                <th>Acción</th>
+                            <?php } ?>
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">
@@ -183,14 +188,16 @@
                   <div class="card-body">
                     <!-- Tabla de Cargos ONAPRE -->
                     <div class="table-responsive text-nowrap">
-                      <button
-                        type="button"
-                        class="btn btn-primary mb-3"
-                        data-bs-toggle="modal"
-                        data-bs-target="#onapreModal"
-                      >
-                        Añadir
-                      </button>
+                      <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { ?>
+                          <button
+                              type="button"
+                              class="btn btn-primary mb-3"
+                              data-bs-toggle="modal"
+                              data-bs-target="#onapreModal"
+                          >
+                              Añadir
+                          </button>
+                      <?php } ?>
                       
                       <!-- Modal ONAPRE -->
                       <div class="modal fade" id="onapreModal" tabindex="-1" aria-hidden="true">
@@ -241,7 +248,9 @@
                           <tr>
                             <th>N°</th>
                             <th>Nombre</th>
-                            <th>Acción</th>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { ?>
+                                <th>Acción</th>
+                            <?php } ?>
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">

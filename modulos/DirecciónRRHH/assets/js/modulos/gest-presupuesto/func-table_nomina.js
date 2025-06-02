@@ -107,7 +107,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para mostrar los trabajadores en la página actual
     async function displayWorkers(page, workersToDisplay = null) {
         const isFiltered = workersToDisplay !== null;
-        
+
+        const actionsHeader = document.querySelector('#actionsColumnHeader');
+        if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+            actionsHeader.style.display = 'none';
+        } else {
+            actionsHeader.style.display = '';
+        }
+
         // Mostrar loader mientras carga
         tableBody.innerHTML = `
             <tr>
@@ -160,28 +167,67 @@ document.addEventListener('DOMContentLoaded', function() {
         // Llenar con datos reales
         workers.forEach(worker => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><strong>${worker.cedula}</strong></td>
-                <td>${worker.nombres}</td>
-                <td>${worker.apellidos}</td>
-                <td>${worker.genero}</td>
-                <td>${worker.departamento}</td>
-                <td>
-                    <div class="dropdown">
-                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item edit-worker-btn" href="javascript:void(0);" data-cedula="${worker.cedula}">
-                                <i class="bx bx-edit-alt me-1"></i> Editar
-                            </a>
-                            <a class="dropdown-item delete-worker-btn" href="javascript:void(0);" data-cedula="${worker.cedula}">
-                                <i class="bx bx-trash me-1"></i> Eliminar
-                            </a>
+            
+            // Determinar qué mostrar en la columna de acciones según el tipo de usuario
+            let actionsHtml = '';
+            
+            if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+                // Caso 1: No mostrar columna de acciones
+                row.innerHTML = `
+                    <td><strong>${worker.cedula}</strong></td>
+                    <td>${worker.nombres}</td>
+                    <td>${worker.apellidos}</td>
+                    <td>${worker.genero}</td>
+                    <td>${worker.departamento}</td>
+                    <td></td> <!-- Columna vacía -->
+                `;
+            } else if (LOGGED_USER_TYPE === '2') {
+                // Caso 2: Mostrar solo editar
+                row.innerHTML = `
+                    <td><strong>${worker.cedula}</strong></td>
+                    <td>${worker.nombres}</td>
+                    <td>${worker.apellidos}</td>
+                    <td>${worker.genero}</td>
+                    <td>${worker.departamento}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-worker-btn" href="javascript:void(0);" data-cedula="${worker.cedula}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </td>
-            `;
+                    </td>
+                `;
+            } else {
+                // Caso 3: Mostrar todo (tipos 3 y 4)
+                row.innerHTML = `
+                    <td><strong>${worker.cedula}</strong></td>
+                    <td>${worker.nombres}</td>
+                    <td>${worker.apellidos}</td>
+                    <td>${worker.genero}</td>
+                    <td>${worker.departamento}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-worker-btn" href="javascript:void(0);" data-cedula="${worker.cedula}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                                <a class="dropdown-item delete-worker-btn" href="javascript:void(0);" data-cedula="${worker.cedula}">
+                                    <i class="bx bx-trash me-1"></i> Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                `;
+            }
+            
             tableBody.appendChild(row);
         });
 
