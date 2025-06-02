@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
+import { getTableMetadata } from '../../data/fetchData';
 import Form from 'react-bootstrap/Form';
 import Button from '../../components/atoms/Buttons';
 import Alert from "../../components/atoms/Alert";
@@ -9,6 +10,7 @@ import ModalRepBm2 from '../Modales/modalRepBm2';
 import ModalInsert from '../Modales/modalInsert';
 
 export const Bm2 = () => {
+    const [refreshKey, setRefreshKey] = useState();
 
     //Modal insertar Marca
     const [showInsertMarca, setShowInsertMarca] = useState(false);
@@ -17,25 +19,22 @@ export const Bm2 = () => {
         'mar_ide': 'Código',
         'mar_mar': 'Marca'
     };
+
     useEffect(() => {
-            const loadData = async () => {
-                try {
-                    const { columns: marColumns, idColumn: marIdColumns } = await fetchTableColumns('tmamar');
-                    
-                    // Transformar las columnas en objetos con ambos nombres
-                    const processedColumnsMar = marColumns.map(col => ({
-                        originalName: col,
-                        displayName: columnAliasMarcas[col.toLowerCase()] || col
-                    }));
-                    
-                    setColumnsMarca(processedColumnsMar);
-                } catch (error) {
-                    console.error("Error cargando categorías:", error);
-                    setColumnsMarca([]);
-                }
+            const loadCatData = async () => {
+              try {
+                const { columns, primaryKey } = await getTableMetadata('tmamar');
+                setColumnsMarca(columns.map(col => ({
+                  originalName: col.name,
+                  displayName: columnAliasMarcas[col.name] || col.name,
+                  isPrimaryKey: col.name === primaryKey
+                })));
+              } catch (error) {
+                console.error('Error cargando categorías:', error);
+              }
             };
-            loadData();
-        }, [showInsertMarca]);
+            loadCatData();
+        }, [refreshKey]);
 
         //Modal insertar Modelo
     const [showInsertMod, setShowInsertMod] = useState(false);
@@ -46,24 +45,20 @@ export const Bm2 = () => {
         'mar_ide': 'Marca'
     };
     useEffect(() => {
-            const loadData = async () => {
-                try {
-                    const { columns: modColumns, idColumn: modIdColumn } = await fetchTableColumns('tesmod');
-                     // Transformar las columnas en objetos con ambos nombres
-                     const processedColumnsMod = modColumns.map(col => ({
-                        originalName: col,
-                        displayName: columnAliasMod[col.toLowerCase()] || col,
-                        isPrimaryKey: col === modIdColumn
-                    }));
-                    
-                    setColumnsMod(processedColumnsMod);
-                } catch (error) {
-                    console.error("Error cargando subcategorías:", error);
-                    setColumnsMod([]);
-                }
+            const loadCatData = async () => {
+              try {
+                const { columns, primaryKey } = await getTableMetadata('tesmod');
+                setColumnsMod(columns.map(col => ({
+                  originalName: col.name,
+                  displayName: columnAliasMarcas[col.name] || col.name,
+                  isPrimaryKey: col.name === primaryKey
+                })));
+              } catch (error) {
+                console.error('Error cargando categorías:', error);
+              }
             };
-            loadData();
-        }, [showInsertMod]);
+            loadCatData();
+        }, [refreshKey]);
 
         const handleSuccess = () => {
             setRefreshKey(prev => prev + 1); // Fuerza recarga
@@ -134,34 +129,62 @@ export const Bm2 = () => {
 
     useEffect(() => {
         const fetchAllData = async () => {
-            const unidadAdminData = await fetchData('tesdep', '*');
-            const formaAdquisicionData = await fetchData('tmafoa', '*');
-            const bim_monedaData = [
-                {
-                    "mon_ide": 1,
-                    "mon_mon": "Bolivares"
-                },
-                {
-                    "mon_ide": 2,
-                    "mon_mon": "Dolares"
-                }
-            ];
-            const estadoUsoData = await fetchData('tmaesu', '*');
-            const condicionFisicaData = await fetchData('tmacon', '*');
-            const mar_ideData = await fetchData('tmamar', '*');
-            const tipoBienData = await fetchData('tmatip', '*');
-            const catGenData = await fetchData('tmacat', '*');
-            const conceptoMovData = await fetchData('tmacom', '*');
+            try {
+                const [
+                    unidadAdminRes,
+                    formaAdquisicionRes,
+                    estadoUsoRes,
+                    condicionFisicaRes,
+                    marcasRes,
+                    tiposBienRes,
+                    categoriasGenRes,
+                    conceptosMovRes
+                ] = await Promise.all([
+                    fetch('/api/departamentos'),
+                    fetch('/api/formas-adquisicion'),
+                    fetch('/api/estados-uso'),
+                    fetch('/api/condiciones-fisicas'),
+                    fetch('/api/marcas', { credentials: 'include' } ),
+                    fetch('/api/tipos-bien'),
+                    fetch('/api/categorias'),
+                    fetch('/api/conceptos-movimiento')
+                ]);
 
-            setUnidadAdmin(unidadAdminData || []);
-            setFormaAdquisicion(formaAdquisicionData || []);
-            setbim_moneda(bim_monedaData || []);
-            setEstadoUso(estadoUsoData || []);
-            setCondicionFisica(condicionFisicaData || []);
-            setmar_ide(mar_ideData || []);
-            setTipoBien(tipoBienData || []);
-            setCatgen(catGenData || []);
-            setConceptoMov(conceptoMovData || []);
+                const [
+                    unidadAdminData,
+                    formaAdquisicionData,
+                    estadoUsoData,
+                    condicionFisicaData,
+                    marcasData,
+                    tiposBienData,
+                    categoriasGenData,
+                    conceptosMovData
+                ] = await Promise.all([
+                    unidadAdminRes.json(),
+                    formaAdquisicionRes.json(),
+                    estadoUsoRes.json(),
+                    condicionFisicaRes.json(),
+                    marcasRes.json(),
+                    tiposBienRes.json(),
+                    categoriasGenRes.json(),
+                    conceptosMovRes.json()
+                ]);
+
+                setUnidadAdmin(unidadAdminData);
+                setFormaAdquisicion(formaAdquisicionData);
+                setbim_moneda([
+                    { mon_ide: 1, mon_mon: "Bolívares" },
+                    { mon_ide: 2, mon_mon: "Dólares" }
+                ]);
+                setEstadoUso(estadoUsoData);
+                setCondicionFisica(condicionFisicaData);
+                setmar_ide(marcasData);
+                setTipoBien(tiposBienData);
+                setCatgen(categoriasGenData);
+                setConceptoMov(conceptosMovData);
+            } catch (error) {
+                console.error('Error al cargar los datos:', error);
+            }
         };
 
         fetchAllData();
@@ -169,72 +192,87 @@ export const Bm2 = () => {
 
     // Efecto para cargar mod_ides cuando se selecciona una mar_ide
     useEffect(() => {
-        const fetchmod_ides = async () => {
+        const fetchModelos = async () => {
             if (!formData.mar_ide) {
                 setmod_ide([]);
                 return;
             }
 
-            const mod_idesData = await fetchData('tesmod', '*', 'mar_ide', formData.mar_ide);
-            setmod_ide(mod_idesData || []);
+            try {
+                const res = await fetch(`/api/modelos/por-marca/${formData.mar_ide}`);
+                const data = await res.json();
+                setmod_ide(data);
+            } catch (error) {
+                console.error('Error al cargar modelos:', error);
+            }
         };
 
-        fetchmod_ides();
+        fetchModelos();
     }, [formData.mar_ide]);
 
     // Efecto para cargar subcategorías cuando se selecciona una categoría general
     useEffect(() => {
-        const fetchsca_ides = async () => {
+        const fetchModelos = async () => {
             if (!formData.cat_ide) {
-                setsubCat([]);
+                setmod_ide([]);
                 return;
             }
 
-            const subCatData = await fetchData('tessca', '*', 'cat_ide', formData.cat_ide);
-            setsubCat(subCatData || []);
+            try {
+                const res = await fetch(`/api/subcategorias/por-categoria/${formData.cat_ide}`);
+                const data = await res.json();
+                setsubCat(data);
+            } catch (error) {
+                console.error('Error al cargar subcategorías:', error);
+            }
         };
 
-        fetchsca_ides();
+        fetchModelos();
     }, [formData.cat_ide]);
 
     // Efecto para cargar categorías específicas cuando se selecciona una subcategoría
-    useEffect(() => {
-        const fetchCatEspecificas = async () => {
-            if (!formData.sca_ide) {
-                setCatEsp([]);
-                return;
-            }
-
-            const catEspData = await fetchData('tescae', '*', 'sca_ide', formData.sca_ide);
-            setCatEsp(catEspData || []);
-        };
-
-        fetchCatEspecificas();
-    }, [formData.sca_ide]);
-
-     // Agregamos estado para el filtro de búsqueda
-    const [searchTerm, setSearchTerm] = useState('');
     const [filteredCatEsp, setFilteredCatEsp] = useState([]);
+    const [isLoadingCatEsp, setIsLoadingCatEsp] = useState(false);
+    const [catEspPage, setCatEspPage] = useState(1);
+    const [searchTerm, setSearchTerm] = useState();
+    const limit = 20;
 
-    // Efecto para filtrar categorías específicas
-    useEffect(() => {
-    if (catEsp && catEsp.length > 0) {
-        const filtered = catEsp
-            .filter(item => 
-                item.cae_cae.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-            .map(item => ({
+useEffect(() => {
+    const fetchCatEspecificas = async () => {
+        if (!formData.sca_ide || searchTerm.trim() === '') {
+            setFilteredCatEsp([]);
+            return;
+        }
+
+        setIsLoadingCatEsp(true);
+
+        try {
+            const response = await fetch(
+                `/api/categorias-especificas/buscar?search=${encodeURIComponent(searchTerm)}&page=${catEspPage}&limit=${limit}`
+            );
+            const result = await response.json();
+
+            const mapped = result.map(item => ({
                 value: item.cae_ide,
                 label: item.cae_cae
             }));
-        setFilteredCatEsp(filtered);
-    }
-}, [searchTerm, catEsp]);
+
+            setFilteredCatEsp(mapped);
+        } catch (error) {
+            console.error('Error buscando categorías específicas:', error);
+            setFilteredCatEsp([]);
+        } finally {
+            setIsLoadingCatEsp(false);
+        }
+    };
+
+    fetchCatEspecificas();
+}, [searchTerm, formData.sca_ide, catEspPage]);
 
 
 const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const datosEnviar = {
         bim_ide: formData.bim_ide,
         bim_des: formData.bim_des,
@@ -255,10 +293,10 @@ const handleSubmit = async (e) => {
         cae_ide: formData.cae_ide,
         com_ide: formData.com_ide,
         dep_ide: formData.dep_ide
-    }
-    
+    };
+
     console.log('Datos a enviar:', datosEnviar);
-    // Validación básica
+
     if (!formData.bim_ide || !formData.dep_ide) {
         setErrorMessage('Los campos obligatorios deben ser completados');
         setMensajeMostrado(true);
@@ -267,37 +305,47 @@ const handleSubmit = async (e) => {
     }
 
     try {
+          const resCheck = await fetch(`/api/bienes/${formData.bim_ide}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+            });
 
-        const CodBim = await fetchData('tmab_m', '*', 'bim_ide', formData.bim_ide);
-        if (CodBim.length > 0) {
-            throw new Error('Este código ya está asignado a un bien');
-        }
-
-        const response = await axios.post('/api/insert', {
-            table: 'tmab_m', 
-            data: datosEnviar
+            if (resCheck.status !== 404 || resCheck.statu !== 401 || resCheck.error) {
+                // Si el backend NO devuelve 404, entonces el código ya está en uso
+                throw new Error('Este código ya está asignado a un bien');
+            }
+        // ✅ Enviar nuevo bien (POST /api/bienes)
+        const resInsert = await fetch('/api/bienes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datosEnviar)
         });
 
-        console.log('CORRECTO', response.status)
-
-        if (response.status === 201) {
-            setFormEnviado(true);
-            setMensajeMostrado(true);
-
-            setShowActInc(true);
-
-            setFormEnviado(true);
-            setTimeout(() => setMensajeMostrado(false), 3000);
+        if (!resInsert.ok) {
+            const errorBody = await resInsert.json();
+            throw new Error(errorBody.error || 'Error al insertar bien');
         }
+
+        // 🎉 Éxito
+        setFormEnviado(true);
+        setMensajeMostrado(true);
+        setShowActInc(true);
+        setTimeout(() => setMensajeMostrado(false), 3000);
+
     } catch (error) {
         console.error('Error al insertar:', error);
         setFormEnviado(false);
         setMensajeMostrado(true);
-        setErrorMessage(error.response?.data?.error || error.message || 'Error desconocido');
+        setErrorMessage(error.message || 'Error desconocido');
         setTimeout(() => setMensajeMostrado(false), 3000);
-        setFormData({
+        setFormData(prev => ({
+            ...prev,
             bim_ide: ''
-        })
+        }));
     }
 };
 
@@ -648,7 +696,10 @@ const handleSubmit = async (e) => {
                                         <Form.Label>Categoría Específica</Form.Label>
                                         <Select
                                             options={filteredCatEsp}
-                                            onInputChange={inputValue => setSearchTerm(inputValue)}
+                                            onInputChange={inputValue => {
+                                                setSearchTerm(inputValue);
+                                                setCatEspPage(1); // Reiniciar página al cambiar búsqueda
+                                            }}
                                             onChange={selectedOption => {
                                                 handleChange({
                                                     target: {
@@ -657,14 +708,16 @@ const handleSubmit = async (e) => {
                                                     }
                                                 });
                                             }}
-                                            value={filteredCatEsp.find(option => 
-                                                option.value === formData.cae_ide)}
+                                            value={filteredCatEsp.find(option =>
+                                                option.value === formData.cae_ide
+                                            )}
                                             isDisabled={!formData.sca_ide}
                                             placeholder="Buscar categoría..."
-                                            noOptionsMessage={() => "No se encontraron opciones"}
+                                            noOptionsMessage={() => isLoadingCatEsp ? 'Buscando...' : 'No se encontraron opciones'}
                                             loadingMessage={() => "Buscando..."}
                                             isClearable
                                             isSearchable
+                                            isLoading={isLoadingCatEsp}
                                         />
                                     </Form.Group>
                                     <Form.Group className="mb-3">

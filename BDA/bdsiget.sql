@@ -2132,3 +2132,5 @@ INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('4', '
   /* FIN DE TRIGGER'S DE LA TABLA TESPRI*/
 
   INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('4','OPTIMO')
+
+  INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA')
