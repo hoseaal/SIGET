@@ -17,6 +17,7 @@
 
   // Exponer la cédula del usuario logueado como variable JavaScript
   echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
+  echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -115,7 +116,9 @@
                             <th>Nivel salarial</th>
                             <th>Salario</th>
                             <th>CARGO ONAPRE</th>
-                            <th>Acciones</th>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0' && $decoded->data->tipo != '1') { ?>
+                                <th>Acciones</th>
+                            <?php } ?>
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">

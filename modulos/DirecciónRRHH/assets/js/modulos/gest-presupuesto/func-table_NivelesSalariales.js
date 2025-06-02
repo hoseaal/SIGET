@@ -133,26 +133,59 @@ document.addEventListener('DOMContentLoaded', function() {
         // Llenar con datos reales
         salaries.forEach(salary => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${salary.nvl_ran}</td>
-                <td>${salary.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td>${salary.ona_car || 'Sin cargo asignado'}</td>
-                <td>
-                    <div class="dropdown">
-                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}">
-                                <i class="bx bx-edit-alt me-1"></i> Editar
-                            </a>
-                            <a class="dropdown-item delete-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}" data-nvl_ran="${salary.nvl_ran}" data-ona_car="${salary.ona_car || 'Sin cargo asignado'}">
-                                <i class="bx bx-trash me-1"></i> Eliminar
-                            </a>
+            
+            // Tipos "0" y "1" - solo 3 columnas (sin acciones)
+            if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+                row.innerHTML = `
+                    <td>${salary.nvl_ran}</td>
+                    <td>${salary.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td>${salary.ona_car || 'Sin cargo asignado'}</td>
+                `;
+            } 
+            // Tipo "2" - 4 columnas (solo editar)
+            else if (LOGGED_USER_TYPE === '2') {
+                row.innerHTML = `
+                    <td>${salary.nvl_ran}</td>
+                    <td>${salary.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td>${salary.ona_car || 'Sin cargo asignado'}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </td>
-            `;
+                    </td>
+                `;
+            } 
+            // Tipos "3" y "4" - 4 columnas con todas las acciones
+            else {
+                row.innerHTML = `
+                    <td>${salary.nvl_ran}</td>
+                    <td>${salary.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td>${salary.ona_car || 'Sin cargo asignado'}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                                <a class="dropdown-item delete-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}" data-nvl_ran="${salary.nvl_ran}" data-ona_car="${salary.ona_car || 'Sin cargo asignado'}">
+                                    <i class="bx bx-trash me-1"></i> Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                `;
+            }
+            
             tableBody.appendChild(row);
         });
 
@@ -237,35 +270,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para configurar los event listeners
     function setupEventListeners() {
-        // Agregar event listeners para los botones de editar
-        document.querySelectorAll('.edit-salary-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const nvl_ide = this.getAttribute('data-nvl_ide');
-                try {
-                    const response = await fetch(`../PHP/api/gest-presupuesto/detalles_salarios.php?nvl_ide=${nvl_ide}`);
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        openEditModal(data.salary);
-                    } else {
-                        alert('No se pudieron cargar los datos del nivel salarial');
+        if (LOGGED_USER_TYPE === '2' || LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+            document.querySelectorAll('.edit-salary-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const nvl_ide = this.getAttribute('data-nvl_ide');
+                    try {
+                        const response = await fetch(`../PHP/api/gest-presupuesto/detalles_salarios.php?nvl_ide=${nvl_ide}`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            openEditModal(data.salary);
+                        } else {
+                            alert('No se pudieron cargar los datos del nivel salarial');
+                        }
+                    } catch (error) {
+                        console.error('Error al cargar detalles:', error);
+                        alert('Error al cargar los detalles del nivel salarial');
                     }
-                } catch (error) {
-                    console.error('Error al cargar detalles:', error);
-                    alert('Error al cargar los detalles del nivel salarial');
-                }
+                });
             });
-        });
+        }
 
         // Agregar event listeners para los botones de eliminar
-        document.querySelectorAll('.delete-salary-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const nvl_ide = this.getAttribute('data-nvl_ide');
-                const nvl_ran = this.getAttribute('data-nvl_ran');
-                const ona_car = this.getAttribute('data-ona_car');
-                showDeleteConfirmation(nvl_ide, nvl_ran, ona_car);
+        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+            document.querySelectorAll('.delete-salary-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const nvl_ide = this.getAttribute('data-nvl_ide');
+                    const nvl_ran = this.getAttribute('data-nvl_ran');
+                    const ona_car = this.getAttribute('data-ona_car');
+                    showDeleteConfirmation(nvl_ide, nvl_ran, ona_car);
+                });
             });
-        });
+        }
     }
 
     // Función para mostrar confirmación de eliminación

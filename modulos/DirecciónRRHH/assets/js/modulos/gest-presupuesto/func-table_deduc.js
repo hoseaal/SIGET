@@ -86,28 +86,61 @@ document.addEventListener('DOMContentLoaded', function() {
         deductions.forEach((deduction, index) => {
             const rowNumber = (page - 1) * rowsPerPage + index + 1;
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${rowNumber}</td>
-                <td><strong>${deduction.ded_raz}</strong></td>
-                <td>${deduction.ded_por} %</td>
-                <td>
-                    <div class="dropdown">
-                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item edit-deduction-btn" href="javascript:void(0);" data-id="${deduction.ded_ide}">
-                                <i class="bx bx-edit-alt me-1"></i> Editar
-                            </a>
-                            <a class="dropdown-item delete-deduction-btn" href="javascript:void(0);" 
-                            data-id="${deduction.ded_ide}" 
-                            data-name="${deduction.ded_raz}">
-                                <i class="bx bx-trash me-1"></i> Eliminar
-                            </a>
+            
+            // Tipos "0" y "1" - solo 4 columnas (sin acciones)
+            if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td><strong>${deduction.ded_raz}</strong></td>
+                    <td>${deduction.ded_por} %</td>
+                `;
+            } 
+            // Tipo "2" - 5 columnas (solo editar)
+            else if (LOGGED_USER_TYPE === '2') {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td><strong>${deduction.ded_raz}</strong></td>
+                    <td>${deduction.ded_por} %</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-deduction-btn" href="javascript:void(0);" data-id="${deduction.ded_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </td>
-            `;
+                    </td>
+                `;
+            } 
+            // Tipos "3" y "4" - 5 columnas con todas las acciones
+            else {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td><strong>${deduction.ded_raz}</strong></td>
+                    <td>${deduction.ded_por} %</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-deduction-btn" href="javascript:void(0);" data-id="${deduction.ded_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                                <a class="dropdown-item delete-deduction-btn" href="javascript:void(0);" 
+                                data-id="${deduction.ded_ide}" 
+                                data-name="${deduction.ded_raz}">
+                                    <i class="bx bx-trash me-1"></i> Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                `;
+            }
+            
             tableBody.appendChild(row);
         });
 
@@ -122,26 +155,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Agregar event listeners para los botones de editar
-        document.querySelectorAll('.edit-deduction-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const dedId = this.getAttribute('data-id');
-                const deductionData = await fetchDeductionDetails(dedId);
-                if (deductionData) {
-                    openEditModal(deductionData);
-                } else {
-                    alert('No se pudieron cargar los datos de la deducción');
-                }
+        if (LOGGED_USER_TYPE === '2' || LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+            document.querySelectorAll('.edit-deduction-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const dedId = this.getAttribute('data-id');
+                    const deductionData = await fetchDeductionDetails(dedId);
+                    if (deductionData) {
+                        openEditModal(deductionData);
+                    } else {
+                        alert('No se pudieron cargar los datos de la deducción');
+                    }
+                });
             });
-        });
+        }
 
         // Agregar event listeners para los botones de eliminar
-        document.querySelectorAll('.delete-deduction-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const dedId = this.getAttribute('data-id');
-                const dedName = this.getAttribute('data-name');
-                showDeleteConfirmation(dedId, dedName);
+        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+            document.querySelectorAll('.delete-deduction-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const dedId = this.getAttribute('data-id');
+                    const dedName = this.getAttribute('data-name');
+                    showDeleteConfirmation(dedId, dedName);
+                });
             });
-        });
+        }
     }
 
     // Función para mostrar confirmación de eliminación

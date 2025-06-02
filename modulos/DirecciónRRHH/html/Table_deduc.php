@@ -7,7 +7,7 @@
   }
 
   // Lista de tipos de usuario permitidos (0, 1, 2, 3, 4)
-  $tiposPermitidos = ['0', '1', '2', '3', '4'];
+  $tiposPermitidos = ['1', '2', '3', '4'];
 
   // Redirige al login
   if (!in_array($decoded->data->tipo, $tiposPermitidos)) {
@@ -17,6 +17,7 @@
 
   // Exponer la cédula del usuario logueado como variable JavaScript
   echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
+  echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -103,7 +104,9 @@
                             <th>Deducciones</th>
                             <th>Descripción</th>
                             <th>Porcentaje</th>
-                            <th>Acciones</th>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0' && $decoded->data->tipo != '1') { ?>
+                                <th>Acciones</th>
+                            <?php } ?>
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">

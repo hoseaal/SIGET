@@ -86,26 +86,59 @@
         assignments.forEach((assignment, index) => {
             const rowNumber = (page - 1) * rowsPerPage + index + 1;
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${rowNumber}</td>
-                <td><strong>${assignment.pri_raz}</strong></td>
-                <td>${assignment.pri_por}</td>
-                <td>
-                    <div class="dropdown">
-                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item edit-assignment-btn" href="javascript:void(0);" data-id="${assignment.pri_ide}">
-                                <i class="bx bx-edit-alt me-1"></i> Editar
-                            </a>
-                            <a class="dropdown-item delete-assignment-btn" href="javascript:void(0);" data-id="${assignment.pri_ide}" data-name="${assignment.pri_raz}">
-                                <i class="bx bx-trash me-1"></i> Eliminar
-                            </a>
+            
+            // Tipos "0" y "1" - solo 3 columnas (sin acciones)
+            if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td><strong>${assignment.pri_raz}</strong></td>
+                    <td>${assignment.pri_por}</td>
+                `;
+            } 
+            // Tipo "2" - 4 columnas (solo editar)
+            else if (LOGGED_USER_TYPE === '2') {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td><strong>${assignment.pri_raz}</strong></td>
+                    <td>${assignment.pri_por}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-assignment-btn" href="javascript:void(0);" data-id="${assignment.pri_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </td>
-            `;
+                    </td>
+                `;
+            } 
+            // Tipos "3" y "4" - 4 columnas con todas las acciones
+            else {
+                row.innerHTML = `
+                    <td>${rowNumber}</td>
+                    <td><strong>${assignment.pri_raz}</strong></td>
+                    <td>${assignment.pri_por}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item edit-assignment-btn" href="javascript:void(0);" data-id="${assignment.pri_ide}">
+                                    <i class="bx bx-edit-alt me-1"></i> Editar
+                                </a>
+                                <a class="dropdown-item delete-assignment-btn" href="javascript:void(0);" data-id="${assignment.pri_ide}" data-name="${assignment.pri_raz}">
+                                    <i class="bx bx-trash me-1"></i> Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                `;
+            }
+            
             tableBody.appendChild(row);
         });
 
@@ -119,27 +152,30 @@
             }
         }
 
-        // Dentro de displayAssignments, en el forEach que crea las filas:
-        document.querySelectorAll('.edit-assignment-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const pri_ide = this.getAttribute('data-id');
-                const assignmentData = await fetchAssignmentDetails(pri_ide);
-                if (assignmentData) {
-                    openEditModal(assignmentData);
-                } else {
-                    alert('No se pudieron cargar los datos de la asignación');
-                }
+        if (LOGGED_USER_TYPE === '2' || LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+            document.querySelectorAll('.edit-assignment-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const pri_ide = this.getAttribute('data-id');
+                    const assignmentData = await fetchAssignmentDetails(pri_ide);
+                    if (assignmentData) {
+                        openEditModal(assignmentData);
+                    } else {
+                        alert('No se pudieron cargar los datos de la asignación');
+                    }
+                });
             });
-        });
+        }
 
-        // Agregar event listeners para los botones de eliminar
-        document.querySelectorAll('.delete-assignment-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const pri_ide = this.getAttribute('data-id');
-                const assignmentName = this.getAttribute('data-name');
-                showDeleteConfirmation(pri_ide, assignmentName);
+        // Agregar event listeners para los botones de eliminar (solo tipos 3 y 4)
+        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+            document.querySelectorAll('.delete-assignment-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const pri_ide = this.getAttribute('data-id');
+                    const assignmentName = this.getAttribute('data-name');
+                    showDeleteConfirmation(pri_ide, assignmentName);
+                });
             });
-        });
+        }
     }
 
     // Función para mostrar confirmación de eliminación
