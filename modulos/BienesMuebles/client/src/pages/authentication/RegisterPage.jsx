@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom"
 import './page-auth.css'
 import Form from 'react-bootstrap/Form';
 import Alert from "../../components/atoms/Alert";
-import axios from "axios";
 
 export const RegisterPage = () => {
     const [formEnviado, setFormEnviado] = useState(false); // Estado para alternar vista
@@ -72,9 +70,22 @@ export const RegisterPage = () => {
         e.preventDefault();
         if(formData.password1 !== formData.password2) throw new Error('Las contraseñas no concuerdan')
         try {
-          const response = await axios.post('/api/register', formData);
-          setFormEnviado(true); 
-        setMensajeMostrado(true); 
+           const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok) {
+                setFormEnviado(true);
+                setMensajeMostrado(true);
+            } else {
+                throw new Error(responseData.error || 'Error al Agregar nuevo usuario');
+            }
         } catch (error) {
             setFormEnviado(false); // Indicar que hubo un error
             setMensajeMostrado(true);

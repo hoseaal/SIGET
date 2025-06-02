@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import axios from 'axios';
 import Alert from "../../components/atoms/Alert";
-import { fetchData } from '../../data/fetchData';
 
 function ModalActaInc({ show, handleClose, BienId, DataBien, limpiarFormulario }) {
   const [formData, setFormData] = useState({});
@@ -51,7 +49,7 @@ useEffect(() => {
         const conceptoData = await fetchData('tmacom', '*', 'com_ide', DataBien.com_ide);
         setConcepto(conceptoData || []);
 
-        console.log(concepto)
+        console.log(marca)
 
       }
 
@@ -231,11 +229,22 @@ const handleSelectBien = async (e) => {
                 <Form.Label>Seleccionar Bien</Form.Label>
                 <Form.Select onChange={handleSelectBien}>
                   <option value="">Seleccione un bien</option>
-                  {bienes.map(bien => (
-                    <option key={bien.bim_ide} value={bien.bim_ide}>
-                      {bien.bim_ide} - {bien.bim_des}
-                    </option>
-                  ))}
+                  {bienes.map(bien => {
+                      const maxLength = 95; // Máximo de caracteres a mostrar
+                      const descripcion = bien.bim_des.length > maxLength 
+                          ? `${bien.bim_des.substring(0, maxLength)}...` 
+                          : bien.bim_des;
+                      
+                      return (
+                          <option 
+                              key={bien.bim_ide} 
+                              value={bien.bim_ide}
+                              title={bien.bim_des} // Texto completo en tooltip
+                          >
+                              {bien.bim_ide} - {descripcion}
+                          </option>
+                      );
+                  })}
                 </Form.Select>
               </Form.Group>
 

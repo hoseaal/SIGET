@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import axios from 'axios';
 import Alert from "../../components/atoms/Alert";
 
 function ModalDelete({ 
@@ -17,37 +15,45 @@ function ModalDelete({
     const [errorMessage, setErrorMessage] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
 
+
+const endpointMap = {
+        tmacat: '/api/categorias',
+        tessca: '/api/subcategorias',
+        tescae: '/api/categorias-especificas',
+        tmamar: '/api/marcas',
+        tesmod: '/api/modelos',
+        tmab_m: '/api/bienes',
+    };
+
     const handleDelete = async () => {
         setMensajeMostrado(false);
         setErrorMessage('');
         setIsDeleting(true);
-        
+
         try {
-            const response = await axios.delete('/api/delete', {
-                data: {
-                    table: tableName,
-                    id: rowId,
-                    idColumn: idColumn
-                }
+            const response = await fetch(`${endpointMap[tableName]}/${rowId}`, {
+                method: 'DELETE'
             });
 
-            if (response.status === 200) {
-                setMensajeMostrado(true);
-                setIsDeleting(false)
-                setTimeout(() => {
-                    handleClose();
-                    setMensajeMostrado(false);
-                    if (onSuccess) onSuccess(); 
-                    // Recargar datos
-                }, 1000);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData?.error || 'Error desconocido');
             }
-        } catch (error) {
+
             setMensajeMostrado(true);
             setIsDeleting(false);
-            
+
+            setTimeout(() => {
+                handleClose();
+                setMensajeMostrado(false);
+                if (onSuccess) onSuccess(); // Recargar datos
+            }, 1000);
+        } catch (error) {
             console.error('Error al eliminar:', error);
-            setErrorMessage(error.response?.data?.error || error.message || 'Error al eliminar el registro');
-            
+            setErrorMessage(error.message || 'Error al eliminar el registro');
+            setMensajeMostrado(true);
+            setIsDeleting(false);
+
             setTimeout(() => {
                 setMensajeMostrado(false);
             }, 3000);
@@ -63,7 +69,7 @@ function ModalDelete({
                 {mensajeMostrado && (
                     <Alert 
                         variant={errorMessage ? 'danger' : 'success'}
-                        message={errorMessage || 'Registro eliminado correctamente'}
+                        message={errorMessage || '✓ Registro eliminado correctamente'}
                     />
                 )}
                 

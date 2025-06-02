@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { fetchTableColumns, fetchData } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
+import { getTableMetadata } from '../../data/fetchData';
 import ModalInsert from '../Modales/modalInsert';
 import ModalUpdate from '../Modales/modalUpdate';
 import ModalDelete from '../Modales/modalDelete';
@@ -48,50 +48,49 @@ export const ModelosyMarcas = () => {
             setRefreshKey(prev => prev + 1); // Fuerza recarga
         };
 
-    // Cargar columnas de Marca
+    // Cargar columnas y datos de Marca
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const { columns: marColumns, idColumn: marIdColumns } = await fetchTableColumns('tmamar');
-                
-                // Transformar las columnas en objetos con ambos nombres
-                const processedColumnsMar = marColumns.map(col => ({
-                    originalName: col,
-                    displayName: columnAliasMarcas[col.toLowerCase()] || col
-                }));
-                
-                setColumns(processedColumnsMar);
-                setIdColumn(marIdColumns);
-            } catch (error) {
-                console.error("Error cargando categorías:", error);
-                setColumns([]);
-            }
-        };
-        loadData();
-    }, [showMarcasModal]);
+        const loadCatData = async () => {
+          try {
+            const { columns, primaryKey } = await getTableMetadata('tmamar');
+            setColumns(columns.map(col => ({
+              originalName: col.name,
+              displayName: columnAliasMarcas[col.name] || col.name,
+              isPrimaryKey: col.name === primaryKey
+            })));
+            setIdColumn(primaryKey);
 
+            const res = await fetch('/api/marcas', { credentials: 'include' });
+            const data = await res.json();
+            setData(data);
+          } catch (error) {
+            console.error('Error cargando categorías:', error);
+          }
+        };
+        loadCatData();
+    }, [refreshKey]);
     
     // Cargar columnas de Modelo
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const { columns: modColumns, idColumn: modIdColumn } = await fetchTableColumns('tesmod');
-                 // Transformar las columnas en objetos con ambos nombres
-                 const processedColumnsMod = modColumns.map(col => ({
-                    originalName: col,
-                    displayName: columnAliasMod[col.toLowerCase()] || col,
-                    isPrimaryKey: col === modIdColumn
-                }));
-                
-                setColumns2(processedColumnsMod);
-                setIdColumn2(modIdColumn);
-            } catch (error) {
-                console.error("Error cargando subcategorías:", error);
-                setColumns2([]);
-            }
+        const loadCatData = async () => {
+          try {
+            const { columns, primaryKey } = await getTableMetadata('tesmod');
+            setColumns2(columns.map(col => ({
+              originalName: col.name,
+              displayName: columnAliasMod[col.name] || col.name,
+              isPrimaryKey: col.name === primaryKey
+            })));
+            setIdColumn2(primaryKey);
+
+            const res = await fetch('/api/modelos', { credentials: 'include' });
+            const data = await res.json();
+            setData2(data);
+          } catch (error) {
+            console.error('Error cargando categorías:', error);
+          }
         };
-        loadData();
-    }, [showModModal]);
+        loadCatData();
+    }, [refreshKey]);
 
     const MarcasMap = data.reduce((acc, mar) => {
         acc[mar.mar_ide] = mar.mar_mar; // Asume que cat_cat es el nombre
@@ -99,54 +98,27 @@ export const ModelosyMarcas = () => {
     }, {});
 
 
-    // Cargar datos de Marca
-    useEffect(() => {
-        if (columns.length > 0) {
-            const fetchAllData = async () => {
-                try {
-                    const registrosData = await fetchData('tmamar', '*');
-                    setData(registrosData);
-                    console.log(data)
-                } catch (error) {
-                    console.error("Error cargando datos:", error);
-                }
-            };
-            fetchAllData();
-        }
-
-    }, [columns, showMarcasModal, refreshKey]);
-
-    // Cargar datos de Modelos
-    useEffect(() => {
-        if (columns2.length > 0) {
-            const fetchAllData = async () => {
-                try {
-                    const registrosData2 = await fetchData('tesmod', '*');
-                    setData2(registrosData2);
-                } catch (error) {
-                    console.error("Error cargando datos:", error);
-                }
-            };
-            fetchAllData();
-        }
-    }, [columns2, showModModal, refreshKey]);
-
-
    return (
         <div>
             <h4 className="py-3 mb-4"><span className="text-muted fw-light">Configuración General /</span> Modelos y Marcas</h4>
             <div className="card">
-                <h5 className="card-header">Marcas
-                   <div className="mt-3">
-                    <button type="button" className="btn btn-primary"  onClick={() => setShowMarcasModal(true)}>Agregar Marca</button>
-                    <ModalInsert show={showMarcasModal}
-                     handleClose={() => setShowMarcasModal(false)}
-                     columns={columns}
-                     tableName='tmamar'
-                     onSuccess={handleSuccess}
-                      />
-                  </div>        
-                </h5>
+                <div className="card-header d-flex justify-content-between align-items-center">
+                    <h5 className="mb-0">Marcas</h5>
+                    <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={() => setShowMarcasModal(true)}
+                    >
+                    Agregar Marca
+                    </button>
+                </div>
+                <ModalInsert
+                    show={showMarcasModal}
+                    handleClose={() => setShowMarcasModal(false)}
+                    columns={columns}
+                    tableName="tmamar"
+                    onSuccess={handleSuccess}
+                />
                 <div className="table-responsive text-nowrap">
                 <table className="table table-striped">
                   <thead>
@@ -213,26 +185,27 @@ export const ModelosyMarcas = () => {
                 </div>
             </div>
             <hr className="my-5" />
-            {/* subcategorias */}
+            {/* modelos */}
             <div className="card">
-                <h5 className="card-header">Modelos
-                    <div className="mt-3">
-                        <button 
-                            type="button" 
-                            className="btn btn-primary"  
-                            onClick={() => setShowModModal(true)}
-                        >
-                            Agregar Modelo
-                        </button>
-                        <ModalInsert show={showModModal}
-                        handleClose={() => setShowModModal(false)}
-                        columns={columns2}
-                        tableName='tesmod'
-                        foreign='tmamar'
-                        onSuccess={handleSuccess}
-                      />
-                    </div> 
-                </h5>
+               <div className="card-header d-flex justify-content-between align-items-center">
+                    <h5 className="mb-0">Modelos</h5>
+                    <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={() => setShowModModal(true)}
+                    >
+                    Agregar Modelo
+                    </button>
+                </div>
+                <ModalInsert
+                    show={showModModal}
+                    handleClose={() => setShowModModal(false)}
+                    columns={columns2}
+                    foreign={'tmamar'} // Asumiendo que 'tmamar' es la tabla de marcas
+                    idColumn={idColumn2}
+                    tableName="tesmod"
+                    onSuccess={handleSuccess}
+                />
                 <div className="table-responsive text-nowrap">
                     <table className="table table-striped">
                         <thead>

@@ -1,35 +1,37 @@
-import { useEffect, useState} from "react";
-import axios from "axios";
-import { fetchData } from "../data/fetchData";
+import { useEffect, useState } from "react";
 
 export const DashboardPage = () => {
-    const [userData, setUserData] = useState(null);
-    const [userDataa, setUserDataa] = useState([]);
+  const [userData, setUserData] = useState(null);
 
-    useEffect(() => {
-      const fetchUserData = async () => {
-        try {
-          const response = await axios.get('/api/verify-auth', {
-            withCredentials: true
-          });
-          
-          if (response.data.success) {
-            setUserData(response.data.user);
-            
-          }
-        } catch (error) {
-          console.error('Error obteniendo datos de usuario:', error)
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch('/api/auth/verify-auth', {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (!res.ok) throw new Error('No autorizado');
+
+        const data = await res.json();
+
+        if (data.success) {
+          setUserData(data.user);
         }
-      };
-  
-      fetchUserData();
-    }, []);
-  
-    if (!userData) {
-      return <div>Cargando datos de usuario...</div>;
-    }
+      } catch (error) {
+        console.error('Error obteniendo datos de usuario:', error);
+        // Si querés redirigir si no hay sesión activa, podrías usar navigate acá
+      }
+    };
 
-    return (
+    fetchUserData();
+  }, []);
+
+  if (!userData) {
+    return <div>Cargando datos de usuario...</div>;
+  }
+
+  return (
         <>
             <div className="row">
                 <div className="col-lg-8 mb-4 order-0">

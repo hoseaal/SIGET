@@ -4,7 +4,6 @@ import './page-auth.css'
 import { useNavigate } from "react-router-dom";
 import { AuthWrapper } from "./AuthWrapper";
 import Alert from "../../components/atoms/Alert";
-import axios from 'axios';
 
 export const LoginPage = () => {
     const [formEnviado, setFormEnviado] = useState(false); // Estado para alternar vista
@@ -32,30 +31,42 @@ export const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-          const response = await axios.post('/api/login', formData, {
-            withCredentials: true // Necesario para recibir cookies
-          });
-      
-          if (response.data.success) {
-            console.log(response.data.user);
-            setFormEnviado(true); 
-            setMensajeMostrado(true); 
-            setTimeout(() => {
-                navigate('/Dashboard', { replace: true });  
-              }, 1000); 
-          }
-        } catch (error) {
-            setFormEnviado(false); // Indicar que hubo un error
+            const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include', // 🔑 Para que el backend mande la cookie
+            body: JSON.stringify(formData),
+            });
+
+            if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || 'Error al iniciar sesión');
+            }
+
+            const responseData = await res.json();
+
+            if (responseData.success) {
+            console.log(responseData.user);
+            setFormEnviado(true);
             setMensajeMostrado(true);
-            setErrorMessage(error.response?.data?.error || error.message)
+            setTimeout(() => {
+                navigate('/Dashboard', { replace: true });
+            }, 1000);
+            }
+        } catch (error) {
+            setFormEnviado(false);
+            setMensajeMostrado(true);
+            setErrorMessage(error.message);
 
-             setFormData(prev => ({ ...prev, password: '' }));
+            setFormData(prev => ({ ...prev, password: '' }));
 
-             setTimeout(() => {
-                setMensajeMostrado(false);
-              }, 3000);
+            setTimeout(() => {
+            setMensajeMostrado(false);
+            }, 3000);
         }
-      };
+        };
     return (
         <AuthWrapper>
             <h4 className="mb-2">Bienvenido al modulo de Gestion de Bienes Muebles! 👋</h4>

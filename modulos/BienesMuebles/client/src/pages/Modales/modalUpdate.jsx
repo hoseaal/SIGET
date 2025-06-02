@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import axios from 'axios';
 import Alert from "../../components/atoms/Alert";
-import { fetchData } from '../../data/fetchData';
 
 function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess, rowData, idColumn }) {
     const [formData, setFormData] = useState({});
@@ -13,22 +11,31 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
     const [errorMessage, setErrorMessage] = useState(''); 
     const [foreignTable, setForeignTable] = useState([]);
 
-    // Cargar datos iniciales cuando cambia rowData o se muestra el modal
+    const endpointMap = {
+        tmacat: '/api/categorias',
+        tessca: '/api/subcategorias',
+        tescae: '/api/categorias-especificas',
+        tmamar: '/api/marcas',
+        tesmod: '/api/modelos',
+        tmab_m: '/api/bienes',
+    };
+
     useEffect(() => {
         if (show && rowData) {
             setFormData(rowData);
         }
     }, [show, rowData]);
 
-    // Cargar datos foráneos si es necesario
     useEffect(() => {
         if (show && foreign) {
             const fetchForeignData = async () => {
                 try {
-                    const foreignTableData = await fetchData(foreign, '*');
-                    setForeignTable(foreignTableData);
+                    const response = await fetch(`${endpointMap[foreign]}`);
+                    if (!response.ok) throw new Error('Error al obtener datos');
+                    const data = await response.json();
+                    setForeignTable(data);
                 } catch (error) {
-                    console.error(`Error fetching ${foreign} data:`, error);
+                    console.error(`Error al obtener datos de ${foreign}:`, error);
                     setErrorMessage(`Error al cargar datos de ${foreign}`);
                 }
             };
@@ -46,59 +53,51 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-         setMensajeMostrado(false);
+        setMensajeMostrado(false);
         setErrorMessage('');
-        
+
         const rowId = rowData[idColumn];
-        
-        console.log('ID a actualizar:', rowId); // Debug
-        
         if (!rowId) {
             setErrorMessage('Error: No se encontró el ID del registro');
+            setMensajeMostrado(true);
             return;
         }
 
         try {
-             // Crear objeto con solo los datos modificables (excluyendo PKs)
-            const updateData = { ...formData };
-                    const response = await axios.put('/api/update', {
-                        table: tableName,
-                        id: rowId, // ID del registro a actualizar
-                        data: updateData
-                    });
+            const response = await fetch(`${endpointMap[tableName]}/${rowId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
 
-                    if (response.status === 200) {
-                        setFormEnviado(true);
-                        setMensajeMostrado(true);
-                        
-                        setTimeout(() => {
-                            handleClose();
-                            setMensajeMostrado(false);
-                            if (onSuccess) onSuccess(); // Recargar datos
-                        }, 1000);
-                    }
-                
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Error desconocido');
+            }
+
+            setFormEnviado(true);
+            setMensajeMostrado(true);
+            setTimeout(() => {
+                handleClose();
+                setMensajeMostrado(false);
+                if (onSuccess) onSuccess();
+            }, 1000);
+
         } catch (error) {
             setFormEnviado(false);
-                    setMensajeMostrado(true);
-                    
-                    if (error.response?.data?.error === 'DUPLICATE_KEY') {
-                        setErrorMessage('Error: Este código ya existe.');
-                    } else {
-                        console.error('Error al actualizar:', error);
-                        setErrorMessage(error.response?.data?.error || error.message || 'Error desconocido');
-                    }
+            setMensajeMostrado(true);
+            setErrorMessage(error.message || 'Error desconocido');
 
-                    setTimeout(() => {
-                        setMensajeMostrado(false);
-                    }, 3000);
+            setTimeout(() => {
+                setMensajeMostrado(false);
+            }, 3000);
         }
-        }
+    };
 
-    // Determinar si un campo debe ser deshabilitado (PK o FK)
     const isFieldDisabled = (column) => {
-        return column.isPrimaryKey || 
-               (column.originalName.slice(-3) === 'ide');
+        return column.isPrimaryKey; // Solo la PK se desactiva
     };
 
     return (
@@ -109,16 +108,15 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
             <Modal.Body>
                 <Form onSubmit={handleSubmit}>
                     {columns && columns.map((column, index) => {
-                        // Determinar si es foránea
-                        const isForeignKey = column.originalName.slice(-3) === 'ide' && 
-                                           tableName.slice(0, 3) === 'tes' && 
-                                           !column.isPrimaryKey;
+                        const isForeignKey = column.originalName.slice(-3) === 'ide' &&
+                                             tableName.slice(0, 3) === 'tes' &&
+                                             !column.isPrimaryKey;
 
                         if (isForeignKey && foreignTable.length > 0) {
                             const firstItem = foreignTable[0];
                             const ideField = Object.keys(firstItem).find(key => key.endsWith('_ide'));
                             const displayField = Object.keys(firstItem).find(key => !key.endsWith('_ide'));
-                            
+
                             return (
                                 <Form.Group key={index} className="mb-3">
                                     <Form.Label>{column.displayName}</Form.Label>
@@ -141,7 +139,6 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
                             );
                         }
 
-                        // Para campos normales
                         return (
                             <Form.Group key={index} className="mb-3">
                                 <Form.Label>{column.displayName}</Form.Label>
@@ -167,7 +164,7 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
                     Guardar Cambios
                 </Button>
             </Modal.Footer>
-            
+
             {mensajeMostrado && (
                 <Alert 
                     key={formEnviado ? 'success' : 'danger'} 

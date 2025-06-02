@@ -3,9 +3,8 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Alert from "../../components/atoms/Alert";
-import { fetchData } from '../../data/fetchData';
 import { Row, Col } from 'react-bootstrap';
-import axios from 'axios';
+
 
 function ModalEditBm({ show, handleClose, columns, tableName, foreign, onSuccess, rowData, idColumn }) {
     const [formData, setFormData] = useState({});

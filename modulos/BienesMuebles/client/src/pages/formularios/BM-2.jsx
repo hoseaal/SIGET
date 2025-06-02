@@ -3,13 +3,71 @@ import { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from '../../components/atoms/Buttons';
 import Alert from "../../components/atoms/Alert";
-import { fetchData } from '../../data/fetchData';
 import Select from 'react-select';
-import axios from 'axios';
 import ModalActaInc from '../Modales/modalActaInc';
 import ModalRepBm2 from '../Modales/modalRepBm2';
+import ModalInsert from '../Modales/modalInsert';
 
 export const Bm2 = () => {
+
+    //Modal insertar Marca
+    const [showInsertMarca, setShowInsertMarca] = useState(false);
+    const [columnsMarca, setColumnsMarca] = useState(false);
+    const columnAliasMarcas = {
+        'mar_ide': 'Código',
+        'mar_mar': 'Marca'
+    };
+    useEffect(() => {
+            const loadData = async () => {
+                try {
+                    const { columns: marColumns, idColumn: marIdColumns } = await fetchTableColumns('tmamar');
+                    
+                    // Transformar las columnas en objetos con ambos nombres
+                    const processedColumnsMar = marColumns.map(col => ({
+                        originalName: col,
+                        displayName: columnAliasMarcas[col.toLowerCase()] || col
+                    }));
+                    
+                    setColumnsMarca(processedColumnsMar);
+                } catch (error) {
+                    console.error("Error cargando categorías:", error);
+                    setColumnsMarca([]);
+                }
+            };
+            loadData();
+        }, [showInsertMarca]);
+
+        //Modal insertar Modelo
+    const [showInsertMod, setShowInsertMod] = useState(false);
+    const [columnsMod, setColumnsMod] = useState(false);
+     const columnAliasMod = {
+        'mod_ide': 'Código',
+        'mod_mod': 'Modelo',
+        'mar_ide': 'Marca'
+    };
+    useEffect(() => {
+            const loadData = async () => {
+                try {
+                    const { columns: modColumns, idColumn: modIdColumn } = await fetchTableColumns('tesmod');
+                     // Transformar las columnas en objetos con ambos nombres
+                     const processedColumnsMod = modColumns.map(col => ({
+                        originalName: col,
+                        displayName: columnAliasMod[col.toLowerCase()] || col,
+                        isPrimaryKey: col === modIdColumn
+                    }));
+                    
+                    setColumnsMod(processedColumnsMod);
+                } catch (error) {
+                    console.error("Error cargando subcategorías:", error);
+                    setColumnsMod([]);
+                }
+            };
+            loadData();
+        }, [showInsertMod]);
+
+        const handleSuccess = () => {
+            setRefreshKey(prev => prev + 1); // Fuerza recarga
+        };
 
     //Modal Actas de incorporación
     const [showActInc, setShowActInc] = useState(false);
@@ -107,7 +165,7 @@ export const Bm2 = () => {
         };
 
         fetchAllData();
-    }, []);
+    }, [showInsertMarca]);
 
     // Efecto para cargar mod_ides cuando se selecciona una mar_ide
     useEffect(() => {
@@ -273,7 +331,7 @@ const handleSubmit = async (e) => {
 
     return (
         <>
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-2</h4>
                 <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowActInc(true)}>
                     <i className="bx bx-export me-1"></i> Generar acta de Incorporación de Bien
@@ -479,7 +537,22 @@ const handleSubmit = async (e) => {
                                         </Form.Select>
                                     </Form.Group>
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Marca</Form.Label>
+                                        <div className="d-flex justify-content-between align-items-center w-100 mb-4">
+                                        <Form.Label className="m-0">Marca</Form.Label>
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-primary"  
+                                                onClick={() => setShowInsertMarca(true)}
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                            <ModalInsert show={showInsertMarca}
+                                            handleClose={() => setShowInsertMarca(false)}
+                                            columns={columnsMarca}
+                                            tableName='tmamar'
+                                            onSuccess={handleSuccess}
+                                            />
                                         <Form.Select 
                                             name='mar_ide'
                                             value={formData.mar_ide}
@@ -494,7 +567,23 @@ const handleSubmit = async (e) => {
                                         </Form.Select>
                                     </Form.Group>
                                     <Form.Group className="mb-3">
+                                         <div className="d-flex justify-content-between align-items-center w-100 mb-4">
                                         <Form.Label>Modelo</Form.Label>
+                                        <button 
+                                                type="button" 
+                                                className="btn btn-primary"  
+                                                onClick={() => setShowInsertMod(true)}
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                         <ModalInsert show={showInsertMod}
+                                            handleClose={() => setShowInsertMod(false)}
+                                            columns={columnsMod}
+                                            tableName='tesmod'
+                                            foreign='tmamar'
+                                            onSuccess={handleSuccess}
+                                        />
                                         <Form.Select 
                                             name='mod_ide'
                                             value={formData.mod_ide}
