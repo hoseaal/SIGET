@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { fetchTableColumns, fetchData } from '../../data/fetchData';
+import React, { useState, useEffect } from 'react';
+import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalInsert from '../Modales/modalInsert';
 import ModalUpdate from '../Modales/modalUpdate';
@@ -7,7 +7,7 @@ import ModalDelete from '../Modales/modalDelete';
 
 
 export const Tipos = () => {
-    // Estado para Marcas
+    // Estado para Tipo
     const [columns, setColumns] = useState([]);
     const [idColumn, setIdColumn] = useState(null);
     const [data, setData] = useState([]);
@@ -34,46 +34,25 @@ export const Tipos = () => {
 
     // Cargar columnas de Tipos
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const { columns: tiposColumns, idColumn: tiposIdColumns } = await fetchTableColumns('tmatip');
-                
-                // Transformar las columnas en objetos con ambos nombres
-                const processedColumnsTipos = tiposColumns.map(col => ({
-                    originalName: col,
-                    displayName: columnAliasTipos[col.toLowerCase()] || col
-                }));
-                
-                setColumns(processedColumnsTipos);
-                setIdColumn(tiposIdColumns);
-            } catch (error) {
-                console.error("Error cargando categorías:", error);
-                setColumns([]);
-            }
-        };
-        loadData();
-    }, []);
+            const loadCatData = async () => {
+              try {
+                const { columns, primaryKey } = await getTableMetadata('tmatip');
+                setColumns(columns.map(col => ({
+                  originalName: col.name,
+                  displayName: columnAliasTipos[col.name] || col.name,
+                  isPrimaryKey: col.name === primaryKey
+                })));
+                setIdColumn(primaryKey);
 
-    // Cargar datos de Tipos
-    useEffect(() => {
-        const controller = new AbortController();
-        if (columns.length > 0) {
-            const fetchAllData = async () => {
-                try {
-                    const registrosData = await fetchData('tmatip', '*',  controller.signal);
-                    setData(registrosData);
-                    console.log(data)
-                } catch (error) {
-                    console.error("Error cargando datos:", error);
-                }
+                const res = await fetch('/api/tipos', { credentials: 'include' });
+                const data = await res.json();
+                setData(data);
+              } catch (error) {
+                console.error('Error cargando categorías:', error);
+              }
             };
-            fetchAllData();
-        }
-
-        return () => {
-            controller.abort(); // Cancela la petición al desmontar el componente
-        };
-    }, [columns, refreshKey]);
+            loadCatData();
+        }, [refreshKey]);
 
 
    return (

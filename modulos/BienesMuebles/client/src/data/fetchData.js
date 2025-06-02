@@ -1,38 +1,8 @@
-import axios from 'axios';
+export const getTableMetadata = async (tableName) => {
+  const res = await fetch(`/api/meta/table-metadata?table=${tableName}`, {
+    credentials: 'include'
+  });
 
-export const fetchData = async (table, columns, conditionColumn, conditionValue, signal) => {
-  const params = conditionColumn && conditionValue
-    ? { table, columns, fk: conditionColumn, dato: conditionValue }
-    : { table, columns };
-
-  try {
-    const response = await axios.get('/api/selects', { 
-      params,
-      signal // Pasa la señal de cancelación
-    });
-    return response.data;
-  } catch (error) {
-    if (axios.isCancel(error)) {
-      console.log('Petición cancelada:', table);
-      return [];
-    }
-    console.error(`Error al obtener datos de ${table}:`, error.message);
-    return [];
-  }
-};
-
-export const fetchTableColumns = async (tableName) => {
-  try {
-    const response = await axios.get(`/api/table-columns?id_table=${tableName}`);
-    const { columns, idColumn } = response.data; // Desestructuración directa
-    
-    return {
-      columns,     // Lista de columnas
-      idColumn     // Nombre de la columna de identificación única
-    };
-    
-  } catch (error) {
-    console.error('Error fetching table columns:', error);
-    throw error; // Opcional: relanzar el error para manejo externo
-  }
-};
+  if (!res.ok) throw new Error(`Error obteniendo metadata de ${tableName}`);
+  return await res.json();
+}

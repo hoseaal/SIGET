@@ -1,24 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 const ProtectedRoute = ({ children }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        // Verificar con el backend si la cookie es válida
-        await axios.get('/api/verify-auth', {
-          withCredentials: true // Importante para enviar cookies
+        const res = await fetch('/api/auth/verify-auth', {
+          method: 'GET',
+          credentials: 'include', // Esencial para enviar cookies
         });
-      } catch (error) {
+
+        if (!res.ok) throw new Error();
+
+        // Si llega acá, hay sesión activa
+        setIsLoading(false);
+      } catch (err) {
         navigate('/Login', { replace: true });
       }
     };
 
     verifyAuth();
   }, [navigate]);
+
+  if (isLoading) return <div>Cargando...</div>; // O tu spinner facherito
 
   return children;
 };

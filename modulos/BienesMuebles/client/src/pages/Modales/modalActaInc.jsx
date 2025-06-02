@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import axios from 'axios';
 import Alert from "../../components/atoms/Alert";
-import { fetchData } from '../../data/fetchData';
 
 function ModalActaInc({ show, handleClose, BienId, DataBien, limpiarFormulario }) {
   const [formData, setFormData] = useState({});

@@ -7,6 +7,7 @@ export class SubcategoriaModel {
       SELECT s.sca_ide, s.sca_sca, s.cat_ide, c.cat_cat
       FROM tessca s
       JOIN tmacat c ON s.cat_ide = c.cat_ide
+      ORDER BY s.sca_ide ASC
     `)
     return rows
   }

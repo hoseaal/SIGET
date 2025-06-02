@@ -3,7 +3,6 @@ import { Link } from "react-router-dom"
 import './page-auth.css'
 import Form from 'react-bootstrap/Form';
 import Alert from "../../components/atoms/Alert";
-import axios from "axios";
 
 export const RegisterPage = () => {
     const [formEnviado, setFormEnviado] = useState(false); // Estado para alternar vista

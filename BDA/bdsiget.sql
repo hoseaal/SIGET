@@ -32,9 +32,9 @@ CREATE TABLE `tesant` (
 --
 
 CREATE TABLE `tescae` (
-  `cae_ide` varchar(10) NOT NULL COMMENT 'Identificador de categoría especifica',
+  `cae_ide` INT NOT NULL COMMENT 'Identificador de categoría especifica',
   `cae_cae` varchar(100) NOT NULL COMMENT 'descripcion de categoría especifica',
-  `sca_ide` varchar(10) NOT NULL COMMENT 'Referencia a subcategoría en tessca'
+  `sca_ide` INT NOT NULL COMMENT 'Referencia a subcategoría en tessca'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -133,9 +133,9 @@ CREATE TABLE `tespri` (
 --
 
 CREATE TABLE `tessca` (
-  `sca_ide` varchar(10) NOT NULL COMMENT 'Identificador de sub-categoria',
+  `sca_ide` INT NOT NULL COMMENT 'Identificador de sub-categoria',
   `sca_sca` varchar(100) NOT NULL COMMENT 'descripcion de sub-categoria',
-  `cat_ide` varchar(10) NOT NULL COMMENT 'Referencia a categoría en tmacat'
+  `cat_ide` INT NOT NULL COMMENT 'Referencia a categoría en tmacat'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -188,7 +188,7 @@ CREATE TABLE `tmab_m` (
 --
 
 CREATE TABLE `tmacat` (
-  `cat_ide` varchar(10) NOT NULL COMMENT 'Identificador de categoria',
+  `cat_ide` INT NOT NULL COMMENT 'Identificador de categoria',
   `cat_cat` varchar(100) NOT NULL COMMENT 'descripcion del categoria'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

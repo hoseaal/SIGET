@@ -57,3 +57,31 @@ export const eliminarCategoriaEspecifica = async (req, res) => {
     res.status(400).json({ error: error.message })
   }
 }
+
+export const obtenerCategoriasPagina = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 20
+
+    const result = await CategoriaEspecificaService.obtenerPagina({ page, limit })
+
+    res.json({
+      data: result.data,
+      meta: result.meta
+    })
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
+}
+
+export const buscarCategorias = async (req, res) => {
+  try {
+    const { search } = req.query
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 20
+    const categorias = await CategoriaEspecificaService.buscarPorNombre(search, { page, limit })
+    res.json(categorias)
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
+}

@@ -1,6 +1,5 @@
 import React from 'react'
 import { useState, useEffect } from "react"
-import { fetchData, fetchTableColumns } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
 

@@ -1,78 +1,64 @@
 import getGreetingMessage from '../utils/greetingHandler';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchData } from '../data/fetchData';
-import axios from 'axios';
 import { Dropdown, Nav, Navbar as BSNavbar, Image } from 'react-bootstrap';
 import { BsMenuApp, BsPerson, BsGear, BsCreditCard, BsPower } from 'react-icons/bs';
 
 const Navbar = () => {
-  const [userData, setUserData] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get('/api/verify-auth', {
-          withCredentials: true
+        const res = await fetch('/api/auth/verify-auth', {
+          method: 'GET',
+          credentials: 'include'
         });
-        
-        if (response.data.success) {
-          setUserData(response.data.user);
-          console.log(userData)
+
+        if (!res.ok) throw new Error('Sesión inválida');
+
+        const data = await res.json();
+
+        if (data.success) {
+          setUserData(data.user);
         }
       } catch (error) {
-        console.error('Error obteniendo datos de usuario:', error)
+        console.error('Error obteniendo datos de usuario:', error);
+        // Si falla la sesión, redirigí si querés:
+        // navigate('/Login', { replace: true });
       }
     };
 
     fetchUserData();
   }, []);
 
-  const navigate = useNavigate();
-
-  console.log(userData)
-
   const handleLogout = async () => {
     try {
-      const response = await axios.post(
-        '/api/logout', 
-        {}, 
-        { 
-          withCredentials: true
-        }
-      );
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
 
-      alert(response.data.message);
-      navigate('/Login', { replace: true })
-      
+      if (!res.ok) throw new Error('Error al cerrar sesión');
+
+      const data = await res.json();
+      alert(data.message || 'Sesión cerrada');
+      navigate('/Login', { replace: true });
+
     } catch (error) {
       alert('Error al cerrar sesión');
       console.error('Logout error:', error);
     }
   };
 
-   const tipo = [
-                {
-                    "usu_tip": 0,
-                    "tipo": "Solo vistas"
-                },
-                {
-                    "usu_tip": 1,
-                    "tipo": "Temporal"
-                },
-                {
-                    "usu_tip": 2,
-                    "tipo": "Trabajador"
-                },
-                {
-                    "usu_tip": 3,
-                    "tipo": "Jefe de area"
-                },
-                {
-                    "usu_tip": 4,
-                    "tipo": "Administrador"
-                }
-            ];
+  const tipo = [
+    { "usu_tip": 0, "tipo": "Solo vistas" },
+    { "usu_tip": 1, "tipo": "Temporal" },
+    { "usu_tip": 2, "tipo": "Trabajador" },
+    { "usu_tip": 3, "tipo": "Jefe de área" },
+    { "usu_tip": 4, "tipo": "Administrador" }
+  ];
 
   return (
     <BSNavbar expand="xl" className="layout-navbar container-xxl navbar-detached bg-navbar-theme">
@@ -112,7 +98,7 @@ const Navbar = () => {
                   </div>
                   <div className="flex-grow-1">
                     <span className="fw-medium d-block">{userData?.usu_nom + ' ' + userData?.usu_ape}</span>
-                    <small className="text-muted">{tipo.find(item => item.usu_tip === userData.usu_tip)?.tipo || "Desconocido"}</small>
+                    <small className="text-muted">{tipo.find(item => item?.usu_tip === userData?.usu_tip)?.tipo || "Desconocido"}</small>
                   </div>
                 </div>
               </Dropdown.Item>

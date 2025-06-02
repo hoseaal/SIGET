@@ -10,11 +10,14 @@ import modeloRouter from './src/routes/modelo.routes.js'
 import bienMuebleRouter from './src/routes/bienMueble.routes.js'
 import metaRouter from './src/routes/meta.routes.js'
 import pdfRouter from './src/routes/pdf.routes.js'
+import cors from 'cors'
+import morgan from 'morgan'
 
 const app = express()
 
 app.use(express.json())
 app.use(cookieParser())
+app.use(morgan('dev'))
 
 // Conectar DB
 connectDB()
@@ -28,6 +31,11 @@ connectDB()
 app.get('/', (req, res) => {
   res.json({ message: 'API de Bienes Muebles' })
 })
+
+app.use(cors({
+  origin: 'http://localhost:5173', // donde corre Vite
+  credentials: true // permite el uso de cookies
+}))
 
 app.use('/api/auth', authRouter)
 

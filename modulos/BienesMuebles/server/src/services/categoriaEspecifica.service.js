@@ -33,4 +33,25 @@ export class CategoriaEspecificaService {
     if (!existe) throw new Error('Categoría específica no existe')
     return await CategoriaEspecificaModel.delete(id)
   }
+
+  static async obtenerPagina ({ page, limit }) {
+    if (page < 1 || limit < 1) throw new Error('Parámetros de paginación inválidos')
+
+    const result = await CategoriaEspecificaModel.getAllPaginated({ page, limit })
+
+    return {
+      data: result.data,
+      meta: {
+        page: Number(page),
+        limit: Number(limit),
+        total: Number(result.total),
+        totalPages: Math.ceil(result.total / limit)
+      }
+    }
+  }
+
+  static async buscarPorNombre (searchTerm, { page, limit }) {
+    if (!searchTerm.trim()) throw new Error('Término de búsqueda requerido')
+    return await CategoriaEspecificaModel.searchByNombre(searchTerm, { page, limit })
+  }
 }
