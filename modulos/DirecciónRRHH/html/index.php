@@ -13,6 +13,8 @@
       header('Location: auth-login-basic.php');
       exit;
   }
+
+  echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -90,7 +92,7 @@
                           </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Total de Usuarios</span>
-                        <h3 class="card-title mb-2" id="total-usuarios"></h3>
+                        <h3 class="card-title mb-2 text-center" id="total-usuarios"></h3>
                       </div>
                     </div>
                   </div>
@@ -104,7 +106,7 @@
                           </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Total de empleados</span>
-                        <h3 class="card-title mb-2" id="total-empleados"></h3>
+                        <h3 class="card-title mb-2 text-center" id="total-empleados"></h3>
                       </div>
                     </div>
                   </div>
@@ -118,7 +120,7 @@
                           </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">% por Área</span>
-                        <h3 class="card-title mb-2" id="promedioArea">Cargando...</h3>
+                        <h3 class="card-title mb-2 text-center" id="promedioArea">Cargando...</h3>
                       </div>
                     </div>
                   </div>
@@ -132,7 +134,7 @@
                           </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Salida total de nómina</span>
-                        <h3 class="card-title mb-2" id="totalNomina">Cargando...</h3>
+                        <h3 class="card-title mb-2 text-center" id="totalNomina">Cargando...</h3>
                       </div>
                     </div>
                   </div>
