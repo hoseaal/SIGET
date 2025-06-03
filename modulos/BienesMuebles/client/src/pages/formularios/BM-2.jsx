@@ -237,7 +237,7 @@ export const Bm2 = () => {
     const [searchTerm, setSearchTerm] = useState();
     const limit = 20;
 
-useEffect(() => {
+    useEffect(() => {
     const fetchCatEspecificas = async () => {
         if (!formData.sca_ide || searchTerm.trim() === '') {
             setFilteredCatEsp([]);
@@ -282,7 +282,6 @@ const handleSubmit = async (e) => {
         bim_moneda: formData.bim_moneda,
         bim_color: formData.bim_color,
         bim_cod: formData.bim_cod,
-        bim_obs: null,
         bim_sede: 'PRINCIPAL',
         est_ide: 4,
         tip_ide: formData.tip_ide,
@@ -298,7 +297,7 @@ const handleSubmit = async (e) => {
     console.log('Datos a enviar:', datosEnviar);
 
     if (!formData.bim_ide || !formData.dep_ide) {
-        setErrorMessage('Los campos obligatorios deben ser completados');
+        setErrorMessage('Debes completar los campos: Código del bien y Departamento');
         setMensajeMostrado(true);
         setTimeout(() => setMensajeMostrado(false), 3000);
         return;
@@ -312,10 +311,16 @@ const handleSubmit = async (e) => {
             }
             });
 
-            if (resCheck.status !== 404 || resCheck.statu !== 401 || resCheck.error) {
-                // Si el backend NO devuelve 404, entonces el código ya está en uso
+            console.log(resCheck.status)
+
+            if (resCheck.status === 200) {
+                // El bien YA existe
                 throw new Error('Este código ya está asignado a un bien');
+            } else if (resCheck.status === 404) {
+                // El bien no existe, perfecto, se puede insertar
+                console.log('El bien no existe aún, se puede insertar');
             }
+
         // ✅ Enviar nuevo bien (POST /api/bienes)
         const resInsert = await fetch('/api/bienes', {
             method: 'POST',
@@ -325,9 +330,11 @@ const handleSubmit = async (e) => {
             body: JSON.stringify(datosEnviar)
         });
 
-        if (!resInsert.ok) {
-            const errorBody = await resInsert.json();
-            throw new Error(errorBody.error || 'Error al insertar bien');
+        const resBody = await resInsert.json();
+        console.log('Respuesta del servidor:', resInsert.status, resBody);
+
+        if (resInsert.status !== 201) {
+            throw new Error(resBody.error || 'Error al insertar bien');
         }
 
         // 🎉 Éxito

@@ -14,9 +14,12 @@ export const obtenerBien = async (req, res) => {
   try {
     const { id } = req.params
     const bien = await BienMuebleService.obtenerPorId(id)
+    if (!bien) {
+      return res.status(404).json({ error: 'Bien mueble no encontrado' })
+    }
     res.json(bien)
   } catch (error) {
-    res.status(404).json({ error: error.message })
+    res.status(500).json({ error: error.message })
   }
 }
 

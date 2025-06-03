@@ -15,8 +15,8 @@ export class BienMuebleService {
 
   static async crear (datos) {
     Validaciones.validarBienMueble(datos)
-    const existe = await BienMuebleModel.getByCode(datos.bim_ide)
-    if (existe) throw new Error('El código ya existe')
+    const existe = await BienMuebleModel.getById(datos.bim_ide)
+    if (existe) throw new Error('El ID ya está en uso')
     const existe1 = await BienMuebleModel.getByCode(datos.bim_cod)
     if (existe1) throw new Error('El código SUDEBIM ya existe')
     return await BienMuebleModel.create(datos)
