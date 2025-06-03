@@ -203,6 +203,11 @@
                         <label for="cedula" class="form-label">Cédula</label>
                         <input type="number" class="form-control" id="cedula" name="cedula" required disabled />
                       </div>
+                      <!-- Usuario -->
+                      <div class="mb-3">
+                        <label for="usuario" class="form-label">Nombre de Usuario</label>
+                        <input type="text" class="form-control" id="usuario" name="usuario" required disabled/>
+                      </div>
                       <!-- Nombres -->
                       <div class="mb-3">
                         <label for="nombre" class="form-label">Nombres</label>
@@ -220,10 +225,10 @@
                   </div>
                 </div>
 
-                <!-- Columna derecha - Rol del Usuario -->
+                <!-- Columna derecha - Rol del Usuario y Contraseña -->
                 <div class="col-md-6">
                   <div class="card mb-4">
-                    <h5 class="card-header">Rol del Usuario</h5>
+                    <h5 class="card-header">Rol y Seguridad</h5>
                     <div class="card-body">
                       <!-- Tipo de Usuario -->
                       <div class="mb-3">
@@ -237,6 +242,63 @@
                           <option value="0">Visualizador</option>
                         </select>
                       </div>
+                      
+                      <!-- Campo de Contraseña -->
+                      <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <div class="input-group">
+                          <input 
+                            type="password" 
+                            class="form-control" 
+                            id="password" 
+                            name="password" 
+                            placeholder="******"
+                            aria-describedby="togglePassword"
+                          >
+                          <button 
+                            class="btn btn-outline-secondary" 
+                            type="button" 
+                            id="togglePassword"
+                            data-field="password"
+                          >
+                            <i class="bx bx-show"></i>
+                          </button>
+                          <button 
+                            class="btn btn-outline-primary" 
+                            type="button" 
+                            id="enablePasswordChange"
+                          >
+                            Cambiar
+                          </button>
+                        </div>
+                        <div class="form-text">Dejar en blanco para mantener la contraseña actual</div>
+                      </div>
+                      
+                      <!-- Campo de Confirmar Contraseña -->
+                      <div class="mb-3" id="confirmPasswordContainer" style="display: none;">
+                        <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                        <div class="input-group">
+                          <input 
+                            type="password" 
+                            class="form-control" 
+                            id="confirmPassword" 
+                            name="confirmPassword" 
+                            placeholder="******"
+                            aria-describedby="toggleConfirmPassword"
+                          >
+                          <button 
+                            class="btn btn-outline-secondary" 
+                            type="button" 
+                            id="toggleConfirmPassword"
+                            data-field="confirmPassword"
+                          >
+                            <i class="bx bx-show"></i>
+                          </button>
+                        </div>
+                        <div class="invalid-feedback" id="passwordMatchError">
+                          Las contraseñas no coinciden
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -247,7 +309,7 @@
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               Cerrar
             </button>
-            <button type="button" class="btn btn-primary">Confirmar Cambios</button>
+            <button type="button" class="btn btn-primary" id="saveChangesBtn">Confirmar Cambios</button>
           </div>
         </div>
       </div>

@@ -14,6 +14,7 @@
             SELECT 
                 u.usu_ide, 
                 u.usu_tip, 
+                u.usu_usu,
                 u.nom_ced, 
                 u.usu_nom, 
                 u.usu_ape

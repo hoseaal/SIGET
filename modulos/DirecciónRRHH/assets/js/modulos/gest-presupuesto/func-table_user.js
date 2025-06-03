@@ -528,9 +528,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para abrir el modal de edición con datos del usuario
     function openEditModal(userData) {
         const editModal = new bootstrap.Modal(document.getElementById('largeModal'));
+
+        // Resetear campos de contraseña
+        cancelPasswordChange();
+
+        // Configurar event listeners para los botones de contraseña
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            togglePasswordVisibility('password');
+        });
+        
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            togglePasswordVisibility('confirmPassword');
+        });
+        
+        document.getElementById('enablePasswordChange').addEventListener('click', enablePasswordChange);
         
         // datos personales (solo lectura)
         document.getElementById('cedula').value = userData.nom_ced || '';
+        document.getElementById('usuario').value = userData.usu_usu || '';
         document.getElementById('nombre').value = userData.usu_nom || '';
         document.getElementById('apellidos').value = userData.usu_ape || '';
         
@@ -554,6 +569,11 @@ document.addEventListener('DOMContentLoaded', function() {
     async function saveUserChanges(userId) {
         const saveButton = document.querySelector('#largeModal .btn-primary');
         const originalText = saveButton.innerHTML;
+
+        // Validar contraseñas primero
+        if (!validatePasswords()) {
+            return;
+        }
         
         // Mostrar spinner y deshabilitar botón
         saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
@@ -565,6 +585,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 user_id: userId,
                 user_type: document.getElementById('cargocet').value
             };
+
+            // Si se está cambiando la contraseña, incluirla en los datos
+            const password = document.getElementById('password').value;
+            const confirmContainer = document.getElementById('confirmPasswordContainer');
+            
+            if (confirmContainer.style.display !== 'none' && password) {
+                updatedData.password = password;
+            }
             
             // Validación básica
             if (!updatedData.user_type) {
@@ -610,6 +638,93 @@ document.addEventListener('DOMContentLoaded', function() {
             saveButton.innerHTML = originalText;
             saveButton.disabled = false;
         }
+    }
+
+    // Función para alternar la visibilidad de la contraseña
+    function togglePasswordVisibility(fieldId) {
+            const field = document.getElementById(fieldId);
+            const toggleBtn = document.querySelector(`#toggle${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)}`);
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                toggleBtn.innerHTML = '<i class="bx bx-hide"></i>';
+            } else {
+                field.type = 'password';
+                toggleBtn.innerHTML = '<i class="bx bx-show"></i>';
+            }
+        }
+
+        function enablePasswordChange() {
+        const passwordField = document.getElementById('password');
+        const confirmContainer = document.getElementById('confirmPasswordContainer');
+        
+        passwordField.removeAttribute('readonly');
+        passwordField.value = '';
+        passwordField.focus();
+        
+        confirmContainer.style.display = 'block';
+        
+        const changeBtn = document.getElementById('enablePasswordChange');
+        changeBtn.innerHTML = '<i class="bx bx-x"></i> Cancelar';
+        changeBtn.classList.remove('btn-outline-primary');
+        changeBtn.classList.add('btn-outline-danger');
+        changeBtn.removeEventListener('click', enablePasswordChange);
+        changeBtn.addEventListener('click', cancelPasswordChange);
+    }
+
+    function cancelPasswordChange() {
+        const passwordField = document.getElementById('password');
+        const confirmContainer = document.getElementById('confirmPasswordContainer');
+        const confirmField = document.getElementById('confirmPassword');
+        
+        passwordField.value = '';
+        passwordField.setAttribute('readonly', 'true');
+        passwordField.type = 'password';
+        confirmField.value = '';
+        confirmContainer.style.display = 'none';
+        
+        const changeBtn = document.getElementById('enablePasswordChange');
+        changeBtn.innerHTML = 'Cambiar';
+        changeBtn.classList.remove('btn-outline-danger');
+        changeBtn.classList.add('btn-outline-primary');
+        changeBtn.removeEventListener('click', cancelPasswordChange);
+        changeBtn.addEventListener('click', enablePasswordChange);
+        
+        passwordField.classList.remove('is-invalid');
+        confirmField.classList.remove('is-invalid');
+        document.getElementById('passwordMatchError').style.display = 'none';
+    }
+
+    function validatePasswords() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const passwordField = document.getElementById('password');
+        const confirmField = document.getElementById('confirmPassword');
+        const errorElement = document.getElementById('passwordMatchError');
+        
+        if (document.getElementById('confirmPasswordContainer').style.display === 'none') {
+            return true;
+        }
+        
+        if (password !== confirmPassword) {
+            passwordField.classList.add('is-invalid');
+            confirmField.classList.add('is-invalid');
+            errorElement.style.display = 'block';
+            return false;
+        }
+        
+        if (password.length > 0 && password.length < 8) {
+            errorElement.textContent = 'La contraseña debe tener al menos 8 caracteres';
+            errorElement.style.display = 'block';
+            passwordField.classList.add('is-invalid');
+            confirmField.classList.add('is-invalid');
+            return false;
+        }
+        
+        passwordField.classList.remove('is-invalid');
+        confirmField.classList.remove('is-invalid');
+        errorElement.style.display = 'none';
+        return true;
     }
 
     // Inicializar la tabla, paginación y buscador

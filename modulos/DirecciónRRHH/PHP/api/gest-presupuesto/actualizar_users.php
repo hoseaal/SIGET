@@ -18,6 +18,9 @@
         $userId = $data['user_id'];
         $userType = $data['user_type'];
         $usuarioResponsable = $decoded->data->cedula;
+        
+        // Nueva contraseña (opcional)
+        $newPassword = isset($data['password']) ? $data['password'] : null;
 
         // 1. Establecer el usuario responsable en MySQL
         $pdo->exec("SET @usuario_php = " . $pdo->quote($usuarioResponsable));
@@ -31,12 +34,28 @@
             throw new Exception('El usuario no existe');
         }
 
+        // Validar la nueva contraseña si se proporcionó
+        if ($newPassword !== null) {
+            if (strlen($newPassword) < 8) {
+                throw new Exception('La contraseña debe tener al menos 8 caracteres');
+            }
+            $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+        }
+
         // Iniciar transacción
         $pdo->beginTransaction();
 
         try {
-            // Actualizar tipo de usuario
-            $query = $pdo->prepare("UPDATE tesusu SET usu_tip = :user_type WHERE usu_ide = :user_id");
+            // Construir la consulta de actualización
+            if ($newPassword !== null) {
+                // Actualizar tipo de usuario y contraseña
+                $query = $pdo->prepare("UPDATE tesusu SET usu_tip = :user_type, usu_con = :password WHERE usu_ide = :user_id");
+                $query->bindParam(':password', $hashedPassword);
+            } else {
+                // Actualizar solo el tipo de usuario
+                $query = $pdo->prepare("UPDATE tesusu SET usu_tip = :user_type WHERE usu_ide = :user_id");
+            }
+            
             $query->bindParam(':user_type', $userType);
             $query->bindParam(':user_id', $userId);
             
@@ -48,7 +67,7 @@
 
             echo json_encode([
                 'success' => true,
-                'message' => 'Usuario actualizado correctamente'
+                'message' => 'Usuario actualizado correctamente' . ($newPassword !== null ? ' (incluyendo contraseña)' : '')
             ]);
             
         } catch (Exception $e) {
