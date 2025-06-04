@@ -26,6 +26,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
 
   useEffect(() => {
     const fetchBienData = async () => {
+      console.log(BienId)
       if (BienId) {
         try {
           setLoading(true);
@@ -70,6 +71,105 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
       setLoading(false);
     }
   };
+
+  const validarDatosActa = (datos) => {
+  const camposRequeridos = [
+    'numeroActa',
+    'ciudad',
+    'dia',
+    'mes',
+    'anio',
+    'hora',
+    'nombreDirectorAdmin',
+    'ciDirectorAdmin',
+    'nombreDirectorAsignacion',
+    'ciDirectorAsignacion',
+    'unidadAsignacion',
+    'nombreJefeCompras',
+    'ciJefeCompras',
+    'nombreAnalistaBienes',
+    'ciAnalistaBienes',
+    'descripcionIncorporacion',
+    'codigoBien',
+    'unidadDestino',
+    'nombreFuncionarioElabora'
+  ];
+
+  return validarCampos(datos, camposRequeridos);
+};
+      const validarDatosActaCET = (datos) => {
+  const camposRequeridos = [
+    'numeroActa',
+    'ciudad',
+    'dia',
+    'mes',
+    'anio',
+    'hora',
+    'nombreDirectorAdmin',
+    'ciDirectorAdmin',
+    'nombreDirectorServicios',
+    'ciDirectorServicios',
+    'nombreJefeCompras',
+    'ciJefeCompras',
+    'codigoBien',
+    'descripcionIncorporacion',
+    'marca',
+    'modelo',
+    'color',
+    'unidadDestino',
+    'conceptoMovimiento',
+    'cod_conceptoMov'
+  ];
+
+  return validarCampos(datos, camposRequeridos);
+};
+
+  const validarCampos = (datos, camposRequeridos) => {
+  // Validar campos faltantes
+  const camposFaltantes = camposRequeridos.filter(campo => !datos.hasOwnProperty(campo));
+  if (camposFaltantes.length > 0) {
+    return {
+      valido: false,
+      error: `Faltan campos requeridos: ${camposFaltantes.join(', ')}`
+    };
+  }
+
+  // Validar campos vacíos
+  const camposVacios = camposRequeridos.filter(campo => {
+    const valor = datos[campo];
+    return valor === '' || valor === null || valor === undefined;
+  });
+
+  if (camposVacios.length > 0) {
+    return {
+      valido: false,
+      error: `Los siguientes campos no pueden estar vacíos: ${camposVacios.join(', ')}`
+    };
+  }
+
+  // Validar formatos específicos
+  const erroresFormato = [];
+  
+  // Validar CIs (deben ser números)
+  if (datos.ciDirectorAdmin && isNaN(datos.ciDirectorAdmin)) {
+    erroresFormato.push('CI Director Admin debe ser numérico');
+  }
+  if (datos.ciDirectorAsignacion && isNaN(datos.ciDirectorAsignacion)) {
+    erroresFormato.push('CI Director Asignación debe ser numérico');
+  }
+  if (datos.ciJefeCompras && isNaN(datos.ciJefeCompras)) {
+    erroresFormato.push('CI Jefe Compras debe ser numérico');
+  }
+
+  if (erroresFormato.length > 0) {
+    return {
+      valido: false,
+      error: erroresFormato.join('; ')
+    };
+  }
+
+  return { valido: true };
+};
 
   const handleSubmit = async () => {
     if (!bienData) return;
@@ -120,9 +220,33 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
       cod_conceptoMov: bienData.com_ide
     };
 
+     
+
+    const validacionActa = validarDatosActa(datosActa);
+  const validacionActaCET = validarDatosActaCET(datosActaCET);
+
+  if (!validacionActa.valido) {
+    setFormEnviado(false);
+    setErrorMessage(`Acta Incorporación: ${validacionActa.error}`);
+    setMensajeMostrado(true);
+    setTimeout(() => setMensajeMostrado(false), 5000);
+    return;
+  }
+
+  if (!validacionActaCET.valido) {
+    setFormEnviado(false);
+    setErrorMessage(`Acta CET: ${validacionActaCET.error}`);
+    setMensajeMostrado(true);
+    setTimeout(() => setMensajeMostrado(false), 5000);
+    return;
+  }
+
     try {
+      setMensajeMostrado(false);
+      setErrorMessage('');
+
       const [pdfResp1, pdfResp2] = await Promise.all([
-        fetch('/api/generar-acta', {
+        fetch('/api/pdf/acta-incorporacion', {
           method: 'POST',
           body: JSON.stringify(datosActa),
           headers: {
@@ -130,7 +254,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
           },
           credentials: 'include'
         }).then(response => response.blob()),
-        
+
         fetch('/api/pdf/acta-cet', {
           method: 'POST',
           body: JSON.stringify(datosActaCET),
@@ -139,7 +263,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
           },
           credentials: 'include'
         }).then(response => response.blob())
-      ]);
+    ]);
 
       const blobs = [pdfResp1, pdfResp2];
       const nombres = ['acta_incorporacion', 'acta_CET'];
@@ -154,23 +278,23 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
         link.remove();
       });
 
-      setFormEnviado(true);
-      setMensajeMostrado(true);
-      setTimeout(() => setMensajeMostrado(false), 3000);
+       setFormEnviado(true);
+        setMensajeMostrado(true);
+        setTimeout(() => setMensajeMostrado(false), 3000);
 
-      setFormData({});
-      setBienData(null);
+        setFormData({});
+        setBienData(null);
+
+        handleClose();
 
     } catch (error) {
-      console.error('Error al generar PDF:', error);
-      setFormEnviado(false);
-      setMensajeMostrado(true);
-      setErrorMessage('Error al generar el PDF');
-      setTimeout(() => setMensajeMostrado(false), 3000);
+        console.error('Error al generar PDF:', error);
+        setFormEnviado(false);
+        setErrorMessage('Error al generar el PDF. Por favor intente nuevamente.');
+        setMensajeMostrado(true);
+        setTimeout(() => setMensajeMostrado(false), 5000);
+     };
     }
-  };
-
-  console.log(bienData)
 
   return (
     <Modal show={show} onHide={handleClose} size="lg">
@@ -272,7 +396,6 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
           variant="primary"
           onClick={() => {
             handleSubmit();
-            handleClose();
             limpiarFormulario();
           }}
           disabled={!bienData}

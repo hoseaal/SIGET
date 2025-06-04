@@ -306,12 +306,13 @@ const handleSubmit = async (e) => {
     try {
           const resCheck = await fetch(`/api/bienes/${formData.bim_ide}`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'
             }
             });
-
-            console.log(resCheck.status)
+            const data = await resCheck.json();
+            console.log(data)
 
             if (resCheck.status === 200) {
                 // El bien YA existe
@@ -754,7 +755,6 @@ const handleSubmit = async (e) => {
                                                     <ModalActaInc show={showActInc}
                                                         handleClose={() => setShowActInc(false)}
                                                         BienId= {formData.bim_ide} 
-                                                        DataBien= {formData}
                                                         limpiarFormulario = {() => limpiarFormulario()}
                                                       />
                             </div>
