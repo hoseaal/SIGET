@@ -79,10 +79,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 minute: '2-digit'
             });
             
+            // Mapear las operaciones a sus equivalentes en español
+            const operationMap = {
+                'update': 'Actualización',
+                'delete': 'Eliminación',
+                'insert': 'Inserción'
+            };
+            
+            // Obtener la operación traducida o usar la original si no está en el mapa
+            const translatedOperation = operationMap[modification.bit_operacion.toLowerCase()] || modification.bit_operacion;
+            
             row.innerHTML = `
                 <td>${rowNumber}</td>
                 <td><strong>${modification.bit_tabla} (ID: ${modification.affected_id || 'N/A'})</strong></td>
-                <td>${modification.bit_operacion}</td>
+                <td>${translatedOperation}</td>
                 <td>${modification.bit_usuario_responsable}</td>
                 <td>${formattedDate}</td>
                 <td>
