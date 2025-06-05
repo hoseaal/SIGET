@@ -92,8 +92,8 @@
             <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Gestión de Presupuesto /</span> Cargos</h4>
             <div class="row">
               <!-- Cargos CET -->
-              <div class="col-md-6">
-                <div class="card mb-4">
+              <div class="col-md-6 d-flex flex-column">
+                <div class="card mb-4 h-100">
                   <h5 class="card-header">Cargos CET</h5>
                   <div class="card-body">
                     <!-- Tabla de Cargos CET -->
@@ -149,7 +149,7 @@
                           </div>
                       </div>
                       <!-- / Modal -->
-                      <table class="table" id="workersTable">
+                      <table class="table" id="cetTable">
                         <thead>
                           <tr>
                             <th>N°</th>
@@ -159,7 +159,7 @@
                             <?php } ?>
                           </tr>
                         </thead>
-                        <tbody class="table-border-bottom-0">
+                        <tbody class="table-border-bottom-0" id="cetTableBody">
                           <!-- Las filas se llenarán dinámicamente con JavaScript -->
                         </tbody>
                       </table>
@@ -168,7 +168,7 @@
                     <!-- Paginación -->
                     <div class="demo-inline-spacing mt-4">
                       <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center" id="pagination">
+                        <ul class="pagination justify-content-center" id="cetPagination">
                           <!-- La paginación se generará dinámicamente con JavaScript -->
                         </ul>
                       </nav>
@@ -182,8 +182,8 @@
               </div>
 
               <!-- Cargo ONAPRE -->
-              <div class="col-md-6">
-                <div class="card mb-4">
+              <div class="col-md-6 d-flex flex-column">
+                <div class="card mb-4 h-100">
                   <h5 class="card-header">Cargos ONAPRE</h5>
                   <div class="card-body">
                     <!-- Tabla de Cargos ONAPRE -->
@@ -253,7 +253,7 @@
                             <?php } ?>
                           </tr>
                         </thead>
-                        <tbody class="table-border-bottom-0">
+                        <tbody class="table-border-bottom-0" id="onapreTableBody">
                           <!-- Las filas se llenarán dinámicamente con JavaScript -->
                         </tbody>
                       </table>

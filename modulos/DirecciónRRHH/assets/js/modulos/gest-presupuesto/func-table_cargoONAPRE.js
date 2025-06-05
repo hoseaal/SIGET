@@ -7,6 +7,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const onapreTableBody = document.querySelector('#onapreTable tbody');
     const onaprePaginationElement = document.getElementById('onaprePagination');
 
+    // Variables para el control de actualización en tiempo real ONAPRE
+    let onapreLastUpdateTimestamp = null;
+    let onapreUpdateInterval = 2000; // 2 segundo
+    let onapreUpdateTimer = null;
+    let isOnapreUpdating = false;
+
+    function cleanupModals() {
+        // Eliminar todos los backdrops
+        document.querySelectorAll('.modal-backdrop').forEach(el => {
+            el.classList.add('fade', 'show'); // Asegurar animación de fade out
+            setTimeout(() => el.remove(), 300); // Esperar a que termine la animación
+        });
+        
+        // Restaurar el scroll del body
+        document.body.style.overflow = 'auto';
+        document.body.style.paddingRight = '0';
+        
+        // Cerrar todos los modales abiertos
+        document.querySelectorAll('.modal.show').forEach(modal => {
+            const instance = bootstrap.Modal.getInstance(modal);
+            if (instance) {
+                instance.hide();
+                setTimeout(() => {
+                    instance.dispose();
+                    modal.remove();
+                }, 300);
+            } else {
+                modal.remove();
+            }
+        });
+    }
+
     // Función para cargar los cargos ONAPRE desde la API
     async function fetchOnaprePositions(page) {
         try {
@@ -158,7 +190,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Agregar event listeners para los botones de eliminar (solo para tipos 3 y 4)
             if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
                 document.querySelectorAll('.delete-onapre-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
+                    // Limpiar eventos existentes primero
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                    
+                    // Agregar nuevo listener
+                    newBtn.addEventListener('click', function() {
                         const positionId = this.getAttribute('data-id');
                         const positionName = this.getAttribute('data-name');
                         showOnapreDeleteConfirmation(positionId, positionName);
@@ -299,10 +336,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para mostrar confirmación de eliminación ONAPRE
+    let currentDeleteModal = null;
+
     function showOnapreDeleteConfirmation(positionId, positionName) {
-        // Crear modal de confirmación
+        // Cerrar y limpiar cualquier modal existente
+        if (currentDeleteModal) {
+            currentDeleteModal.hide();
+            const modalElement = document.getElementById(currentDeleteModal.id);
+            if (modalElement) {
+                modalElement.remove();
+            }
+            currentDeleteModal = null;
+        }
+        
+        // Limpiar backdrops
+        cleanupModals();
+        
+        // Crear ID único para el modal
+        const modalId = `deleteOnapreConfirmationModal_${Date.now()}`;
+        
+        // Crear HTML del modal
         const modalHTML = `
-        <div class="modal fade" id="deleteOnapreConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-sm" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -326,26 +381,44 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         `;
         
-        // Agregar el modal al DOM
+        // Insertar el modal en el DOM
         document.body.insertAdjacentHTML('beforeend', modalHTML);
+        const modalElement = document.getElementById(modalId);
+        
+        // Crear nueva instancia del modal y guardar referencia
+        currentDeleteModal = {
+            instance: new bootstrap.Modal(modalElement),
+            id: modalId
+        };
         
         // Mostrar el modal
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteOnapreConfirmationModal'));
-        deleteModal.show();
+        currentDeleteModal.instance.show();
         
-        // Configurar evento para el botón de confirmación
-        document.getElementById('confirmOnapreDeleteBtn').addEventListener('click', async function() {
-            await deleteOnaprePosition(positionId);
-            deleteModal.hide();
-            // Eliminar el modal del DOM después de cerrarse
-            document.getElementById('deleteOnapreConfirmationModal').addEventListener('hidden.bs.modal', function() {
-                this.remove();
-            });
+        // Configurar evento de confirmación (usando delegación de eventos)
+        modalElement.addEventListener('click', function modalClickHandler(e) {
+            if (e.target && e.target.id === 'confirmOnapreDeleteBtn') {
+                // Eliminar el handler inmediatamente para evitar múltiples ejecuciones
+                modalElement.removeEventListener('click', modalClickHandler);
+                
+                // Ejecutar la eliminación
+                deleteOnaprePosition(positionId).finally(() => {
+                    if (currentDeleteModal) {
+                        currentDeleteModal.instance.hide();
+                    }
+                });
+            }
         });
         
-        // Eliminar el modal del DOM si se cierra sin confirmar
-        document.getElementById('deleteOnapreConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
+        // Manejar el cierre del modal
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            // Limpiar referencia
+            currentDeleteModal = null;
+            
+            // Eliminar el modal del DOM
+            modalElement.remove();
+            
+            // Limpiar backdrops
+            cleanupModals();
         });
     }
 
@@ -394,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const positionName = positionInput.value.trim();
         
         // Validación adicional por si el usuario pega texto no válido
-        const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{1,50}$/;
+        const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s()]{1,50}$/;
         
         if (!positionName) {
             positionInput.classList.add('is-invalid');
@@ -446,17 +519,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para mostrar el modal de edición ONAPRE
     function showOnapreEditModal(positionId, positionName) {
         // Obtener el modal
-        const editModal = document.getElementById('ModalEditIONAPRE');
+        const editModalElement = document.getElementById('ModalEditIONAPRE');
+        
+        // Limpiar cualquier modal backdrop existente
+        const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+        existingBackdrops.forEach(backdrop => backdrop.remove());
+        
+        // Limpiar cualquier instancia previa del modal
+        const existingModal = bootstrap.Modal.getInstance(editModalElement);
+        if (existingModal) {
+            existingModal.dispose();
+        }
+        
+        // Clonar y reemplazar el botón de guardar para evitar duplicados
+        const originalSaveBtn = editModalElement.querySelector('.btn-primary');
+        const newSaveBtn = originalSaveBtn.cloneNode(true);
+        originalSaveBtn.parentNode.replaceChild(newSaveBtn, originalSaveBtn);
         
         // Configurar los valores en el modal
-        const nameInput = editModal.querySelector('#nameBasic2');
+        const nameInput = editModalElement.querySelector('#nameBasic2');
         nameInput.value = positionName;
+        nameInput.classList.remove('is-invalid');
         
-        // Configurar el botón de guardar
-        const saveBtn = editModal.querySelector('.btn-primary');
-        saveBtn.onclick = async function() {
+        // Configurar el nuevo botón de guardar
+        newSaveBtn.onclick = async function() {
             const newName = nameInput.value.trim();
-            const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{1,50}$/;
+            const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s()]{1,50}$/;
             
             if (!newName || !regex.test(newName)) {
                 nameInput.classList.add('is-invalid');
@@ -465,9 +553,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 // Mostrar spinner en el botón
-                const originalText = saveBtn.innerHTML;
-                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-                saveBtn.disabled = true;
+                const originalText = newSaveBtn.innerHTML;
+                newSaveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+                newSaveBtn.disabled = true;
                 
                 // Enviar solicitud de actualización
                 const response = await fetch('../PHP/api/gest-presupuesto/actualizar_cargoONAPRE.php', {
@@ -484,12 +572,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 
                 // Restaurar botón
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
+                newSaveBtn.innerHTML = originalText;
+                newSaveBtn.disabled = false;
                 
                 if (result.success) {
                     // Cerrar modal y recargar datos
-                    bootstrap.Modal.getInstance(editModal).hide();
+                    const modalInstance = bootstrap.Modal.getInstance(editModalElement);
+                    modalInstance.hide();
+                    
+                    // Actualizar el timestamp
+                    onapreLastUpdateTimestamp = result.timestamp || new Date().toISOString();
                     displayOnaprePositions(onapreCurrentPage);
                 } else {
                     throw new Error(result.message || 'Error al actualizar el cargo ONAPRE');
@@ -497,26 +589,40 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error al actualizar:', error);
                 alert('Error al actualizar: ' + error.message);
-                saveBtn.innerHTML = 'Guardar Cambios';
-                saveBtn.disabled = false;
+                newSaveBtn.innerHTML = 'Guardar Cambios';
+                newSaveBtn.disabled = false;
             }
         };
+
+        // Crear nueva instancia del modal
+        const modal = new bootstrap.Modal(editModalElement, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
         
         // Mostrar el modal
-        const modal = new bootstrap.Modal(editModal);
         modal.show();
         
-        // Limpiar eventos y validación al cerrar
-        editModal.addEventListener('hidden.bs.modal', function() {
-            nameInput.classList.remove('is-invalid');
-            saveBtn.onclick = null;
+        // Manejar el cierre del modal correctamente
+        editModalElement.addEventListener('hidden.bs.modal', function() {
+            // Limpiar eventos
+            newSaveBtn.onclick = null;
+            
+            // Eliminar el backdrop si persiste
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => backdrop.remove());
+            
+            // Habilitar el scroll del body
+            document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = '0';
         });
     }
 
     // Validación en tiempo real para el input de nuevo cargo
     document.getElementById('newOnaprePosition').addEventListener('input', function(e) {
         // Expresión regular que solo permite letras (incluyendo acentos) y espacios
-        const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{0,50}$/;
+        const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s()]{1,50}$/;
         
         if (!regex.test(e.target.value)) {
             // Si no cumple con la expresión regular, revertir al último valor válido
@@ -531,7 +637,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             editInput.addEventListener('input', function(e) {
                 // Expresión regular que solo permite letras (incluyendo acentos) y espacios
-                const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s]{0,50}$/;
+                const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s()]{1,50}$/;
                 
                 if (!regex.test(e.target.value)) {
                     // Si no cumple con la expresión regular, revertir al último valor válido
@@ -541,6 +647,136 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Función para verificar cambios en bit_ona
+    async function checkOnapreForUpdates() {
+        if (isOnapreUpdating) return;
+        isOnapreUpdating = true;
+        
+        try {
+            const response = await fetch(`../PHP/api/gest-presupuesto/check_onapre_updates.php?last_update=${onapreLastUpdateTimestamp || ''}`);
+            const data = await response.json();
+            
+            if (data.success && data.has_changes) {
+                onapreLastUpdateTimestamp = data.last_update;
+                
+                // Actualizar la tabla con animación suave
+                await smoothOnapreUpdateTable();
+            }
+        } catch (error) {
+            console.error('Error al verificar actualizaciones ONAPRE:', error);
+        } finally {
+            isOnapreUpdating = false;
+        }
+    }
+
+    // Función para actualizar la tabla ONAPRE con animación suave
+    async function smoothOnapreUpdateTable() {
+        // Agregar clase de transición a la tabla
+        const table = document.getElementById('onapreTable');
+        table.classList.add('table-updating');
+        
+        // Mostrar indicador de actualización
+        const updateIndicator = document.createElement('div');
+        table.parentNode.insertBefore(updateIndicator, table);
+        
+        // Pequeño retraso para que se vea el indicador
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Recargar datos
+        await displayOnaprePositions(onapreCurrentPage);
+        
+        // Ocultar indicador y quitar clase de transición
+        updateIndicator.remove();
+        table.classList.remove('table-updating');
+        
+        // Mostrar notificación de actualización
+        showOnapreUpdateNotification();
+    }
+
+    // Función para mostrar notificación de actualización ONAPRE
+    function showOnapreUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification onapre-notification';
+        notification.innerHTML = 'Datos de cargos ONAPRE actualizados <i class="bx bx-check"></i>';
+        
+        document.body.appendChild(notification);
+        
+        // Mostrar y luego desaparecer
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }, 100);
+    }
+
+    // Iniciar el sistema de actualización periódica ONAPRE
+    function startOnapreUpdateChecker() {
+        // Verificar actualizaciones inmediatamente
+        checkOnapreForUpdates();
+        
+        // Configurar intervalo periódico
+        onapreUpdateTimer = setInterval(checkOnapreForUpdates, onapreUpdateInterval);
+        
+        // También verificar cuando la ventana gana foco
+        window.addEventListener('focus', checkOnapreForUpdates);
+    }
+
+    // Detener el sistema de actualización ONAPRE
+    function stopOnapreUpdateChecker() {
+        if (onapreUpdateTimer) {
+            clearInterval(onapreUpdateTimer);
+        }
+        window.removeEventListener('focus', checkOnapreForUpdates);
+    }
+
+    // Función mejorada para mostrar modales
+    function showBootstrapModal(modalElement, options = {}) {
+        // Limpiar antes de abrir
+        cleanupModals();
+        
+        // Configuración por defecto
+        const defaultOptions = {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        };
+        
+        // Combinar opciones
+        const modalOptions = {...defaultOptions, ...options};
+        
+        // Crear instancia del modal
+        const modal = new bootstrap.Modal(modalElement, modalOptions);
+        
+        // Mostrar el modal
+        modal.show();
+        
+        // Manejar el cierre
+        const handleHide = () => {
+            modalElement.removeEventListener('hidden.bs.modal', handleHide);
+            cleanupModals();
+        };
+        
+        modalElement.addEventListener('hidden.bs.modal', handleHide);
+        
+        return modal;
+    }
+
     // Inicializar la tabla ONAPRE
     displayOnaprePositions(onapreCurrentPage);
+
+    // Iniciar el sistema de actualización en tiempo real
+    startOnapreUpdateChecker();
+    
+    // Detener el checker cuando la página se cierra/recarga
+    window.addEventListener('beforeunload', stopOnapreUpdateChecker);
+
+    window.addEventListener('beforeunload', function() {
+        stopOnapreUpdateChecker();
+        cleanupModals();
+        currentDeleteModal = null;
+    });
 });

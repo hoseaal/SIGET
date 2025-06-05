@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#supplementTable tbody');
     const paginationElement = document.getElementById('paginationSupplement');
 
+    // Variables para el control de actualización en tiempo real
+    let lastUpdateTimestampSupl = null;
+    let updateIntervalSupl = 1000; // 1 segundo
+    let updateTimerSupl = null;
+    let isUpdatingSupl = false;
+
     // Función para cargar las suplencias desde la API
     async function fetchSupplements(page) {
         try {
@@ -765,9 +771,101 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Función para verificar cambios en bit_sup
+    async function checkForUpdatesSupl() {
+        if (isUpdatingSupl) return;
+        isUpdatingSupl = true;
+        
+        try {
+            const response = await fetch(`../PHP/api/gest-presupuesto/check_suplencias_updates.php?last_update=${lastUpdateTimestampSupl || ''}`);
+            const data = await response.json();
+            
+            if (data.success && data.has_changes) {
+                lastUpdateTimestampSupl = data.last_update;
+                
+                // Actualizar la tabla con animación suave
+                await smoothUpdateTableSupl();
+            }
+        } catch (error) {
+            console.error('Error al verificar actualizaciones de suplencias:', error);
+        } finally {
+            isUpdatingSupl = false;
+        }
+    }
+
+    // Función para actualizar la tabla con animación suave
+    async function smoothUpdateTableSupl() {
+        // Agregar clase de transición a la tabla
+        const table = document.getElementById('supplementTable');
+        table.classList.add('table-updating');
+        
+        // Mostrar indicador de actualización
+        const updateIndicator = document.createElement('div');
+        table.parentNode.insertBefore(updateIndicator, table);
+        
+        // Pequeño retraso para que se vea el indicador
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Recargar datos
+        await displaySupplements(currentPage);
+        
+        // Ocultar indicador y quitar clase de transición
+        updateIndicator.remove();
+        table.classList.remove('table-updating');
+        
+        // Mostrar notificación de actualización
+        showUpdateNotificationSupl();
+    }
+
+    // Función para mostrar notificación de actualización
+    function showUpdateNotificationSupl() {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification';
+        notification.innerHTML = 'Suplencias actualizadas <i class="bx bx-check"></i>';
+        
+        document.body.appendChild(notification);
+        
+        // Mostrar y luego desaparecer
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }, 100);
+    }
+
+    // Iniciar el sistema de actualización periódica
+    function startUpdateCheckerSupl() {
+        // Verificar actualizaciones inmediatamente
+        checkForUpdatesSupl();
+        
+        // Configurar intervalo periódico
+        updateTimerSupl = setInterval(checkForUpdatesSupl, updateIntervalSupl);
+        
+        // También verificar cuando la ventana gana foco
+        window.addEventListener('focus', checkForUpdatesSupl);
+    }
+
+    // Detener el sistema de actualización
+    function stopUpdateCheckerSupl() {
+        if (updateTimerSupl) {
+            clearInterval(updateTimerSupl);
+        }
+        window.removeEventListener('focus', checkForUpdatesSupl);
+    }
+
     // Event listener para el botón de nueva suplencia
     document.getElementById('ModalnuevaSuplencia').addEventListener('click', openNewSupplementModal);
 
     // Inicializar la tabla
     displaySupplements(currentPage);
+
+    // Iniciar el sistema de actualización en tiempo real
+    startUpdateCheckerSupl();
+    
+    // Detener el checker cuando la página se cierra/recarga
+    window.addEventListener('beforeunload', stopUpdateCheckerSupl);
 });

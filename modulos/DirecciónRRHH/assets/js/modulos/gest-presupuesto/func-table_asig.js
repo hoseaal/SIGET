@@ -7,6 +7,12 @@
     const tableBody = document.querySelector('#assignmentsTable tbody');
     const paginationElement = document.getElementById('paginationAssignments');
 
+    // Variables para el control de actualización en tiempo real (agregar al inicio)
+    let lastUpdateTimestampAssignments = null;
+    let updateIntervalAssignments = 1000; // 1 segundo
+    let updateTimerAssignments = null;
+    let isUpdatingAssignments = false;
+
     // Función para cargar las asignaciones desde la API
     async function fetchAssignments(page) {
         try {
@@ -514,9 +520,105 @@
         }
     });
 
+    // Función para verificar cambios en bit_pri (agregar después de las funciones existentes)
+    async function checkForAssignmentsUpdates() {
+        if (isUpdatingAssignments) return;
+        isUpdatingAssignments = true;
+        
+        try {
+            const response = await fetch(`../PHP/api/gest-presupuesto/check_asig_updates.php?last_update=${lastUpdateTimestampAssignments || ''}`);
+            const data = await response.json();
+            
+            if (data.success && data.has_changes) {
+                lastUpdateTimestampAssignments = data.last_update;
+                
+                // Actualizar la tabla con animación suave
+                await smoothUpdateAssignmentsTable();
+            }
+        } catch (error) {
+            console.error('Error al verificar actualizaciones de asignaciones:', error);
+        } finally {
+            isUpdatingAssignments = false;
+        }
+    }
+
+    // Función para actualizar la tabla de asignaciones con animación suave
+    async function smoothUpdateAssignmentsTable() {
+        const table = document.getElementById('assignmentsTable');
+        const pagination = document.getElementById('paginationAssignments');
+        
+        // Agregar clase de transición
+        table.classList.add('table-updating');
+        pagination.classList.add('pagination-updating');
+        
+        // Mostrar indicador de actualización
+        const updateIndicator = document.createElement('div');
+        table.parentNode.insertBefore(updateIndicator, table);
+        
+        // Pequeño retraso para que se vea el indicador
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Recargar datos manteniendo la página actual
+        await displayAssignments(currentPage);
+        
+        // Ocultar indicador y quitar clases de transición
+        updateIndicator.remove();
+        table.classList.remove('table-updating');
+        pagination.classList.remove('pagination-updating');
+        
+        // Mostrar notificación de actualización
+        showUpdateNotification('Asignaciones actualizadas');
+    }
+
+    // Función para mostrar notificación de actualización (adaptada)
+    function showUpdateNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification';
+        notification.innerHTML = `${message} <i class="bx bx-check"></i>`;
+        
+        document.body.appendChild(notification);
+        
+        // Animación de aparición y desaparición
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }, 100);
+    }
+
+    // Iniciar el sistema de actualización periódica para asignaciones
+    function startAssignmentsUpdateChecker() {
+        // Verificar actualizaciones inmediatamente
+        checkForAssignmentsUpdates();
+        
+        // Configurar intervalo periódico
+        updateTimerAssignments = setInterval(checkForAssignmentsUpdates, updateIntervalAssignments);
+        
+        // También verificar cuando la ventana gana foco
+        window.addEventListener('focus', checkForAssignmentsUpdates);
+    }
+
+    // Detener el sistema de actualización
+    function stopAssignmentsUpdateChecker() {
+        if (updateTimerAssignments) {
+            clearInterval(updateTimerAssignments);
+        }
+        window.removeEventListener('focus', checkForAssignmentsUpdates);
+    }
+
     // Inicializar la tabla y paginación
     displayAssignments(currentPage).then(() => {
         setupPagination();
         updatePaginationButtons();
     });
+
+    // Iniciar el sistema de actualización en tiempo real
+    startAssignmentsUpdateChecker();
+    
+    // Detener el checker cuando la página se cierra/recarga
+    window.addEventListener('beforeunload', stopAssignmentsUpdateChecker);
 });

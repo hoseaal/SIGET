@@ -4,8 +4,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let totalPositions = 0;
     let totalPages = 1;
-    const tableBody = document.querySelector('#workersTable tbody'); // Cambiado a workersTable
-    const paginationElement = document.getElementById('pagination');
+    const tableBody = document.querySelector('#cetTableBody'); // Cambiado a workersTable
+    const paginationElement = document.getElementById('cetPagination');
+
+    // Variables para el control de actualización en tiempo real
+    let lastUpdateTimestamp = null;
+    let updateInterval = 1000; // 1 segundo
+    let updateTimer = null;
+    let isUpdating = false;
 
     // Función para cargar los cargos desde la API
     async function fetchPositions(page) {
@@ -569,7 +575,99 @@ document.addEventListener('DOMContentLoaded', function() {
             this.value = inputValue.substring(0, 50);
         }
     });
+
+    // Función para verificar cambios en bit_cet
+    async function checkForUpdates() {
+        if (isUpdating) return;
+        isUpdating = true;
+        
+        try {
+            const response = await fetch(`../PHP/api/gest-presupuesto/check_cet_updates.php?last_update=${lastUpdateTimestamp || ''}`);
+            const data = await response.json();
+            
+            if (data.success && data.has_changes) {
+                lastUpdateTimestamp = data.last_update;
+                
+                // Actualizar la tabla con animación suave
+                await smoothUpdateTable();
+            }
+        } catch (error) {
+            console.error('Error al verificar actualizaciones:', error);
+        } finally {
+            isUpdating = false;
+        }
+    }
+
+    // Función para actualizar la tabla con animación suave
+    async function smoothUpdateTable() {
+        // Agregar clase de transición a la tabla
+        const table = document.getElementById('cetTable');
+        table.classList.add('table-updating');
+        
+        // Mostrar indicador de actualización
+        const updateIndicator = document.createElement('div');
+        table.parentNode.insertBefore(updateIndicator, table);
+        
+        // Pequeño retraso para que se vea el indicador
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Recargar datos
+        await displayPositions(currentPage);
+        
+        // Ocultar indicador y quitar clase de transición
+        updateIndicator.remove();
+        table.classList.remove('table-updating');
+        
+        // Mostrar notificación de actualización
+        showUpdateNotification();
+    }
+
+    // Función para mostrar notificación de actualización
+    function showUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification cet-notification';
+        notification.innerHTML = 'Cargos CET actualizados <i class="bx bx-check"></i>';
+        
+        document.body.appendChild(notification);
+        
+        // Mostrar y luego desaparecer
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }, 100);
+    }
+
+    // Iniciar el sistema de actualización periódica
+    function startUpdateChecker() {
+        // Verificar actualizaciones inmediatamente
+        checkForUpdates();
+        
+        // Configurar intervalo periódico
+        updateTimer = setInterval(checkForUpdates, updateInterval);
+        
+        // También verificar cuando la ventana gana foco
+        window.addEventListener('focus', checkForUpdates);
+    }
+
+    // Detener el sistema de actualización
+    function stopUpdateChecker() {
+        if (updateTimer) {
+            clearInterval(updateTimer);
+        }
+        window.removeEventListener('focus', checkForUpdates);
+    }
     
     // Inicializar la tabla
     displayPositions(currentPage);
+
+    // Iniciar el sistema de actualización en tiempo real
+    startUpdateChecker();
+    
+    // Detener el checker cuando la página se cierra/recarga
+    window.addEventListener('beforeunload', stopUpdateChecker);
 });
