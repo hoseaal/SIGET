@@ -171,7 +171,7 @@ CREATE TABLE `tmab_m` (
   `bim_obs` text COMMENT 'Observacion del bien',
   `bim_sede` varchar(20) NOT NULL COMMENT 'Sede en la que se encuentra el bien (PRINCIPAL)',
   `est_ide` int(11) NOT NULL COMMENT 'Referencia a estado en tmaest',
-  `tip_ide` varchar(10) NOT NULL COMMENT 'Referencia a tipo en tmatip',
+  `tip_ide` int(11) NOT NULL COMMENT 'Referencia a tipo en tmatip',
   `foa_ide` int(11) NOT NULL COMMENT 'Referencia a forma adquisición en tmafoa',
   `con_ide` int(11) NOT NULL COMMENT 'Referencia a condición en tmacon',
   `esu_ide` int(11) NOT NULL COMMENT 'Referencia a estado uso en tmaesu',
@@ -272,7 +272,7 @@ CREATE TABLE `tmanom` (
 --
 
 CREATE TABLE `tmatip` (
-  `tip_ide` varchar(10) NOT NULL COMMENT 'Identificador de tipo debien',
+  `tip_ide` int(11) NOT NULL COMMENT 'Identificador de tipo debien',
   `tip_tip` varchar(50) NOT NULL COMMENT 'descripcion del tipo de bien'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -1411,6 +1411,11 @@ INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('2', '
 INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('3', '2008-09-11', '2011-05-20', '17368181');
 INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('4', '2011-02-09', '2011-03-10', '17368181');
 
+
+INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('4','OPTIMO');
+
+INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
+
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
 
 -- CIERRE DE FUTUROS VOLCADOS EN LA BASE DE DATOS
@@ -2131,6 +2136,4 @@ INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('4', '
     DELIMITER ;
   /* FIN DE TRIGGER'S DE LA TABLA TESPRI*/
 
-  INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('4','OPTIMO')
-
-  INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA')
+  

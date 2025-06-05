@@ -36,7 +36,35 @@ export class BienMuebleService {
     })
   }
 
+  static async obtenerPagina ({ page = 1, limit = 20, filters = {} }) {
+    if (page < 1 || limit < 1) {
+      throw new Error('Parámetros de paginación inválidos')
+    }
+
+    const result = await BienMuebleModel.getAllPaginated({
+      page,
+      limit,
+      filters
+    })
+
+    return {
+      data: result.data,
+      meta: {
+        page: Number(page),
+        limit: Number(limit),
+        total: Number(result.total),
+        totalPages: Math.ceil(result.total / limit),
+        filtersApplied: Object.keys(filters).length > 0 ? filters : null
+      }
+    }
+  }
+
   static async buscarAvanzado (filters) {
     return await BienMuebleModel.getAll(filters)
+  }
+
+  static async buscarPorNombre (searchTerm, { page, limit }) {
+    if (!searchTerm.trim()) throw new Error('Término de búsqueda requerido')
+    return await BienMuebleModel.searchByNombre(searchTerm, { page, limit })
   }
 }

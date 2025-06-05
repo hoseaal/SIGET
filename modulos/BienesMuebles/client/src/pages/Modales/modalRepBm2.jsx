@@ -32,7 +32,10 @@ function ModalRepBm2({ show, handleClose }) {
             resultados.push(...incorporados.filter(item => {
                 const fecha = new Date(item.bim_fec);
                 return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
-            }));
+            }).map(item => ({
+                ...item,
+                bim_val: parseFloat(item.bim_val) // Convertir a número aquí
+            })));
 
             // Consulta de desincorporados
             const resDesincorporados = await fetch('/api/bienes?inc=0');
@@ -40,7 +43,10 @@ function ModalRepBm2({ show, handleClose }) {
             resultados.push(...desincorporados.filter(item => {
                 const fecha = new Date(item.bim_fed);
                 return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
-            }));
+            }).map(item => ({
+                ...item,
+                bim_val: parseFloat(item.bim_val) // Convertir a número aquí
+            })));
 
             // Enriquecer con jerarquía grupo/subgrupo
             const datosConJerarquia = await Promise.all(resultados.map(async (item) => {
@@ -66,7 +72,8 @@ function ModalRepBm2({ show, handleClose }) {
                 return {
                     ...item,
                     grupo,
-                    subgrupo
+                    subgrupo,
+                    bim_val: item.bim_val
                 };
             }));
 
@@ -124,7 +131,6 @@ function ModalRepBm2({ show, handleClose }) {
             setEnviando(false);
         }
     };
-
     return (
         <Modal show={show} onHide={handleClose} size="xl">
             <Modal.Header closeButton>

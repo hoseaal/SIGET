@@ -18,6 +18,11 @@ export class BienMuebleModel {
       whereClauses.push('b.bim_inc = ?')
       params.push(filters.inc)
     }
+
+    if (filters.estado) {
+      whereClauses.push('b.tip_ide = ?')
+      params.push(filters.tipo)
+    }
     // Añadir más filtros según necesidad...
 
     if (whereClauses.length > 0) {
@@ -84,11 +89,67 @@ export class BienMuebleModel {
     return result.affectedRows > 0
   }
 
+  static async getAllPaginated ({ page = 1, limit = 20, filters = {} }) {
+    const offset = (page - 1) * limit
+
+    // Construcción de cláusulas WHERE dinámicas
+    const whereClauses = []
+    const queryParams = []
+
+    // Filtros
+    if (filters.estado) {
+      whereClauses.push('b.est_ide = ?')
+      queryParams.push(filters.estado)
+    }
+
+    if (filters.inc) {
+      whereClauses.push('b.bim_inc = ?')
+      queryParams.push(filters.inc)
+    }
+
+    // Construcción de la consulta base
+    let baseQuery = 'SELECT b.* FROM tmab_m b'
+
+    // Agregar WHERE si hay filtros
+    if (whereClauses.length > 0) {
+      baseQuery += ' WHERE ' + whereClauses.join(' AND ')
+    }
+
+    // Consulta paginada
+    const paginatedQuery = `${baseQuery} ORDER BY b.bim_ide ASC LIMIT ? OFFSET ?`
+    const paginatedParams = [...queryParams, limit, offset]
+
+    const [rows] = await pool.query(paginatedQuery, paginatedParams)
+
+    // Consulta para el total (aplicando los mismos filtros)
+    const countQuery = `SELECT COUNT(*) as total FROM tmab_m b${
+        whereClauses.length > 0 ? ' WHERE ' + whereClauses.join(' AND ') : ''
+    }`
+    const [[{ total }]] = await pool.query(countQuery, queryParams)
+    return {
+      data: rows,
+      total
+    }
+  }
+
   static async getByCode (codigo) {
     const [rows] = await pool.query(
       'SELECT * FROM tmab_m WHERE bim_cod = ?',
       [codigo]
     )
     return rows[0] || null
+  }
+
+  static async searchByNombre (searchTerm, { page = 1, limit = 20 }) {
+    const offset = (page - 1) * limit
+    const [rows] = await pool.query(`
+      SELECT b.* 
+      FROM tmab_m b
+      WHERE (b.bim_des LIKE ? OR b.bim_ide LIKE ?)
+      AND b.bim_inc = 1
+      ORDER BY b.bim_ide ASC
+      LIMIT ? OFFSET ?
+      `, [`%${searchTerm}%`, `%${searchTerm}%`, limit, offset])
+    return rows
   }
 }
