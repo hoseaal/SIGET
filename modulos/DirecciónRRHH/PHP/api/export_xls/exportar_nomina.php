@@ -102,56 +102,80 @@
 
     // Consulta SQL para obtener datos de nómina
     $sql = "
-    SELECT 
-        t.nom_ced AS cedula,
-        t.nom_nom AS nombre,
-        t.nom_ape AS apellido,
-        t.nom_fec AS fecha_ingreso,
-        t.nom_pro AS profesionalizacion,
-        t.nom_nhi AS numero_hijos,
-        c.cet_car AS cargo_cet,
-        o.ona_car AS cargo_onapre,
-        n.nvl_sal AS salario_base,
-        nh.nvl_sal AS salario_historico,
-        pt.pri_por AS prima_transporte_porcentaje,
-        ph.pri_por AS prima_hijos_porcentaje,
-        pg.pri_por AS prima_hogares_porcentaje,
-        pa.pri_por AS complemento_alimentacion_porcentaje,
-        ROUND(
-            (nh.nvl_sal * 
-                CASE 
-                    WHEN c.cet_car LIKE '%Contralor%' THEN 95.00
-                    WHEN c.cet_car = 'DIRECTOR(A) GENERAL' THEN 93.00
-                    WHEN c.cet_car LIKE '%Director%' THEN 90.00
-                    WHEN c.cet_car LIKE '%Jefe de división general%' THEN 85.00
-                    WHEN c.cet_car LIKE '%Coordinador%' 
-                        OR c.cet_car LIKE '%Supervisor%' 
-                        OR c.cet_car LIKE '%Jefe de División%' THEN 80.00
-                    ELSE 0.00
-                END / 100 / 2
-            ), 
-        2) AS prima_jerarquia
-    FROM 
-        tmanom t
-    JOIN 
-        tescet c ON t.cet_ide = c.cet_ide
-    JOIN 
-        tesona o ON t.ona_ide = o.ona_ide
-    JOIN 
-        tesnvl n ON t.ona_ide = n.ona_ide AND t.nvl_ran = n.nvl_ran
-    JOIN 
-        tesnvl_historico nh ON t.ona_ide = nh.ona_ide AND t.nvl_ran = nh.nvl_ran
-    LEFT JOIN
-        tespri pt ON pt.pri_raz = 'Prima por transporte'
-    LEFT JOIN
-        tespri ph ON ph.pri_raz = 'Prima por Hijos'
-    LEFT JOIN
-        tespri pg ON pg.pri_raz = 'Prima por hogares'
-    LEFT JOIN
-        tespri pa ON pa.pri_raz = 'Complemento de Alimentación'
-    WHERE 
-        t.cet_ide IS NOT NULL
-    ";
+        SELECT 
+            t.nom_ced AS cedula,
+            t.nom_nom AS nombre,
+            t.nom_ape AS apellido,
+            t.nom_fec AS fecha_ingreso,
+            t.nom_pro AS profesionalizacion,
+            t.nom_nhi AS numero_hijos,
+            c.cet_car AS cargo_cet,
+            o.ona_car AS cargo_onapre,
+            n.nvl_sal AS salario_base,
+            nh.nvl_sal AS salario_historico,
+            pt.pri_por AS prima_transporte_porcentaje,
+            ph.pri_por AS prima_hijos_porcentaje,
+            pg.pri_por AS prima_hogares_porcentaje,
+            pa.pri_por AS complemento_alimentacion_porcentaje,
+            d.dep_nom AS departamento,
+            ROUND(
+                (nh.nvl_sal * 
+                    CASE 
+                        WHEN c.cet_car LIKE '%Contralor%' THEN 95.00
+                        WHEN c.cet_car = 'DIRECTOR(A) GENERAL' THEN 93.00
+                        WHEN c.cet_car LIKE '%Director%' THEN 90.00
+                        WHEN c.cet_car LIKE '%Jefe de división general%' THEN 85.00
+                        WHEN c.cet_car LIKE '%Coordinador%' 
+                            OR c.cet_car LIKE '%Supervisor%' 
+                            OR c.cet_car LIKE '%Jefe de División%' THEN 80.00
+                        ELSE 0.00
+                    END / 100 / 2
+                ), 
+            2) AS prima_jerarquia
+        FROM 
+            tmanom t
+        JOIN 
+            tescet c ON t.cet_ide = c.cet_ide
+        JOIN 
+            tesona o ON t.ona_ide = o.ona_ide
+        JOIN 
+            tesnvl n ON t.ona_ide = n.ona_ide AND t.nvl_ran = n.nvl_ran
+        JOIN 
+            tesnvl_historico nh ON t.ona_ide = nh.ona_ide AND t.nvl_ran = nh.nvl_ran
+        LEFT JOIN
+            tespri pt ON pt.pri_raz = 'Prima por transporte'
+        LEFT JOIN
+            tespri ph ON ph.pri_raz = 'Prima por Hijos'
+        LEFT JOIN
+            tespri pg ON pg.pri_raz = 'Prima por hogares'
+        LEFT JOIN
+            tespri pa ON pa.pri_raz = 'Complemento de Alimentación'
+        LEFT JOIN
+            tesdep d ON t.dep_ide = d.dep_ide
+        WHERE 
+            t.cet_ide IS NOT NULL
+        ORDER BY
+            CASE 
+                WHEN d.dep_nom LIKE '%Despacho Contralor%' THEN 1
+                WHEN d.dep_nom LIKE '%Dirección de Secretaría del Despacho Contralor%' THEN 2
+                WHEN d.dep_nom LIKE '%Unidad de Auditoria Interna%' THEN 3
+                WHEN d.dep_nom LIKE '%Dirección General%' THEN 4
+                WHEN d.dep_nom LIKE '%Dirección de Consultoria Jurídica%' THEN 5
+                WHEN d.dep_nom LIKE '%Dirección Técnica%' THEN 6
+                WHEN d.dep_nom LIKE '%Oficina de Seguridad%' THEN 7
+                WHEN d.dep_nom LIKE '%Dirección de Recursos Humanos%' THEN 8
+                WHEN d.dep_nom LIKE '%Dirección de Administración%' THEN 9
+                WHEN d.dep_nom LIKE '%Oficina Atención al Público y Participación Ciudadana%' THEN 10
+                WHEN d.dep_nom LIKE '%Oficina de Transporte y Servicios Generales%' THEN 11
+                WHEN d.dep_nom LIKE '%Dirección de la Administración Central y Poder Legislativo%' THEN 12
+                WHEN d.dep_nom LIKE '%Dirección de la Administración Descentralizada%' THEN 13
+                WHEN d.dep_nom LIKE '%Dirección de Investigaciones%' THEN 14
+                WHEN d.dep_nom LIKE '%Dirección de Determinación de Responsabilidades%' THEN 15
+                ELSE 99
+            END,
+            c.cet_car, -- Opcional: ordenar por cargo dentro del mismo departamento
+            t.nom_ape, t.nom_nom -- Opcional: ordenar alfabéticamente por apellido y nombre
+        ";
 
     $stmt = $pdo->query($sql);
     $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -163,12 +187,14 @@
 
     // Obtener datos de suplencias activas
     $sql_suplencias = "SELECT s.nom_ced, s.sup_activa, n.nvl_sal AS salario_suplencia, 
-                      c.cet_car AS cargo_suplencia, nh.nvl_sal AS salario_historico_suplencia
-                      FROM tessup s
-                      JOIN tesnvl n ON s.ona_ide = n.ona_ide AND s.nvl_ran = n.nvl_ran
-                      JOIN tesnvl_historico nh ON s.ona_ide = nh.ona_ide AND s.nvl_ran = nh.nvl_ran
-                      LEFT JOIN tescet c ON s.cet_ide = c.cet_ide
-                      WHERE s.sup_activa = 1";
+                        c.cet_car AS cargo_suplencia, nh.nvl_sal AS salario_historico_suplencia,
+                        d.dep_nom AS departamento_suplencia
+                        FROM tessup s
+                        JOIN tesnvl n ON s.ona_ide = n.ona_ide AND s.nvl_ran = n.nvl_ran
+                        JOIN tesnvl_historico nh ON s.ona_ide = nh.ona_ide AND s.nvl_ran = nh.nvl_ran
+                        LEFT JOIN tescet c ON s.cet_ide = c.cet_ide
+                        LEFT JOIN tesdep d ON s.dep_ide = d.dep_ide
+                        WHERE s.sup_activa = 1";
     $stmt_sup = $pdo->query($sql_suplencias);
     $suplencias = $stmt_sup->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 
@@ -239,11 +265,11 @@
         $headerStyle = [
             'font' => [
                 'bold' => true,
-                'color' => ['rgb' => 'FFFFFF'],
+                'color' => ['rgb' => '333333'],
             ],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '4472C4'],
+                'startColor' => ['rgb' => 'BDD7EE'],
             ],
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,

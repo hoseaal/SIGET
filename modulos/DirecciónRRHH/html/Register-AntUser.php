@@ -59,7 +59,9 @@
 
     <link rel="stylesheet" href="../assets/vendor/libs/apex-charts/apex-charts.css" />
 
-    <!-- Page CSS -->
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Helpers -->
     <script src="../assets/vendor/js/helpers.js"></script>
@@ -206,6 +208,18 @@
     <script async defer src="../js/buttons.js"></script>
 
     <script>
+        // Configuración común para los alerts pequeños
+        const smallSwal = Swal.mixin({
+            width: '400px',
+            padding: '1rem',
+            customClass: {
+            popup: 'small-swal',
+            title: 'small-swal-title',
+            htmlContainer: 'small-swal-content',
+            confirmButton: 'small-swal-confirm'
+            }
+        });
+
         // Contador para identificar cada grupo de selects
         let contadorRangos = 0;
 
@@ -233,6 +247,13 @@
                 })
                 .catch(error => {
                     console.error("Error al obtener antigüedades:", error);
+                    smallSwal.fire({
+                        icon: 'error',
+                        title: 'Error al cargar',
+                        text: 'No se pudieron cargar las antigüedades existentes',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Entendido'
+                    });
                     // Asegurarse de que haya al menos un rango vacío
                     document.getElementById('antiguedades-container').innerHTML = '';
                     contadorRangos = 0;
@@ -277,10 +298,29 @@
         }
         
         function eliminarRango(idRango) {
-            const rango = document.getElementById(idRango);
-            if (rango) {
-                rango.remove();
-            }
+            smallSwal.fire({
+                title: '¿Eliminar rango?',
+                text: 'Esta acción no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const rango = document.getElementById(idRango);
+                    if (rango) {
+                        rango.remove();
+                        smallSwal.fire({
+                            icon: 'success',
+                            title: 'Rango eliminado',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }
+                }
+            });
         }
         
         // Agregar un rango inicial al cargar la página
@@ -297,10 +337,24 @@
                 // Limpiar tabla
                 $('#tablaUsuarios tbody').empty();
                 
+                // Mostrar mensaje de carga
+                smallSwal.fire({
+                    title: 'Cargando usuarios',
+                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+                    width: 350,
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        smallSwal.showLoading();
+                    }
+                });
+                
                 // Cargar usuarios
                 fetch('../PHP/api/usuarios/tomar_usuarios.php')
                     .then(res => res.json())
                     .then(data => {
+                        smallSwal.close();
                         data.forEach(usuario => {
                             const fila = `
                                 <tr data-cedula="${usuario.nom_ced}">
@@ -309,6 +363,15 @@
                                     <td>${usuario.nom_ape}</td>
                                 </tr>`;
                             $('#tablaUsuarios tbody').append(fila);
+                        });
+                    })
+                    .catch(error => {
+                        smallSwal.fire({
+                            icon: 'error',
+                            title: 'Error al cargar',
+                            text: 'No se pudieron cargar los usuarios',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'Entendido'
                         });
                     });
             });
@@ -338,7 +401,13 @@
 
             const cedula = document.getElementById('cedulaSeleccionada').value;
             if (!cedula) {
-                alert("Debe seleccionar un usuario.");
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Usuario requerido',
+                    text: 'Debe seleccionar un usuario antes de continuar',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
 
@@ -370,35 +439,87 @@
             });
 
             if (rangos.length === 0 && actualizaciones.length === 0) {
-                alert("Debe ingresar al menos un rango válido de fechas.");
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Rangos requeridos',
+                    text: 'Debe ingresar al menos un rango válido de fechas',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
 
-            // Enviar datos al servidor
-            fetch('../PHP/api/usuarios/registrar_antiguedades.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    cedula,
-                    nuevos: rangos,
-                    actualizaciones: actualizaciones
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert("Datos registrados/actualizados correctamente.");
-                    // Recargar las antigüedades para reflejar cambios
-                    verificarAntiguedadesUsuario(cedula);
-                } else {
-                    alert("Error al registrar: " + data.message);
+            // Mostrar confirmación antes de enviar
+            smallSwal.fire({
+                title: '¿Registrar antigüedades?',
+                text: 'Se guardarán/actualizarán los rangos de antigüedad',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, guardar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar mensaje de procesamiento
+                    smallSwal.fire({
+                        title: 'Procesando datos',
+                        html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+                        width: 350,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            smallSwal.showLoading();
+                        }
+                    });
+
+                    // Enviar datos al servidor
+                    fetch('../PHP/api/usuarios/registrar_antiguedades.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            cedula,
+                            nuevos: rangos,
+                            actualizaciones: actualizaciones
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            smallSwal.fire({
+                                icon: 'success',
+                                title: '¡Guardado exitoso!',
+                                text: 'Datos registrados/actualizados correctamente',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                // Recargar las antigüedades para reflejar cambios
+                                verificarAntiguedadesUsuario(cedula);
+                            });
+                        } else {
+                            smallSwal.fire({
+                                icon: 'error',
+                                title: 'Error al guardar',
+                                text: data.message || 'Ocurrió un error al procesar los datos',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Entendido'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        smallSwal.fire({
+                            icon: 'error',
+                            title: 'Error de conexión',
+                            text: 'Ocurrió un problema al conectar con el servidor',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'Entendido'
+                        });
+                        console.error(error);
+                    });
                 }
-            })
-            .catch(error => {
-                alert("Ocurrió un error en la solicitud.");
-                console.error(error);
             });
         });
     </script>
@@ -406,18 +527,38 @@
     <script>
         // Función para limpiar todos los campos
         function limpiarCampos() {
-            // 1. Limpiar el campo de cédula seleccionada
-            document.getElementById('cedulaSeleccionada').value = '';
-            
-            // 2. Limpiar el contenedor de antigüedades y agregar un rango inicial
-            const container = document.getElementById('antiguedades-container');
-            container.innerHTML = '';
-            contadorRangos = 0;
-            agregarRangoAntiguedad(); // Esto agregará un rango vacío
-            
-            $('#tablaUsuarios tr').removeClass('table-primary');
-            cedulaSeleccionada = '';
-            $('#confirmarSeleccion').prop('disabled', true);
+            smallSwal.fire({
+                title: '¿Limpiar formulario?',
+                text: 'Se perderán todos los datos no guardados',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, limpiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 1. Limpiar el campo de cédula seleccionada
+                    document.getElementById('cedulaSeleccionada').value = '';
+                    
+                    // 2. Limpiar el contenedor de antigüedades y agregar un rango inicial
+                    const container = document.getElementById('antiguedades-container');
+                    container.innerHTML = '';
+                    contadorRangos = 0;
+                    agregarRangoAntiguedad(); // Esto agregará un rango vacío
+                    
+                    $('#tablaUsuarios tr').removeClass('table-primary');
+                    cedulaSeleccionada = '';
+                    $('#confirmarSeleccion').prop('disabled', true);
+                    
+                    smallSwal.fire({
+                        icon: 'success',
+                        title: 'Formulario limpiado',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            });
         }
 
         document.getElementById('btnLimpiar').addEventListener('click', limpiarCampos);

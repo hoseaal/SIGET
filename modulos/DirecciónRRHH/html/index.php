@@ -8,12 +8,20 @@
       exit;
   }
 
-  // Verificar si el tipo de usuario es 4
-  if ($decoded->data->tipo != '4') {
+  // Verificar el tipo de usuario
+  $userType = $decoded->data->tipo;
+  
+  // Redireccionar según el tipo de usuario
+  if (in_array($userType, ['0', '1', '2', '3'])) {
+      header('Location: index_usur.php');
+      exit;
+  } elseif ($userType != '4') {
+      // Para cualquier otro tipo que no sea 0-4 (por si hay más tipos en el futuro)
       header('Location: auth-login-basic.php');
       exit;
   }
 
+  // Solo los tipo '4' continuarán ejecutando el resto del script
   echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
 
@@ -92,7 +100,7 @@
                           </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Total de Usuarios</span>
-                        <h3 class="card-title mb-2 text-center" id="total-usuarios"></h3>
+                        <h3 class="card-title mb-2 text-center" id="total-usuarios">Cargando...</h3>
                       </div>
                     </div>
                   </div>
@@ -106,7 +114,7 @@
                           </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Total de empleados</span>
-                        <h3 class="card-title mb-2 text-center" id="total-empleados"></h3>
+                        <h3 class="card-title mb-2 text-center" id="total-empleados">Cargando...</h3>
                       </div>
                     </div>
                   </div>
