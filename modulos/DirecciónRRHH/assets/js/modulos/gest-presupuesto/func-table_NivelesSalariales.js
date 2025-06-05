@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let isSearching = false;
     let currentSearchTerm = '';
 
+    // Variables para el control de actualización en tiempo real (agregar al inicio)
+    let lastUpdateTimestampSalary = null;
+    let updateIntervalSalary = 1000; // 1 segundo
+    let updateTimerSalary = null;
+    let isUpdatingSalary = false;
+
     // Función para cargar TODOS los niveles salariales desde la API (para búsqueda)
     async function fetchAllSalaries() {
         try {
@@ -733,8 +739,107 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Función para verificar cambios en bit_nvl (agregar después de las funciones existentes)
+    async function checkForSalaryUpdates() {
+        if (isUpdatingSalary) return;
+        isUpdatingSalary = true;
+        
+        try {
+            const response = await fetch(`../PHP/api/gest-presupuesto/check_salary_updates.php?last_update=${lastUpdateTimestampSalary || ''}`);
+            const data = await response.json();
+            
+            if (data.success && data.has_changes) {
+                lastUpdateTimestampSalary = data.last_update;
+                
+                // Actualizar la tabla con animación suave
+                await smoothUpdateSalaryTable();
+            }
+        } catch (error) {
+            console.error('Error al verificar actualizaciones de salarios:', error);
+        } finally {
+            isUpdatingSalary = false;
+        }
+    }
+
+    // Función para actualizar la tabla de salarios con animación suave
+    async function smoothUpdateSalaryTable() {
+        const table = document.getElementById('salaryTable');
+        const updateIndicator = document.createElement('div');
+        
+        // Aplicar estilos de transición
+        table.classList.add('table-updating');
+        
+        // Mostrar indicador de actualización
+        table.parentNode.insertBefore(updateIndicator, table);
+        
+        // Pequeño retraso para que se vea el indicador
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Recargar datos
+        if (isSearching) {
+            allSalaries = await fetchAllSalaries();
+            const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+            await displaySalaries(currentPage, filtered);
+        } else {
+            await displaySalaries(currentPage);
+        }
+        
+        // Ocultar indicador y quitar clase de transición
+        updateIndicator.remove();
+        table.classList.remove('table-updating');
+        
+        // Mostrar notificación de actualización
+        showSalaryUpdateNotification();
+    }
+
+    // Función para mostrar notificación de actualización
+    function showSalaryUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification salary';
+        notification.innerHTML = 'Niveles salariales actualizados <i class="bx bx-check"></i>';
+        
+        document.body.appendChild(notification);
+        
+        // Animación de aparición y desaparición
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }, 100);
+    }
+
+    // Iniciar el sistema de actualización periódica para salarios
+    function startSalaryUpdateChecker() {
+        // Verificar actualizaciones inmediatamente
+        checkForSalaryUpdates();
+        
+        // Configurar intervalo periódico
+        updateTimerSalary = setInterval(checkForSalaryUpdates, updateIntervalSalary);
+        
+        // También verificar cuando la ventana gana foco
+        window.addEventListener('focus', checkForSalaryUpdates);
+    }
+
+    // Detener el sistema de actualización
+    function stopSalaryUpdateChecker() {
+        if (updateTimerSalary) {
+            clearInterval(updateTimerSalary);
+        }
+        window.removeEventListener('focus', checkForSalaryUpdates);
+    }
+
     // Inicializar la tabla, paginación y buscador
     displaySalaries(currentPage).then(() => {
         setupSearch();
     });
+
+    // Iniciar el sistema de actualización en tiempo real
+    startSalaryUpdateChecker();
+    
+    // Detener el checker cuando la página se cierra/recarga
+    window.addEventListener('beforeunload', stopSalaryUpdateChecker);
 });

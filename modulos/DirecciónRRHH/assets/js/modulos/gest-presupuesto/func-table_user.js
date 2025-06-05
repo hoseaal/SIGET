@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#usersTable tbody');
     const paginationElement = document.getElementById('paginationUsers');
 
+    // Variables para el control de actualización en tiempo real
+    let lastUserUpdateTimestamp = null;
+    let userUpdateInterval = 1000; // 1 segundo
+    let userUpdateTimer = null;
+    let isUserUpdating = false;
+
     // Variables para búsqueda global
     let allUsers = [];
     let isSearching = false;
@@ -727,8 +733,106 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
+    // Función para verificar cambios en bit_usu
+    async function checkForUserUpdates() {
+        if (isUserUpdating) return;
+        isUserUpdating = true;
+        
+        try {
+            const response = await fetch(`../PHP/api/gest-presupuesto/check_user_updates.php?last_update=${lastUserUpdateTimestamp || ''}`);
+            const data = await response.json();
+            
+            if (data.success && data.has_changes) {
+                lastUserUpdateTimestamp = data.last_update;
+                
+                // Actualizar la tabla con animación suave
+                await smoothUpdateUserTable();
+            }
+        } catch (error) {
+            console.error('Error al verificar actualizaciones de usuarios:', error);
+        } finally {
+            isUserUpdating = false;
+        }
+    }
+
+    // Función para actualizar la tabla de usuarios con animación suave
+    async function smoothUpdateUserTable() {
+        // Agregar clase de transición a la tabla
+        const table = document.getElementById('usersTable');
+        table.classList.add('table-updating');
+        
+        // Mostrar indicador de actualización
+        const updateIndicator = document.createElement('div');
+        table.parentNode.insertBefore(updateIndicator, table);
+        
+        // Pequeño retraso para que se vea el indicador
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Recargar datos
+        if (isSearching) {
+            allUsers = await fetchAllUsers();
+            const filtered = filterUsersLocally(allUsers, currentSearchTerm);
+            await displayUsers(currentPage, filtered);
+        } else {
+            await displayUsers(currentPage);
+        }
+        
+        // Ocultar indicador y quitar clase de transición
+        updateIndicator.remove();
+        table.classList.remove('table-updating');
+        
+        // Mostrar notificación de actualización
+        showUserUpdateNotification();
+    }
+
+    // Función para mostrar notificación de actualización de usuarios
+    function showUserUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification';
+        notification.innerHTML = 'Datos de usuarios actualizados <i class="bx bx-check"></i>';
+        
+        document.body.appendChild(notification);
+        
+        // Mostrar y luego desaparecer
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }, 100);
+    }
+
+    // Iniciar el sistema de actualización periódica para usuarios
+    function startUserUpdateChecker() {
+        // Verificar actualizaciones inmediatamente
+        checkForUserUpdates();
+        
+        // Configurar intervalo periódico
+        userUpdateTimer = setInterval(checkForUserUpdates, userUpdateInterval);
+        
+        // También verificar cuando la ventana gana foco
+        window.addEventListener('focus', checkForUserUpdates);
+    }
+
+    // Detener el sistema de actualización
+    function stopUserUpdateChecker() {
+        if (userUpdateTimer) {
+            clearInterval(userUpdateTimer);
+        }
+        window.removeEventListener('focus', checkForUserUpdates);
+    }
+
     // Inicializar la tabla, paginación y buscador
     displayUsers(currentPage).then(() => {
         setupSearch();
     });
+
+    // Iniciar el sistema de actualización en tiempo real
+    startUserUpdateChecker();
+    
+    // Detener el checker cuando la página se cierra/recarga
+    window.addEventListener('beforeunload', stopUserUpdateChecker);
 });

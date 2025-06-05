@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let isSearching = false;
     let currentSearchTerm = '';
 
+    // Variables para el control de actualización en tiempo real
+    let lastUpdateTimestamp = null;
+    let updateInterval = 1000; // 1 segundos
+    let updateTimer = null;
+    let isUpdating = false;
+
     // Función para validar solo números (sin caracteres especiales)
     function validarSoloNumeros(event) {
         const charCode = event.which ? event.which : event.keyCode;
@@ -778,8 +784,106 @@ document.addEventListener('DOMContentLoaded', function() {
         return isValid;
     }
 
+    // Función para verificar cambios en bit_nom
+    async function checkForUpdates() {
+        if (isUpdating) return;
+        isUpdating = true;
+        
+        try {
+            const response = await fetch(`../PHP/api/gest-presupuesto/check_nomina_updates.php?last_update=${lastUpdateTimestamp || ''}`);
+            const data = await response.json();
+            
+            if (data.success && data.has_changes) {
+                lastUpdateTimestamp = data.last_update;
+                
+                // Actualizar la tabla con animación suave
+                await smoothUpdateTable();
+            }
+        } catch (error) {
+            console.error('Error al verificar actualizaciones:', error);
+        } finally {
+            isUpdating = false;
+        }
+    }
+
+    // Función para actualizar la tabla con animación suave
+    async function smoothUpdateTable() {
+        // Agregar clase de transición a la tabla
+        const table = document.getElementById('workersTable');
+        table.classList.add('table-updating');
+        
+        // Mostrar indicador de actualización
+        const updateIndicator = document.createElement('div');
+        table.parentNode.insertBefore(updateIndicator, table);
+        
+        // Pequeño retraso para que se vea el indicador
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Recargar datos
+        if (isSearching) {
+            allWorkers = await fetchAllWorkers();
+            const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
+            await displayWorkers(currentPage, filtered);
+        } else {
+            await displayWorkers(currentPage);
+        }
+        
+        // Ocultar indicador y quitar clase de transición
+        updateIndicator.remove();
+        table.classList.remove('table-updating');
+        
+        // Mostrar notificación de actualización
+        showUpdateNotification();
+    }
+
+    // Función para mostrar notificación de actualización
+    function showUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification';
+        notification.innerHTML = 'Trabajadores en Nómina actualizados <i class="bx bx-check"></i>';
+        
+        document.body.appendChild(notification);
+        
+        // Mostrar y luego desaparecer
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }, 100);
+    }
+
+    // Iniciar el sistema de actualización periódica
+    function startUpdateChecker() {
+        // Verificar actualizaciones inmediatamente
+        checkForUpdates();
+        
+        // Configurar intervalo periódico
+        updateTimer = setInterval(checkForUpdates, updateInterval);
+        
+        // También verificar cuando la ventana gana foco
+        window.addEventListener('focus', checkForUpdates);
+    }
+
+    // Detener el sistema de actualización (para cuando se cierra la página, etc.)
+    function stopUpdateChecker() {
+        if (updateTimer) {
+            clearInterval(updateTimer);
+        }
+        window.removeEventListener('focus', checkForUpdates);
+    }
+
     // Inicializar la tabla, paginación y buscador
     displayWorkers(currentPage).then(() => {
         setupSearch();
     });
+
+    // Iniciar el sistema de actualización en tiempo real
+    startUpdateChecker();
+    
+    // Detener el checker cuando la página se cierra/recarga
+    window.addEventListener('beforeunload', stopUpdateChecker);
 });

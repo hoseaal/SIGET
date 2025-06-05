@@ -105,3 +105,96 @@
   text-align: center;
   margin-top: 1rem;
 }
+
+/* Estilos para la actualización en tiempo real */
+.table-updating {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.update-indicator {
+    background-color: rgba(105, 108, 255, 0.1);
+    color: #696cff;
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    animation: fadeIn 0.3s ease;
+}
+
+.update-indicator i {
+    font-size: 18px;
+}
+
+.update-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.update-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.update-notification i {
+    font-size: 20px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estilos específicos para actualización de salarios */
+.update-notification.salary {
+    background-color: #28a745; /* Color morado para diferenciar */
+}
+
+/* Asegurar que la tabla de salarios tenga las mismas transiciones */
+#salaryTable.table-updating {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+/* Notificaciones CET (posición izquierda) */
+.update-notification.cet-notification {
+    left: 20px;
+    right: auto;
+}
+
+/* Notificaciones ONAPRE (posición derecha) */
+.update-notification.onapre-notification {
+    right: 20px;
+    left: auto;
+}
+
+/* Estilos para manejar el scroll cuando hay modales abiertos */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+}
+
+/* Asegurar que el backdrop no interfiera */
+.modal-backdrop {
+    z-index: 1040;
+}
+
+.modal {
+    z-index: 1050;
+}

@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#cajaAhorroTable tbody');
     const paginationElement = document.getElementById('paginationCajaAhorro');
 
+    // Variables para el control de actualización en tiempo real
+    let lastUpdateTimestampCaja = null;
+    let updateIntervalCaja = 1000; // 1 segundo
+    let updateTimerCaja = null;
+    let isUpdatingCaja = false;
+
     // Variables para búsqueda
     let allTrabajadores = [];
     let isSearching = false;
@@ -729,8 +735,106 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listener para el botón de agregar
     document.getElementById('agregarCajaAhorro').addEventListener('click', openAddModal);
 
+    // Función para verificar cambios en bit_cep
+    async function checkForUpdatesCaja() {
+        if (isUpdatingCaja) return;
+        isUpdatingCaja = true;
+        
+        try {
+            const response = await fetch(`../PHP/api/gest-presupuesto/check_caja_updates.php?last_update=${lastUpdateTimestampCaja || ''}`);
+            const data = await response.json();
+            
+            if (data.success && data.has_changes) {
+                lastUpdateTimestampCaja = data.last_update;
+                
+                // Actualizar la tabla con animación suave
+                await smoothUpdateTableCaja();
+            }
+        } catch (error) {
+            console.error('Error al verificar actualizaciones de caja:', error);
+        } finally {
+            isUpdatingCaja = false;
+        }
+    }
+
+    // Función para actualizar la tabla con animación suave
+    async function smoothUpdateTableCaja() {
+        // Agregar clase de transición a la tabla
+        const table = document.getElementById('cajaAhorroTable');
+        table.classList.add('table-updating');
+        
+        // Mostrar indicador de actualización
+        const updateIndicator = document.createElement('div');
+        table.parentNode.insertBefore(updateIndicator, table);
+        
+        // Pequeño retraso para que se vea el indicador
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Recargar datos
+        if (isSearching) {
+            allTrabajadores = await fetchAllTrabajadores();
+            const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
+            await displayTrabajadores(currentPage, filtered);
+        } else {
+            await displayTrabajadores(currentPage);
+        }
+        
+        // Ocultar indicador y quitar clase de transición
+        updateIndicator.remove();
+        table.classList.remove('table-updating');
+        
+        // Mostrar notificación de actualización
+        showUpdateNotificationCaja();
+    }
+
+    // Función para mostrar notificación de actualización
+    function showUpdateNotificationCaja() {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification';
+        notification.innerHTML = 'Datos de Caja de Ahorro actualizados <i class="bx bx-check"></i>';
+        
+        document.body.appendChild(notification);
+        
+        // Mostrar y luego desaparecer
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }, 100);
+    }
+
+    // Iniciar el sistema de actualización periódica
+    function startUpdateCheckerCaja() {
+        // Verificar actualizaciones inmediatamente
+        checkForUpdatesCaja();
+        
+        // Configurar intervalo periódico
+        updateTimerCaja = setInterval(checkForUpdatesCaja, updateIntervalCaja);
+        
+        // También verificar cuando la ventana gana foco
+        window.addEventListener('focus', checkForUpdatesCaja);
+    }
+
+    // Detener el sistema de actualización
+    function stopUpdateCheckerCaja() {
+        if (updateTimerCaja) {
+            clearInterval(updateTimerCaja);
+        }
+        window.removeEventListener('focus', checkForUpdatesCaja);
+    }
+
     // Inicializar la tabla y el buscador
     displayTrabajadores(currentPage).then(() => {
         setupSearch();
     });
+
+    // Iniciar el sistema de actualización en tiempo real
+    startUpdateCheckerCaja();
+    
+    // Detener el checker cuando la página se cierra/recarga
+    window.addEventListener('beforeunload', stopUpdateCheckerCaja);
 });
