@@ -198,3 +198,25 @@ body.modal-open {
 .modal {
     z-index: 1050;
 }
+
+/* CSS personalizado para modales más pequeños */
+.small-swal {
+  font-size: 0.9rem;
+}
+.small-swal-title {
+  font-size: 1.2rem !important;
+  margin-bottom: 8px !important;
+}
+.small-swal-content {
+  font-size: 0.95rem !important;
+  margin-top: 5px !important;
+}
+.small-swal-confirm {
+  padding: 0.4rem 1rem !important;
+  font-size: 0.85rem !important;
+}
+/* Barra de progreso más delgada */
+.swal2-progress-steps .swal2-progress-step {
+  width: 1.2em;
+  height: 1.2em;
+}

@@ -62,7 +62,9 @@
 
     <link rel="stylesheet" href="../assets/vendor/libs/apex-charts/apex-charts.css" />
 
-    <!-- Page CSS -->
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Helpers -->
     <script src="../assets/vendor/js/helpers.js"></script>
@@ -248,6 +250,18 @@
     <script async defer src="../js/buttons.js"></script>
 
     <script>
+      // Configuración común para los alerts pequeños
+      const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+          popup: 'small-swal',
+          title: 'small-swal-title',
+          htmlContainer: 'small-swal-content',
+          confirmButton: 'small-swal-confirm'
+        }
+      });
+
       $(document).ready(function() {
         // Función para validar solo números (sin caracteres especiales)
         function validarSoloNumeros(event) {
@@ -282,6 +296,14 @@
             }
         }).on('keypress', validarSoloNumeros);
 
+        // Validación para la numero de hijos (solo números, máximo 2 caracteres)
+        $('#numerohijos').on('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 2) {
+                this.value = this.value.slice(0, 2);
+            }
+        }).on('keypress', validarSoloNumeros);
+
         // Validación para nombres (solo letras y acentos, máximo 50 caracteres)
         $('#nombre').on('input', function() {
             this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
@@ -305,98 +327,189 @@
             hoy.setHours(0, 0, 0, 0);
             
             if (fechaSeleccionada > hoy) {
-                alert('La fecha de ingreso no puede ser mayor a la fecha actual');
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Fecha inválida',
+                    text: 'La fecha de ingreso no puede ser mayor a la fecha actual',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 this.value = '';
             }
         });
 
-        // Validación para género del empleado (al menos uno seleccionado)
+        // Validación del formulario al enviar
         $('#formRegistro').on('submit', function(e) {
+            e.preventDefault();
             let isValid = true;
+            let errorMessage = '';
             
             // Validar género
             if (!$('input[name="generoEmpleado"]:checked').val()) {
-                alert('Por favor seleccione el género del empleado');
+                errorMessage = 'Por favor seleccione el género del empleado';
                 isValid = false;
             }
             
             // Validar selects (que no sea la opción por defecto)
             const selects = ['#cargocet', '#cargoonapre', '#nivelsalarial', '#nivelprof', '#departamentoasig'];
             selects.forEach(select => {
-                if (!$(select).val()) {
-                    alert(`Por favor seleccione una opción válida para ${$(select).prev('label').text()}`);
+                if (!$(select).val() && isValid) {
+                    errorMessage = `Por favor seleccione una opción válida para ${$(select).prev('label').text()}`;
                     isValid = false;
                 }
             });
             
             if (!isValid) {
-                e.preventDefault();
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Datos incompletos',
+                    text: errorMessage,
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
+                return false;
+            }
+
+            // Mostrar mensaje de confirmación antes de enviar
+            smallSwal.fire({
+                title: '¿Registrar nuevo trabajador?',
+                text: 'Revise que los datos sean correctos antes de continuar',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, registrar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar mensaje de procesamiento
+                    smallSwal.fire({
+                        title: 'Procesando registro',
+                        html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+                        width: 350,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            smallSwal.showLoading();
+                        }
+                    });
+
+                    // Enviar formulario manualmente
+                    const formData = $(this).serialize();
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        type: 'POST',
+                        data: formData,
+                        success: function(response) {
+                            // Redirigir con mensaje de éxito
+                            window.location.href = '../html/index.php?status=success';
+                        },
+                        error: function(xhr, status, error) {
+                            smallSwal.fire({
+                                icon: 'error',
+                                title: 'Error en el registro',
+                                text: 'Ocurrió un error al registrar el trabajador: ' + xhr.responseText,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Entendido'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // Función para limpiar todos los campos del formulario
+        function limpiarFormulario() {
+            // Mostrar confirmación antes de limpiar
+            smallSwal.fire({
+                title: '¿Limpiar formulario?',
+                text: 'Se perderán todos los datos ingresados',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, limpiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Resetear el formulario (esto limpia inputs básicos)
+                    $('#formRegistro')[0].reset();
+                    
+                    // Resetear selects personalizados (asegurando que muestren "Seleccione")
+                    $('#cargocet, #cargoonapre, #nivelsalarial, #departamentoasig').val('');
+                    
+                    // Resetear radios (ninguno seleccionado)
+                    $('input[name="generoEmpleado"]').prop('checked', false);
+                    
+                    // Restablecer todas las opciones del nivel salarial (por si se había modificado)
+                    $('#nivelsalarial').html(`
+                        <option value="">Seleccione</option>
+                        <option value="I">I</option>
+                        <option value="II">II</option>
+                        <option value="III">III</option>
+                        <option value="IV">IV</option>
+                        <option value="V">V</option>
+                        <option value="VI">VI</option>
+                        <option value="VII">VII</option>
+                    `);
+                    
+                    smallSwal.fire({
+                        icon: 'success',
+                        title: 'Formulario limpiado',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            });
+        }
+
+        // Evento click para el botón Limpiar Campos
+        $('#btnLimpiar').click(function() {
+            limpiarFormulario();
+        });
+
+        // Código para la validación de cargos ONAPRE
+        const cargosEspeciales = [
+            "COORDINADOR(A) DE ÁREA",
+            "DIRECTOR DE LINEA",
+            "DIRECTOR GENERAL",
+            "JEFE DE DIVISIÓN",
+            "JEFE DE DIVISIÓN (COORDINADOR DE ÁREA)",
+            "JEFE DE DIVISIÓN DE REMUNERACIONES",
+            "JEFE DE DIVISIÓN GENERAL",
+            "CONTRALOR(A) DEL ESTADO"
+        ];
+
+        $('#cargoonapre').change(function() {
+            const cargoSeleccionado = $(this).find('option:selected').text().trim();
+            
+            if (cargosEspeciales.includes(cargoSeleccionado)) {
+                $('#nivelsalarial').html('<option value="I">I</option>');
+                smallSwal.fire({
+                    icon: 'info',
+                    title: 'Nivel salarial asignado',
+                    text: 'Este cargo solo permite nivel salarial I',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            } else {
+                $('#nivelsalarial').html(`
+                    <option value="">Seleccione</option>
+                    <option value="I">I</option>
+                    <option value="II">II</option>
+                    <option value="III">III</option>
+                    <option value="IV">IV</option>
+                    <option value="V">V</option>
+                    <option value="VI">VI</option>
+                    <option value="VII">VII</option>
+                `);
             }
         });
 
-          // Función para limpiar todos los campos del formulario
-          function limpiarFormulario() {
-              // Resetear el formulario (esto limpia inputs básicos)
-              $('#formRegistro')[0].reset();
-              
-              // Resetear selects personalizados (asegurando que muestren "Seleccione")
-              $('#cargocet, #cargoonapre, #nivelsalarial, #departamentoasig').val('');
-              
-              // Resetear radios (ninguno seleccionado)
-              $('input[name="generoEmpleado"]').prop('checked', false);
-              
-              // Restablecer todas las opciones del nivel salarial (por si se había modificado)
-              $('#nivelsalarial').html(`
-                  <option value="">Seleccione</option>
-                  <option value="I">I</option>
-                  <option value="II">II</option>
-                  <option value="III">III</option>
-                  <option value="IV">IV</option>
-                  <option value="V">V</option>
-                  <option value="VI">VI</option>
-                  <option value="VII">VII</option>
-              `);
-          }
-
-          // Evento click para el botón Limpiar Campos
-          $('#btnLimpiar').click(function() {
-              limpiarFormulario();
-          });
-
-          // Código previo para la validación de cargos ONAPRE
-          const cargosEspeciales = [
-              "COORDINADOR(A) DE ÁREA",
-              "DIRECTOR DE LINEA",
-              "DIRECTOR GENERAL",
-              "JEFE DE DIVISIÓN",
-              "JEFE DE DIVISIÓN (COORDINADOR DE ÁREA)",
-              "JEFE DE DIVISIÓN DE REMUNERACIONES",
-              "JEFE DE DIVISIÓN GENERAL",
-              "CONTRALOR(A) DEL ESTADO"
-          ];
-
-          $('#cargoonapre').change(function() {
-              const cargoSeleccionado = $(this).find('option:selected').text().trim();
-              
-              if (cargosEspeciales.includes(cargoSeleccionado)) {
-                  $('#nivelsalarial').html('<option value="I">I</option>');
-              } else {
-                  $('#nivelsalarial').html(`
-                      <option value="">Seleccione</option>
-                      <option value="I">I</option>
-                      <option value="II">II</option>
-                      <option value="III">III</option>
-                      <option value="IV">IV</option>
-                      <option value="V">V</option>
-                      <option value="VI">VI</option>
-                      <option value="VII">VII</option>
-                  `);
-              }
-          });
-
-          if ($('#cargoonapre').val()) {
-              $('#cargoonapre').trigger('change');
-          }
+        if ($('#cargoonapre').val()) {
+            $('#cargoonapre').trigger('change');
+        }
       });
     </script>
 

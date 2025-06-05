@@ -40,7 +40,10 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-    <!-- Page CSS -->
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Page -->
     <link rel="stylesheet" href="../assets/vendor/css/pages/page-auth.css" />
     <!-- Helpers -->
@@ -132,8 +135,25 @@
 
     <!-- Page JS -->
     <script>
+      // Estilos personalizados para modales más pequeños
+      const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        backdrop: `
+          rgba(0,0,0,0.4)
+          url("/images/nyan-cat.gif")
+          left top
+          no-repeat
+        `,
+        customClass: {
+          popup: 'small-swal',
+          title: 'small-swal-title',
+          htmlContainer: 'small-swal-content',
+          confirmButton: 'small-swal-confirm'
+        }
+      });
+
       document.getElementById('nickname').addEventListener('input', function(e) {
-          // Solo permite letras y números
           this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10);
       });
 
@@ -143,15 +163,42 @@
           const nickname = document.getElementById('nickname').value;
           const password = document.getElementById('password').value;
 
+          // Validación de nickname
           if (!/^[a-zA-Z0-9]{1,10}$/.test(nickname)) {
-              alert("El nombre de usuario solo puede contener letras y números (máximo 10 caracteres)");
+              smallSwal.fire({
+                  icon: 'error',
+                  title: 'Usuario inválido',
+                  text: 'Solo letras y números (max 10 caracteres)',
+                  confirmButtonColor: '#3085d6',
+                  confirmButtonText: 'Entendido'
+              });
               return;
           }
 
+          // Validación de password
           if (!/^[a-zA-Z0-9@.]{1,16}$/.test(password)) {
-              alert("La contraseña solo puede contener letras, números, @ y punto (máximo 16 caracteres)");
+              smallSwal.fire({
+                  icon: 'error',
+                  title: 'Contraseña inválida',
+                  text: 'Solo letras, números, @ y punto (max 16)',
+                  confirmButtonColor: '#3085d6',
+                  confirmButtonText: 'Entendido'
+              });
               return;
           }
+
+          // Mostrar mensaje de "Accediendo..."
+          smallSwal.fire({
+              title: 'Verificando credenciales',
+              html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+              width: 350,
+              showConfirmButton: false,
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              didOpen: () => {
+                  smallSwal.showLoading();
+              }
+          });
 
           try {
               const response = await fetch('../PHP/api/login.php', {
@@ -168,30 +215,53 @@
                   const result = JSON.parse(text);
                   if (result.success) {
                       const tipo = result.tipo;
-                      if (tipo == 4) {
-                          window.location.href = 'index.php';
-                      } else if (tipo == 3) {
-                          window.location.href = 'index_usur.php';
-                      } else if (tipo == 2) {
-                          window.location.href = 'index_usur.php';
-                      } else if (tipo == 1) {
-                          window.location.href = 'index_usur.php';
-                      } else if (tipo == 0) {
-                          window.location.href = 'index_usur.php';
-                      } else {
-                          window.location.href = 'auth-login-basic.php';
-                      }
+                      // Cerrar el mensaje de carga
+                      smallSwal.close();
+                      
+                      // Mensaje de éxito
+                      smallSwal.fire({
+                          icon: 'success',
+                          title: 'Acceso concedido',
+                          showConfirmButton: false,
+                          timer: 1200,
+                          timerProgressBar: true,
+                          willClose: () => {
+                              if (tipo == 4) {
+                                  window.location.href = 'index.php';
+                              } else {
+                                  window.location.href = 'index_usur.php';
+                              }
+                          }
+                      });
                   } else {
-                      alert(result.message);
+                      smallSwal.fire({
+                          icon: 'error',
+                          title: 'Acceso denegado',
+                          text: result.message || 'Credenciales incorrectas',
+                          confirmButtonColor: '#3085d6',
+                          confirmButtonText: 'Reintentar',
+                          width: 380
+                      });
                   }
               } catch (parseError) {
                   console.error("Error al parsear JSON:", parseError);
-                  console.error("Respuesta cruda del servidor:", text);
-                  alert("Ocurrió un error inesperado del servidor.");
+                  smallSwal.fire({
+                      icon: 'warning',
+                      title: 'Error técnico',
+                      text: 'Problema al procesar la respuesta',
+                      confirmButtonColor: '#3085d6',
+                      width: 380
+                  });
               }
           } catch (error) {
-              console.error('Error en el login (fetch falló):', error);
-              alert('Ocurrió un error al iniciar sesión.');
+              console.error('Error en el login:', error);
+              smallSwal.fire({
+                  icon: 'error',
+                  title: 'Error de conexión',
+                  text: 'No se pudo conectar al servidor',
+                  confirmButtonColor: '#3085d6',
+                  width: 380
+              });
           }
       });
     </script>

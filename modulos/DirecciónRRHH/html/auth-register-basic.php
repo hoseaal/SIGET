@@ -59,7 +59,10 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-    <!-- Page CSS -->
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Page -->
     <link rel="stylesheet" href="../assets/vendor/css/pages/page-auth.css" />
     
@@ -84,7 +87,7 @@
               </div>
               <!-- /Logo -->
               <h4 class="mb-3 text-center">Registra un nuevo usuario</h4>
-              <p class="mb-4 text-center text-muted">Permite acceso a usuarios en nómina para RRHH</p>
+              <p class="mb-4 text-center text-muted">Permite acceso a usuarios al sistema SIGET</p>
 
               <form id="formAuthentication" class="mb-3" action="../PHP/api/register.php" method="POST">
                 <div class="row g-4">
@@ -111,6 +114,16 @@
                       <label for="apellidos" class="form-label">Apellidos</label>
                       <input type="text" class="form-control" id="apellidos" name="apellidos" required />
                     </div>
+
+                    <div class="mb-3">
+                      <label for="moduloaccess" class="form-label">Módulos</label>
+                      <select id="moduloaccess" name="moduloaccess" class="form-select" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="2">Dirección De Administración</option>
+                        <option value="1">Dirección de Recursos Humanos</option>
+                        <option value="0">Todos</option>
+                      </select>
+                    </div>
                   </div>
                   
                   <!-- Columna Derecha -->
@@ -135,6 +148,22 @@
                         <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                       </div>
                     </div>
+
+                    <div class="mb-3 form-password-toggle">
+                      <label class="form-label" for="confirm_password">Confirmar Contraseña</label>
+                      <div class="input-group input-group-merge">
+                        <input
+                          type="password"
+                          id="confirm_password"
+                          class="form-control"
+                          name="confirm_password"
+                          placeholder="············"
+                          aria-describedby="confirm_password"
+                          required
+                        />
+                        <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                      </div>
+                    </div>
                     
                     <div class="mb-3">
                       <label for="tip" class="form-label">Rol del usuario</label>
@@ -148,17 +177,6 @@
                       </select>
                     </div>
                   </div>
-                </div>
-                
-                <!-- Selector de módulo (ancho completo) -->
-                <div class="mb-4">
-                  <label for="moduloaccess" class="form-label">Módulos de acceso</label>
-                  <select id="moduloaccess" name="moduloaccess" class="form-select" required>
-                    <option value="">-- Selecciona módulos --</option>
-                    <option value="2">Departamento de Bienes</option>
-                    <option value="1">Departamento de RRHH</option>
-                    <option value="0">Todos los módulos</option>
-                  </select>
                 </div>
 
                 <div class="d-flex justify-content-center mt-4">
@@ -181,98 +199,23 @@
     <script src="../assets/vendor/libs/popper/popper.js"></script>
     <script src="../assets/vendor/js/bootstrap.js"></script>
     <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-
     <script src="../assets/vendor/js/menu.js"></script>
-    <!-- endbuild -->
-
-    <!-- Vendors JS -->
 
     <!-- Main JS -->
     <script src="../assets/js/main.js"></script>
 
     <!-- Page JS -->
     <script>
-      document.getElementById('formAuthentication').addEventListener('submit', function (e) {
-        e.preventDefault();
-        
-        // Validar cédula
-        const cedulaInput = document.getElementById('Cedula');
-        const cedulaValue = cedulaInput.value.trim();
-        
-        if (!/^\d{1,10}$/.test(cedulaValue)) {
-          alert('La cédula debe contener solo números (máximo 10 dígitos)');
-          cedulaInput.focus();
-          return;
+      // Configuración común para los alerts pequeños
+      const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+          popup: 'small-swal',
+          title: 'small-swal-title',
+          htmlContainer: 'small-swal-content',
+          confirmButton: 'small-swal-confirm'
         }
-        
-        // Validar nombres
-        const nombreInput = document.getElementById('nombre');
-        const nombreValue = nombreInput.value.trim();
-        
-        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{1,50}$/.test(nombreValue)) {
-          alert('Los nombres deben contener solo letras (incluyendo acentos) y no superar los 50 caracteres');
-          nombreInput.focus();
-          return;
-        }
-        
-        // Validar apellidos
-        const apellidosInput = document.getElementById('apellidos');
-        const apellidosValue = apellidosInput.value.trim();
-        
-        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{1,50}$/.test(apellidosValue)) {
-          alert('Los apellidos deben contener solo letras (incluyendo acentos) y no superar los 50 caracteres');
-          apellidosInput.focus();
-          return;
-        }
-        
-        // Validar nombre de usuario
-        const usernameInput = document.getElementById('username');
-        const usernameValue = usernameInput.value.trim();
-        
-        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]{1,50}$/.test(usernameValue)) {
-          alert('El nombre de usuario debe contener solo letras (incluyendo acentos) y números, sin caracteres especiales, y no superar los 50 caracteres');
-          usernameInput.focus();
-          return;
-        }
-        
-        // Validar contraseña
-        const passwordInput = document.getElementById('password');
-        const passwordValue = passwordInput.value;
-        
-        if (!/^[a-zA-Z0-9.@]{1,16}$/.test(passwordValue)) {
-          alert('La contraseña debe contener:\n- Letras y números\n- Solo puntos (.) y arrobas (@) como caracteres especiales\n- Máximo 16 caracteres');
-          passwordInput.focus();
-          return;
-        }
-        
-        // Validar módulo de acceso seleccionado
-        const moduloInput = document.getElementById('moduloaccess');
-        if (!moduloInput.value) {
-          alert('Por favor seleccione un módulo de acceso válido');
-          moduloInput.focus();
-          return;
-        }
-        
-        // Si todas las validaciones pasan, proceder con el envío
-        const formData = new FormData(this);
-
-        fetch('../PHP/api/register.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            alert(data.message);
-            window.location.href = data.redirect;
-          } else {
-            alert(data.message);
-          }
-        })
-        .catch(err => {
-          alert('Hubo un error en el registro.');
-          console.error(err);
-        });
       });
 
       // Validación en tiempo real para la cédula (solo números)
@@ -313,6 +256,203 @@
         if (this.value.length > 16) {
           this.value = this.value.slice(0, 16);
         }
+      });
+
+      // Validación en tiempo real para confirmar contraseña (solo letras, números, . y @)
+      document.getElementById('confirm_password').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^a-zA-Z0-9.@]/g, '');
+        if (this.value.length > 16) {
+          this.value = this.value.slice(0, 16);
+        }
+      });
+
+      document.getElementById('formAuthentication').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Obtener referencias a los inputs
+        const cedulaInput = document.getElementById('Cedula');
+        const nombreInput = document.getElementById('nombre');
+        const apellidosInput = document.getElementById('apellidos');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordValue = document.getElementById('confirm_password').value;
+        const moduloInput = document.getElementById('moduloaccess');
+        const tipoInput = document.getElementById('tip');
+        
+        // Validar cédula
+        const cedulaValue = cedulaInput.value.trim();
+        if (!/^\d{1,10}$/.test(cedulaValue)) {
+          smallSwal.fire({
+            icon: 'error',
+            title: 'Cédula inválida',
+            text: 'Debe contener solo números (máximo 10 dígitos)',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Entendido'
+          });
+          cedulaInput.focus();
+          return;
+        }
+        
+        // Validar nombres
+        const nombreValue = nombreInput.value.trim();
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{1,50}$/.test(nombreValue)) {
+          smallSwal.fire({
+            icon: 'error',
+            title: 'Nombres inválidos',
+            text: 'Deben contener solo letras (incluyendo acentos) y no superar los 50 caracteres',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Entendido'
+          });
+          nombreInput.focus();
+          return;
+        }
+        
+        // Validar apellidos
+        const apellidosValue = apellidosInput.value.trim();
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{1,50}$/.test(apellidosValue)) {
+          smallSwal.fire({
+            icon: 'error',
+            title: 'Apellidos inválidos',
+            text: 'Deben contener solo letras (incluyendo acentos) y no superar los 50 caracteres',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Entendido'
+          });
+          apellidosInput.focus();
+          return;
+        }
+        
+        // Validar nombre de usuario
+        const usernameValue = usernameInput.value.trim();
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s]{1,50}$/.test(usernameValue)) {
+          smallSwal.fire({
+            icon: 'error',
+            title: 'Usuario inválido',
+            text: 'Debe contener solo letras (incluyendo acentos) y números, sin caracteres especiales, y no superar los 50 caracteres',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Entendido'
+          });
+          usernameInput.focus();
+          return;
+        }
+        
+        // Validar contraseña
+        const passwordValue = passwordInput.value;
+        if (!/^[a-zA-Z0-9.@]{1,16}$/.test(passwordValue)) {
+          smallSwal.fire({
+            icon: 'error',
+            title: 'Contraseña inválida',
+            html: 'Debe contener:<br>- Letras y números<br>- Solo puntos (.) y arrobas (@) como caracteres especiales<br>- Máximo 16 caracteres',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Entendido'
+          });
+          passwordInput.focus();
+          return;
+        }
+
+        if (passwordValue !== confirmPasswordValue) {
+          smallSwal.fire({
+            icon: 'error',
+            title: 'Contraseñas no coinciden',
+            text: 'Las contraseñas ingresadas no son iguales',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Entendido'
+          });
+          document.getElementById('confirm_password').focus();
+          return;
+        }
+        
+        // Validar módulo de acceso seleccionado
+        if (!moduloInput.value) {
+          smallSwal.fire({
+            icon: 'error',
+            title: 'Módulo requerido',
+            text: 'Por favor seleccione un módulo de acceso válido',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Entendido'
+          });
+          moduloInput.focus();
+          return;
+        }
+
+        // Validar tipo de usuario seleccionado
+        if (!tipoInput.value) {
+          smallSwal.fire({
+            icon: 'error',
+            title: 'Rol requerido',
+            text: 'Por favor seleccione un rol de usuario válido',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Entendido'
+          });
+          tipoInput.focus();
+          return;
+        }
+
+        // Mostrar confirmación antes de enviar
+        smallSwal.fire({
+          title: '¿Registrar nuevo usuario?',
+          text: 'Revise que los datos sean correctos antes de continuar',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Sí, registrar',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Mostrar mensaje de procesamiento
+            smallSwal.fire({
+              title: 'Registrando usuario',
+              html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+              width: 350,
+              showConfirmButton: false,
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              didOpen: () => {
+                smallSwal.showLoading();
+              }
+            });
+
+            // Enviar formulario
+            const formData = new FormData(document.getElementById('formAuthentication'));
+
+            fetch('../PHP/api/register.php', {
+              method: 'POST',
+              body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                smallSwal.fire({
+                  icon: 'success',
+                  title: '¡Registro exitoso!',
+                  text: data.message,
+                  showConfirmButton: false,
+                  timer: 1500
+                }).then(() => {
+                  window.location.href = data.redirect;
+                });
+              } else {
+                smallSwal.fire({
+                  icon: 'error',
+                  title: 'Error en el registro',
+                  text: data.message,
+                  confirmButtonColor: '#3085d6',
+                  confirmButtonText: 'Entendido'
+                });
+              }
+            })
+            .catch(err => {
+              smallSwal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'Hubo un problema al conectar con el servidor',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+              });
+              console.error(err);
+            });
+          }
+        });
       });
     </script>
 
