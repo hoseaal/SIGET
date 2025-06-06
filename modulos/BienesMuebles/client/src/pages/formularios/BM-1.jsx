@@ -52,37 +52,34 @@ export const Bm1 = () => {
     });
 
     useEffect(() => {
-      const loadBimData = async () => {
+    const loadData = async () => {
         try {
-            const { columns, primaryKey } = await getTableMetadata('temab_m');
-            setColumns(columns.map(col => ({
-              originalName: col.name,
-              displayName: columnAliasCatEs[col.name] || col.name,
-              isPrimaryKey: col.name === primaryKey
-            })));
-
-        setIsLoading(true);
-           const limit = searchQuery ? 20 : 10; // O usa el mismo límite para ambos
-            const url = searchQuery
-            ? `/api/bienes/des?search=${encodeURIComponent(searchQuery)}&page=1&limit=20`
-            : `/api/bienes?inc=1&page=${page}&limit=${limit}`;
-        
-          const response = await fetch(url);
-          const result = await response.json();
-    
-          const dataArray = Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : [];
-            const metaData = result.meta || {};
-    
-            setData(dataArray);
-            setMeta(metaData);
+            const limit = searchQuery ? 20 : 10;
+            let url;
+            
+            if (searchQuery) {
+                url = `/api/bienes/des?search=${encodeURIComponent(searchQuery)}&page=1&limit=20`;
+            } else {
+                url = `/api/bienes?inc=1&page=${page}&limit=${limit}`;
+                if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
+                if (filtros.estado) url += `&estado=${filtros.estado}`;
+            }
+            
+            const response = await fetch(url);
+            const result = await response.json();
+            
+            setData(Array.isArray(result.data) ? result.data : []);
+            console.log(url)
+            console.log(data)
+            setMeta(result.meta || {});
         } catch (error) {
-          console.error('Error cargando datos:', error);
-          setData([]);
+            console.error('Error:', error);
+            setData([]);
         }
-      }
-
-      loadBimData();
-    }, [searchQuery, page, filtros.tipo]);
+    };
+    
+    loadData();
+}, [page, filtros.tipo, filtros.estado, searchQuery]);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -138,6 +135,7 @@ export const Bm1 = () => {
         }
     };
 
+
     const truncateText = (text, maxLength = 30) => {
         if (!text) return 'N/A';
         if (text.length <= maxLength) return text;
@@ -151,13 +149,17 @@ export const Bm1 = () => {
 
      
 
-    const handleTipoChange = (tipoId) => {
-    setFiltros(prev => ({ ...prev, tipo: tipoId }));
-    setPage(1);
-    
-    // Aquí puedes agregar lógica adicional cuando cambia el tipo
-    console.log("Tipo seleccionado:", filtros.tipo);
-  };
+        const handleTipoChange = (tipoId) => {
+            setFiltros(prev => ({ ...prev, tipo: tipoId }));
+            setPage(1);
+            
+            // Aquí puedes agregar lógica adicional cuando cambia el tipo
+            console.log("Tipo seleccionado:", tipoId);
+        };
+
+       
+
+
 
     return (
         <>
@@ -204,16 +206,21 @@ export const Bm1 = () => {
                                 value={filtros.tipo}
                                 onChange={handleTipoChange}
                             />
-                        <Dropdown>
-                            <Dropdown.Toggle variant="primary" className="nav-dropdown-dark-example">
-                                Estado
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                <Dropdown.Item href="#" >
-                                    Selecciona
-                                </Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
+
+                            <div className="dropdown ">
+                                <select 
+                                    id="estado-select"
+                                    className="btn btn-primary dropdown-toggle"
+                                    value={filtros.estado || ''}
+                                    onChange={(e) => setFiltros({...filtros, estado: e.target.value || null})}
+                                >
+                                    <option className="form-control" value="">Estado</option>
+                                    <option className="form-control" value="1">Sin Etiqueta</option>
+                                    <option className="form-control" value="2">Inoperativo</option>
+                                    <option className="form-control" value="3">Faltante</option>
+                                    <option className="form-control" value="4">Operativo</option>
+                                </select>
+                            </div>
                         </form>
                         <table className="table table-bordered table-striped">
                             <thead>

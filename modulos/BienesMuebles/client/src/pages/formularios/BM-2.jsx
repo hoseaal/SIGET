@@ -50,7 +50,7 @@ export const Bm2 = () => {
                 const { columns, primaryKey } = await getTableMetadata('tesmod');
                 setColumnsMod(columns.map(col => ({
                   originalName: col.name,
-                  displayName: columnAliasMarcas[col.name] || col.name,
+                  displayName: columnAliasMod[col.name] || col.name,
                   isPrimaryKey: col.name === primaryKey
                 })));
               } catch (error) {

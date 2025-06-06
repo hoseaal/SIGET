@@ -34,7 +34,7 @@ const InfiniteSelect = ({ options, value, onChange, placeholder }) => {
         className="btn btn-primary dropdown-toggle"
         onClick={() => setIsOpen(!isOpen)}
       >
-        TIPO
+        {options.find(opt => opt.value === value)?.label || 'Tipo'}
       </button>
       
       {isOpen && (
@@ -70,7 +70,7 @@ const InfiniteSelect = ({ options, value, onChange, placeholder }) => {
 const TipoBienSelect = ({ tipoBien, value, onChange }) => {
   // Preparar opciones
   const options = [
-    { value: null, label: 'Selecciona' },
+    { value: null, label: 'Tipos de Bien' },
     ...tipoBien.map(item => ({
       value: item.tip_ide,
       label: item.tip_tip
@@ -82,7 +82,7 @@ const TipoBienSelect = ({ tipoBien, value, onChange }) => {
       options={options}
       value={value}
       onChange={onChange}
-      placeholder="Tipo"
+      placeholder="Tipos de Bien"
     />
   );
 };

@@ -19,10 +19,6 @@ export class BienMuebleModel {
       params.push(filters.inc)
     }
 
-    if (filters.estado) {
-      whereClauses.push('b.tip_ide = ?')
-      params.push(filters.tipo)
-    }
     // Añadir más filtros según necesidad...
 
     if (whereClauses.length > 0) {
@@ -107,6 +103,11 @@ export class BienMuebleModel {
       queryParams.push(filters.inc)
     }
 
+    if (filters.tipo) {
+      whereClauses.push('b.tip_ide = ?')
+      queryParams.push(filters.tipo)
+    }
+
     // Construcción de la consulta base
     let baseQuery = 'SELECT b.* FROM tmab_m b'
 
@@ -119,6 +120,7 @@ export class BienMuebleModel {
     const paginatedQuery = `${baseQuery} ORDER BY b.bim_ide ASC LIMIT ? OFFSET ?`
     const paginatedParams = [...queryParams, limit, offset]
 
+    console.log(paginatedQuery, paginatedParams)
     const [rows] = await pool.query(paginatedQuery, paginatedParams)
 
     // Consulta para el total (aplicando los mismos filtros)
@@ -150,6 +152,7 @@ export class BienMuebleModel {
       ORDER BY b.bim_ide ASC
       LIMIT ? OFFSET ?
       `, [`%${searchTerm}%`, `%${searchTerm}%`, limit, offset])
+
     return rows
   }
 }
