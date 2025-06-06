@@ -1,3 +1,15 @@
+// Configuración común para los alerts pequeños
+const smallSwal = Swal.mixin({
+  width: '400px',
+  padding: '1rem',
+  customClass: {
+    popup: 'small-swal',
+    title: 'small-swal-title',
+    htmlContainer: 'small-swal-content',
+    confirmButton: 'small-swal-confirm'
+  }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // Variables para la paginación
     const rowsPerPage = 7;
@@ -353,91 +365,74 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar confirmación de eliminación
     function showDeleteConfirmation(positionId, positionName) {
-        // Crear modal de confirmación
-        const modalHTML = `
-        <div class="modal fade" id="deletePositionConfirmationModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>¿Seguro de eliminar el cargo <strong>${positionName}</strong>?</p>
-                        <p class="text-danger">¡Esta acción no se puede deshacer!</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="confirmPositionDeleteBtn">
-                            Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        
-        // Agregar el modal al DOM
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        // Mostrar el modal
-        const deleteModal = new bootstrap.Modal(document.getElementById('deletePositionConfirmationModal'));
-        deleteModal.show();
-        
-        // Configurar evento para el botón de confirmación
-        document.getElementById('confirmPositionDeleteBtn').addEventListener('click', async function() {
-            await deletePosition(positionId);
-            deleteModal.hide();
-            // Eliminar el modal del DOM después de cerrarse
-            document.getElementById('deletePositionConfirmationModal').addEventListener('hidden.bs.modal', function() {
-                this.remove();
-            });
-        });
-        
-        // Eliminar el modal del DOM si se cierra sin confirmar
-        document.getElementById('deletePositionConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
+        smallSwal.fire({
+        title: '¿Eliminar cargo?',
+        html: `¿Seguro que desea eliminar el cargo <strong>${positionName}</strong>?<br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+        }).then((result) => {
+        if (result.isConfirmed) {
+            deletePosition(positionId);
+        }
         });
     }
+
 
     // Función para eliminar un cargo
     async function deletePosition(positionId) {
         try {
-            // Mostrar loader
-            const loadingIndicator = document.createElement('div');
-            loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-            loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-            loadingIndicator.style.zIndex = '1060';
-            loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-            document.body.appendChild(loadingIndicator);
-            
-            // Enviar solicitud de eliminación
-            const response = await fetch('../PHP/api/gest-presupuesto/eliminar_cargoCET.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ position_id: positionId })
-            });
-            
-            const result = await response.json();
-            
-            // Eliminar loader
-            loadingIndicator.remove();
-            
-            if (result.success) {
-                // Mostrar mensaje de éxito
-                alert('Cargo eliminado correctamente');
-                // Recargar la tabla
-                displayPositions(currentPage);
-            } else {
-                throw new Error(result.message || 'Error al eliminar el cargo');
+        // Mostrar loader
+        smallSwal.fire({
+            title: 'Eliminando cargo',
+            html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+            width: 350,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+            smallSwal.showLoading();
             }
+        });
+
+        // Enviar solicitud de eliminación
+        const response = await fetch('../PHP/api/gest-presupuesto/eliminar_cargoCET.php', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ position_id: positionId })
+        });
+        
+        const result = await response.json();
+        
+        // Cerrar loader
+        smallSwal.close();
+
+        if (result.success) {
+            smallSwal.fire({
+            icon: 'success',
+            title: '¡Eliminado!',
+            text: 'El cargo ha sido eliminado correctamente',
+            showConfirmButton: false,
+            timer: 1500
+            }).then(() => {
+            displayPositions(currentPage);
+            });
+        } else {
+            throw new Error(result.message || 'Error al eliminar el cargo');
+        }
         } catch (error) {
-            console.error('Error al eliminar:', error);
-            alert('Error al eliminar: ' + error.message);
+        console.error('Error al eliminar:', error);
+        smallSwal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al eliminar: ' + error.message,
+            confirmButtonColor: '#3085d6'
+        });
         }
     }
 
@@ -448,56 +443,68 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Validaciones
         if (!isValidCargoName(positionName)) {
-            showInputError(inputElement, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
-            return;
+        showInputError(inputElement, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
+        return;
         }
         
         try {
-            // Mostrar loader
-            const originalButtonText = this.innerHTML;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
-            this.disabled = true;
-            
-            // Enviar solicitud al servidor
-            const response = await fetch('../PHP/api/gest-presupuesto/agregar_cargoCET.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ position_name: positionName })
-            });
-            
-            const result = await response.json();
-            
-            // Restaurar botón
-            this.innerHTML = originalButtonText;
-            this.disabled = false;
-            
-            if (result.success) {
-                // Mostrar mensaje de éxito
-                alert('Cargo agregado correctamente');
-                
-                // Limpiar el campo de entrada
-                document.getElementById('newCargoCET').value = '';
-                
-                // Cerrar el modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('basicModal'));
-                modal.hide();
-                
-                // Recargar la tabla (mostrando la primera página)
-                currentPage = 1;
-                displayPositions(currentPage);
-            } else {
-                throw new Error(result.message || 'Error al agregar el cargo');
+        // Mostrar loader
+        smallSwal.fire({
+            title: 'Agregando cargo',
+            html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+            width: 350,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+            smallSwal.showLoading();
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al agregar: ' + error.message);
+        });
+
+        // Enviar solicitud al servidor
+        const response = await fetch('../PHP/api/gest-presupuesto/agregar_cargoCET.php', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ position_name: positionName })
+        });
+        
+        const result = await response.json();
+        
+        // Cerrar loader
+        smallSwal.close();
+
+        if (result.success) {
+            smallSwal.fire({
+            icon: 'success',
+            title: '¡Agregado!',
+            text: 'El cargo ha sido agregado correctamente',
+            showConfirmButton: false,
+            timer: 1500
+            }).then(() => {
+            // Limpiar el campo de entrada
+            inputElement.value = '';
             
-            // Restaurar botón en caso de error
-            const btn = document.getElementById('addCetPositionBtn');
-            btn.innerHTML = 'Añadir nuevo Cargo';
-            btn.disabled = false;
+            // Cerrar el modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('basicModal'));
+            modal.hide();
+            
+            // Recargar la tabla
+            currentPage = 1;
+            displayPositions(currentPage);
+            });
+        } else {
+            throw new Error(result.message || 'Error al agregar el cargo');
+        }
+        } catch (error) {
+        console.error('Error:', error);
+        smallSwal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al agregar: ' + error.message,
+            confirmButtonColor: '#3085d6'
+        });
         }
     });
 

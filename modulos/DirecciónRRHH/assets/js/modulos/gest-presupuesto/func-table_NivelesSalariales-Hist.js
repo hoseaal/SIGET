@@ -1,3 +1,15 @@
+// Configuración común para los alerts pequeños
+    const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+            popup: 'small-swal',
+            title: 'small-swal-title',
+            htmlContainer: 'small-swal-content',
+            confirmButton: 'small-swal-confirm'
+        }
+    })
+
 document.addEventListener('DOMContentLoaded', function() {
     // Variables para la paginación
     const rowsPerPage = 7;
@@ -23,6 +35,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             } else {
                 console.error('Error al cargar niveles salariales:', data.message);
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar los registros históricos',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return {
                     salaries: [],
                     total: 0,
@@ -31,6 +50,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error en la solicitud:', error);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar al servidor',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             return {
                 salaries: [],
                 total: 0,
@@ -169,56 +195,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar confirmación de eliminación
     function showDeleteConfirmation(nvl_ide, nvl_ran, ona_car) {
-        const modalHTML = `
-        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>¿Seguro de eliminar el nivel salarial: "<strong>${nvl_ran}</strong>", que le pertenece al cargo ONAPRE: "<strong>${ona_car}</strong>"?</p>
-                        <p class="text-danger">¡Este cambio no se puede deshacer!</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                            Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-        deleteModal.show();
-        
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
-            await deleteSalary(nvl_ide);
-            deleteModal.hide();
-            document.getElementById('deleteConfirmationModal').remove();
-        });
-        
-        document.getElementById('deleteConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
+        smallSwal.fire({
+            title: '¿Eliminar registro histórico?',
+            html: `¿Seguro de eliminar el registro histórico del nivel <strong>${nvl_ran}</strong> para el cargo <strong>${ona_car}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // Mostrar loader durante la eliminación
+                smallSwal.fire({
+                    title: 'Eliminando registro histórico',
+                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 100%; height: 100%;"></div></div>',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        smallSwal.showLoading();
+                    }
+                });
+                
+                await deleteSalary(nvl_ide);
+            }
         });
     }
 
     // Función para eliminar un nivel salarial
     async function deleteSalary(nvl_ide) {
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-        loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-        loadingIndicator.style.zIndex = '1060';
-        loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-        document.body.appendChild(loadingIndicator);
-        
         try {
             const response = await fetch('../PHP/api/gest-presupuesto/eliminar_salarios-hist.php', {
                 method: 'POST',
@@ -235,22 +241,37 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (result.success) {
+                // Cerrar cualquier alerta abierta
+                smallSwal.close();
+                
                 // Verificar si debemos cambiar de página
                 if (currentPage > 1 && (totalSalaries - 1) <= ((currentPage - 1) * rowsPerPage)) {
                     currentPage--;
                 }
                 
-                // Recargar la tabla
-                await displaySalaries(currentPage);
-                alert(result.message || 'Nivel salarial eliminado correctamente');
+                // Mostrar mensaje de éxito
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: result.message || 'Registro histórico eliminado correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar la tabla
+                    await displaySalaries(currentPage);
+                });
             } else {
-                throw new Error(result.message || 'Error al eliminar el nivel salarial');
+                throw new Error(result.message || 'Error al eliminar el registro histórico');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
-            alert('Error al eliminar: ' + error.message);
-        } finally {
-            loadingIndicator.remove();
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         }
     }
 
@@ -328,50 +349,84 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para abrir el modal de edición con datos
     async function openEditModal(salaryData) {
-        // Cargar los cargos ONAPRE primero
-        const cargosOnapre = await fetchCargosOnapre();
-        if (!cargosOnapre) {
-            alert('No se pudieron cargar los cargos ONAPRE');
-            return;
-        }
+        try {
+            // Mostrar loader mientras se cargan los cargos ONAPRE
+            smallSwal.fire({
+                title: 'Cargando datos...',
+                html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    smallSwal.showLoading();
+                }
+            });
 
-        // Llenar el select de cargos ONAPRE
-        const selectOnapre = document.getElementById('OnapreAsig');
-        selectOnapre.innerHTML = '<option value="">Seleccione</option>';
-        
-        cargosOnapre.forEach(cargo => {
-            const option = document.createElement('option');
-            option.value = cargo.ona_ide;
-            option.textContent = cargo.ona_car;
-            selectOnapre.appendChild(option);
-        });
+            // Cargar los cargos ONAPRE primero
+            const cargosOnapre = await fetchCargosOnapre();
+            
+            // Cerrar el loader
+            smallSwal.close();
 
-        // Llenar los campos con los datos del nivel salarial
-        document.getElementById('tipoNlvSalarial').value = salaryData.nvl_ran || '';
-        document.getElementById('salarioAsig').value = salaryData.nvl_sal || '';
-        
-        // Llenar campo de fecha
-        document.getElementById('fechamodificacion').value = salaryData.nvl_fec || '';
-
-        // Seleccionar el cargo ONAPRE correspondiente
-        if (salaryData.ona_ide) {
-            selectOnapre.value = salaryData.ona_ide;
-        }
-
-        // Configurar validaciones en los inputs
-        setupInputValidations();
-
-        // Configurar el botón de guardar
-        const saveButton = document.querySelector('#ModalNivelSalarial .btn-primary');
-        saveButton.onclick = async function() {
-            if (validateForm()) {
-                await updateSalary(salaryData.nvl_ide);
+            if (!cargosOnapre) {
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar los cargos ONAPRE',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
             }
-        };
 
-        // Mostrar el modal
-        const editModal = new bootstrap.Modal(document.getElementById('ModalNivelSalarial'));
-        editModal.show();
+            // Llenar el select de cargos ONAPRE
+            const selectOnapre = document.getElementById('OnapreAsig');
+            selectOnapre.innerHTML = '<option value="">Seleccione</option>';
+            
+            cargosOnapre.forEach(cargo => {
+                const option = document.createElement('option');
+                option.value = cargo.ona_ide;
+                option.textContent = cargo.ona_car;
+                selectOnapre.appendChild(option);
+            });
+
+            // Llenar los campos con los datos del nivel salarial
+            document.getElementById('tipoNlvSalarial').value = salaryData.nvl_ran || '';
+            document.getElementById('salarioAsig').value = salaryData.nvl_sal || '';
+            
+            // Llenar campo de fecha
+            document.getElementById('fechamodificacion').value = salaryData.nvl_fec || '';
+
+            // Seleccionar el cargo ONAPRE correspondiente
+            if (salaryData.ona_ide) {
+                selectOnapre.value = salaryData.ona_ide;
+            }
+
+            // Configurar validaciones en los inputs
+            setupInputValidations();
+
+            // Configurar el botón de guardar
+            const saveButton = document.querySelector('#ModalNivelSalarial .btn-primary');
+            saveButton.onclick = async function() {
+                if (validateForm()) {
+                    await updateSalary(salaryData.nvl_ide);
+                }
+            };
+
+            // Mostrar el modal
+            const editModal = new bootstrap.Modal(document.getElementById('ModalNivelSalarial'));
+            editModal.show();
+
+        } catch (error) {
+            console.error('Error al abrir modal de edición:', error);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al cargar los datos para edición',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
+        }
     }
 
     // Función para obtener los cargos ONAPRE
@@ -393,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para actualizar un nivel salarial
-    async function updateSalary(nvl_ide) {
+     async function updateSalary(nvl_ide) {
         const saveButton = document.querySelector('#ModalNivelSalarial .btn-primary');
         const originalText = saveButton.innerHTML;
         
@@ -412,8 +467,14 @@ document.addEventListener('DOMContentLoaded', function() {
             };
 
             // Validación básica
-            if (!updatedData.nvl_ran || !updatedData.nvl_sal) {
-                alert('Por favor complete todos los campos requeridos');
+            if (!updatedData.nvl_ran || !updatedData.nvl_sal || !updatedData.nvl_fec) {
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Datos incompletos',
+                    text: 'Por favor complete todos los campos requeridos',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
             
@@ -433,16 +494,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 bootstrap.Modal.getInstance(document.getElementById('ModalNivelSalarial')).hide();
                 
                 // Mostrar mensaje de éxito
-                alert('Cambios guardados exitosamente');
-                
-                // Recargar los datos
-                displaySalaries(currentPage);
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Guardado!',
+                    text: 'Cambios en el registro histórico guardados exitosamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar los datos
+                    await displaySalaries(currentPage);
+                });
             } else {
-                alert('Error al guardar: ' + (result.message || 'Error desconocido'));
+                throw new Error(result.message || 'Error desconocido');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
-            alert('Error al conectar con el servidor');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al guardar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         } finally {
             // Restaurar el botón
             saveButton.innerHTML = originalText;
@@ -511,35 +584,65 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Validar Tipo de Nivel Salarial
         if (!tipoNivelInput.value.trim()) {
-            alert('Por favor ingrese el Tipo de Nivel Salarial');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Campo requerido',
+                text: 'Por favor ingrese el Tipo de Nivel Salarial',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             tipoNivelInput.focus();
             return false;
         }
 
         // Validar Salario Correspondiente
         if (!salarioInput.value.trim()) {
-            alert('Por favor ingrese el Salario Correspondiente');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Campo requerido',
+                text: 'Por favor ingrese el Salario Correspondiente',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             salarioInput.focus();
             return false;
         }
 
         // Validar que el salario sea un número válido
         if (isNaN(parseFloat(salarioInput.value))) {
-            alert('Por favor ingrese un valor numérico válido para el salario');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Valor inválido',
+                text: 'Por favor ingrese un valor numérico válido para el salario',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             salarioInput.focus();
             return false;
         }
 
         // Validar Cargo ONAPRE
         if (!onapreSelect.value) {
-            alert('Por favor seleccione un Cargo ONAPRE');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Selección requerida',
+                text: 'Por favor seleccione un Cargo ONAPRE',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             onapreSelect.focus();
             return false;
         }
 
         // Validar Fecha de Modificación
         if (!fechaInput.value) {
-            alert('Por favor ingrese la Fecha de Modificación');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Fecha requerida',
+                text: 'Por favor ingrese la Fecha de Modificación',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             fechaInput.focus();
             return false;
         }

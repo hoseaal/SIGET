@@ -264,6 +264,9 @@
         function agregarRangoAntiguedad(fechaInicial = '', fechaFinal = '', antId = null) {
             contadorRangos++;
             
+            // Obtener la fecha actual en formato YYYY-MM-DD
+            const today = new Date().toISOString().split('T')[0];
+            
             // Crear el elemento contenedor del rango
             const rangoDiv = document.createElement('div');
             rangoDiv.className = 'rango-antiguedad mb-3';
@@ -274,14 +277,24 @@
                 <div class="row g-3 align-items-center">
                     <div class="col-md-5">
                         <label class="form-label">Fecha inicial</label>
-                        <input type="date" class="form-control" id="fecha-inicial-${contadorRangos}" value="${fechaInicial}">
+                        <input type="date" class="form-control fecha-inicial" 
+                            id="fecha-inicial-${contadorRangos}" 
+                            value="${fechaInicial}"
+                            max="${today}"
+                            onchange="validarFechas(this)">
+                        <div class="invalid-feedback">La fecha no puede ser futura</div>
                     </div>
                     <div class="col-md-2 text-center">
                         <span class="fs-4">-</span>
                     </div>
                     <div class="col-md-5">
                         <label class="form-label">Fecha final</label>
-                        <input type="date" class="form-control" id="fecha-final-${contadorRangos}" value="${fechaFinal}">
+                        <input type="date" class="form-control fecha-final" 
+                            id="fecha-final-${contadorRangos}" 
+                            value="${fechaFinal}"
+                            max="${today}"
+                            onchange="validarFechas(this)">
+                        <div class="invalid-feedback">La fecha no puede ser futura</div>
                     </div>
                     <!-- Campo oculto para el ID de antigüedad (si existe) -->
                     <input type="hidden" id="ant-ide-${contadorRangos}" value="${antId || ''}">
@@ -295,6 +308,30 @@
             
             // Agregar el nuevo rango al contenedor
             document.getElementById('antiguedades-container').appendChild(rangoDiv);
+            
+            // Validar las fechas si ya tienen valores
+            if (fechaInicial) {
+                validarFechas(document.getElementById(`fecha-inicial-${contadorRangos}`));
+            }
+            if (fechaFinal) {
+                validarFechas(document.getElementById(`fecha-final-${contadorRangos}`));
+            }
+        }
+
+        function validarFechas(input) {
+            const today = new Date();
+            const inputDate = new Date(input.value);
+            
+            // Resetear estado de validación
+            input.classList.remove('is-invalid');
+            
+            // Validar si la fecha es futura
+            if (input.value && inputDate > today) {
+                input.classList.add('is-invalid');
+                return false;
+            }
+            
+            return true;
         }
         
         function eliminarRango(idRango) {
@@ -321,6 +358,27 @@
                     }
                 }
             });
+        }
+
+        function validarTodasLasFechas() {
+            let todasValidas = true;
+            const today = new Date();
+            
+            // Validar fechas iniciales
+            document.querySelectorAll('.fecha-inicial').forEach(input => {
+                if (!validarFechas(input)) {
+                    todasValidas = false;
+                }
+            });
+            
+            // Validar fechas finales
+            document.querySelectorAll('.fecha-final').forEach(input => {
+                if (!validarFechas(input)) {
+                    todasValidas = false;
+                }
+            });
+            
+            return todasValidas;
         }
         
         // Agregar un rango inicial al cargar la página
@@ -398,6 +456,19 @@
     <script>
         document.getElementById('formAnt').addEventListener('submit', function (e) {
             e.preventDefault();
+
+            // Validar todas las fechas antes de continuar
+            const todasLasFechasValidas = validarTodasLasFechas();
+            if (!todasLasFechasValidas) {
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Fechas inválidas',
+                    text: 'Algunas fechas son futuras. Corrígelas antes de continuar.',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
 
             const cedula = document.getElementById('cedulaSeleccionada').value;
             if (!cedula) {

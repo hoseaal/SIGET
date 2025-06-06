@@ -18,6 +18,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let updateTimer = null;
     let isUpdating = false;
 
+    // Funcionamiento de estilos
+    const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+            popup: 'small-swal',
+            title: 'small-swal-title',
+            htmlContainer: 'small-swal-content',
+            confirmButton: 'small-swal-confirm'
+        }
+    }); 
+
     // Función para validar solo números (sin caracteres especiales)
     function validarSoloNumeros(event) {
         const charCode = event.which ? event.which : event.keyCode;
@@ -362,94 +374,48 @@ document.addEventListener('DOMContentLoaded', function() {
     function showDeleteConfirmation(cedula) {
         // Verificar si el usuario está intentando eliminarse a sí mismo
         if (typeof LOGGED_USER_CI !== 'undefined' && cedula === LOGGED_USER_CI) {
-            const selfDeleteModalHTML = `
-            <div class="modal fade" id="selfDeleteModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-sm" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-warning">
-                            <h5 class="modal-title text-white">Acción no permitida</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="text-center mb-3">
-                                <i class="bx bx-error-circle text-warning" style="font-size: 3rem;"></i>
-                            </div>
-                            <p class="text-center">No puede eliminarse a sí mismo del sistema.</p>
-                            <p class="text-center text-muted">Por razones de seguridad, esta acción está restringida.</p>
-                        </div>
-                        <div class="modal-footer justify-content-center">
-                            <button type="button" class="btn btn-warning text-white" data-bs-dismiss="modal">
-                                <i class="bx bx-check-circle me-1"></i> Entendido
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', selfDeleteModalHTML);
-            
-            const selfDeleteModal = new bootstrap.Modal(document.getElementById('selfDeleteModal'));
-            selfDeleteModal.show();
-            
-            document.getElementById('selfDeleteModal').addEventListener('hidden.bs.modal', function() {
-                this.remove();
+            smallSwal.fire({
+                icon: 'warning',
+                title: 'Acción no permitida',
+                html: 'No puede eliminarse a sí mismo del sistema.<br><small class="text-muted">Por razones de seguridad, esta acción está restringida.</small>',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
             });
-            
             return;
         }
         
-        // Si no es auto-eliminación, mostrar el modal normal de confirmación
-        const modalHTML = `
-        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>¿Seguro de eliminar al usuario con (C.I. ${cedula}) de la nómina?</p>
-                        <p class="text-danger">¡Este cambio no se puede deshacer!</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                            Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-        deleteModal.show();
-        
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
-            await deleteWorker(cedula);
-            deleteModal.hide();
-            document.getElementById('deleteConfirmationModal').remove();
-        });
-        
-        document.getElementById('deleteConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
+        // Si no es auto-eliminación, mostrar el modal de confirmación
+        smallSwal.fire({
+            title: 'Confirmar Eliminación',
+            html: `¿Seguro de eliminar al usuario con <strong>C.I. ${cedula}</strong> de la nómina?<br><small class="text-danger">¡Este cambio no se puede deshacer!</small>`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, Eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteWorker(cedula);
+            }
         });
     }
 
     // Función para eliminar un trabajador
     async function deleteWorker(cedula) {
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-        loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-        loadingIndicator.style.zIndex = '1060';
-        loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-        document.body.appendChild(loadingIndicator);
-        
+        // Mostrar loader
+        smallSwal.fire({
+            title: 'Eliminando trabajador',
+            html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+            width: 350,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                smallSwal.showLoading();
+            }
+        });
+
         try {
             const response = await fetch('../PHP/api/gest-presupuesto/eliminar-user_nomina.php', {
                 method: 'POST',
@@ -473,23 +439,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Recargar la tabla
                 if (isSearching) {
-                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
                     allWorkers = await fetchAllWorkers();
                     const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
                     displayWorkers(1, filtered);
                 } else {
-                    // Si no, recargar la página actual normalmente
                     await displayWorkers(currentPage);
                 }
-                alert(result.message || 'Trabajador eliminado correctamente');
+                
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: result.message || 'Trabajador eliminado correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             } else {
                 throw new Error(result.message || 'Error al eliminar el trabajador');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
-            alert('Error al eliminar: ' + error.message);
-        } finally {
-            loadingIndicator.remove();
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error al eliminar',
+                text: error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         }
     }
 
@@ -580,12 +555,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para guardar los cambios del trabajador
     async function saveWorkerChanges(originalCedula) {
-        const saveButton = document.querySelector('#largeModal .btn-primary');
-        const originalText = saveButton.innerHTML;
-        
-        saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-        saveButton.disabled = true;
-        
+        // Mostrar loader
+        smallSwal.fire({
+            title: 'Guardando cambios',
+            html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+            width: 350,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                smallSwal.showLoading();
+            }
+        });
+
         try {
             const updatedData = {
                 cedula_original: originalCedula,
@@ -604,7 +586,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Validación adicional por si acaso
             if (!updatedData.nombres || !updatedData.apellidos || !updatedData.cedula) {
-                alert('Por favor complete todos los campos requeridos');
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Campos requeridos',
+                    text: 'Por favor complete todos los campos requeridos',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
             
@@ -620,25 +608,35 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (result.success) {
                 bootstrap.Modal.getInstance(document.getElementById('largeModal')).hide();
-                alert('Cambios guardados exitosamente');
                 
-                // Recargar los datos
-                if (isSearching) {
-                    allWorkers = await fetchAllWorkers();
-                    const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
-                    displayWorkers(1, filtered);
-                } else {
-                    await displayWorkers(currentPage);
-                }
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Guardado!',
+                    text: 'Cambios guardados exitosamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar los datos
+                    if (isSearching) {
+                        allWorkers = await fetchAllWorkers();
+                        const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
+                        displayWorkers(1, filtered);
+                    } else {
+                        displayWorkers(currentPage);
+                    }
+                });
             } else {
-                alert('Error al guardar: ' + (result.message || 'Error desconocido'));
+                throw new Error(result.message || 'Error desconocido');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
-            alert('Error al conectar con el servidor: ' + error.message);
-        } finally {
-            saveButton.innerHTML = originalText;
-            saveButton.disabled = false;
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error al guardar',
+                text: error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         }
     }
 
@@ -741,33 +739,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para validar el formulario completo
     function validateForm() {
-        let isValid = true;
-        
         // Validar cédula (requerida y exactamente entre 6 y 10 dígitos)
         const cedula = $('#cedula').val();
         if (!cedula || cedula.length < 6 || cedula.length > 10) {
-            alert('La cédula debe tener entre 6 y 10 dígitos');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Cédula inválida',
+                text: 'La cédula debe tener entre 6 y 10 dígitos',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             $('#cedula').focus();
             return false;
         }
         
         // Validar nombres (requerido)
         if (!$('#nombre').val()) {
-            alert('Por favor ingrese los nombres del trabajador');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Nombres requeridos',
+                text: 'Por favor ingrese los nombres del trabajador',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             $('#nombre').focus();
             return false;
         }
         
         // Validar apellidos (requerido)
         if (!$('#apellidos').val()) {
-            alert('Por favor ingrese los apellidos del trabajador');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Apellidos requeridos',
+                text: 'Por favor ingrese los apellidos del trabajador',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             $('#apellidos').focus();
             return false;
         }
         
         // Validar género
         if (!$('input[name="generoEmpleado"]:checked').val()) {
-            alert('Por favor seleccione el género del empleado');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Género requerido',
+                text: 'Por favor seleccione el género del empleado',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             return false;
         }
         
@@ -775,13 +795,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const selects = ['#cargocet', '#cargoonapre', '#nivelsalarial', '#nivelprof', '#departamentoasig'];
         for (const select of selects) {
             if (!$(select).val()) {
-                alert(`Por favor seleccione una opción válida para ${$(select).prev('label').text()}`);
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Selección requerida',
+                    text: `Por favor seleccione una opción válida para ${$(select).prev('label').text()}`,
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 $(select).focus();
                 return false;
             }
         }
         
-        return isValid;
+        return true;
     }
 
     // Función para verificar cambios en bit_nom
@@ -838,22 +864,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar notificación de actualización
     function showUpdateNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'update-notification';
-        notification.innerHTML = 'Trabajadores en Nómina actualizados <i class="bx bx-check"></i>';
-        
-        document.body.appendChild(notification);
-        
-        // Mostrar y luego desaparecer
-        setTimeout(() => {
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }, 100);
+        smallSwal.fire({
+            position: 'bottom-end',
+            icon: 'success',
+            title: 'Datos actualizados',
+            text: 'Trabajadores en Nómina actualizados',
+            showConfirmButton: false,
+            timer: 2000,
+            toast: true
+        });
     }
 
     // Iniciar el sistema de actualización periódica

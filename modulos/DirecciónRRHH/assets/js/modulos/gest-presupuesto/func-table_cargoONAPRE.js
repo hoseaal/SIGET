@@ -339,125 +339,74 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentDeleteModal = null;
 
     function showOnapreDeleteConfirmation(positionId, positionName) {
-        // Cerrar y limpiar cualquier modal existente
-        if (currentDeleteModal) {
-            currentDeleteModal.hide();
-            const modalElement = document.getElementById(currentDeleteModal.id);
-            if (modalElement) {
-                modalElement.remove();
-            }
-            currentDeleteModal = null;
+        smallSwal.fire({
+        title: '¿Eliminar cargo ONAPRE?',
+        html: `¿Seguro que desea eliminar el cargo <strong>${positionName}</strong>?<br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+        }).then((result) => {
+        if (result.isConfirmed) {
+            deleteOnaprePosition(positionId);
         }
-        
-        // Limpiar backdrops
-        cleanupModals();
-        
-        // Crear ID único para el modal
-        const modalId = `deleteOnapreConfirmationModal_${Date.now()}`;
-        
-        // Crear HTML del modal
-        const modalHTML = `
-        <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>¿Seguro de eliminar el cargo ONAPRE <strong>${positionName}</strong>?</p>
-                        <p class="text-danger">¡Esta acción no se puede deshacer!</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="confirmOnapreDeleteBtn">
-                            Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        
-        // Insertar el modal en el DOM
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        const modalElement = document.getElementById(modalId);
-        
-        // Crear nueva instancia del modal y guardar referencia
-        currentDeleteModal = {
-            instance: new bootstrap.Modal(modalElement),
-            id: modalId
-        };
-        
-        // Mostrar el modal
-        currentDeleteModal.instance.show();
-        
-        // Configurar evento de confirmación (usando delegación de eventos)
-        modalElement.addEventListener('click', function modalClickHandler(e) {
-            if (e.target && e.target.id === 'confirmOnapreDeleteBtn') {
-                // Eliminar el handler inmediatamente para evitar múltiples ejecuciones
-                modalElement.removeEventListener('click', modalClickHandler);
-                
-                // Ejecutar la eliminación
-                deleteOnaprePosition(positionId).finally(() => {
-                    if (currentDeleteModal) {
-                        currentDeleteModal.instance.hide();
-                    }
-                });
-            }
-        });
-        
-        // Manejar el cierre del modal
-        modalElement.addEventListener('hidden.bs.modal', function() {
-            // Limpiar referencia
-            currentDeleteModal = null;
-            
-            // Eliminar el modal del DOM
-            modalElement.remove();
-            
-            // Limpiar backdrops
-            cleanupModals();
         });
     }
+
 
     // Función para eliminar un cargo ONAPRE
     async function deleteOnaprePosition(positionId) {
         try {
-            // Mostrar loader
-            const loadingIndicator = document.createElement('div');
-            loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-            loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-            loadingIndicator.style.zIndex = '1060';
-            loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-            document.body.appendChild(loadingIndicator);
-            
-            // Enviar solicitud de eliminación
-            const response = await fetch('../PHP/api/gest-presupuesto/eliminar_cargoONAPRE.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ position_id: positionId })
-            });
-            
-            const result = await response.json();
-            
-            // Eliminar loader
-            loadingIndicator.remove();
-            
-            if (result.success) {
-                // Mostrar mensaje de éxito
-                alert('Cargo ONAPRE eliminado correctamente');
-                // Recargar la tabla
-                displayOnaprePositions(onapreCurrentPage);
-            } else {
-                throw new Error(result.message || 'Error al eliminar el cargo ONAPRE');
+        // Mostrar loader
+        smallSwal.fire({
+            title: 'Eliminando cargo',
+            html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+            width: 350,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+            smallSwal.showLoading();
             }
+        });
+
+        // Enviar solicitud de eliminación
+        const response = await fetch('../PHP/api/gest-presupuesto/eliminar_cargoONAPRE.php', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ position_id: positionId })
+        });
+        
+        const result = await response.json();
+        
+        // Cerrar loader
+        smallSwal.close();
+
+        if (result.success) {
+            smallSwal.fire({
+            icon: 'success',
+            title: '¡Eliminado!',
+            text: 'El cargo ONAPRE ha sido eliminado correctamente',
+            showConfirmButton: false,
+            timer: 1500
+            }).then(() => {
+            displayOnaprePositions(onapreCurrentPage);
+            });
+        } else {
+            throw new Error(result.message || 'Error al eliminar el cargo ONAPRE');
+        }
         } catch (error) {
-            console.error('Error al eliminar:', error);
-            alert('Error al eliminar: ' + error.message);
+        console.error('Error al eliminar:', error);
+        smallSwal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al eliminar: ' + error.message,
+            confirmButtonColor: '#3085d6'
+        });
         }
     }
 
@@ -470,49 +419,84 @@ document.addEventListener('DOMContentLoaded', function() {
         const regex = /^[A-Za-zÁÉÍÓÚáéíóúñÑüÜ\s()]{1,50}$/;
         
         if (!positionName) {
-            positionInput.classList.add('is-invalid');
-            return;
+        positionInput.classList.add('is-invalid');
+        smallSwal.fire({
+            icon: 'error',
+            title: 'Nombre requerido',
+            text: 'Por favor ingrese un nombre para el cargo',
+            confirmButtonColor: '#3085d6'
+        });
+        return;
         } else if (!regex.test(positionName)) {
-            positionInput.classList.add('is-invalid');
-            return;
+        positionInput.classList.add('is-invalid');
+        smallSwal.fire({
+            icon: 'error',
+            title: 'Nombre inválido',
+            text: 'Solo se permiten letras, espacios y paréntesis',
+            confirmButtonColor: '#3085d6'
+        });
+        return;
         } else {
-            positionInput.classList.remove('is-invalid');
+        positionInput.classList.remove('is-invalid');
         }
         
         try {
-            const originalButtonText = this.innerHTML;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
-            this.disabled = true;
-            
-            const response = await fetch('../PHP/api/gest-presupuesto/agregar_cargoONAPRE.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ position_name: positionName })
-            });
-            
-            const result = await response.json();
-            
-            this.innerHTML = originalButtonText;
-            this.disabled = false;
-            
-            if (result.success) {
-                alert('Cargo ONAPRE agregado correctamente');
-                document.getElementById('newOnaprePosition').value = '';
-                bootstrap.Modal.getInstance(document.getElementById('onapreModal')).hide();
-                onapreCurrentPage = 1;
-                displayOnaprePositions(onapreCurrentPage);
-            } else {
-                throw new Error(result.message || 'Error al agregar el cargo ONAPRE');
+        // Mostrar loader
+        smallSwal.fire({
+            title: 'Agregando cargo',
+            html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+            width: 350,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+            smallSwal.showLoading();
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al agregar: ' + error.message);
+        });
+
+        // Enviar solicitud al servidor
+        const response = await fetch('../PHP/api/gest-presupuesto/agregar_cargoONAPRE.php', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ position_name: positionName })
+        });
+        
+        const result = await response.json();
+        
+        // Cerrar loader
+        smallSwal.close();
+
+        if (result.success) {
+            smallSwal.fire({
+            icon: 'success',
+            title: '¡Agregado!',
+            text: 'El cargo ONAPRE ha sido agregado correctamente',
+            showConfirmButton: false,
+            timer: 1500
+            }).then(() => {
+            // Limpiar el campo de entrada
+            positionInput.value = '';
             
-            const btn = document.getElementById('addOnaprePositionBtn');
-            btn.innerHTML = 'Añadir nuevo Cargo';
-            btn.disabled = false;
+            // Cerrar el modal
+            bootstrap.Modal.getInstance(document.getElementById('onapreModal')).hide();
+            
+            // Recargar la tabla
+            onapreCurrentPage = 1;
+            displayOnaprePositions(onapreCurrentPage);
+            });
+        } else {
+            throw new Error(result.message || 'Error al agregar el cargo ONAPRE');
+        }
+        } catch (error) {
+        console.error('Error:', error);
+        smallSwal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al agregar: ' + error.message,
+            confirmButtonColor: '#3085d6'
+        });
         }
     });
 
