@@ -302,93 +302,49 @@ document.addEventListener('DOMContentLoaded', function() {
     function showDeleteConfirmation(userId, userName) {
         // Verificar si el usuario está intentando eliminarse a sí mismo
         if (typeof LOGGED_USER_ID !== 'undefined' && userId === LOGGED_USER_ID) {
-            const selfDeleteModalHTML = `
-            <div class="modal fade" id="selfDeleteModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-sm" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header bg-warning">
-                            <h5 class="modal-title text-white">Acción no permitida</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="text-center mb-3">
-                                <i class="bx bx-error-circle text-warning" style="font-size: 3rem;"></i>
-                            </div>
-                            <p class="text-center">No puede eliminarse a sí mismo del sistema.</p>
-                            <p class="text-center text-muted">Por razones de seguridad, esta acción está restringida.</p>
-                        </div>
-                        <div class="modal-footer justify-content-center">
-                            <button type="button" class="btn btn-warning text-white" data-bs-dismiss="modal">
-                                <i class="bx bx-check-circle me-1"></i> Entendido
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', selfDeleteModalHTML);
-            
-            const selfDeleteModal = new bootstrap.Modal(document.getElementById('selfDeleteModal'));
-            selfDeleteModal.show();
-            
-            document.getElementById('selfDeleteModal').addEventListener('hidden.bs.modal', function() {
-                this.remove();
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Acción no permitida',
+                html: '<div class="text-center mb-3"><i class="bx bx-error-circle text-warning" style="font-size: 3rem;"></i></div>' +
+                      '<p class="text-center">No puede eliminarse a sí mismo del sistema.</p>' +
+                      '<p class="text-center text-muted">Por razones de seguridad, esta acción está restringida.</p>',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
             });
-            
             return;
         }
         
         // Si no es auto-eliminación, mostrar el modal normal de confirmación
-        const modalHTML = `
-        <div class="modal fade" id="deleteUserConfirmationModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>¿Seguro de eliminar al usuario <strong>${userName}</strong>?</p>
-                        <p class="text-danger">¡Este cambio no se puede deshacer!</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="confirmUserDeleteBtn">
-                            Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteUserConfirmationModal'));
-        deleteModal.show();
-        
-        document.getElementById('confirmUserDeleteBtn').addEventListener('click', async function() {
-            await deleteUser(userId);
-            deleteModal.hide();
-            document.getElementById('deleteUserConfirmationModal').remove();
-        });
-        
-        document.getElementById('deleteUserConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
+        smallSwal.fire({
+            title: 'Confirmar Eliminación',
+            html: `<p>¿Seguro de eliminar al usuario <strong>${userName}</strong>?</p>
+                  <p class="text-danger">¡Este cambio no se puede deshacer!</p>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, Eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await deleteUser(userId);
+            }
         });
     }
 
     // Función para eliminar un usuario
     async function deleteUser(userId) {
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-        loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-        loadingIndicator.style.zIndex = '1060';
-        loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-        document.body.appendChild(loadingIndicator);
+        smallSwal.fire({
+            title: 'Eliminando usuario',
+            html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+            width: 350,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                smallSwal.showLoading();
+            }
+        });
         
         try {
             const response = await fetch('../PHP/api/gest-presupuesto/eliminar_users.php', {
@@ -413,23 +369,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Recargar la tabla
                 if (isSearching) {
-                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
                     allUsers = await fetchAllUsers();
                     const filtered = filterUsersLocally(allUsers, currentSearchTerm);
                     displayUsers(1, filtered);
                 } else {
-                    // Si no, recargar la página actual normalmente
-                    await displayUsers(currentPage);  // <--- Aquí estaba el error
+                    await displayUsers(currentPage);
                 }
-                alert(result.message || 'Usuario eliminado correctamente');
+                
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: result.message || 'Usuario eliminado correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             } else {
                 throw new Error(result.message || 'Error al eliminar el usuario');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
-            alert('Error al eliminar: ' + error.message);
-        } finally {
-            loadingIndicator.remove();
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error al eliminar',
+                text: error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         }
     }
 
@@ -621,24 +586,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 bootstrap.Modal.getInstance(document.getElementById('largeModal')).hide();
                 
                 // Mostrar mensaje de éxito
-                alert('Cambios guardados exitosamente');
-                
-                // Recargar los datos
-                if (isSearching) {
-                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
-                    allUsers = await fetchAllUsers();
-                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
-                    displayUsers(1, filtered);
-                } else {
-                    // Si no, recargar la página actual normalmente
-                    await displayUsers(currentPage);
-                }
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Cambios guardados!',
+                    text: 'Los cambios se han guardado exitosamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar los datos
+                    if (isSearching) {
+                        allUsers = await fetchAllUsers();
+                        const filtered = filterUsersLocally(allUsers, currentSearchTerm);
+                        displayUsers(1, filtered);
+                    } else {
+                        displayUsers(currentPage);
+                    }
+                });
             } else {
                 throw new Error(result.message || 'Error al guardar los cambios');
             }
         } catch (error) {
-            console.error('Por favor:', error);
-            alert('Por favor: ' + error.message);
+            console.error('Error:', error);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         } finally {
             // Restaurar el botón
             saveButton.innerHTML = originalText;
@@ -787,22 +762,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar notificación de actualización de usuarios
     function showUserUpdateNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'update-notification';
-        notification.innerHTML = 'Datos de usuarios actualizados <i class="bx bx-check"></i>';
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
         
-        document.body.appendChild(notification);
-        
-        // Mostrar y luego desaparecer
-        setTimeout(() => {
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }, 100);
+        Toast.fire({
+            icon: 'success',
+            title: 'Datos de usuarios actualizados'
+        });
     }
 
     // Iniciar el sistema de actualización periódica para usuarios

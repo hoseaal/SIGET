@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Configuración común para los alerts pequeños
+    const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+            popup: 'small-swal',
+            title: 'small-swal-title',
+            htmlContainer: 'small-swal-content',
+            confirmButton: 'small-swal-confirm'
+        }
+    });
+
     // Variables para la paginación
     const rowsPerPage = 7;
     let currentPage = 1;
@@ -29,10 +41,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 return data.salaries;
             } else {
                 console.error('Error al cargar todos los niveles salariales:', data.message);
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar los niveles salariales',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return [];
             }
         } catch (error) {
             console.error('Error en la solicitud:', error);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar al servidor',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             return [];
         }
     }
@@ -312,56 +338,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar confirmación de eliminación
     function showDeleteConfirmation(nvl_ide, nvl_ran, ona_car) {
-        const modalHTML = `
-        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>¿Seguro de eliminar el nivel salarial: "<strong>${nvl_ran}</strong>", que le pertenece al cargo ONAPRE: "<strong>${ona_car}</strong>"?</p>
-                        <p class="text-danger">¡Este cambio no se puede deshacer!</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                            Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-        deleteModal.show();
-        
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
-            await deleteSalary(nvl_ide);
-            deleteModal.hide();
-            document.getElementById('deleteConfirmationModal').remove();
-        });
-        
-        document.getElementById('deleteConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
+        smallSwal.fire({
+            title: '¿Eliminar nivel salarial?',
+            html: `¿Seguro de eliminar el nivel <strong>${nvl_ran}</strong> del cargo <strong>${ona_car}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // Mostrar loader durante la eliminación
+                smallSwal.fire({
+                    title: 'Eliminando registro',
+                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 100%; height: 100%;"></div></div>',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        smallSwal.showLoading();
+                    }
+                });
+                
+                await deleteSalary(nvl_ide);
+            }
         });
     }
 
     // Función para eliminar un nivel salarial
-    async function deleteSalary(nvl_ide) {
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-        loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-        loadingIndicator.style.zIndex = '1060';
-        loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-        document.body.appendChild(loadingIndicator);
-        
+     async function deleteSalary(nvl_ide) {
         try {
             const response = await fetch('../PHP/api/gest-presupuesto/eliminar_salarios.php', {
                 method: 'POST',
@@ -378,30 +384,43 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (result.success) {
+                // Cerrar cualquier alerta abierta
+                smallSwal.close();
+                
                 // Verificar si debemos cambiar de página
                 if (currentPage > 1 && (totalSalaries - 1) <= ((currentPage - 1) * rowsPerPage)) {
                     currentPage--;
                 }
                 
-                // Recargar la tabla
-                if (isSearching) {
-                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
-                    allSalaries = await fetchAllSalaries();
-                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-                    displaySalaries(1, filtered);
-                } else {
-                    // Si no, recargar la página actual normalmente
-                    await displaySalaries(currentPage);
-                }
-                alert(result.message || 'Nivel salarial eliminado correctamente');
+                // Mostrar mensaje de éxito
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: result.message || 'Nivel salarial eliminado correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar la tabla
+                    if (isSearching) {
+                        allSalaries = await fetchAllSalaries();
+                        const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+                        displaySalaries(1, filtered);
+                    } else {
+                        await displaySalaries(currentPage);
+                    }
+                });
             } else {
                 throw new Error(result.message || 'Error al eliminar el nivel salarial');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
-            alert('Error al eliminar: ' + error.message);
-        } finally {
-            loadingIndicator.remove();
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         }
     }
 
@@ -586,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para actualizar un nivel salarial
-    async function updateSalary(nvl_ide) {
+     async function updateSalary(nvl_ide) {
         const saveButton = document.querySelector('#ModalNivelSalarial .btn-primary');
         const originalText = saveButton.innerHTML;
         
@@ -605,7 +624,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Validación básica
             if (!updatedData.nvl_ran || !updatedData.nvl_sal) {
-                alert('Por favor complete todos los campos requeridos');
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Datos incompletos',
+                    text: 'Por favor complete todos los campos requeridos',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
             
@@ -625,24 +650,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 bootstrap.Modal.getInstance(document.getElementById('ModalNivelSalarial')).hide();
                 
                 // Mostrar mensaje de éxito
-                alert('Cambios guardados exitosamente');
-                
-                // Recargar los datos
-                if (isSearching) {
-                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
-                    allSalaries = await fetchAllSalaries();
-                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-                    displaySalaries(1, filtered);
-                } else {
-                    // Si no, recargar la página actual normalmente
-                    await displaySalaries(currentPage);
-                }
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Guardado!',
+                    text: 'Cambios guardados exitosamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar los datos
+                    if (isSearching) {
+                        allSalaries = await fetchAllSalaries();
+                        const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
+                        displaySalaries(1, filtered);
+                    } else {
+                        await displaySalaries(currentPage);
+                    }
+                });
             } else {
-                alert('Error al guardar: ' + (result.message || 'Error desconocido'));
+                throw new Error(result.message || 'Error desconocido');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
-            alert('Error al conectar con el servidor');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al guardar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         } finally {
             // Restaurar el botón
             saveButton.innerHTML = originalText;
@@ -794,22 +829,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar notificación de actualización
     function showSalaryUpdateNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'update-notification salary';
-        notification.innerHTML = 'Niveles salariales actualizados <i class="bx bx-check"></i>';
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
         
-        document.body.appendChild(notification);
-        
-        // Animación de aparición y desaparición
-        setTimeout(() => {
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }, 100);
+        Toast.fire({
+            icon: 'success',
+            title: 'Niveles salariales actualizados',
+            background: '#f8f9fa',
+            color: '#333'
+        });
     }
 
     // Iniciar el sistema de actualización periódica para salarios
