@@ -56,7 +56,7 @@
             'iss' => 'siget.com',
             'aud' => 'siget.com',
             'iat' => time(),
-            'exp' => time() + (60 * 60 * 24 * 6),
+            'exp' => time() + (6 * 3600),
             'data' => [
                 'username' => $user['usu_usu'],
                 'cedula' => $user['nom_ced'],
@@ -68,7 +68,13 @@
 
         $jwt = JWT::encode($payload, $secretKey, 'HS256');
 
-        setcookie('token', $jwt, time() + (60 * 60 * 24 * 6), '/', '', false, true);  // token en la cookie
+        setcookie('token', $jwt, [
+            'expires' => $payload['exp'],
+            'path' => '/',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Strict'
+        ]);
 
         echo json_encode([
             'success' => true,

@@ -72,6 +72,13 @@
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Validación de Sesión -->
+    <script src="../assets/js/modulos/check_sesion.js"></script>
+
     <!-- Helpers -->
     <script src="../assets/vendor/js/helpers.js"></script>
 
