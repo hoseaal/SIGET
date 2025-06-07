@@ -1,13 +1,17 @@
 import React from 'react'
 import { useState, useEffect } from "react"
+import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
+import TipoBienSelect from '../layouts/selectInfinito';
 
 export const Bm1 = () => {
     const [columns, setColumns] = useState([]);
     const [data, setData] = useState([]);
+    const [meta, setMeta] = useState({});
     const [unidadAdmin, setUnidadAdmin] = useState([]);
     const [tipoBien, setTipoBien] = useState([]);
+    const [estado, setEstado] = useState([]);
 
     const [editingItem, setEditingItem] = useState(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -38,42 +42,49 @@ export const Bm1 = () => {
         'dep_ide': 'Departamento'
     };
 
-
-     useEffect(() => {
-            const loadData = async () => {
-                try {
-                    const { columns: bimColumns, idColumn: bimIdColumns } = await fetchTableColumns('tmab_m');
-                    
-                    // Transformar las columnas en objetos con ambos nombres
-                    const processedColumnsBim = bimColumns.map(col => ({
-                        originalName: col,
-                        displayName: columnAliasBim[col.toLowerCase()] || col
-                    }));
-                    
-                    setColumns(processedColumnsBim);
-                } catch (error) {
-                    console.error("Error cargando categorías:", error);
-                    setColumns([]);
-                }
-            };
-            loadData();
-        }, []);
+    const [isLoading, setIsLoading] = useState(false);
+    const [search, setSearch] = useState();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [filtros, setFiltros] = useState({
+        tipo: null,
+        estado: null,
+    });
 
     useEffect(() => {
-        const fetchAllData = async () => {
-            try {
-                const registrosData = await fetchData('tmab_m', '*');
-                setData(registrosData);
-            } catch (error) {
-                console.error("Error cargando datos:", error);
+    const loadData = async () => {
+        try {
+            const limit = searchQuery ? 20 : 10;
+            let url;
+            
+            if (searchQuery) {
+                url = `/api/bienes/des?search=${encodeURIComponent(searchQuery)}&page=1&limit=20`;
+            } else {
+                url = `/api/bienes?inc=1&page=${page}&limit=${limit}`;
+                if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
+                if (filtros.estado) url += `&estado=${filtros.estado}`;
             }
-        };
-        fetchAllData();
-    }, []);
+            
+            const response = await fetch(url);
+            const result = await response.json();
+            
+            setData(Array.isArray(result.data) ? result.data : []);
+            console.log(url)
+            console.log(data)
+            setMeta(result.meta || {});
+        } catch (error) {
+            console.error('Error:', error);
+            setData([]);
+        }
+    };
+    
+    loadData();
+}, [page, filtros.tipo, filtros.estado, searchQuery]);
 
     useEffect(() => {
         const fetchAllData = async () => {
-            const unidadAdminData = await fetchData('tesdep', '*');
+            const unidadAdminRes = await fetch('/api/departamentos');
+            const unidadAdminData = await unidadAdminRes.json();
             setUnidadAdmin(unidadAdminData || []);
         };
         fetchAllData();
@@ -81,7 +92,8 @@ export const Bm1 = () => {
 
     useEffect(() => {
         const fetchAllData = async () => {
-            const tipoBienData = await fetchData('tmatip', '*');
+            const tipoBienRes = await fetch('/api/tipos-bien');
+            const tipoBienData = await tipoBienRes.json();
             setTipoBien(tipoBienData || []);
         };
         fetchAllData();
@@ -123,6 +135,7 @@ export const Bm1 = () => {
         }
     };
 
+
     const truncateText = (text, maxLength = 30) => {
         if (!text) return 'N/A';
         if (text.length <= maxLength) return text;
@@ -134,7 +147,20 @@ export const Bm1 = () => {
         );
     };
 
-    console.log(data)
+     
+
+        const handleTipoChange = (tipoId) => {
+            setFiltros(prev => ({ ...prev, tipo: tipoId }));
+            setPage(1);
+            
+            // Aquí puedes agregar lógica adicional cuando cambia el tipo
+            console.log("Tipo seleccionado:", tipoId);
+        };
+
+       
+
+
+
     return (
         <>
             <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-1</h4>
@@ -143,6 +169,59 @@ export const Bm1 = () => {
                 <h5 className="card-header">Relación de Bienes Actuales</h5>
                 <div className="card-body">
                     <div className="table-responsive text-nowrap">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            setSearchQuery(search); // Solo dispara búsqueda cuando se presiona el botón
+                            setPage(1);
+                        }}
+                        className="p-3 d-flex gap-2 align-items-center"
+                        >
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Buscar bien por codigo o por descripcion..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <button type="submit" className="btn btn-outline-primary">
+                            Buscar
+                        </button>
+                        {search && (
+                            <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => {
+                                setSearch('');
+                                setSearchQuery('');
+                                setPage(1);
+                                setFiltros('');
+                            }}
+                            >
+                            Limpiar
+                            </button>
+                        )}
+                            <TipoBienSelect
+                                tipoBien={tipoBien}
+                                value={filtros.tipo}
+                                onChange={handleTipoChange}
+                            />
+
+                            <div className="dropdown ">
+                                <select 
+                                    id="estado-select"
+                                    className="btn btn-primary dropdown-toggle"
+                                    value={filtros.estado || ''}
+                                    onChange={(e) => setFiltros({...filtros, estado: e.target.value || null})}
+                                >
+                                    <option className="form-control" value="">Estado</option>
+                                    <option className="form-control" value="1">Sin Etiqueta</option>
+                                    <option className="form-control" value="2">Inoperativo</option>
+                                    <option className="form-control" value="3">Faltante</option>
+                                    <option className="form-control" value="4">Operativo</option>
+                                </select>
+                            </div>
+                        </form>
                         <table className="table table-bordered table-striped">
                             <thead>
                                 <tr>
@@ -181,12 +260,6 @@ export const Bm1 = () => {
                                                             }}>
                                                                 <i className="bx bx-edit-alt me-1"></i> Editar
                                                             </Dropdown.Item>
-                                                            <Dropdown.Item href="#" onClick={() => {
-                                                                setDeleteItemId(item.bim_ide);
-                                                                setShowDeleteModal(true);
-                                                            }}>
-                                                                <i className="bx bx-trash me-1"></i> Eliminar
-                                                            </Dropdown.Item>
                                                         </Dropdown.Menu>
                                                     </Dropdown>
                                                 </td>
@@ -197,6 +270,25 @@ export const Bm1 = () => {
                             </tbody>
                         </table>
                     </div>
+                    <div className="d-flex justify-content-between align-items-center px-4 pb-3">
+                    <button
+                    className="btn btn-outline-secondary"
+                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                    disabled={page === 1}
+                    >
+                    ← Anterior
+                    </button>
+
+                    <span className="fw-semibold">Página {page} de {meta.totalPages || '...'}</span>
+
+                    <button
+                    className="btn btn-outline-secondary"
+                    onClick={() => setPage(prev => Math.min(prev + 1, meta.totalPages || prev + 1))}
+                    disabled={page === meta.totalPages}
+                    >
+                    Siguiente →
+                    </button>
+                </div>
                 </div>
             </div>
 

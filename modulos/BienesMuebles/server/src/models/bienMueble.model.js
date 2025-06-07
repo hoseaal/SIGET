@@ -3,27 +3,7 @@ import pool from '../utils/database.js'
 export class BienMuebleModel {
   static async getAll (filters = {}) {
     let query = `
-      SELECT 
-        b.*,
-        e.est_est AS estado,
-        t.tip_tip AS tipo,
-        f.foa_nom AS forma_adquisicion,
-        c.con_con AS condicion,
-        eu.esu_esu AS estado_uso,
-        m.mod_mod AS modelo,
-        ca.cae_cae AS categoria_especifica,
-        co.com_com AS concepto,
-        d.dep_nom AS departamento
-      FROM tmab_m b
-      LEFT JOIN tmaest e ON b.est_ide = e.est_ide
-      LEFT JOIN tmatip t ON b.tip_ide = t.tip_ide
-      LEFT JOIN tmafoa f ON b.foa_ide = f.foa_ide
-      LEFT JOIN tmacon c ON b.con_ide = c.con_ide
-      LEFT JOIN tmaesu eu ON b.esu_ide = eu.esu_ide
-      LEFT JOIN tesmod m ON b.mod_ide = m.mod_ide
-      LEFT JOIN tescae ca ON b.cae_ide = ca.cae_ide
-      LEFT JOIN tmacom co ON b.com_ide = co.com_ide
-      LEFT JOIN tesdep d ON b.dep_ide = d.dep_ide
+      SELECT b.* FROM tmab_m b
     `
 
     const whereClauses = []
@@ -33,6 +13,12 @@ export class BienMuebleModel {
       whereClauses.push('b.est_ide = ?')
       params.push(filters.estado)
     }
+
+    if (filters.inc) {
+      whereClauses.push('b.bim_inc = ?')
+      params.push(filters.inc)
+    }
+
     // Añadir más filtros según necesidad...
 
     if (whereClauses.length > 0) {
@@ -45,7 +31,31 @@ export class BienMuebleModel {
 
   static async getById (id) {
     const [rows] = await pool.query(`
-      SELECT * FROM tmab_m WHERE bim_ide = ?
+      SELECT 
+    b.*,
+    e.est_est AS estado,
+    t.tip_tip AS tipo,
+    f.foa_nom AS forma_adquisicion,
+    c.con_con AS condicion,
+    eu.esu_esu AS estado_uso,
+    m.mar_ide AS marcaid,       
+    mar.mar_mar AS marca,      
+    m.mod_mod AS modelo,  
+    ca.cae_cae AS categoria_especifica,
+    co.com_com AS concepto,
+    d.dep_nom AS departamento
+    FROM tmab_m b
+    LEFT JOIN tmaest e ON b.est_ide = e.est_ide
+    LEFT JOIN tmatip t ON b.tip_ide = t.tip_ide
+    LEFT JOIN tmafoa f ON b.foa_ide = f.foa_ide
+    LEFT JOIN tmacon c ON b.con_ide = c.con_ide
+    LEFT JOIN tmaesu eu ON b.esu_ide = eu.esu_ide
+    LEFT JOIN tesmod m ON b.mod_ide = m.mod_ide      
+    LEFT JOIN tmamar mar ON m.mar_ide = mar.mar_ide  
+    LEFT JOIN tescae ca ON b.cae_ide = ca.cae_ide
+    LEFT JOIN tmacom co ON b.com_ide = co.com_ide
+    LEFT JOIN tesdep d ON b.dep_ide = d.dep_ide
+    WHERE b.bim_ide = ?
     `, [id])
     return rows[0] || null
   }
@@ -75,11 +85,74 @@ export class BienMuebleModel {
     return result.affectedRows > 0
   }
 
+  static async getAllPaginated ({ page = 1, limit = 20, filters = {} }) {
+    const offset = (page - 1) * limit
+
+    // Construcción de cláusulas WHERE dinámicas
+    const whereClauses = []
+    const queryParams = []
+
+    // Filtros
+    if (filters.estado) {
+      whereClauses.push('b.est_ide = ?')
+      queryParams.push(filters.estado)
+    }
+
+    if (filters.inc) {
+      whereClauses.push('b.bim_inc = ?')
+      queryParams.push(filters.inc)
+    }
+
+    if (filters.tipo) {
+      whereClauses.push('b.tip_ide = ?')
+      queryParams.push(filters.tipo)
+    }
+
+    // Construcción de la consulta base
+    let baseQuery = 'SELECT b.* FROM tmab_m b'
+
+    // Agregar WHERE si hay filtros
+    if (whereClauses.length > 0) {
+      baseQuery += ' WHERE ' + whereClauses.join(' AND ')
+    }
+
+    // Consulta paginada
+    const paginatedQuery = `${baseQuery} ORDER BY b.bim_ide ASC LIMIT ? OFFSET ?`
+    const paginatedParams = [...queryParams, limit, offset]
+
+    console.log(paginatedQuery, paginatedParams)
+    const [rows] = await pool.query(paginatedQuery, paginatedParams)
+
+    // Consulta para el total (aplicando los mismos filtros)
+    const countQuery = `SELECT COUNT(*) as total FROM tmab_m b${
+        whereClauses.length > 0 ? ' WHERE ' + whereClauses.join(' AND ') : ''
+    }`
+    const [[{ total }]] = await pool.query(countQuery, queryParams)
+    return {
+      data: rows,
+      total
+    }
+  }
+
   static async getByCode (codigo) {
     const [rows] = await pool.query(
       'SELECT * FROM tmab_m WHERE bim_cod = ?',
       [codigo]
     )
     return rows[0] || null
+  }
+
+  static async searchByNombre (searchTerm, { page = 1, limit = 20 }) {
+    const offset = (page - 1) * limit
+    const [rows] = await pool.query(`
+      SELECT b.* 
+      FROM tmab_m b
+      WHERE (b.bim_des LIKE ? OR b.bim_ide LIKE ?)
+      AND b.bim_inc = 1
+      ORDER BY b.bim_ide ASC
+      LIMIT ? OFFSET ?
+      `, [`%${searchTerm}%`, `%${searchTerm}%`, limit, offset])
+
+    return rows
   }
 }

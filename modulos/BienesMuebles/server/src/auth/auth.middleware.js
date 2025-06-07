@@ -18,7 +18,7 @@ export const authenticate = (req, res, next) => {
 
     // Verificar caché (opcional)
     if (cache.has(token)) {
-      return res.json(cache.get(token).data)
+      req.user = cache.get(token).data.user
     }
 
     next()

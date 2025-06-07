@@ -11,11 +11,9 @@ const meses = [
 ];
 
 function ModalRepBm2({ show, handleClose }) {
-
     const [nombreJefe, setNombreJefe] = useState('');
-  const [enviando, setEnviando] = useState(false);
-  const [mensaje, setMensaje] = useState('');
-
+    const [enviando, setEnviando] = useState(false);
+    const [mensaje, setMensaje] = useState('');
     const [mesSeleccionado, setMesSeleccionado] = useState('');
     const [datos, setDatos] = useState([]);
     const [error, setError] = useState('');
@@ -24,59 +22,70 @@ function ModalRepBm2({ show, handleClose }) {
     const añoActual = new Date().getFullYear();
 
     const obtenerDatos = async (mesIndex) => {
-    setLoading(true);
-    try {
-        const resultados = [];
+        setLoading(true);
+        try {
+            const resultados = [];
 
-        // Consulta de incorporados
-        const incorporados = await fetchData('tmab_m', '*', 'bim_inc', 1);
-        resultados.push(...incorporados.filter(item => {
-            const fecha = new Date(item.bim_fec);
-            return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
-        }));
-
-        // Consulta de desincorporados
-        const desincorporados = await fetchData('tmab_m', '*', 'bim_inc', 0);
-        resultados.push(...desincorporados.filter(item => {
-            const fecha = new Date(item.bim_fed);
-            return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
-        }));
-
-        // Enriquecer con jerarquía grupo/subgrupo
-        const datosConJerarquia = await Promise.all(resultados.map(async (item) => {
-            let grupo = '', subgrupo = '';
-
-            try {
-                // 1. Buscar sca_ide desde tescae usando cae_ide
-                const [catEspecifica] = await fetchData('tescae', '*', 'cae_ide', item.cae_ide);
-                const sca_ide = catEspecifica?.sca_ide;
-
-                // 2. Buscar cat_ide desde tessca usando sca_ide
-                const [subgrupoData] = await fetchData('tessca', '*', 'sca_ide', sca_ide);
-                const cat_ide = subgrupoData?.cat_ide;
-
-                subgrupo = sca_ide;
-                grupo = cat_ide;
-            } catch (err) {
-                console.error('Error jerarquía:', err);
-            }
-
-            return {
+            // Consulta de incorporados
+            const resIncorporados = await fetch('/api/bienes?inc=1');
+            const incorporados = await resIncorporados.json();
+            resultados.push(...incorporados.filter(item => {
+                const fecha = new Date(item.bim_fec);
+                return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
+            }).map(item => ({
                 ...item,
-                grupo,
-                subgrupo
-            };
-        }));
+                bim_val: parseFloat(item.bim_val) // Convertir a número aquí
+            })));
 
-        setDatos(datosConJerarquia);
-        setError('');
-    } catch (err) {
-        console.error(err);
-        setError('Error al obtener datos');
-    } finally {
-        setLoading(false);
-    }
-};
+            // Consulta de desincorporados
+            const resDesincorporados = await fetch('/api/bienes?inc=0');
+            const desincorporados = await resDesincorporados.json();
+            resultados.push(...desincorporados.filter(item => {
+                const fecha = new Date(item.bim_fed);
+                return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
+            }).map(item => ({
+                ...item,
+                bim_val: parseFloat(item.bim_val) // Convertir a número aquí
+            })));
+
+            // Enriquecer con jerarquía grupo/subgrupo
+            const datosConJerarquia = await Promise.all(resultados.map(async (item) => {
+                let grupo = '', subgrupo = '';
+
+                try {
+                    // 1. Buscar sca_ide desde tescae usando cae_ide
+                    const resCatEspecifica = await fetch(`/api/categorias-especificas/${item.cae_ide}`);
+                    const catEspecifica = await resCatEspecifica.json();
+                    const sca_ide = catEspecifica.sca_ide;
+
+                    // 2. Buscar cat_ide desde tessca usando sca_ide
+                    const resSubgrupo = await fetch(`/api/subcategorias/${sca_ide}`);
+                    const subgrupoData = await resSubgrupo.json();
+                    const cat_ide = subgrupoData.cat_ide;
+
+                    subgrupo = sca_ide;
+                    grupo = cat_ide;
+                } catch (err) {
+                    console.error('Error jerarquía:', err);
+                }
+
+                return {
+                    ...item,
+                    grupo,
+                    subgrupo,
+                    bim_val: item.bim_val
+                };
+            }));
+
+            setDatos(datosConJerarquia);
+            setError('');
+        } catch (err) {
+            console.error(err);
+            setError('Error al obtener datos');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleChange = (e) => {
         const mesIndex = parseInt(e.target.value);
@@ -85,29 +94,43 @@ function ModalRepBm2({ show, handleClose }) {
     };
 
     const enviarPDF = async () => {
-    setEnviando(true);
-    try {
-      const response = await axios.post('/api/ReporteBm2', {
-        datos,
-        nombreJefe,
-      }, { responseType: 'blob' });
+        setEnviando(true);
+        try {
+            const response = await fetch('/api/pdf/reporte-bm2', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    datos,
+                    nombreJefe,
+                }),
+            });
 
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `reporte_BM2.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setMensaje('PDF generado exitosamente.');
-    } catch (error) {
-      console.error('Error al generar PDF:', error);
-      setMensaje('Error al generar el PDF');
-    } finally {
-      setEnviando(false);
-    }
-  };
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `reporte_BM2.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Limpiar el objeto URL para liberar memoria
+            window.URL.revokeObjectURL(url);
+            
+            setMensaje('PDF generado exitosamente.');
+        } catch (error) {
+            console.error('Error al generar PDF:', error);
+            setMensaje('Error al generar el PDF');
+        } finally {
+            setEnviando(false);
+        }
+    };
     return (
         <Modal show={show} onHide={handleClose} size="xl">
             <Modal.Header closeButton>
