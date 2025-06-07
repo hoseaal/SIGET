@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Configuración común para los alerts pequeños
+    const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+            popup: 'small-swal',
+            title: 'small-swal-title',
+            htmlContainer: 'small-swal-content',
+            confirmButton: 'small-swal-confirm'
+        }
+    });
+
     // Variables para la paginación
     const rowsPerPage = 7;
     let currentPage = 1;
@@ -29,10 +41,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 return data.trabajadores;
             } else {
                 console.error('Error al cargar todos los trabajadores:', data.message);
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar los trabajadores',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return [];
             }
         } catch (error) {
             console.error('Error en la solicitud:', error);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar al servidor',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             return [];
         }
     }
@@ -287,56 +313,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar confirmación de eliminación
     function showDeleteConfirmation(cep_ide, nom_ced, nombre) {
-        const modalHTML = `
-        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>¿Seguro de eliminar al trabajador: "<strong>${nombre}</strong>" con cédula: "<strong>${nom_ced}</strong>" de la caja de ahorro?</p>
-                        <p class="text-danger">¡Este cambio no se puede deshacer!</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                            Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-        deleteModal.show();
-        
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
-            await deleteTrabajador(cep_ide);
-            deleteModal.hide();
-            document.getElementById('deleteConfirmationModal').remove();
-        });
-        
-        document.getElementById('deleteConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
+        smallSwal.fire({
+            title: '¿Eliminar de Caja de Ahorro?',
+            html: `¿Seguro que desea eliminar a <strong>${nombre}</strong> (C.I. ${nom_ced}) de la caja de ahorro?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // Mostrar loader durante la eliminación
+                smallSwal.fire({
+                    title: 'Eliminando registro',
+                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 100%; height: 100%;"></div></div>',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        smallSwal.showLoading();
+                    }
+                });
+                
+                await deleteTrabajador(cep_ide);
+            }
         });
     }
 
     // Función para eliminar un trabajador de la caja de ahorro
     async function deleteTrabajador(cep_ide) {
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-        loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-        loadingIndicator.style.zIndex = '1060';
-        loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-        document.body.appendChild(loadingIndicator);
-        
         try {
             const response = await fetch('../PHP/api/gest-presupuesto/eliminar_caja-ahorro.php', {
                 method: 'POST',
@@ -353,30 +359,43 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (result.success) {
+                // Cerrar cualquier alerta abierta
+                smallSwal.close();
+                
                 // Verificar si debemos cambiar de página
                 if (currentPage > 1 && (totalRegistros - 1) <= ((currentPage - 1) * rowsPerPage)) {
                     currentPage--;
                 }
                 
-                // Recargar la tabla
-                if (isSearching) {
-                    // Si estamos en modo búsqueda, recargar todos los datos y volver a filtrar
-                    allTrabajadores = await fetchAllTrabajadores();
-                    const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                    displayTrabajadores(1, filtered);
-                } else {
-                    // Si no, recargar la página actual normalmente
-                    await displayTrabajadores(currentPage);
-                }
-                alert(result.message || 'Trabajador eliminado de la caja de ahorro correctamente');
+                // Mostrar mensaje de éxito
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: result.message || 'Trabajador eliminado correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar la tabla
+                    if (isSearching) {
+                        allTrabajadores = await fetchAllTrabajadores();
+                        const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
+                        displayTrabajadores(1, filtered);
+                    } else {
+                        await displayTrabajadores(currentPage);
+                    }
+                });
             } else {
                 throw new Error(result.message || 'Error al eliminar el trabajador');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
-            alert('Error al eliminar: ' + error.message);
-        } finally {
-            loadingIndicator.remove();
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         }
     }
 
@@ -538,7 +557,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Validación básica
             if (!updatedData.nom_ced) {
-                throw new Error('Seleccione un trabajador');
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Datos incompletos',
+                    text: 'Por favor seleccione un trabajador',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
             }
             
             // Llamada a la API para guardar cambios
@@ -552,31 +578,39 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const result = await response.json();
             
-            if (!response.ok) {
-                throw new Error(result.message || 'Error en la respuesta del servidor');
-            }
-            
             if (result.success) {
                 // Cerrar el modal
                 bootstrap.Modal.getInstance(document.getElementById('ModalCajaAhorro')).hide();
                 
                 // Mostrar mensaje de éxito
-                alert('Cambios guardados exitosamente');
-                
-                // Recargar los datos
-                if (isSearching) {
-                    allTrabajadores = await fetchAllTrabajadores();
-                    const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                    displayTrabajadores(1, filtered);
-                } else {
-                    await displayTrabajadores(currentPage);
-                }
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Guardado!',
+                    text: 'Cambios guardados exitosamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar los datos
+                    if (isSearching) {
+                        allTrabajadores = await fetchAllTrabajadores();
+                        const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
+                        displayTrabajadores(1, filtered);
+                    } else {
+                        await displayTrabajadores(currentPage);
+                    }
+                });
             } else {
-                throw new Error(result.message || 'Error al guardar los cambios');
+                throw new Error(result.message || 'Error desconocido');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
-            alert('Error: ' + error.message);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al guardar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         } finally {
             // Restaurar el botón
             saveButton.innerHTML = originalText;
@@ -615,33 +649,41 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const result = await response.json();
             
-            if (!response.ok) {
-                throw new Error(result.message || 'Error en la respuesta del servidor');
-            }
-            
             if (result.success) {
                 // Cerrar el modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalAgregarCajaAhorro'));
                 modal.hide();
                 
                 // Mostrar mensaje de éxito
-                alert(result.message || 'Trabajador agregado correctamente');
-                
-                // Recargar la tabla (volver a la primera página)
-                currentPage = 1;
-                if (isSearching) {
-                    allTrabajadores = await fetchAllTrabajadores();
-                    const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                    displayTrabajadores(1, filtered);
-                } else {
-                    await displayTrabajadores(currentPage);
-                }
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Agregado!',
+                    text: result.message || 'Trabajador agregado correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar la tabla (volver a la primera página)
+                    currentPage = 1;
+                    if (isSearching) {
+                        allTrabajadores = await fetchAllTrabajadores();
+                        const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
+                        displayTrabajadores(1, filtered);
+                    } else {
+                        await displayTrabajadores(currentPage);
+                    }
+                });
             } else {
                 throw new Error(result.message || 'Error al agregar el trabajador');
             }
         } catch (error) {
             console.error('Error al agregar:', error);
-            alert('Por favor: ' + error.message);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al agregar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         } finally {
             // Restaurar el botón
             agregarBtn.innerHTML = originalText;
@@ -789,22 +831,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar notificación de actualización
     function showUpdateNotificationCaja() {
-        const notification = document.createElement('div');
-        notification.className = 'update-notification';
-        notification.innerHTML = 'Datos de Caja de Ahorro actualizados <i class="bx bx-check"></i>';
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
         
-        document.body.appendChild(notification);
-        
-        // Mostrar y luego desaparecer
-        setTimeout(() => {
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }, 100);
+        Toast.fire({
+            icon: 'success',
+            title: 'Caja de ahorro actualizada',
+            background: '#f8f9fa',
+            color: '#333'
+        });
     }
 
     // Iniciar el sistema de actualización periódica

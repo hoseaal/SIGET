@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Configuración común para los alerts pequeños
+    const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+            popup: 'small-swal',
+            title: 'small-swal-title',
+            htmlContainer: 'small-swal-content',
+            confirmButton: 'small-swal-confirm'
+        }
+    });
+
     // Variables para la paginación
     const rowsPerPage = 7;
     let currentPage = 1;
@@ -29,6 +41,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             } else {
                 console.error('Error al cargar suplencias:', data.message);
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar las suplencias',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return {
                     supplements: [],
                     total: 0,
@@ -37,6 +56,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error en la solicitud:', error);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar al servidor',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             return {
                 supplements: [],
                 total: 0,
@@ -172,56 +198,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar confirmación de eliminación
     function showDeleteConfirmation(sup_ide, nom_nom) {
-        const modalHTML = `
-        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>¿Seguro de eliminar la suplencia del empleado: "<strong>${nom_nom}</strong>"?</p>
-                        <p class="text-danger">¡Este cambio no se puede deshacer!</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                            Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-        deleteModal.show();
-        
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
-            await deleteSupplement(sup_ide);
-            deleteModal.hide();
-            document.getElementById('deleteConfirmationModal').remove();
-        });
-        
-        document.getElementById('deleteConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
+        smallSwal.fire({
+            title: '¿Eliminar suplencia?',
+            html: `¿Seguro de eliminar la suplencia del empleado <strong>${nom_nom}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // Mostrar loader durante la eliminación
+                smallSwal.fire({
+                    title: 'Eliminando suplencia',
+                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 100%; height: 100%;"></div></div>',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        smallSwal.showLoading();
+                    }
+                });
+                
+                await deleteSupplement(sup_ide);
+            }
         });
     }
 
     // Función para eliminar una suplencia
     async function deleteSupplement(sup_ide) {
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-        loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-        loadingIndicator.style.zIndex = '1060';
-        loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-        document.body.appendChild(loadingIndicator);
-        
         try {
             const response = await fetch('../PHP/api/gest-presupuesto/eliminar_suplencias-hist.php', {
                 method: 'POST',
@@ -238,22 +244,37 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (result.success) {
+                // Cerrar cualquier alerta abierta
+                smallSwal.close();
+                
                 // Verificar si debemos cambiar de página
                 if (currentPage > 1 && (totalSupplements - 1) <= ((currentPage - 1) * rowsPerPage)) {
                     currentPage--;
                 }
                 
-                // Recargar la tabla
-                await displaySupplements(currentPage);
-                alert(result.message || 'Suplencia eliminada correctamente');
+                // Mostrar mensaje de éxito
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Eliminada!',
+                    text: result.message || 'Suplencia eliminada correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar la tabla
+                    await displaySupplements(currentPage);
+                });
             } else {
                 throw new Error(result.message || 'Error al eliminar la suplencia');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
-            alert('Error al eliminar: ' + error.message);
-        } finally {
-            loadingIndicator.remove();
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         }
     }
 
@@ -414,7 +435,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const fechaCambio = originalData.sup_fec_ini !== newFechaInicio;
             if (!estadoCambio && !fechaCambio) {
-                alert('No se detectaron cambios en los campos editables');
+                smallSwal.fire({
+                    icon: 'info',
+                    title: 'Sin cambios',
+                    text: 'No se detectaron cambios en los campos editables',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
 
@@ -430,14 +457,30 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (result.success) {
                 bootstrap.Modal.getInstance(document.getElementById('ModalSuplencia')).hide();
-                alert('Cambios guardados exitosamente');
-                displaySupplements(currentPage);
+                
+                // Mostrar mensaje de éxito
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Guardado!',
+                    text: 'Cambios guardados exitosamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar la tabla
+                    await displaySupplements(currentPage);
+                });
             } else {
-                alert('Error al guardar: ' + (result.message || 'Error desconocido'));
+                throw new Error(result.message || 'Error desconocido');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
-            alert('Error al conectar con el servidor');
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al guardar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         } finally {
             saveButton.innerHTML = originalText;
             saveButton.disabled = false;
@@ -541,9 +584,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 sup_activa: document.getElementById('nuevoEstadoSuplencia').checked ? 1 : 0
             };
 
-            console.log('Datos a enviar:', newData);
-
-            // Corrige la ruta según tu estructura de directorios
             const response = await fetch('../PHP/api/gest-presupuesto/agregar_suplencia.php', {
                 method: 'POST',
                 headers: {
@@ -552,7 +592,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(newData)
             });
             
-            // Verifica si la respuesta es JSON válido
             const responseText = await response.text();
             let result;
             try {
@@ -564,15 +603,30 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (result.success) {
                 bootstrap.Modal.getInstance(document.getElementById('ModalNuevaSuplencia')).hide();
-                alert('Suplencia creada correctamente');
-                currentPage = 1;
-                displaySupplements(currentPage);
+                
+                // Mostrar mensaje de éxito
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Creada!',
+                    text: 'Suplencia creada correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    currentPage = 1;
+                    await displaySupplements(currentPage);
+                });
             } else {
-                alert('Error al crear: ' + (result.message || 'Error desconocido'));
+                throw new Error(result.message || 'Error desconocido');
             }
         } catch (error) {
             console.error('Error completo:', error);
-            alert('Error al conectar con el servidor: ' + error.message);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al crear: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         } finally {
             saveButton.innerHTML = originalText;
             saveButton.disabled = false;
@@ -819,22 +873,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar notificación de actualización
     function showUpdateNotificationSupl() {
-        const notification = document.createElement('div');
-        notification.className = 'update-notification';
-        notification.innerHTML = 'Suplencias actualizadas <i class="bx bx-check"></i>';
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
         
-        document.body.appendChild(notification);
-        
-        // Mostrar y luego desaparecer
-        setTimeout(() => {
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }, 100);
+        Toast.fire({
+            icon: 'success',
+            title: 'Suplencias actualizadas',
+            background: '#f8f9fa',
+            color: '#333'
+        });
     }
 
     // Iniciar el sistema de actualización periódica

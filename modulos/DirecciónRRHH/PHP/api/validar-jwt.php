@@ -10,17 +10,40 @@
     $token = $_COOKIE['token'] ?? null;
 
     if (!$token) {
-        header('Location: auth-login-basic.php');
-        exit;
+        // Solo redirigir si no estamos ya en la página de login
+        if (basename($_SERVER['PHP_SELF']) != 'auth-login-basic.php') {
+            header('Location: auth-login-basic.php');
+            exit;
+        }
+        return; // Salir sin redirigir si ya estamos en login
     }
 
     try {
-        // Hacemos que $decoded esté disponible globalmente
         $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-        // Lo guardamos en una variable global para usarla en otras partes
+
+        // Verificación adicional de expiración
+        if (isset($decoded->exp) && $decoded->exp < time()) {
+            header('Location: auth-login-basic.php');
+            exit;
+        }
+
         $GLOBALS['decoded'] = $decoded;
+        
+        // Si estamos en la página de login y el token es válido, redirigir
+        if (basename($_SERVER['PHP_SELF']) == 'auth-login-basic.php') {
+            $tipo = $decoded->data->tipo;
+            if ($tipo == 4) {
+                header('Location: index.php');
+            } else {
+                header('Location: index_usur.php');
+            }
+            exit;
+        }
 
     } catch (Exception $e) {
-        header('Location: auth-login-basic.php');
-        exit;
+        // Solo redirigir si no estamos ya en la página de login
+        if (basename($_SERVER['PHP_SELF']) != 'auth-login-basic.php') {
+            header('Location: auth-login-basic.php');
+            exit;
+        }
     }
