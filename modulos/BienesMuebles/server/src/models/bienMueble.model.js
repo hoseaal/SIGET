@@ -3,7 +3,7 @@ import pool from '../utils/database.js'
 export class BienMuebleModel {
   static async getAll (filters = {}) {
     let query = `
-      SELECT b.* FROM tmab_m b
+      SELECT b.*, d.dep_nom AS departamento FROM tmab_m b LEFT JOIN tesdep d ON b.dep_ide = d.dep_ide
     `
 
     const whereClauses = []
@@ -108,8 +108,13 @@ export class BienMuebleModel {
       queryParams.push(filters.tipo)
     }
 
+    if (filters.dep) {
+      whereClauses.push('b.dep_ide = ?')
+      queryParams.push(filters.dep)
+    }
+
     // Construcción de la consulta base
-    let baseQuery = 'SELECT b.* FROM tmab_m b'
+    let baseQuery = 'SELECT b.*, t.tip_tip AS tipo FROM tmab_m b LEFT JOIN tmatip t ON b.tip_ide = t.tip_ide'
 
     // Agregar WHERE si hay filtros
     if (whereClauses.length > 0) {

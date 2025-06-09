@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
+import ModalBM1 from '../Modales/modalBM1';
 import TipoBienSelect from '../layouts/selectInfinito';
 
 export const Bm1 = () => {
@@ -15,6 +16,11 @@ export const Bm1 = () => {
     const [editingItem, setEditingItem] = useState(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+
+     const [showBM1Modal, setShowBM1Modal] = useState(false);
+
+  const handleOpenModal = () => setShowBM1Modal(true);
+  const handleCloseModal = () => setShowBM1Modal(false);
     
     const [isLoading, setIsLoading] = useState(false);
     const [search, setSearch] = useState();
@@ -171,7 +177,11 @@ export const Bm1 = () => {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-1</h4>
                 <button id="exportToExcel" className="btn btn-primary" onClick={handleDownload}>
-                    <i className="bx bx-export me-1"></i> Generar BM1 de Sudebim
+                    <i className="bx bx-export me-1"></i> SUDEBIM carga de bienes muebles
+                </button>
+                <button id="exportToExcel" className="btn btn-primary" onClick={handleOpenModal}>
+                    <i className="bx bx-export me-1"></i> Generar BM1 
+                    <ModalBM1 show={showBM1Modal} handleClose={handleCloseModal} />
                 </button>
             </div>
             <div className="card">
