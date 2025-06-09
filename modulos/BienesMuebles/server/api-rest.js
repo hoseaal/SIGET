@@ -16,6 +16,7 @@ import conceptoMovimientoRouter from './src/routes/conceptoMovimiento.routes.js'
 import condicionFisicaRouter from './src/routes/condicionFisica.routes.js'
 import metaRouter from './src/routes/meta.routes.js'
 import pdfRouter from './src/routes/pdf.routes.js'
+import excelRoutes from './src/routes/excel.routes.js'
 import cors from 'cors'
 import morgan from 'morgan'
 
@@ -62,6 +63,9 @@ app.use('/api/bienes', bienMuebleRouter)
 app.use('/api/meta', metaRouter)
 
 app.use('/api/pdf', pdfRouter)
+
+app.use('/api/excel', excelRoutes)
+
 const PORT = 5001
 app.listen(PORT, () => {
   console.log(`🚀 Servidor en http://localhost:${PORT}`)

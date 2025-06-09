@@ -1412,7 +1412,7 @@ INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('3', '
 INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('4', '2011-02-09', '2011-03-10', '17368181');
 
 
-INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('4','OPTIMO');
+INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('4','Operativo'), ('1', 'Sin etiqueta'), ('2', 'Inoperativo'), ('3', 'Faltante');
 
 INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
 

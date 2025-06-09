@@ -21,6 +21,7 @@ export const Categorias = () => {
     // Estado para editar y eliminar
     const [editingItem, setEditingItem] = useState(null);
     const [deleteItem, setDeleteItem] = useState(null);
+    
     const handleSuccess = () => {
         setRefreshKey(prev => prev + 1); // Fuerza recarga
     };

@@ -120,7 +120,6 @@ export class BienMuebleModel {
     const paginatedQuery = `${baseQuery} ORDER BY b.bim_ide ASC LIMIT ? OFFSET ?`
     const paginatedParams = [...queryParams, limit, offset]
 
-    console.log(paginatedQuery, paginatedParams)
     const [rows] = await pool.query(paginatedQuery, paginatedParams)
 
     // Consulta para el total (aplicando los mismos filtros)

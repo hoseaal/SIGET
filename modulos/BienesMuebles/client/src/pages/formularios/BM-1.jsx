@@ -6,42 +6,16 @@ import ModalEditBm from '../Modales/modalEditBm';
 import TipoBienSelect from '../layouts/selectInfinito';
 
 export const Bm1 = () => {
-    const [columns, setColumns] = useState([]);
+
     const [data, setData] = useState([]);
     const [meta, setMeta] = useState({});
     const [unidadAdmin, setUnidadAdmin] = useState([]);
     const [tipoBien, setTipoBien] = useState([]);
-    const [estado, setEstado] = useState([]);
 
     const [editingItem, setEditingItem] = useState(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
-    const [deleteItemId, setDeleteItemId] = useState(null);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-    const columnAliasBim = {
-        'bim_ide': 'Codigo',
-        'bim_des': 'Descripcion' ,
-        'bim_fec': 'Fecha',
-        'bim_ndo': 'Numero de Documento', 
-        'bim_val': 'valor',
-        'bim_moneda': 'Moneda',
-       'bim_color': 'Color', 
-       'bim_cod': 'Codigo SUDEBIM',
-        'bim_obs': 'Observacion', 
-        'bim_sede': 'Sede',
-        'est_ide': 'Estado',
-        'tip_ide': 'Tipo de Bien',
-        'foa_ide': 'Forma de Adquisicion',
-        'con_ide': 'Condicion Fisica',
-        'esu_ide': 'Estado de Uso',
-        'mod_ide': 'Modelo',
-        'cae_ide': 'Categoría Especifica',
-        'bim_inc': 'Bien',
-        'bim_fed': 'Fecha de Desincorporacion',
-        'com_ide': 'Concepto de Movimiento',
-        'dep_ide': 'Departamento'
-    };
-
+    const [refreshKey, setRefreshKey] = useState(0);
+    
     const [isLoading, setIsLoading] = useState(false);
     const [search, setSearch] = useState();
     const [searchQuery, setSearchQuery] = useState('');
@@ -50,6 +24,12 @@ export const Bm1 = () => {
         tipo: null,
         estado: null,
     });
+    const [mensajeMostrado, setMensajeMostrado] = useState(false);
+
+    const handleSuccess = () => {
+            setRefreshKey(prev => prev + 1); // Fuerza recarga
+        };
+    
 
     useEffect(() => {
     const loadData = async () => {
@@ -68,9 +48,8 @@ export const Bm1 = () => {
             const response = await fetch(url);
             const result = await response.json();
             
-            setData(Array.isArray(result.data) ? result.data : []);
-            console.log(url)
-            console.log(data)
+            setData(Array.isArray(result.data) ? result.data : result);
+            
             setMeta(result.meta || {});
         } catch (error) {
             console.error('Error:', error);
@@ -79,7 +58,7 @@ export const Bm1 = () => {
     };
     
     loadData();
-}, [page, filtros.tipo, filtros.estado, searchQuery]);
+}, [page, filtros.tipo, filtros.estado, searchQuery, refreshKey]);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -157,14 +136,44 @@ export const Bm1 = () => {
             console.log("Tipo seleccionado:", tipoId);
         };
 
-       
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  const handleDownload = async () => {
+   try {
+  // Hacer la petición para el Excel (GET en lugar de POST)
+  const excelResp = await fetch('/api/excel/BM1-sudebim', {
+    method: 'GET',
+    credentials: 'include'
+  }).then(response => response.blob());
+
+  // Crear y descargar el archivo
+  const url = window.URL.createObjectURL(excelResp);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `BM1-sudebim_${new Date().toISOString().split('T')[0]}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+
+} catch (error) {
+  console.error('Error al generar Excel:', error);
+} finally {
+  setLoading(false);
+}
+  };
 
 
     return (
         <>
-            <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-1</h4>
             
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-1</h4>
+                <button id="exportToExcel" className="btn btn-primary" onClick={handleDownload}>
+                    <i className="bx bx-export me-1"></i> Generar BM1 de Sudebim
+                </button>
+            </div>
             <div className="card">
                 <h5 className="card-header">Relación de Bienes Actuales</h5>
                 <div className="card-body">
@@ -270,6 +279,9 @@ export const Bm1 = () => {
                             </tbody>
                         </table>
                     </div>
+                    <div className="d-flex justify-content-between align-items-center px-4 pb-3"> 
+                        <span className="fw-semibold">{`Total de resultados: ${meta.total || '...'}` }</span>
+                    </div>
                     <div className="d-flex justify-content-between align-items-center px-4 pb-3">
                     <button
                     className="btn btn-outline-secondary"
@@ -290,32 +302,14 @@ export const Bm1 = () => {
                     </button>
                 </div>
                 </div>
+                <ModalEditBm 
+                show={showUpdateModal}
+                handleClose={() => setShowUpdateModal(false)}
+                BienId={editingItem?.bim_ide} 
+                onSuccess={handleSuccess} />
             </div>
 
-            {/* Modales */}
-            {showUpdateModal && (
-                 <ModalEditBm
-                        show={showUpdateModal}
-                        handleClose={() => setShowUpdateModal(false)}
-                        columns={columns}
-                        tableName='tmab_m'
-                        rowData={editingItem} 
-                        foreign='tesdep'
-                        idColumn='bim_ide'
-                    />
-            )}
 
-            {showDeleteModal && (
-                <ModalDelete
-                    show={showDeleteModal}
-                    onHide={() => setShowDeleteModal(false)}
-                    itemId={deleteItemId}
-                    onDelete={() => {
-                        // Aquí puedes implementar la lógica para eliminar el item
-                        setShowDeleteModal(false);
-                    }}
-                />
-            )}
         </>
     )
 }
