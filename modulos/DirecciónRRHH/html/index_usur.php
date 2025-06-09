@@ -125,7 +125,7 @@
                           </div>
                       </div>
 
-                      <!-- Segunda fila - centrada -->
+                      <!-- Segunda fila - centrada z-->
                       <div class="row justify-content-center">
                           <div class="col-lg-4 mb-4">
                               <!-- Bienvenida -->

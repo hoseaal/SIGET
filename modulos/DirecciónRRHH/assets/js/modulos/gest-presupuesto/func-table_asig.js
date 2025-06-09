@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const numeroFila = (pagina - 1) * filasPorPagina + indice + 1;
             const fila = document.createElement('tr');
             
-            // Tipos "0" y "1" - solo 3 columnas (sin acciones)
+            // Tipos "0" y "1" - (sin acciones)
             if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${asignacion.pri_por}</td>
                 `;
             } 
-            // Tipo "2" - 4 columnas (solo editar)
+            // Tipo "2" - (solo editar)
             else if (LOGGED_USER_TYPE === '2') {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                 `;
             } 
-            // Tipos "3" y "4" - 4 columnas con todas las acciones
+            // Tipos "3" y "4" - todas las acciones
             else {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
@@ -258,7 +258,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (resultado.success) {
-                // Cerrar cualquier alerta abierta
                 smallSwal.close();
                 
                 // Mostrar mensaje de éxito

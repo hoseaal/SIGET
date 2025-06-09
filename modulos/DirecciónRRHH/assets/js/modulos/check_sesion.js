@@ -34,7 +34,6 @@ function verMensajeSesionExpirada() {
         willClose: () => {
             clearInterval(tokenCheckInterval);
             document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            // Cambio clave aquí: usar location.replace() en lugar de location.href
             window.location.replace('auth-login-basic.php?nocache=' + Date.now());
             
             // Bloqueo adicional del historial

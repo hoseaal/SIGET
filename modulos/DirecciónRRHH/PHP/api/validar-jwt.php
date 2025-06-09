@@ -15,13 +15,13 @@
             header('Location: auth-login-basic.php');
             exit;
         }
-        return; // Salir sin redirigir si ya estamos en login
+        return;
     }
 
     try {
         $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
 
-        // Verificación adicional de expiración
+        // Verificación de expiración
         if (isset($decoded->exp) && $decoded->exp < time()) {
             header('Location: auth-login-basic.php');
             exit;
