@@ -59,7 +59,6 @@
 
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-
     <link rel="stylesheet" href="../assets/vendor/libs/apex-charts/apex-charts.css" />
 
     <!-- jQuery (requerido por Select2) -->
@@ -69,12 +68,18 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Validación de Sesión -->
+    <script src="../assets/js/modulos/check_sesion.js"></script>
+    
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- Helpers -->
     <script src="../assets/vendor/js/helpers.js"></script>
-
     <script src="../assets/js/config.js"></script>
   </head>
 
@@ -174,9 +179,6 @@
 
     <!-- Main JS -->
     <script src="../assets/js/main.js"></script>
-
-    <!-- Page JS -->
-    <script src="../assets/js/form-basic-inputs.js"></script>
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="../js/buttons.js"></script>

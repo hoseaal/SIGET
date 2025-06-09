@@ -60,17 +60,19 @@
 
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-
     <link rel="stylesheet" href="../assets/vendor/libs/apex-charts/apex-charts.css" />
 
     <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Validación de Sesión -->
+    <script src="../assets/js/modulos/check_sesion.js"></script>
+
     <!-- Helpers -->
     <script src="../assets/vendor/js/helpers.js"></script>
-
     <script src="../assets/js/config.js"></script>
+
     <?php require_once '../PHP/api/usuarios/carga_select.php'; ?>
 
     <style>
@@ -205,9 +207,6 @@
     <!-- Main JS -->
     <script src="../assets/js/main.js"></script>
 
-    <!-- Page JS -->
-    <script src="../assets/js/form-basic-inputs.js"></script>
-
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="../js/buttons.js"></script>
 
@@ -240,7 +239,7 @@
                       <!-- Cédula -->
                       <div class="mb-3">
                         <label for="cedula" class="form-label">Cédula</label>
-                        <input type="number" class="form-control" id="cedula" name="cedula" required />
+                        <input type="number" class="form-control" id="cedula" name="cedula" required disabled/>
                       </div>
                       <!-- Nombres -->
                       <div class="mb-3">

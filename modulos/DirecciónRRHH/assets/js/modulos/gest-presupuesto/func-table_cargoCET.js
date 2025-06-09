@@ -12,52 +12,52 @@ const smallSwal = Swal.mixin({
 
 document.addEventListener('DOMContentLoaded', function() {
     // Variables para la paginación
-    const rowsPerPage = 7;
-    let currentPage = 1;
-    let totalPositions = 0;
-    let totalPages = 1;
-    const tableBody = document.querySelector('#cetTableBody'); // Cambiado a workersTable
-    const paginationElement = document.getElementById('cetPagination');
+    const filasPorPagina = 7;
+    let paginaActual = 1;
+    let totalCargos = 0;
+    let totalPaginas = 1;
+    const cuerpoTabla = document.querySelector('#cetTableBody');
+    const elementoPaginacion = document.getElementById('cetPagination');
 
     // Variables para el control de actualización en tiempo real
-    let lastUpdateTimestamp = null;
-    let updateInterval = 1000; // 1 segundo
-    let updateTimer = null;
-    let isUpdating = false;
+    let ultimoTimestampActualizacion = null;
+    let intervaloActualizacion = 1000; // 1 segundo
+    let temporizadorActualizacion = null;
+    let actualizando = false;
 
     // Función para cargar los cargos desde la API
-    async function fetchPositions(page) {
+    async function obtenerCargos(pagina) {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_cargoCET.php?page=${page}&per_page=${rowsPerPage}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/imprimir_cargoCET.php?page=${pagina}&per_page=${filasPorPagina}`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                totalPositions = data.total;
-                totalPages = data.total_pages;
+            if (datos.success) {
+                totalCargos = datos.total;
+                totalPaginas = datos.total_pages;
                 return {
-                    positions: data.positions,
-                    total: data.total
+                    cargos: datos.positions,
+                    total: datos.total
                 };
             } else {
-                console.error('Error al cargar cargos:', data.message);
+                console.error('Error al cargar cargos:', datos.message);
                 return {
-                    positions: [],
+                    cargos: [],
                     total: 0
                 };
             }
         } catch (error) {
             console.error('Error en la solicitud:', error);
             return {
-                positions: [],
+                cargos: [],
                 total: 0
             };
         }
     }
 
     // Función para mostrar los cargos en la página actual
-    async function displayPositions(page) {
+    async function mostrarCargos(pagina) {
         // Mostrar loader mientras carga
-        tableBody.innerHTML = `
+        cuerpoTabla.innerHTML = `
             <tr>
                 <td colspan="3" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
@@ -67,57 +67,57 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `;
         
-        const {positions, total} = await fetchPositions(page);
-        totalPositions = total;
-        totalPages = Math.ceil(totalPositions / rowsPerPage);
+        const {cargos, total} = await obtenerCargos(pagina);
+        totalCargos = total;
+        totalPaginas = Math.ceil(totalCargos / filasPorPagina);
         
-        tableBody.innerHTML = '';
+        cuerpoTabla.innerHTML = '';
         
-        if (positions.length === 0) {
+        if (cargos.length === 0) {
             // Crear filas vacías para mantener la altura
-            for (let i = 0; i < rowsPerPage; i++) {
-                const row = document.createElement('tr');
+            for (let i = 0; i < filasPorPagina; i++) {
+                const fila = document.createElement('tr');
                 if (i === 0) {
-                    row.innerHTML = `
+                    fila.innerHTML = `
                         <td colspan="3" class="text-center empty-row">
                             ${i === 0 ? 'No se encontraron cargos' : '&nbsp;'}
                         </td>
                     `;
                 } else {
-                    row.innerHTML = '<td colspan="3" class="empty-row">&nbsp;</td>';
+                    fila.innerHTML = '<td colspan="3" class="empty-row">&nbsp;</td>';
                 }
-                tableBody.appendChild(row);
+                cuerpoTabla.appendChild(fila);
             }
             
             // Configurar paginación para 0 resultados
-            setupPagination();
+            configurarPaginacion();
             return;
         }
 
         // Llenar con datos reales
-        positions.forEach((position, index) => {
-            const rowNumber = (page - 1) * rowsPerPage + index + 1;
-            const row = document.createElement('tr');
+        cargos.forEach((cargo, indice) => {
+            const numeroFila = (pagina - 1) * filasPorPagina + indice + 1;
+            const fila = document.createElement('tr');
             
             // Usuario tipo "0" - solo 2 columnas
             if (LOGGED_USER_TYPE === '0') {
-                row.innerHTML = `
-                    <td>${rowNumber}</td>
-                    <td>${position.cet_car}</td>
+                fila.innerHTML = `
+                    <td>${numeroFila}</td>
+                    <td>${cargo.cet_car}</td>
                 `;
             } 
             // Usuario tipo "1" o "2" - 3 columnas (sin eliminar)
             else if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
-                row.innerHTML = `
-                    <td>${rowNumber}</td>
-                    <td>${position.cet_car}</td>
+                fila.innerHTML = `
+                    <td>${numeroFila}</td>
+                    <td>${cargo.cet_car}</td>
                     <td>
                         <div class="dropdown">
                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item edit-position-btn" href="javascript:void(0);" data-id="${position.cet_ide}">
+                                <a class="dropdown-item edit-position-btn" href="javascript:void(0);" data-id="${cargo.cet_ide}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
                                 </a>
                             </div>
@@ -127,19 +127,19 @@ document.addEventListener('DOMContentLoaded', function() {
             } 
             // Usuario tipo "3" o "4" - 3 columnas con todas las acciones
             else {
-                row.innerHTML = `
-                    <td>${rowNumber}</td>
-                    <td>${position.cet_car}</td>
+                fila.innerHTML = `
+                    <td>${numeroFila}</td>
+                    <td>${cargo.cet_car}</td>
                     <td>
                         <div class="dropdown">
                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item edit-position-btn" href="javascript:void(0);" data-id="${position.cet_ide}">
+                                <a class="dropdown-item edit-position-btn" href="javascript:void(0);" data-id="${cargo.cet_ide}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
                                 </a>
-                                <a class="dropdown-item delete-position-btn" href="javascript:void(0);" data-id="${position.cet_ide}" data-name="${position.cet_car}">
+                                <a class="dropdown-item delete-position-btn" href="javascript:void(0);" data-id="${cargo.cet_ide}" data-name="${cargo.cet_car}">
                                     <i class="bx bx-trash me-1"></i> Eliminar
                                 </a>
                             </div>
@@ -148,156 +148,156 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
             
-            tableBody.appendChild(row);
+            cuerpoTabla.appendChild(fila);
         });
 
-        // Completar con filas vacías si no llega a rowsPerPage
-        if (positions.length < rowsPerPage) {
-            const remainingRows = rowsPerPage - positions.length;
-            for (let i = 0; i < remainingRows; i++) {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="3" class="empty-row">&nbsp;</td>';
-                row.style.height = '3.5rem';
-                tableBody.appendChild(row);
+        // Completar con filas vacías si no llega a filasPorPagina
+        if (cargos.length < filasPorPagina) {
+            const filasRestantes = filasPorPagina - cargos.length;
+            for (let i = 0; i < filasRestantes; i++) {
+                const fila = document.createElement('tr');
+                fila.innerHTML = '<td colspan="3" class="empty-row">&nbsp;</td>';
+                fila.style.height = '3.5rem';
+                cuerpoTabla.appendChild(fila);
             }
         }
 
         // Configurar event listeners solo si el usuario tiene permisos
         if (LOGGED_USER_TYPE !== '0') {
             // Configurar event listeners para editar
-            document.querySelectorAll('.edit-position-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const positionId = this.getAttribute('data-id');
-                    const positionName = this.closest('tr').querySelector('td:nth-child(2)').textContent;
+            document.querySelectorAll('.edit-position-btn').forEach(boton => {
+                boton.addEventListener('click', function() {
+                    const cargoId = this.getAttribute('data-id');
+                    const nombreCargo = this.closest('tr').querySelector('td:nth-child(2)').textContent;
                     
                     // Cargar datos en el modal de edición
-                    const editModal = new bootstrap.Modal(document.getElementById('ModalEditCET'));
-                    const modalInput = document.querySelector('#ModalEditCET #nameBasic');
-                    const saveBtn = document.querySelector('#ModalEditCET .btn-primary');
+                    const modalEdicion = new bootstrap.Modal(document.getElementById('ModalEditCET'));
+                    const inputModal = document.querySelector('#ModalEditCET #nameBasic');
+                    const botonGuardar = document.querySelector('#ModalEditCET .btn-primary');
                     
                     // Limpiar eventos anteriores para evitar duplicados
-                    const newSaveBtn = saveBtn.cloneNode(true);
-                    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+                    const nuevoBotonGuardar = botonGuardar.cloneNode(true);
+                    botonGuardar.parentNode.replaceChild(nuevoBotonGuardar, botonGuardar);
                     
                     // Configurar valores del modal
-                    modalInput.value = positionName;
+                    inputModal.value = nombreCargo;
                     
                     // Configurar evento para guardar cambios
-                    newSaveBtn.addEventListener('click', async function() {
-                        const modalInput = document.querySelector('#ModalEditCET #nameBasic');
-                        const newName = modalInput.value.trim();
+                    nuevoBotonGuardar.addEventListener('click', async function() {
+                        const inputModal = document.querySelector('#ModalEditCET #nameBasic');
+                        const nuevoNombre = inputModal.value.trim();
                         
                         // Validaciones
-                        if (!isValidCargoName(newName)) {
-                            showInputError(modalInput, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
+                        if (!esNombreCargoValido(nuevoNombre)) {
+                            mostrarErrorInput(inputModal, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
                             return;
                         }
                         
                         try {
                             // Mostrar loader
-                            const originalButtonText = newSaveBtn.innerHTML;
-                            newSaveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-                            newSaveBtn.disabled = true;
+                            const textoOriginalBoton = nuevoBotonGuardar.innerHTML;
+                            nuevoBotonGuardar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+                            nuevoBotonGuardar.disabled = true;
                             
                             // Enviar solicitud al servidor
-                            const response = await fetch('../PHP/api/gest-presupuesto/actualizar_cargoCET.php', {
+                            const respuesta = await fetch('../PHP/api/gest-presupuesto/actualizar_cargoCET.php', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({ 
-                                    position_id: positionId,
-                                    new_name: newName
+                                    position_id: cargoId,
+                                    new_name: nuevoNombre
                                 })
                             });
                             
-                            const result = await response.json();
+                            const resultado = await respuesta.json();
                             
                             // Restaurar botón
-                            newSaveBtn.innerHTML = originalButtonText;
-                            newSaveBtn.disabled = false;
+                            nuevoBotonGuardar.innerHTML = textoOriginalBoton;
+                            nuevoBotonGuardar.disabled = false;
                             
-                            if (result.success) {
+                            if (resultado.success) {
                                 // Cerrar el modal
-                                editModal.hide();
+                                modalEdicion.hide();
                                 // Recargar la tabla
-                                displayPositions(currentPage);
+                                mostrarCargos(paginaActual);
                             } else {
-                                throw new Error(result.message || 'Error al actualizar el cargo');
+                                throw new Error(resultado.message || 'Error al actualizar el cargo');
                             }
                         } catch (error) {
                             console.error('Error:', error);
                             alert('Error al actualizar: ' + error.message);
-                            newSaveBtn.innerHTML = 'Guardar Cambios';
-                            newSaveBtn.disabled = false;
+                            nuevoBotonGuardar.innerHTML = 'Guardar Cambios';
+                            nuevoBotonGuardar.disabled = false;
                         }
                     });
                     
                     // Mostrar el modal
-                    editModal.show();
+                    modalEdicion.show();
                 });
             });
 
             // Agregar event listeners para los botones de eliminar (solo para tipos 3 y 4)
             if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
-                document.querySelectorAll('.delete-position-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const positionId = this.getAttribute('data-id');
-                        const positionName = this.getAttribute('data-name');
-                        showDeleteConfirmation(positionId, positionName);
+                document.querySelectorAll('.delete-position-btn').forEach(boton => {
+                    boton.addEventListener('click', function() {
+                        const cargoId = this.getAttribute('data-id');
+                        const nombreCargo = this.getAttribute('data-name');
+                        mostrarConfirmacionEliminacion(cargoId, nombreCargo);
                     });
                 });
             }
         }
 
         // Configurar la paginación
-        setupPagination();
+        configurarPaginacion();
     }
 
     // Función para configurar la paginación
-    function setupPagination() {
-        paginationElement.innerHTML = '';
+    function configurarPaginacion() {
+        elementoPaginacion.innerHTML = '';
         
         // Botón Primera página
         let li = document.createElement('li');
         li.className = 'page-item first';
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== 1) {
-                currentPage = 1;
-                displayPositions(currentPage);
+            if (paginaActual !== 1) {
+                paginaActual = 1;
+                mostrarCargos(paginaActual);
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Página anterior
         li = document.createElement('li');
         li.className = 'page-item prev';
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displayPositions(currentPage);
+            if (paginaActual > 1) {
+                paginaActual--;
+                mostrarCargos(paginaActual);
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Números de página (mostramos máximo 5 páginas alrededor de la actual)
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
+        const paginaInicio = Math.max(1, paginaActual - 2);
+        const paginaFin = Math.min(totalPaginas, paginaActual + 2);
         
-        for (let i = startPage; i <= endPage; i++) {
+        for (let i = paginaInicio; i <= paginaFin; i++) {
             li = document.createElement('li');
             li.className = 'page-item';
-            if (i === currentPage) li.classList.add('active');
+            if (i === paginaActual) li.classList.add('active');
             li.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
             li.addEventListener('click', () => {
-                if (currentPage !== i) {
-                    currentPage = i;
-                    displayPositions(currentPage);
+                if (paginaActual !== i) {
+                    paginaActual = i;
+                    mostrarCargos(paginaActual);
                 }
             });
-            paginationElement.appendChild(li);
+            elementoPaginacion.appendChild(li);
         }
         
         // Botón Página siguiente
@@ -305,85 +305,84 @@ document.addEventListener('DOMContentLoaded', function() {
         li.className = 'page-item next';
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                displayPositions(currentPage);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                mostrarCargos(paginaActual);
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Última página
         li = document.createElement('li');
         li.className = 'page-item last';
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== totalPages) {
-                currentPage = totalPages;
-                displayPositions(currentPage);
+            if (paginaActual !== totalPaginas) {
+                paginaActual = totalPaginas;
+                mostrarCargos(paginaActual);
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Actualizar estado de los botones de navegación
-        updatePaginationButtons();
+        actualizarBotonesPaginacion();
     }
     
     // Función para actualizar el estado de los botones de paginación
-    function updatePaginationButtons() {
-        const pageItems = paginationElement.querySelectorAll('.page-item');
+    function actualizarBotonesPaginacion() {
+        const itemsPagina = elementoPaginacion.querySelectorAll('.page-item');
         
         // Remover clase active de todos los items
-        pageItems.forEach(item => {
+        itemsPagina.forEach(item => {
             item.classList.remove('active');
             item.classList.remove('disabled');
         });
         
         // Agregar clase active al item correspondiente
-        pageItems.forEach(item => {
-            const pageLink = item.querySelector('.page-link:not(.tf-icon)');
-            if (pageLink && pageLink.textContent === currentPage.toString()) {
+        itemsPagina.forEach(item => {
+            const enlacePagina = item.querySelector('.page-link:not(.tf-icon)');
+            if (enlacePagina && enlacePagina.textContent === paginaActual.toString()) {
                 item.classList.add('active');
             }
         });
         
         // Actualizar estado de los botones de navegación
-        const firstBtn = paginationElement.querySelector('.first');
-        const prevBtn = paginationElement.querySelector('.prev');
-        const nextBtn = paginationElement.querySelector('.next');
-        const lastBtn = paginationElement.querySelector('.last');
+        const botonPrimero = elementoPaginacion.querySelector('.first');
+        const botonAnterior = elementoPaginacion.querySelector('.prev');
+        const botonSiguiente = elementoPaginacion.querySelector('.next');
+        const botonUltimo = elementoPaginacion.querySelector('.last');
         
-        if (currentPage === 1) {
-            firstBtn.classList.add('disabled');
-            prevBtn.classList.add('disabled');
+        if (paginaActual === 1) {
+            botonPrimero.classList.add('disabled');
+            botonAnterior.classList.add('disabled');
         }
         
-        if (currentPage === totalPages) {
-            nextBtn.classList.add('disabled');
-            lastBtn.classList.add('disabled');
+        if (paginaActual === totalPaginas) {
+            botonSiguiente.classList.add('disabled');
+            botonUltimo.classList.add('disabled');
         }
     }
 
     // Función para mostrar confirmación de eliminación
-    function showDeleteConfirmation(positionId, positionName) {
+    function mostrarConfirmacionEliminacion(cargoId, nombreCargo) {
         smallSwal.fire({
         title: '¿Eliminar cargo?',
-        html: `¿Seguro que desea eliminar el cargo <strong>${positionName}</strong>?<br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
+        html: `¿Seguro que desea eliminar el cargo <strong>${nombreCargo}</strong>?<br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
-        }).then((result) => {
-        if (result.isConfirmed) {
-            deletePosition(positionId);
+        }).then((resultado) => {
+        if (resultado.isConfirmed) {
+            eliminarCargo(cargoId);
         }
         });
     }
 
-
     // Función para eliminar un cargo
-    async function deletePosition(positionId) {
+    async function eliminarCargo(cargoId) {
         try {
         // Mostrar loader
         smallSwal.fire({
@@ -399,20 +398,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Enviar solicitud de eliminación
-        const response = await fetch('../PHP/api/gest-presupuesto/eliminar_cargoCET.php', {
+        const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_cargoCET.php', {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ position_id: positionId })
+            body: JSON.stringify({ position_id: cargoId })
         });
         
-        const result = await response.json();
+        const resultado = await respuesta.json();
         
         // Cerrar loader
         smallSwal.close();
 
-        if (result.success) {
+        if (resultado.success) {
             smallSwal.fire({
             icon: 'success',
             title: '¡Eliminado!',
@@ -420,10 +419,10 @@ document.addEventListener('DOMContentLoaded', function() {
             showConfirmButton: false,
             timer: 1500
             }).then(() => {
-            displayPositions(currentPage);
+            mostrarCargos(paginaActual);
             });
         } else {
-            throw new Error(result.message || 'Error al eliminar el cargo');
+            throw new Error(resultado.message || 'Error al eliminar el cargo');
         }
         } catch (error) {
         console.error('Error al eliminar:', error);
@@ -439,11 +438,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para agregar un nuevo cargo
     document.getElementById('addCetPositionBtn').addEventListener('click', async function() {
         const inputElement = document.getElementById('newCargoCET');
-        const positionName = inputElement.value.trim();
+        const nombreCargo = inputElement.value.trim();
         
         // Validaciones
-        if (!isValidCargoName(positionName)) {
-        showInputError(inputElement, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
+        if (!esNombreCargoValido(nombreCargo)) {
+        mostrarErrorInput(inputElement, 'El nombre del cargo debe tener entre 1 y 50 caracteres válidos (solo letras y espacios).');
         return;
         }
         
@@ -462,20 +461,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Enviar solicitud al servidor
-        const response = await fetch('../PHP/api/gest-presupuesto/agregar_cargoCET.php', {
+        const respuesta = await fetch('../PHP/api/gest-presupuesto/agregar_cargoCET.php', {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ position_name: positionName })
+            body: JSON.stringify({ position_name: nombreCargo })
         });
         
-        const result = await response.json();
+        const resultado = await respuesta.json();
         
         // Cerrar loader
         smallSwal.close();
 
-        if (result.success) {
+        if (resultado.success) {
             smallSwal.fire({
             icon: 'success',
             title: '¡Agregado!',
@@ -491,11 +490,11 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.hide();
             
             // Recargar la tabla
-            currentPage = 1;
-            displayPositions(currentPage);
+            paginaActual = 1;
+            mostrarCargos(paginaActual);
             });
         } else {
-            throw new Error(result.message || 'Error al agregar el cargo');
+            throw new Error(resultado.message || 'Error al agregar el cargo');
         }
         } catch (error) {
         console.error('Error:', error);
@@ -509,33 +508,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Función para validar el nombre del cargo
-    function isValidCargoChar(char) {
+    function esCaracterCargoValido(caracter) {
         // Permite letras (mayúsculas y minúsculas), espacios, acentos y caracteres especiales del español
         const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/;
-        return regex.test(char);
+        return regex.test(caracter);
     }
 
     // Función para manejar la entrada en los campos
-    function handleCargoInput(event) {
-        const input = event.target;
-        let value = input.value;
-        let newValue = '';
+    function manejarInputCargo(evento) {
+        const input = evento.target;
+        let valor = input.value;
+        let nuevoValor = '';
         
         // Filtrar cada caracter
-        for (let i = 0; i < value.length; i++) {
-            if (isValidCargoChar(value[i])) {
-                newValue += value[i];
+        for (let i = 0; i < valor.length; i++) {
+            if (esCaracterCargoValido(valor[i])) {
+                nuevoValor += valor[i];
             }
         }
         
         // Limitar a 50 caracteres
-        if (newValue.length > 50) {
-            newValue = newValue.substring(0, 50);
+        if (nuevoValor.length > 50) {
+            nuevoValor = nuevoValor.substring(0, 50);
         }
         
         // Actualizar el valor solo si es diferente
-        if (value !== newValue) {
-            input.value = newValue;
+        if (valor !== nuevoValor) {
+            input.value = nuevoValor;
             
             // Mostrar feedback visual
             input.classList.add('invalid-input');
@@ -546,135 +545,135 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para validar el nombre completo del cargo
-    function isValidCargoName(name) {
-        return name.length > 0 && name.length <= 50;
+    function esNombreCargoValido(nombre) {
+        return nombre.length > 0 && nombre.length <= 50;
     }
 
-    document.getElementById('newCargoCET').addEventListener('input', handleCargoInput);
-    document.getElementById('nameBasic').addEventListener('input', handleCargoInput);
+    document.getElementById('newCargoCET').addEventListener('input', manejarInputCargo);
+    document.getElementById('nameBasic').addEventListener('input', manejarInputCargo);
 
     // Validación en tiempo real para el input de añadir
     document.getElementById('newCargoCET').addEventListener('input', function() {
-        const inputValue = this.value;
+        const valorInput = this.value;
         
         // Limpiar error mientras escribe
         if (this.classList.contains('is-invalid')) {
-            clearInputError(this);
+            limpiarErrorInput(this);
         }
         
         // Validar longitud máxima
-        if (inputValue.length > 50) {
-            this.value = inputValue.substring(0, 50);
+        if (valorInput.length > 50) {
+            this.value = valorInput.substring(0, 50);
         }
     });
 
     // Validación en tiempo real para el input de editar
     document.getElementById('nameBasic').addEventListener('input', function() {
-        const inputValue = this.value;
+        const valorInput = this.value;
         
         // Limpiar error mientras escribe
         if (this.classList.contains('is-invalid')) {
-            clearInputError(this);
+            limpiarErrorInput(this);
         }
         
         // Validar longitud máxima
-        if (inputValue.length > 50) {
-            this.value = inputValue.substring(0, 50);
+        if (valorInput.length > 50) {
+            this.value = valorInput.substring(0, 50);
         }
     });
 
     // Función para verificar cambios en bit_cet
-    async function checkForUpdates() {
-        if (isUpdating) return;
-        isUpdating = true;
+    async function verificarActualizaciones() {
+        if (actualizando) return;
+        actualizando = true;
         
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/check_cet_updates.php?last_update=${lastUpdateTimestamp || ''}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/check_cet_updates.php?last_update=${ultimoTimestampActualizacion || ''}`);
+            const datos = await respuesta.json();
             
-            if (data.success && data.has_changes) {
-                lastUpdateTimestamp = data.last_update;
+            if (datos.success && datos.has_changes) {
+                ultimoTimestampActualizacion = datos.last_update;
                 
                 // Actualizar la tabla con animación suave
-                await smoothUpdateTable();
+                await actualizarTablaSuavemente();
             }
         } catch (error) {
             console.error('Error al verificar actualizaciones:', error);
         } finally {
-            isUpdating = false;
+            actualizando = false;
         }
     }
 
     // Función para actualizar la tabla con animación suave
-    async function smoothUpdateTable() {
+    async function actualizarTablaSuavemente() {
         // Agregar clase de transición a la tabla
-        const table = document.getElementById('cetTable');
-        table.classList.add('table-updating');
+        const tabla = document.getElementById('cetTable');
+        tabla.classList.add('table-updating');
         
         // Mostrar indicador de actualización
-        const updateIndicator = document.createElement('div');
-        table.parentNode.insertBefore(updateIndicator, table);
+        const indicadorActualizacion = document.createElement('div');
+        tabla.parentNode.insertBefore(indicadorActualizacion, tabla);
         
         // Pequeño retraso para que se vea el indicador
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolver => setTimeout(resolver, 300));
         
         // Recargar datos
-        await displayPositions(currentPage);
+        await mostrarCargos(paginaActual);
         
         // Ocultar indicador y quitar clase de transición
-        updateIndicator.remove();
-        table.classList.remove('table-updating');
+        indicadorActualizacion.remove();
+        tabla.classList.remove('table-updating');
         
         // Mostrar notificación de actualización
-        showUpdateNotification();
+        mostrarNotificacionActualizacion();
     }
 
     // Función para mostrar notificación de actualización
-    function showUpdateNotification() {
-        const notification = document.createElement('div');
-        notification.className = 'update-notification cet-notification';
-        notification.innerHTML = 'Cargos CET actualizados <i class="bx bx-check"></i>';
+    function mostrarNotificacionActualizacion() {
+        const notificacion = document.createElement('div');
+        notificacion.className = 'update-notification cet-notification';
+        notificacion.innerHTML = 'Cargos CET actualizados <i class="bx bx-check"></i>';
         
-        document.body.appendChild(notification);
+        document.body.appendChild(notificacion);
         
         // Mostrar y luego desaparecer
         setTimeout(() => {
-            notification.classList.add('show');
+            notificacion.classList.add('show');
             setTimeout(() => {
-                notification.classList.remove('show');
+                notificacion.classList.remove('show');
                 setTimeout(() => {
-                    notification.remove();
+                    notificacion.remove();
                 }, 300);
             }, 3000);
         }, 100);
     }
 
     // Iniciar el sistema de actualización periódica
-    function startUpdateChecker() {
+    function iniciarVerificadorActualizaciones() {
         // Verificar actualizaciones inmediatamente
-        checkForUpdates();
+        verificarActualizaciones();
         
         // Configurar intervalo periódico
-        updateTimer = setInterval(checkForUpdates, updateInterval);
+        temporizadorActualizacion = setInterval(verificarActualizaciones, intervaloActualizacion);
         
         // También verificar cuando la ventana gana foco
-        window.addEventListener('focus', checkForUpdates);
+        window.addEventListener('focus', verificarActualizaciones);
     }
 
     // Detener el sistema de actualización
-    function stopUpdateChecker() {
-        if (updateTimer) {
-            clearInterval(updateTimer);
+    function detenerVerificadorActualizaciones() {
+        if (temporizadorActualizacion) {
+            clearInterval(temporizadorActualizacion);
         }
-        window.removeEventListener('focus', checkForUpdates);
+        window.removeEventListener('focus', verificarActualizaciones);
     }
     
     // Inicializar la tabla
-    displayPositions(currentPage);
+    mostrarCargos(paginaActual);
 
     // Iniciar el sistema de actualización en tiempo real
-    startUpdateChecker();
+    iniciarVerificadorActualizaciones();
     
     // Detener el checker cuando la página se cierra/recarga
-    window.addEventListener('beforeunload', stopUpdateChecker);
+    window.addEventListener('beforeunload', detenerVerificadorActualizaciones);
 });

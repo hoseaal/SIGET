@@ -1,4 +1,16 @@
  document.addEventListener('DOMContentLoaded', function() {
+    // Configuración común para los alerts pequeños
+    const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+            popup: 'small-swal',
+            title: 'small-swal-title',
+            htmlContainer: 'small-swal-content',
+            confirmButton: 'small-swal-confirm'
+        }
+    });
+
     // Variables para la paginación
     const rowsPerPage = 8;
     let currentPage = 1;
@@ -25,10 +37,24 @@
                 return data.assignments;
             } else {
                 console.error('Error al cargar asignaciones:', data.message);
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudieron cargar las asignaciones',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return [];
             }
         } catch (error) {
             console.error('Error en la solicitud:', error);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar al servidor',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             return [];
         }
     }
@@ -172,8 +198,8 @@
             });
         }
 
-        // Agregar event listeners para los botones de eliminar (solo tipos 3 y 4)
-        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+        // Agregar event listeners para los botones de eliminar (solo tipo 4)
+        if (LOGGED_USER_TYPE === '4') {
             document.querySelectorAll('.delete-assignment-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const pri_ide = this.getAttribute('data-id');
@@ -186,68 +212,37 @@
 
     // Función para mostrar confirmación de eliminación
     function showDeleteConfirmation(pri_ide, assignmentName) {
-        // Crear modal de confirmación
-        const modalHTML = `
-        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-sm" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger">Confirmar Eliminación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>¿Seguro de eliminar la asignación <strong>${assignmentName}</strong>?</p>
-                        <p class="text-danger">¡Este cambio no se puede deshacer!</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                            Sí, Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        
-        // Agregar el modal al DOM
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        // Mostrar el modal
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-        deleteModal.show();
-        
-        // Configurar evento para el botón de confirmación
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
-            await deleteAssignment(pri_ide);
-            deleteModal.hide();
-            // Eliminar el modal del DOM después de cerrarse
-            document.getElementById('deleteConfirmationModal').addEventListener('hidden.bs.modal', function() {
-                this.remove();
-            });
-            deleteModal.hide();
-        });
-        
-        // Eliminar el modal del DOM si se cierra sin confirmar
-        document.getElementById('deleteConfirmationModal').addEventListener('hidden.bs.modal', function() {
-            this.remove();
+        smallSwal.fire({
+            title: '¿Eliminar asignación?',
+            html: `¿Seguro de eliminar la asignación <strong>${assignmentName}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // Mostrar loader durante la eliminación
+                smallSwal.fire({
+                    title: 'Eliminando asignación',
+                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 100%; height: 100%;"></div></div>',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        smallSwal.showLoading();
+                    }
+                });
+                
+                await deleteAssignment(pri_ide);
+            }
         });
     }
 
     // Función para eliminar una asignación
     async function deleteAssignment(pri_ide) {
         try {
-            // Mostrar loader
-            const loadingIndicator = document.createElement('div');
-            loadingIndicator.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
-            loadingIndicator.style.backgroundColor = 'rgba(0,0,0,0.5)';
-            loadingIndicator.style.zIndex = '1060';
-            loadingIndicator.innerHTML = '<div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>';
-            document.body.appendChild(loadingIndicator);
-            
-            // Enviar solicitud de eliminación
             const response = await fetch('../PHP/api/gest-presupuesto/eliminar_asig.php', {
                 method: 'POST',
                 headers: {
@@ -256,39 +251,39 @@
                 body: JSON.stringify({ pri_ide: pri_ide })
             });
             
-            // Verificar si la respuesta es JSON válido
-            let result;
-            try {
-                result = await response.json();
-            } catch (jsonError) {
-                throw new Error('La respuesta del servidor no es JSON válido');
-            }
+            const result = await response.json();
             
-            // Verificar el estado HTTP
             if (!response.ok) {
                 throw new Error(result.message || `Error HTTP: ${response.status}`);
             }
             
-            // Eliminar loader
-            loadingIndicator.remove();
-            
             if (result.success) {
+                // Cerrar cualquier alerta abierta
+                smallSwal.close();
+                
                 // Mostrar mensaje de éxito
-                alert(result.message || 'Asignación eliminada correctamente');
-                // Recargar la tabla
-                displayAssignments(currentPage);
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: result.message || 'Asignación eliminada correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar la tabla
+                    await displayAssignments(currentPage);
+                });
             } else {
                 throw new Error(result.message || 'Error al eliminar la asignación');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
-            
-            // Eliminar loader si aún existe
-            if (loadingIndicator && loadingIndicator.parentNode) {
-                loadingIndicator.remove();
-            }
-            
-            alert('Error al eliminar: ' + error.message);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         }
     }
 
@@ -437,6 +432,14 @@
         if (!/^\d*\.?\d*$/.test(primaInput.value)) {
             primaInput.classList.add('is-invalid');
             primaInput.focus();
+            
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Formato inválido',
+                text: 'Por favor ingrese un valor numérico válido',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
             return;
         } else {
             primaInput.classList.remove('is-invalid');
@@ -456,7 +459,13 @@
             
             // Validación básica
             if (!updatedData.pri_raz || !updatedData.pri_por) {
-                alert('Por favor complete todos los campos requeridos');
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'Datos incompletos',
+                    text: 'Por favor complete todos los campos requeridos',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido'
+                });
                 return;
             }
             
@@ -469,15 +478,8 @@
                 body: JSON.stringify(updatedData)
             });
             
-            // Verificar si la respuesta es JSON válido
-            let result;
-            try {
-                result = await response.json();
-            } catch (jsonError) {
-                throw new Error('La respuesta del servidor no es JSON válido');
-            }
+            const result = await response.json();
             
-            // Verificar el estado HTTP
             if (!response.ok) {
                 throw new Error(result.message || `Error HTTP: ${response.status}`);
             }
@@ -487,16 +489,28 @@
                 bootstrap.Modal.getInstance(document.getElementById('ModalAsignaciones')).hide();
                 
                 // Mostrar mensaje de éxito
-                alert('Cambios guardados exitosamente');
-                
-                // Recargar los datos
-                displayAssignments(currentPage);
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Guardado!',
+                    text: 'Cambios guardados exitosamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(async () => {
+                    // Recargar los datos
+                    await displayAssignments(currentPage);
+                });
             } else {
                 throw new Error(result.message || 'Error al guardar los cambios');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
-            alert('Error al guardar: ' + error.message);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al guardar: ' + error.message,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
         } finally {
             // Restaurar el botón
             saveButton.innerHTML = originalText;
@@ -572,22 +586,24 @@
 
     // Función para mostrar notificación de actualización (adaptada)
     function showUpdateNotification(message) {
-        const notification = document.createElement('div');
-        notification.className = 'update-notification';
-        notification.innerHTML = `${message} <i class="bx bx-check"></i>`;
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
         
-        document.body.appendChild(notification);
-        
-        // Animación de aparición y desaparición
-        setTimeout(() => {
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 3000);
-        }, 100);
+        Toast.fire({
+            icon: 'success',
+            title: message,
+            background: '#f8f9fa',
+            color: '#333'
+        });
     }
 
     // Iniciar el sistema de actualización periódica para asignaciones

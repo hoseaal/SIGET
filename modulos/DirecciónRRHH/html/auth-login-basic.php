@@ -1,3 +1,7 @@
+<?php 
+  require_once '../PHP/api/validar-jwt.php';
+?>
+
 <!DOCTYPE html>
 <html
   lang="es"

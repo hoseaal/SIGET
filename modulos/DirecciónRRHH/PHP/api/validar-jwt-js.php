@@ -17,6 +17,13 @@
 
     try {
         $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
+        
+        // Verificación adicional de expiración
+        if (isset($decoded->exp) && $decoded->exp < time()) {
+            header('Location: auth-login-basic.php');
+            exit;
+        }
+        
         $GLOBALS['decoded'] = $decoded;
         
         // Restablecer código de respuesta exitoso
