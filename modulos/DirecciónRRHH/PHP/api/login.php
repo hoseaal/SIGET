@@ -79,7 +79,7 @@
         echo json_encode([
             'success' => true,
             'token' => $jwt,
-            'tipo' => $user['usu_tip'], // redireccionar
+            'tipo' => $user['usu_tip'],
             'message' => 'Inicio de sesión exitoso.'
         ]);    
 
