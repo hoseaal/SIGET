@@ -12,35 +12,35 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Variables para la paginación
-    const rowsPerPage = 7;
-    let currentPage = 1;
+    const filasPorPagina = 7;
+    let paginaActual = 1;
     let totalRegistros = 0;
-    let totalPages = 1;
-    const tableBody = document.querySelector('#cajaAhorroTable tbody');
-    const paginationElement = document.getElementById('paginationCajaAhorro');
+    let totalPaginas = 1;
+    const cuerpoTabla = document.querySelector('#cajaAhorroTable tbody');
+    const elementoPaginacion = document.getElementById('paginationCajaAhorro');
 
     // Variables para el control de actualización en tiempo real
-    let lastUpdateTimestampCaja = null;
-    let updateIntervalCaja = 1000; // 1 segundo
-    let updateTimerCaja = null;
-    let isUpdatingCaja = false;
+    let ultimoTimestampActualizacionCaja = null;
+    let intervaloActualizacionCaja = 1000; // 1 segundo
+    let temporizadorActualizacionCaja = null;
+    let estaActualizandoCaja = false;
 
     // Variables para búsqueda
-    let allTrabajadores = [];
-    let isSearching = false;
-    let currentSearchTerm = '';
+    let todosTrabajadores = [];
+    let estaBuscando = false;
+    let terminoBusquedaActual = '';
 
     // Función para cargar TODOS los trabajadores desde la API (para búsqueda)
-    async function fetchAllTrabajadores() {
+    async function obtenerTodosTrabajadores() {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_caja-ahorro.php?all=true`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/imprimir_caja-ahorro.php?all=true`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                allTrabajadores = data.trabajadores;
-                return data.trabajadores;
+            if (datos.success) {
+                todosTrabajadores = datos.trabajadores;
+                return datos.trabajadores;
             } else {
-                console.error('Error al cargar todos los trabajadores:', data.message);
+                console.error('Error al cargar todos los trabajadores:', datos.message);
                 smallSwal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -64,21 +64,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para cargar los trabajadores paginados desde la API
-    async function fetchTrabajadores(page) {
+    async function obtenerTrabajadores(pagina) {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_caja-ahorro.php?page=${page}&per_page=${rowsPerPage}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/imprimir_caja-ahorro.php?page=${pagina}&per_page=${filasPorPagina}`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                totalRegistros = data.total;
-                totalPages = data.total_pages;
+            if (datos.success) {
+                totalRegistros = datos.total;
+                totalPaginas = datos.total_pages;
                 return {
-                    trabajadores: data.trabajadores,
-                    total: data.total,
-                    total_pages: data.total_pages
+                    trabajadores: datos.trabajadores,
+                    total: datos.total,
+                    total_pages: datos.total_pages
                 };
             } else {
-                console.error('Error al cargar trabajadores:', data.message);
+                console.error('Error al cargar trabajadores:', datos.message);
                 return {
                     trabajadores: [],
                     total: 0,
@@ -90,32 +90,32 @@ document.addEventListener('DOMContentLoaded', function() {
             return {
                 trabajadores: [],
                 total: 0,
-                total_pages: 0
+                    total_pages: 0
             };
         }
     }
 
     // Función para filtrar localmente
-    function filterTrabajadoresLocally(trabajadores, searchTerm) {
-        if (!searchTerm) return trabajadores;
+    function filtrarTrabajadoresLocalmente(trabajadores, terminoBusqueda) {
+        if (!terminoBusqueda) return trabajadores;
         
-        const lowerSearchTerm = searchTerm.toLowerCase();
+        const terminoBusquedaMinusculas = terminoBusqueda.toLowerCase();
         return trabajadores.filter(trabajador => {
             return (
-                (trabajador.nom_ced && trabajador.nom_ced.toLowerCase().includes(lowerSearchTerm)) ||
-                (trabajador.nom_nom && trabajador.nom_nom.toLowerCase().includes(lowerSearchTerm)) ||
-                (trabajador.nom_ape && trabajador.nom_ape.toLowerCase().includes(lowerSearchTerm)) ||
-                (trabajador.cep_activa !== undefined && (trabajador.cep_activa ? 'activo' : 'inactivo').includes(lowerSearchTerm))
+                (trabajador.nom_ced && trabajador.nom_ced.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (trabajador.nom_nom && trabajador.nom_nom.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (trabajador.nom_ape && trabajador.nom_ape.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (trabajador.cep_activa !== undefined && (trabajador.cep_activa ? 'activo' : 'inactivo').includes(terminoBusquedaMinusculas))
             );
         });
     }
 
     // Función para mostrar los trabajadores en la página actual
-    async function displayTrabajadores(page, trabajadoresToDisplay = null) {
-        const isFiltered = trabajadoresToDisplay !== null;
+    async function mostrarTrabajadores(pagina, trabajadoresAMostrar = null) {
+        const estaFiltrado = trabajadoresAMostrar !== null;
         
         // Mostrar loader mientras carga
-        tableBody.innerHTML = `
+        cuerpoTabla.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
@@ -126,49 +126,49 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         let trabajadores = [];
-        if (isFiltered) {
-            trabajadores = trabajadoresToDisplay;
+        if (estaFiltrado) {
+            trabajadores = trabajadoresAMostrar;
             totalRegistros = trabajadores.length;
-            totalPages = Math.ceil(trabajadores.length / rowsPerPage);
+            totalPaginas = Math.ceil(trabajadores.length / filasPorPagina);
         } else {
-            const result = await fetchTrabajadores(page);
-            trabajadores = result.trabajadores;
-            totalRegistros = result.total;
-            totalPages = result.total_pages;
+            const resultado = await obtenerTrabajadores(pagina);
+            trabajadores = resultado.trabajadores;
+            totalRegistros = resultado.total;
+            totalPaginas = resultado.total_pages;
         }
         
         // Pequeño retraso para evitar parpadeo con cargas rápidas
         await new Promise(resolve => setTimeout(resolve, 200));
         
-        tableBody.innerHTML = '';
+        cuerpoTabla.innerHTML = '';
         
         if (trabajadores.length === 0) {
             // Crear filas vacías para mantener la altura
-            for (let i = 0; i < rowsPerPage; i++) {
-                const row = document.createElement('tr');
+            for (let i = 0; i < filasPorPagina; i++) {
+                const fila = document.createElement('tr');
                 if (i === 0) {
-                    row.innerHTML = `
+                    fila.innerHTML = `
                         <td colspan="5" class="text-center empty-row">
-                            ${isFiltered ? 'No se encontraron coincidencias' : 'No se encontraron registros'}
+                            ${estaFiltrado ? 'No se encontraron coincidencias' : 'No se encontraron registros'}
                         </td>
                     `;
                 } else {
-                    row.innerHTML = '<td colspan="5" class="empty-row">&nbsp;</td>';
+                    fila.innerHTML = '<td colspan="5" class="empty-row">&nbsp;</td>';
                 }
-                tableBody.appendChild(row);
+                cuerpoTabla.appendChild(fila);
             }
             
             // Actualizar paginación para reflejar que no hay datos
-            setupPagination();
+            configurarPaginacion();
             return;
         }
 
         // Llenar con datos reales
-        trabajadores.forEach((trabajador, index) => {
-            const row = document.createElement('tr');
-            const numeroItem = (page - 1) * rowsPerPage + index + 1;
+        trabajadores.forEach((trabajador, indice) => {
+            const fila = document.createElement('tr');
+            const numeroItem = (pagina - 1) * filasPorPagina + indice + 1;
             
-            row.innerHTML = `
+            fila.innerHTML = `
                 <td>${numeroItem}</td>
                 <td>${trabajador.nom_ced}</td>
                 <td>${trabajador.nom_nom || 'N/A'} ${trabajador.nom_ape || ''}</td>
@@ -183,10 +183,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item edit-trabajador-btn" href="javascript:void(0);" data-cep_ide="${trabajador.cep_ide}">
+                            <a class="dropdown-item editar-trabajador-btn" href="javascript:void(0);" data-cep_ide="${trabajador.cep_ide}">
                                 <i class="bx bx-edit-alt me-1"></i> Editar
                             </a>
-                            <a class="dropdown-item delete-trabajador-btn" href="javascript:void(0);" 
+                            <a class="dropdown-item eliminar-trabajador-btn" href="javascript:void(0);" 
                             data-cep_ide="${trabajador.cep_ide}" 
                             data-nom_ced="${trabajador.nom_ced}" 
                             data-nombre="${trabajador.nom_nom || 'N/A'} ${trabajador.nom_ape || ''}">
@@ -196,55 +196,55 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </td>
             `;
-            tableBody.appendChild(row);
+            cuerpoTabla.appendChild(fila);
         });
 
-        // Completar con filas vacías si no llega a rowsPerPage
-        if (trabajadores.length < rowsPerPage) {
-            const remainingRows = rowsPerPage - trabajadores.length;
-            for (let i = 0; i < remainingRows; i++) {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="5" class="empty-row">&nbsp;</td>';
-                tableBody.appendChild(row);
+        // Completar con filas vacías si no llega a filasPorPagina
+        if (trabajadores.length < filasPorPagina) {
+            const filasRestantes = filasPorPagina - trabajadores.length;
+            for (let i = 0; i < filasRestantes; i++) {
+                const fila = document.createElement('tr');
+                fila.innerHTML = '<td colspan="5" class="empty-row">&nbsp;</td>';
+                cuerpoTabla.appendChild(fila);
             }
         }
 
         // Configurar eventos para los botones
-        setupEventListeners();
+        configurarEventListeners();
         
         // Actualizar paginación
-        setupPagination();
+        configurarPaginacion();
     }
 
     // Función para configurar el buscador
-    function setupSearch() {
-        const searchInput = document.getElementById('cajaAhorroSearch');
-        let searchTimeout;
+    function configurarBusqueda() {
+        const inputBusqueda = document.getElementById('cajaAhorroSearch');
+        let temporizadorBusqueda;
         
         // Cargar todos los registros al iniciar para búsquedas
-        fetchAllTrabajadores();
+        obtenerTodosTrabajadores();
         
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
+        inputBusqueda.addEventListener('input', function() {
+            clearTimeout(temporizadorBusqueda);
             
-            const searchTerm = this.value.trim();
-            currentSearchTerm = searchTerm;
+            const terminoBusqueda = this.value.trim();
+            terminoBusquedaActual = terminoBusqueda;
             
-            if (searchTerm.length === 0) {
+            if (terminoBusqueda.length === 0) {
                 // Si el buscador está vacío, volver a la paginación normal
-                isSearching = false;
-                currentPage = 1;
-                displayTrabajadores(currentPage);
-                paginationElement.style.display = '';
+                estaBuscando = false;
+                paginaActual = 1;
+                mostrarTrabajadores(paginaActual);
+                elementoPaginacion.style.display = '';
                 return;
             }
             
             // Pequeño retraso para no hacer búsquedas con cada tecla
-            searchTimeout = setTimeout(async () => {
-                isSearching = true;
+            temporizadorBusqueda = setTimeout(async () => {
+                estaBuscando = true;
                 
                 // Mostrar loader
-                tableBody.innerHTML = `
+                cuerpoTabla.innerHTML = `
                     <tr>
                         <td colspan="5" class="text-center py-4">
                             <div class="spinner-border text-primary" role="status">
@@ -255,41 +255,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 
                 // Si no tenemos todos los registros cargados, intentar cargarlos
-                if (allTrabajadores.length === 0) {
-                    allTrabajadores = await fetchAllTrabajadores();
+                if (todosTrabajadores.length === 0) {
+                    todosTrabajadores = await obtenerTodosTrabajadores();
                 }
                 
                 // Filtrar localmente con todos los datos
-                const filtered = filterTrabajadoresLocally(allTrabajadores, searchTerm);
-                displayTrabajadores(1, filtered);
-                paginationElement.style.display = filtered.length > rowsPerPage ? '' : 'none';
+                const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusqueda);
+                mostrarTrabajadores(1, filtrados);
+                elementoPaginacion.style.display = filtrados.length > filasPorPagina ? '' : 'none';
             }, 300);
         });
         
         // Restaurar paginación si se borra la búsqueda
-        searchInput.addEventListener('keyup', function(e) {
+        inputBusqueda.addEventListener('keyup', function(e) {
             if (e.key === 'Escape' || this.value.trim() === '') {
                 this.value = '';
-                isSearching = false;
-                currentPage = 1;
-                displayTrabajadores(currentPage);
-                paginationElement.style.display = '';
+                estaBuscando = false;
+                paginaActual = 1;
+                mostrarTrabajadores(paginaActual);
+                elementoPaginacion.style.display = '';
             }
         });
     }
 
     // Función para configurar los event listeners
-    function setupEventListeners() {
+    function configurarEventListeners() {
         // Agregar event listeners para los botones de editar
-        document.querySelectorAll('.edit-trabajador-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
+        document.querySelectorAll('.editar-trabajador-btn').forEach(boton => {
+            boton.addEventListener('click', async function() {
                 const cep_ide = this.getAttribute('data-cep_ide');
                 try {
-                    const response = await fetch(`../PHP/api/gest-presupuesto/detalles_caja-ahorro.php?cep_ide=${cep_ide}`);
-                    const data = await response.json();
+                    const respuesta = await fetch(`../PHP/api/gest-presupuesto/detalles_caja-ahorro.php?cep_ide=${cep_ide}`);
+                    const datos = await respuesta.json();
                     
-                    if (data.success) {
-                        openEditModal(data.trabajador);
+                    if (datos.success) {
+                        abrirModalEdicion(datos.trabajador);
                     } else {
                         alert('No se pudieron cargar los datos del trabajador');
                     }
@@ -301,18 +301,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Agregar event listeners para los botones de eliminar
-        document.querySelectorAll('.delete-trabajador-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+        document.querySelectorAll('.eliminar-trabajador-btn').forEach(boton => {
+            boton.addEventListener('click', function() {
                 const cep_ide = this.getAttribute('data-cep_ide');
                 const nom_ced = this.getAttribute('data-nom_ced');
                 const nombre = this.getAttribute('data-nombre');
-                showDeleteConfirmation(cep_ide, nom_ced, nombre);
+                mostrarConfirmacionEliminacion(cep_ide, nom_ced, nombre);
             });
         });
     }
 
     // Función para mostrar confirmación de eliminación
-    function showDeleteConfirmation(cep_ide, nom_ced, nombre) {
+    function mostrarConfirmacionEliminacion(cep_ide, nom_ced, nombre) {
         smallSwal.fire({
             title: '¿Eliminar de Caja de Ahorro?',
             html: `¿Seguro que desea eliminar a <strong>${nombre}</strong> (C.I. ${nom_ced}) de la caja de ahorro?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
@@ -336,15 +336,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
                 
-                await deleteTrabajador(cep_ide);
+                await eliminarTrabajador(cep_ide);
             }
         });
     }
 
     // Función para eliminar un trabajador de la caja de ahorro
-    async function deleteTrabajador(cep_ide) {
+    async function eliminarTrabajador(cep_ide) {
         try {
-            const response = await fetch('../PHP/api/gest-presupuesto/eliminar_caja-ahorro.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_caja-ahorro.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -352,40 +352,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ cep_ide: cep_ide })
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (!response.ok) {
-                throw new Error(result.message || `Error HTTP: ${response.status}`);
+            if (!respuesta.ok) {
+                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
             }
             
-            if (result.success) {
+            if (resultado.success) {
                 // Cerrar cualquier alerta abierta
                 smallSwal.close();
                 
                 // Verificar si debemos cambiar de página
-                if (currentPage > 1 && (totalRegistros - 1) <= ((currentPage - 1) * rowsPerPage)) {
-                    currentPage--;
+                if (paginaActual > 1 && (totalRegistros - 1) <= ((paginaActual - 1) * filasPorPagina)) {
+                    paginaActual--;
                 }
                 
                 // Mostrar mensaje de éxito
                 smallSwal.fire({
                     icon: 'success',
                     title: '¡Eliminado!',
-                    text: result.message || 'Trabajador eliminado correctamente',
+                    text: resultado.message || 'Trabajador eliminado correctamente',
                     showConfirmButton: false,
                     timer: 1500
                 }).then(async () => {
                     // Recargar la tabla
-                    if (isSearching) {
-                        allTrabajadores = await fetchAllTrabajadores();
-                        const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                        displayTrabajadores(1, filtered);
+                    if (estaBuscando) {
+                        todosTrabajadores = await obtenerTodosTrabajadores();
+                        const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                        mostrarTrabajadores(1, filtrados);
                     } else {
-                        await displayTrabajadores(currentPage);
+                        await mostrarTrabajadores(paginaActual);
                     }
                 });
             } else {
-                throw new Error(result.message || 'Error al eliminar el trabajador');
+                throw new Error(resultado.message || 'Error al eliminar el trabajador');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
@@ -400,110 +400,110 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para configurar la paginación
-    function setupPagination() {
-        paginationElement.innerHTML = '';
+    function configurarPaginacion() {
+        elementoPaginacion.innerHTML = '';
         
-        if (totalPages <= 1) return;
+        if (totalPaginas <= 1) return;
         
         // Botón Primera página
         let li = document.createElement('li');
-        li.className = 'page-item first' + (currentPage === 1 ? ' disabled' : '');
+        li.className = 'page-item first' + (paginaActual === 1 ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== 1) {
-                currentPage = 1;
-                if (isSearching) {
-                    const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                    displayTrabajadores(1, filtered);
+            if (paginaActual !== 1) {
+                paginaActual = 1;
+                if (estaBuscando) {
+                    const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                    mostrarTrabajadores(1, filtrados);
                 } else {
-                    displayTrabajadores(currentPage);
+                    mostrarTrabajadores(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Página anterior
         li = document.createElement('li');
-        li.className = 'page-item prev' + (currentPage === 1 ? ' disabled' : '');
+        li.className = 'page-item prev' + (paginaActual === 1 ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                if (isSearching) {
-                    const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                    displayTrabajadores(currentPage, filtered);
+            if (paginaActual > 1) {
+                paginaActual--;
+                if (estaBuscando) {
+                    const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                    mostrarTrabajadores(paginaActual, filtrados);
                 } else {
-                    displayTrabajadores(currentPage);
+                    mostrarTrabajadores(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Números de página
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
+        const paginaInicio = Math.max(1, paginaActual - 2);
+        const paginaFin = Math.min(totalPaginas, paginaActual + 2);
         
-        for (let i = startPage; i <= endPage; i++) {
+        for (let i = paginaInicio; i <= paginaFin; i++) {
             li = document.createElement('li');
-            li.className = 'page-item' + (i === currentPage ? ' active' : '');
+            li.className = 'page-item' + (i === paginaActual ? ' active' : '');
             li.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
             li.addEventListener('click', () => {
-                if (currentPage !== i) {
-                    currentPage = i;
-                    if (isSearching) {
-                        const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                        displayTrabajadores(currentPage, filtered);
+                if (paginaActual !== i) {
+                    paginaActual = i;
+                    if (estaBuscando) {
+                        const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                        mostrarTrabajadores(paginaActual, filtrados);
                     } else {
-                        displayTrabajadores(currentPage);
+                        mostrarTrabajadores(paginaActual);
                     }
                 }
             });
-            paginationElement.appendChild(li);
+            elementoPaginacion.appendChild(li);
         }
         
         // Botón Página siguiente
         li = document.createElement('li');
-        li.className = 'page-item next' + (currentPage === totalPages ? ' disabled' : '');
+        li.className = 'page-item next' + (paginaActual === totalPaginas ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                if (isSearching) {
-                    const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                    displayTrabajadores(currentPage, filtered);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                if (estaBuscando) {
+                    const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                    mostrarTrabajadores(paginaActual, filtrados);
                 } else {
-                    displayTrabajadores(currentPage);
+                    mostrarTrabajadores(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Última página
         li = document.createElement('li');
-        li.className = 'page-item last' + (currentPage === totalPages ? ' disabled' : '');
+        li.className = 'page-item last' + (paginaActual === totalPaginas ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== totalPages) {
-                currentPage = totalPages;
-                if (isSearching) {
-                    const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                    displayTrabajadores(currentPage, filtered);
+            if (paginaActual !== totalPaginas) {
+                paginaActual = totalPaginas;
+                if (estaBuscando) {
+                    const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                    mostrarTrabajadores(paginaActual, filtrados);
                 } else {
-                    displayTrabajadores(currentPage);
+                    mostrarTrabajadores(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
     }
 
     // Función para abrir el modal de edición con datos
-    async function openEditModal(trabajadorData) {
+    async function abrirModalEdicion(datosTrabajador) {
         // Cargar los trabajadores disponibles
         try {
-            const response = await fetch('../PHP/api/gest-presupuesto/carga-modal_caja-ahorro.php');
-            const data = await response.json();
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/carga-modal_caja-ahorro.php');
+            const datos = await respuesta.json();
             
-            if (!data.success) {
+            if (!datos.success) {
                 throw new Error('No se pudieron cargar los trabajadores');
             }
 
@@ -511,26 +511,26 @@ document.addEventListener('DOMContentLoaded', function() {
             selectTrabajador.innerHTML = '<option value="">Seleccione un trabajador</option>';
             
             // Agregar todos los trabajadores (incluyendo el actual)
-            data.todosLosTrabajadores.forEach(trabajador => {
-                const option = document.createElement('option');
-                option.value = trabajador.nom_ced;
-                option.textContent = `${trabajador.nombre_completo} (${trabajador.nom_ced})`;
-                option.selected = trabajador.nom_ced === trabajadorData.nom_ced;
-                selectTrabajador.appendChild(option);
+            datos.todosLosTrabajadores.forEach(trabajador => {
+                const opcion = document.createElement('option');
+                opcion.value = trabajador.nom_ced;
+                opcion.textContent = `${trabajador.nombre_completo} (${trabajador.nom_ced})`;
+                opcion.selected = trabajador.nom_ced === datosTrabajador.nom_ced;
+                selectTrabajador.appendChild(opcion);
             });
 
             // Configurar el estado del switch
-            document.getElementById('estadoCajaAhorro').checked = trabajadorData.cep_activa == 1;
+            document.getElementById('estadoCajaAhorro').checked = datosTrabajador.cep_activa == 1;
 
             // Configurar el botón de guardar
-            const saveButton = document.querySelector('#ModalCajaAhorro .btn-primary');
-            saveButton.onclick = async function() {
-                await updateTrabajador(trabajadorData.cep_ide);
+            const botonGuardar = document.querySelector('#ModalCajaAhorro .btn-primary');
+            botonGuardar.onclick = async function() {
+                await actualizarTrabajador(datosTrabajador.cep_ide);
             };
 
             // Mostrar el modal
-            const editModal = new bootstrap.Modal(document.getElementById('ModalCajaAhorro'));
-            editModal.show();
+            const modalEdicion = new bootstrap.Modal(document.getElementById('ModalCajaAhorro'));
+            modalEdicion.show();
 
         } catch (error) {
             console.error('Error al cargar datos del modal:', error);
@@ -539,24 +539,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para actualizar un trabajador en la caja de ahorro
-    async function updateTrabajador(cep_ide) {
-        const saveButton = document.querySelector('#ModalCajaAhorro .btn-primary');
-        const originalText = saveButton.innerHTML;
+    async function actualizarTrabajador(cep_ide) {
+        const botonGuardar = document.querySelector('#ModalCajaAhorro .btn-primary');
+        const textoOriginal = botonGuardar.innerHTML;
         
         // Mostrar spinner y deshabilitar botón
-        saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-        saveButton.disabled = true;
+        botonGuardar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+        botonGuardar.disabled = true;
         
         try {
             // Obtener los datos del formulario
-            const updatedData = {
+            const datosActualizados = {
                 cep_ide: cep_ide,
                 nom_ced: document.getElementById('trabajadorSelect').value,
                 cep_activa: document.getElementById('estadoCajaAhorro').checked ? 1 : 0
             };
 
             // Validación básica
-            if (!updatedData.nom_ced) {
+            if (!datosActualizados.nom_ced) {
                 smallSwal.fire({
                     icon: 'error',
                     title: 'Datos incompletos',
@@ -568,17 +568,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamada a la API para guardar cambios
-            const response = await fetch('../PHP/api/gest-presupuesto/actualizar_caja-ahorro.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/actualizar_caja-ahorro.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(updatedData)
+                body: JSON.stringify(datosActualizados)
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (result.success) {
+            if (resultado.success) {
                 // Cerrar el modal
                 bootstrap.Modal.getInstance(document.getElementById('ModalCajaAhorro')).hide();
                 
@@ -591,16 +591,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     timer: 1500
                 }).then(async () => {
                     // Recargar los datos
-                    if (isSearching) {
-                        allTrabajadores = await fetchAllTrabajadores();
-                        const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                        displayTrabajadores(1, filtered);
+                    if (estaBuscando) {
+                        todosTrabajadores = await obtenerTodosTrabajadores();
+                        const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                        mostrarTrabajadores(1, filtrados);
                     } else {
-                        await displayTrabajadores(currentPage);
+                        await mostrarTrabajadores(paginaActual);
                     }
                 });
             } else {
-                throw new Error(result.message || 'Error desconocido');
+                throw new Error(resultado.message || 'Error desconocido');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
@@ -613,19 +613,19 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } finally {
             // Restaurar el botón
-            saveButton.innerHTML = originalText;
-            saveButton.disabled = false;
+            botonGuardar.innerHTML = textoOriginal;
+            botonGuardar.disabled = false;
         }
     }
 
     // Función para agregar un nuevo trabajador
     async function agregarTrabajador() {
-        const agregarBtn = document.getElementById('confirmarAgregarBtn');
-        const originalText = agregarBtn.innerHTML;
+        const botonAgregar = document.getElementById('confirmarAgregarBtn');
+        const textoOriginal = botonAgregar.innerHTML;
         
         // Mostrar spinner y deshabilitar botón
-        agregarBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Agregando...';
-        agregarBtn.disabled = true;
+        botonAgregar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Agregando...';
+        botonAgregar.disabled = true;
         
         try {
             // Obtener el valor seleccionado de Select2
@@ -636,7 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Seleccione un trabajador');
             }
 
-            const response = await fetch('../PHP/api/gest-presupuesto/agregar_caja-ahorro.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/agregar_caja-ahorro.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -647,9 +647,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (result.success) {
+            if (resultado.success) {
                 // Cerrar el modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalAgregarCajaAhorro'));
                 modal.hide();
@@ -658,22 +658,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 smallSwal.fire({
                     icon: 'success',
                     title: '¡Agregado!',
-                    text: result.message || 'Trabajador agregado correctamente',
+                    text: resultado.message || 'Trabajador agregado correctamente',
                     showConfirmButton: false,
                     timer: 1500
                 }).then(async () => {
                     // Recargar la tabla (volver a la primera página)
-                    currentPage = 1;
-                    if (isSearching) {
-                        allTrabajadores = await fetchAllTrabajadores();
-                        const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-                        displayTrabajadores(1, filtered);
+                    paginaActual = 1;
+                    if (estaBuscando) {
+                        todosTrabajadores = await obtenerTodosTrabajadores();
+                        const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                        mostrarTrabajadores(1, filtrados);
                     } else {
-                        await displayTrabajadores(currentPage);
+                        await mostrarTrabajadores(paginaActual);
                     }
                 });
             } else {
-                throw new Error(result.message || 'Error al agregar el trabajador');
+                throw new Error(resultado.message || 'Error al agregar el trabajador');
             }
         } catch (error) {
             console.error('Error al agregar:', error);
@@ -686,45 +686,45 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } finally {
             // Restaurar el botón
-            agregarBtn.innerHTML = originalText;
-            agregarBtn.disabled = false;
+            botonAgregar.innerHTML = textoOriginal;
+            botonAgregar.disabled = false;
         }
     }
 
     // Función para abrir el modal de agregar nuevo trabajador
-    async function openAddModal() {
+    async function abrirModalAgregar() {
         try {
             console.log("Cargando trabajadores disponibles...");
-            const response = await fetch('../PHP/api/gest-presupuesto/trabajadores_disponibles.php');
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/trabajadores_disponibles.php');
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            if (!respuesta.ok) {
+                throw new Error(`HTTP error! status: ${respuesta.status}`);
             }
             
-            const data = await response.json();
-            console.log("Respuesta recibida:", data);
+            const datos = await respuesta.json();
+            console.log("Respuesta recibida:", datos);
             
-            if (!data.success) {
-                throw new Error(data.message || 'No se pudieron cargar los trabajadores disponibles');
+            if (!datos.success) {
+                throw new Error(datos.message || 'No se pudieron cargar los trabajadores disponibles');
             }
 
             const selectTrabajador = document.getElementById('nuevoTrabajadorSelect');
             selectTrabajador.innerHTML = '<option value=""></option>'; // Select2 necesita option vacío
             
-            if (!data.trabajadores || data.trabajadores.length === 0) {
+            if (!datos.trabajadores || datos.trabajadores.length === 0) {
                 console.warn("No hay trabajadores disponibles para agregar");
-                const option = document.createElement('option');
-                option.value = "";
-                option.textContent = "No hay trabajadores disponibles";
-                option.disabled = true;
-                selectTrabajador.appendChild(option);
+                const opcion = document.createElement('option');
+                opcion.value = "";
+                opcion.textContent = "No hay trabajadores disponibles";
+                opcion.disabled = true;
+                selectTrabajador.appendChild(opcion);
             } else {
-                console.log(`Agregando ${data.trabajadores.length} trabajadores al select`);
-                data.trabajadores.forEach(trabajador => {
-                    const option = document.createElement('option');
-                    option.value = trabajador.nom_ced;
-                    option.textContent = `${trabajador.nombre_completo} (${trabajador.nom_ced})`;
-                    selectTrabajador.appendChild(option);
+                console.log(`Agregando ${datos.trabajadores.length} trabajadores al select`);
+                datos.trabajadores.forEach(trabajador => {
+                    const opcion = document.createElement('option');
+                    opcion.value = trabajador.nom_ced;
+                    opcion.textContent = `${trabajador.nombre_completo} (${trabajador.nom_ced})`;
+                    selectTrabajador.appendChild(opcion);
                 });
             }
 
@@ -742,13 +742,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 templateResult: function(trabajador) {
                     if (!trabajador.id) return trabajador.text;
-                    const option = selectTrabajador.querySelector(`option[value="${trabajador.id}"]`);
-                    return option ? option.text : trabajador.text;
+                    const opcion = selectTrabajador.querySelector(`option[value="${trabajador.id}"]`);
+                    return opcion ? opcion.text : trabajador.text;
                 },
                 templateSelection: function(trabajador) {
                     if (!trabajador.id) return trabajador.text;
-                    const option = selectTrabajador.querySelector(`option[value="${trabajador.id}"]`);
-                    return option ? option.text : trabajador.text;
+                    const opcion = selectTrabajador.querySelector(`option[value="${trabajador.id}"]`);
+                    return opcion ? opcion.text : trabajador.text;
                 }
             });
 
@@ -756,8 +756,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('confirmarAgregarBtn').onclick = agregarTrabajador;
 
             // Mostrar el modal
-            const addModal = new bootstrap.Modal(document.getElementById('modalAgregarCajaAhorro'));
-            addModal.show();
+            const modalAgregar = new bootstrap.Modal(document.getElementById('modalAgregarCajaAhorro'));
+            modalAgregar.show();
 
             // Manejar el cierre del modal
             $('#modalAgregarCajaAhorro').on('hidden.bs.modal', function () {
@@ -775,62 +775,62 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Event listener para el botón de agregar
-    document.getElementById('agregarCajaAhorro').addEventListener('click', openAddModal);
+    document.getElementById('agregarCajaAhorro').addEventListener('click', abrirModalAgregar);
 
     // Función para verificar cambios en bit_cep
-    async function checkForUpdatesCaja() {
-        if (isUpdatingCaja) return;
-        isUpdatingCaja = true;
+    async function verificarActualizacionesCaja() {
+        if (estaActualizandoCaja) return;
+        estaActualizandoCaja = true;
         
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/check_caja_updates.php?last_update=${lastUpdateTimestampCaja || ''}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/check_caja_updates.php?last_update=${ultimoTimestampActualizacionCaja || ''}`);
+            const datos = await respuesta.json();
             
-            if (data.success && data.has_changes) {
-                lastUpdateTimestampCaja = data.last_update;
+            if (datos.success && datos.has_changes) {
+                ultimoTimestampActualizacionCaja = datos.last_update;
                 
                 // Actualizar la tabla con animación suave
-                await smoothUpdateTableCaja();
+                await actualizarTablaSuavementeCaja();
             }
         } catch (error) {
             console.error('Error al verificar actualizaciones de caja:', error);
         } finally {
-            isUpdatingCaja = false;
+            estaActualizandoCaja = false;
         }
     }
 
     // Función para actualizar la tabla con animación suave
-    async function smoothUpdateTableCaja() {
+    async function actualizarTablaSuavementeCaja() {
         // Agregar clase de transición a la tabla
-        const table = document.getElementById('cajaAhorroTable');
-        table.classList.add('table-updating');
+        const tabla = document.getElementById('cajaAhorroTable');
+        tabla.classList.add('table-updating');
         
         // Mostrar indicador de actualización
-        const updateIndicator = document.createElement('div');
-        table.parentNode.insertBefore(updateIndicator, table);
+        const indicadorActualizacion = document.createElement('div');
+        tabla.parentNode.insertBefore(indicadorActualizacion, tabla);
         
         // Pequeño retraso para que se vea el indicador
         await new Promise(resolve => setTimeout(resolve, 300));
         
         // Recargar datos
-        if (isSearching) {
-            allTrabajadores = await fetchAllTrabajadores();
-            const filtered = filterTrabajadoresLocally(allTrabajadores, currentSearchTerm);
-            await displayTrabajadores(currentPage, filtered);
+        if (estaBuscando) {
+            todosTrabajadores = await obtenerTodosTrabajadores();
+            const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+            await mostrarTrabajadores(paginaActual, filtrados);
         } else {
-            await displayTrabajadores(currentPage);
+            await mostrarTrabajadores(paginaActual);
         }
         
         // Ocultar indicador y quitar clase de transición
-        updateIndicator.remove();
-        table.classList.remove('table-updating');
+        indicadorActualizacion.remove();
+        tabla.classList.remove('table-updating');
         
         // Mostrar notificación de actualización
-        showUpdateNotificationCaja();
+        mostrarNotificacionActualizacionCaja();
     }
 
     // Función para mostrar notificación de actualización
-    function showUpdateNotificationCaja() {
+    function mostrarNotificacionActualizacionCaja() {
         const Toast = Swal.mixin({
             toast: true,
             position: 'bottom-end',
@@ -852,33 +852,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Iniciar el sistema de actualización periódica
-    function startUpdateCheckerCaja() {
+    function iniciarVerificadorActualizacionesCaja() {
         // Verificar actualizaciones inmediatamente
-        checkForUpdatesCaja();
+        verificarActualizacionesCaja();
         
         // Configurar intervalo periódico
-        updateTimerCaja = setInterval(checkForUpdatesCaja, updateIntervalCaja);
+        temporizadorActualizacionCaja = setInterval(verificarActualizacionesCaja, intervaloActualizacionCaja);
         
         // También verificar cuando la ventana gana foco
-        window.addEventListener('focus', checkForUpdatesCaja);
+        window.addEventListener('focus', verificarActualizacionesCaja);
     }
 
     // Detener el sistema de actualización
-    function stopUpdateCheckerCaja() {
-        if (updateTimerCaja) {
-            clearInterval(updateTimerCaja);
+    function detenerVerificadorActualizacionesCaja() {
+        if (temporizadorActualizacionCaja) {
+            clearInterval(temporizadorActualizacionCaja);
         }
-        window.removeEventListener('focus', checkForUpdatesCaja);
+        window.removeEventListener('focus', verificarActualizacionesCaja);
     }
 
     // Inicializar la tabla y el buscador
-    displayTrabajadores(currentPage).then(() => {
-        setupSearch();
+    mostrarTrabajadores(paginaActual).then(() => {
+        configurarBusqueda();
     });
 
     // Iniciar el sistema de actualización en tiempo real
-    startUpdateCheckerCaja();
+    iniciarVerificadorActualizacionesCaja();
     
     // Detener el checker cuando la página se cierra/recarga
-    window.addEventListener('beforeunload', stopUpdateCheckerCaja);
+    window.addEventListener('beforeunload', detenerVerificadorActualizacionesCaja);
 });
