@@ -1,34 +1,46 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Configuración común para los alerts pequeños
+    const smallSwal = Swal.mixin({
+        width: '400px',
+        padding: '1rem',
+        customClass: {
+            popup: 'small-swal',
+            title: 'small-swal-title',
+            htmlContainer: 'small-swal-content',
+            confirmButton: 'small-swal-confirm'
+        }
+    });
+    
     // Variables para la paginación
-    const rowsPerPage = 7;
-    let currentPage = 1;
-    let totalUsers = 0;
-    let totalPages = 1;
-    const tableBody = document.querySelector('#usersTable tbody');
-    const paginationElement = document.getElementById('paginationUsers');
+    const filasPorPagina = 7;
+    let paginaActual = 1;
+    let totalUsuarios = 0;
+    let totalPaginas = 1;
+    const cuerpoTabla = document.querySelector('#usersTable tbody');
+    const elementoPaginacion = document.getElementById('paginationUsers');
 
     // Variables para el control de actualización en tiempo real
-    let lastUserUpdateTimestamp = null;
-    let userUpdateInterval = 1000; // 1 segundo
-    let userUpdateTimer = null;
-    let isUserUpdating = false;
+    let ultimoTimestampActualizacionUsuario = null;
+    let intervaloActualizacionUsuario = 1000; // 1 segundo
+    let temporizadorActualizacionUsuario = null;
+    let actualizandoUsuario = false;
 
     // Variables para búsqueda global
-    let allUsers = [];
-    let isSearching = false;
-    let currentSearchTerm = '';
+    let todosUsuarios = [];
+    let buscando = false;
+    let terminoBusquedaActual = '';
 
     // Función para cargar TODOS los usuarios desde la API (para búsqueda)
-    async function fetchAllUsers() {
+    async function obtenerTodosUsuarios() {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_users.php?all=true`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/imprimir_users.php?all=true`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                allUsers = data.users;
-                return data.users;
+            if (datos.success) {
+                todosUsuarios = datos.users;
+                return datos.users;
             } else {
-                console.error('Error al cargar todos los usuarios:', data.message);
+                console.error('Error al cargar todos los usuarios:', datos.message);
                 return [];
             }
         } catch (error) {
@@ -38,28 +50,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para cargar los usuarios paginados desde la API
-    async function fetchUsers(page, searchTerm = '') {
+    async function obtenerUsuarios(pagina, terminoBusqueda = '') {
         try {
-            let url = `../PHP/api/gest-presupuesto/imprimir_users.php?page=${page}&per_page=${rowsPerPage}`;
-            if (searchTerm) {
-                url += `&search=${encodeURIComponent(searchTerm)}`;
+            let url = `../PHP/api/gest-presupuesto/imprimir_users.php?page=${pagina}&per_page=${filasPorPagina}`;
+            if (terminoBusqueda) {
+                url += `&search=${encodeURIComponent(terminoBusqueda)}`;
             }
             
-            const response = await fetch(url);
-            const data = await response.json();
+            const respuesta = await fetch(url);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                totalUsers = data.total;
-                totalPages = data.total_pages;
+            if (datos.success) {
+                totalUsuarios = datos.total;
+                totalPaginas = datos.total_pages;
                 return {
-                    users: data.users,
-                    total: data.total,
-                    total_pages: data.total_pages
+                    usuarios: datos.users,
+                    total: datos.total,
+                    total_pages: datos.total_pages
                 };
             } else {
-                console.error('Error al cargar usuarios:', data.message);
+                console.error('Error al cargar usuarios:', datos.message);
                 return {
-                    users: [],
+                    usuarios: [],
                     total: 0,
                     total_pages: 0
                 };
@@ -67,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error en la solicitud:', error);
             return {
-                users: [],
+                usuarios: [],
                 total: 0,
                 total_pages: 0
             };
@@ -75,30 +87,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para filtrar usuarios localmente
-    function filterUsersLocally(users, searchTerm) {
-        if (!searchTerm) return users;
+    function filtrarUsuariosLocalmente(usuarios, terminoBusqueda) {
+        if (!terminoBusqueda) return usuarios;
         
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        return users.filter(user => {
+        const terminoBusquedaMinusculas = terminoBusqueda.toLowerCase();
+        return usuarios.filter(usuario => {
             return (
-                (user.nom_ced && user.nom_ced.toLowerCase().includes(lowerSearchTerm)) ||
-                (user.usu_nom && user.usu_nom.toLowerCase().includes(lowerSearchTerm)) ||
-                (user.usu_ape && user.usu_ape.toLowerCase().includes(lowerSearchTerm)) ||
-                (getUserTypeText(user.usu_tip) && getUserTypeText(user.usu_tip).toLowerCase().includes(lowerSearchTerm))
+                (usuario.nom_ced && usuario.nom_ced.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (usuario.usu_nom && usuario.usu_nom.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (usuario.usu_ape && usuario.usu_ape.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (obtenerTextoTipoUsuario(usuario.usu_tip) && obtenerTextoTipoUsuario(usuario.usu_tip).toLowerCase().includes(terminoBusquedaMinusculas))
             );
         });
     }
 
     // Función para obtener los datos completos de un usuario
-    async function fetchUserDetails(userId) {
+    async function obtenerDetallesUsuario(idUsuario) {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/carga-modal_users.php?user_id=${userId}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/carga-modal_users.php?user_id=${idUsuario}`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                return data.user;
+            if (datos.success) {
+                return datos.user;
             } else {
-                console.error('Error al cargar detalles:', data.message);
+                console.error('Error al cargar detalles:', datos.message);
                 return null;
             }
         } catch (error) {
@@ -108,28 +120,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para convertir el tipo de usuario a texto
-    function getUserTypeText(type) {
-        const types = {
+    function obtenerTextoTipoUsuario(tipo) {
+        const tipos = {
             4: 'Administrador',
             3: 'Jefe de Área',
             2: 'Trabajador',
             1: 'Temporal',
             0: 'Visualizador'
-            
         };
-        return types[type] || 'Desconocido';
+        return tipos[tipo] || 'Desconocido';
     }
 
     // Función para mostrar los usuarios en la página actual
-    async function displayUsers(page, usersToDisplay = null) {
-        const isFiltered = usersToDisplay !== null;
-        const result = isFiltered ? { users: usersToDisplay } : await fetchUsers(page);
-        const users = result.users;
-        totalUsers = isFiltered ? users.length : result.total;
-        totalPages = isFiltered ? Math.ceil(users.length / rowsPerPage) : result.total_pages;
+    async function mostrarUsuarios(pagina, usuariosAMostrar = null) {
+        const estaFiltrado = usuariosAMostrar !== null;
+        const resultado = estaFiltrado ? { usuarios: usuariosAMostrar } : await obtenerUsuarios(pagina);
+        const usuarios = resultado.usuarios;
+        totalUsuarios = estaFiltrado ? usuarios.length : resultado.total;
+        totalPaginas = estaFiltrado ? Math.ceil(usuarios.length / filasPorPagina) : resultado.total_pages;
         
         // Mostrar loader mientras carga
-        tableBody.innerHTML = `
+        cuerpoTabla.innerHTML = `
             <tr>
                 <td colspan="6" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
@@ -140,106 +151,106 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         // Pequeño retraso para evitar parpadeo con cargas rápidas
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolver => setTimeout(resolver, 200));
         
-        tableBody.innerHTML = '';
+        cuerpoTabla.innerHTML = '';
         
-        if (users.length === 0) {
+        if (usuarios.length === 0) {
             // Crear filas vacías para mantener la altura
-            for (let i = 0; i < rowsPerPage; i++) {
-                const row = document.createElement('tr');
+            for (let i = 0; i < filasPorPagina; i++) {
+                const fila = document.createElement('tr');
                 if (i === 0) {
-                    row.innerHTML = `
+                    fila.innerHTML = `
                         <td colspan="6" class="text-center empty-row">
-                            ${isFiltered ? 'No se encontraron coincidencias' : 'No se encontraron usuarios'}
+                            ${estaFiltrado ? 'No se encontraron coincidencias' : 'No se encontraron usuarios'}
                         </td>
                     `;
                 } else {
-                    row.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
+                    fila.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
                 }
-                tableBody.appendChild(row);
+                cuerpoTabla.appendChild(fila);
             }
             
             // Actualizar paginación para reflejar que no hay datos
-            setupPagination();
+            configurarPaginacion();
             return;
         }
 
         // Llenar con datos reales
-        users.forEach((user, index) => {
-            const rowNumber = (page - 1) * rowsPerPage + index + 1;
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><strong>${rowNumber}</strong></td>
-                <td>${user.nom_ced}</td>
-                <td>${user.usu_nom}</td>
-                <td>${user.usu_ape}</td>
-                <td>${getUserTypeText(user.usu_tip)}</td>
+        usuarios.forEach((usuario, indice) => {
+            const numeroFila = (pagina - 1) * filasPorPagina + indice + 1;
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td><strong>${numeroFila}</strong></td>
+                <td>${usuario.nom_ced}</td>
+                <td>${usuario.usu_nom}</td>
+                <td>${usuario.usu_ape}</td>
+                <td>${obtenerTextoTipoUsuario(usuario.usu_tip)}</td>
                 <td>
                     <div class="dropdown">
                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                             <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item edit-user-btn" href="javascript:void(0);" data-userid="${user.usu_ide}">
+                            <a class="dropdown-item edit-user-btn" href="javascript:void(0);" data-userid="${usuario.usu_ide}">
                                 <i class="bx bx-edit-alt me-1"></i> Editar
                             </a>
-                            <a class="dropdown-item delete-user-btn" href="javascript:void(0);" data-userid="${user.usu_ide}" data-name="${user.usu_nom} ${user.usu_ape}">
+                            <a class="dropdown-item delete-user-btn" href="javascript:void(0);" data-userid="${usuario.usu_ide}" data-name="${usuario.usu_nom} ${usuario.usu_ape}">
                                 <i class="bx bx-trash me-1"></i> Eliminar
                             </a>
                         </div>
                     </div>
                 </td>
             `;
-            tableBody.appendChild(row);
+            cuerpoTabla.appendChild(fila);
         });
 
-        // Completar con filas vacías si no llega a rowsPerPage
-        if (users.length < rowsPerPage) {
-            const remainingRows = rowsPerPage - users.length;
-            for (let i = 0; i < remainingRows; i++) {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
-                tableBody.appendChild(row);
+        // Completar con filas vacías si no llega a filasPorPagina
+        if (usuarios.length < filasPorPagina) {
+            const filasRestantes = filasPorPagina - usuarios.length;
+            for (let i = 0; i < filasRestantes; i++) {
+                const fila = document.createElement('tr');
+                fila.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
+                cuerpoTabla.appendChild(fila);
             }
         }
 
         // Configurar eventos para los botones
-        setupEventListeners();
+        configurarEventos();
         
         // Actualizar paginación
-        setupPagination();
+        configurarPaginacion();
     }
 
     // Función para configurar el buscador
-    function setupSearch() {
-        const searchInput = document.getElementById('usersSearch');
-        let searchTimeout;
+    function configurarBusqueda() {
+        const entradaBusqueda = document.getElementById('usersSearch');
+        let temporizadorBusqueda;
         
         // Cargar todos los registros al iniciar para búsquedas
-        fetchAllUsers();
+        obtenerTodosUsuarios();
         
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
+        entradaBusqueda.addEventListener('input', function() {
+            clearTimeout(temporizadorBusqueda);
             
-            const searchTerm = this.value.trim();
-            currentSearchTerm = searchTerm;
+            const terminoBusqueda = this.value.trim();
+            terminoBusquedaActual = terminoBusqueda;
             
-            if (searchTerm.length === 0) {
+            if (terminoBusqueda.length === 0) {
                 // Si el buscador está vacío, volver a la paginación normal
-                isSearching = false;
-                currentPage = 1;
-                displayUsers(currentPage);
-                paginationElement.style.display = '';
+                buscando = false;
+                paginaActual = 1;
+                mostrarUsuarios(paginaActual);
+                elementoPaginacion.style.display = '';
                 return;
             }
             
             // Pequeño retraso para no hacer búsquedas con cada tecla
-            searchTimeout = setTimeout(async () => {
-                isSearching = true;
+            temporizadorBusqueda = setTimeout(async () => {
+                buscando = true;
                 
                 // Mostrar loader
-                tableBody.innerHTML = `
+                cuerpoTabla.innerHTML = `
                     <tr>
                         <td colspan="6" class="text-center py-4">
                             <div class="spinner-border text-primary" role="status">
@@ -250,38 +261,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 
                 // Si no tenemos todos los registros cargados, intentar cargarlos
-                if (allUsers.length === 0) {
-                    allUsers = await fetchAllUsers();
+                if (todosUsuarios.length === 0) {
+                    todosUsuarios = await obtenerTodosUsuarios();
                 }
                 
                 // Filtrar localmente con todos los datos
-                const filtered = filterUsersLocally(allUsers, searchTerm);
-                displayUsers(1, filtered);
-                paginationElement.style.display = filtered.length > rowsPerPage ? '' : 'none';
+                const filtrados = filtrarUsuariosLocalmente(todosUsuarios, terminoBusqueda);
+                mostrarUsuarios(1, filtrados);
+                elementoPaginacion.style.display = filtrados.length > filasPorPagina ? '' : 'none';
             }, 300);
         });
         
         // Restaurar paginación si se borra la búsqueda
-        searchInput.addEventListener('keyup', function(e) {
+        entradaBusqueda.addEventListener('keyup', function(e) {
             if (e.key === 'Escape' || this.value.trim() === '') {
                 this.value = '';
-                isSearching = false;
-                currentPage = 1;
-                displayUsers(currentPage);
-                paginationElement.style.display = '';
+                buscando = false;
+                paginaActual = 1;
+                mostrarUsuarios(paginaActual);
+                elementoPaginacion.style.display = '';
             }
         });
     }
 
     // Función para configurar los event listeners
-    function setupEventListeners() {
+    function configurarEventos() {
         // Agregar event listeners para los botones de editar
-        document.querySelectorAll('.edit-user-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const userId = this.getAttribute('data-userid');
-                const userData = await fetchUserDetails(userId);
-                if (userData) {
-                    openEditModal(userData);
+        document.querySelectorAll('.edit-user-btn').forEach(boton => {
+            boton.addEventListener('click', async function() {
+                const idUsuario = this.getAttribute('data-userid');
+                const datosUsuario = await obtenerDetallesUsuario(idUsuario);
+                if (datosUsuario) {
+                    abrirModalEdicion(datosUsuario);
                 } else {
                     alert('No se pudieron cargar los datos del usuario');
                 }
@@ -289,19 +300,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Agregar event listeners para los botones de eliminar
-        document.querySelectorAll('.delete-user-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const userId = this.getAttribute('data-userid');
-                const userName = this.getAttribute('data-name');
-                showDeleteConfirmation(userId, userName);
+        document.querySelectorAll('.delete-user-btn').forEach(boton => {
+            boton.addEventListener('click', function() {
+                const idUsuario = this.getAttribute('data-userid');
+                const nombreUsuario = this.getAttribute('data-name');
+                mostrarConfirmacionEliminacion(idUsuario, nombreUsuario);
             });
         });
     }
 
     // Función para mostrar confirmación de eliminación
-    function showDeleteConfirmation(userId, userName) {
+    function mostrarConfirmacionEliminacion(idUsuario, nombreUsuario) {
         // Verificar si el usuario está intentando eliminarse a sí mismo
-        if (typeof LOGGED_USER_ID !== 'undefined' && userId === LOGGED_USER_ID) {
+        if (typeof LOGGED_USER_ID !== 'undefined' && idUsuario === LOGGED_USER_ID) {
             smallSwal.fire({
                 icon: 'error',
                 title: 'Acción no permitida',
@@ -317,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Si no es auto-eliminación, mostrar el modal normal de confirmación
         smallSwal.fire({
             title: 'Confirmar Eliminación',
-            html: `<p>¿Seguro de eliminar al usuario <strong>${userName}</strong>?</p>
+            html: `<p>¿Seguro de eliminar al usuario <strong>${nombreUsuario}</strong>?</p>
                   <p class="text-danger">¡Este cambio no se puede deshacer!</p>`,
             icon: 'warning',
             showCancelButton: true,
@@ -325,15 +336,15 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, Eliminar',
             cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                await deleteUser(userId);
+        }).then(async (resultado) => {
+            if (resultado.isConfirmed) {
+                await eliminarUsuario(idUsuario);
             }
         });
     }
 
     // Función para eliminar un usuario
-    async function deleteUser(userId) {
+    async function eliminarUsuario(idUsuario) {
         smallSwal.fire({
             title: 'Eliminando usuario',
             html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
@@ -347,44 +358,44 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         try {
-            const response = await fetch('../PHP/api/gest-presupuesto/eliminar_users.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_users.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ user_id: userId })
+                body: JSON.stringify({ user_id: idUsuario })
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (!response.ok) {
-                throw new Error(result.message || `Error HTTP: ${response.status}`);
+            if (!respuesta.ok) {
+                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
             }
             
-            if (result.success) {
+            if (resultado.success) {
                 // Verificar si debemos cambiar de página
-                if (currentPage > 1 && (totalUsers - 1) <= ((currentPage - 1) * rowsPerPage)) {
-                    currentPage--;
+                if (paginaActual > 1 && (totalUsuarios - 1) <= ((paginaActual - 1) * filasPorPagina)) {
+                    paginaActual--;
                 }
                 
                 // Recargar la tabla
-                if (isSearching) {
-                    allUsers = await fetchAllUsers();
-                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
-                    displayUsers(1, filtered);
+                if (buscando) {
+                    todosUsuarios = await obtenerTodosUsuarios();
+                    const filtrados = filtrarUsuariosLocalmente(todosUsuarios, terminoBusquedaActual);
+                    mostrarUsuarios(1, filtrados);
                 } else {
-                    await displayUsers(currentPage);
+                    await mostrarUsuarios(paginaActual);
                 }
                 
                 smallSwal.fire({
                     icon: 'success',
                     title: '¡Eliminado!',
-                    text: result.message || 'Usuario eliminado correctamente',
+                    text: resultado.message || 'Usuario eliminado correctamente',
                     showConfirmButton: false,
                     timer: 1500
                 });
             } else {
-                throw new Error(result.message || 'Error al eliminar el usuario');
+                throw new Error(resultado.message || 'Error al eliminar el usuario');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
@@ -399,189 +410,189 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para configurar la paginación
-    function setupPagination() {
-        paginationElement.innerHTML = '';
+    function configurarPaginacion() {
+        elementoPaginacion.innerHTML = '';
         
-        if (totalPages <= 1) return;
+        if (totalPaginas <= 1) return;
         
         // Botón Primera página
         let li = document.createElement('li');
-        li.className = 'page-item first' + (currentPage === 1 ? ' disabled' : '');
+        li.className = 'page-item first' + (paginaActual === 1 ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== 1) {
-                currentPage = 1;
-                if (isSearching) {
+            if (paginaActual !== 1) {
+                paginaActual = 1;
+                if (buscando) {
                     // Si estamos buscando, mostrar los primeros resultados filtrados
-                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
-                    displayUsers(1, filtered);
+                    const filtrados = filtrarUsuariosLocalmente(todosUsuarios, terminoBusquedaActual);
+                    mostrarUsuarios(1, filtrados);
                 } else {
-                    displayUsers(currentPage);
+                    mostrarUsuarios(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Página anterior
         li = document.createElement('li');
-        li.className = 'page-item prev' + (currentPage === 1 ? ' disabled' : '');
+        li.className = 'page-item prev' + (paginaActual === 1 ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                if (isSearching) {
-                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
-                    displayUsers(currentPage, filtered);
+            if (paginaActual > 1) {
+                paginaActual--;
+                if (buscando) {
+                    const filtrados = filtrarUsuariosLocalmente(todosUsuarios, terminoBusquedaActual);
+                    mostrarUsuarios(paginaActual, filtrados);
                 } else {
-                    displayUsers(currentPage);
+                    mostrarUsuarios(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Números de página
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
+        const paginaInicio = Math.max(1, paginaActual - 2);
+        const paginaFin = Math.min(totalPaginas, paginaActual + 2);
         
-        for (let i = startPage; i <= endPage; i++) {
+        for (let i = paginaInicio; i <= paginaFin; i++) {
             li = document.createElement('li');
-            li.className = 'page-item' + (i === currentPage ? ' active' : '');
+            li.className = 'page-item' + (i === paginaActual ? ' active' : '');
             li.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
             li.addEventListener('click', () => {
-                if (currentPage !== i) {
-                    currentPage = i;
-                    if (isSearching) {
-                        const filtered = filterUsersLocally(allUsers, currentSearchTerm);
-                        displayUsers(currentPage, filtered);
+                if (paginaActual !== i) {
+                    paginaActual = i;
+                    if (buscando) {
+                        const filtrados = filtrarUsuariosLocalmente(todosUsuarios, terminoBusquedaActual);
+                        mostrarUsuarios(paginaActual, filtrados);
                     } else {
-                        displayUsers(currentPage);
+                        mostrarUsuarios(paginaActual);
                     }
                 }
             });
-            paginationElement.appendChild(li);
+            elementoPaginacion.appendChild(li);
         }
         
         // Botón Página siguiente
         li = document.createElement('li');
-        li.className = 'page-item next' + (currentPage === totalPages ? ' disabled' : '');
+        li.className = 'page-item next' + (paginaActual === totalPaginas ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                if (isSearching) {
-                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
-                    displayUsers(currentPage, filtered);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                if (buscando) {
+                    const filtrados = filtrarUsuariosLocalmente(todosUsuarios, terminoBusquedaActual);
+                    mostrarUsuarios(paginaActual, filtrados);
                 } else {
-                    displayUsers(currentPage);
+                    mostrarUsuarios(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Última página
         li = document.createElement('li');
-        li.className = 'page-item last' + (currentPage === totalPages ? ' disabled' : '');
+        li.className = 'page-item last' + (paginaActual === totalPaginas ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== totalPages) {
-                currentPage = totalPages;
-                if (isSearching) {
-                    const filtered = filterUsersLocally(allUsers, currentSearchTerm);
-                    displayUsers(currentPage, filtered);
+            if (paginaActual !== totalPaginas) {
+                paginaActual = totalPaginas;
+                if (buscando) {
+                    const filtrados = filtrarUsuariosLocalmente(todosUsuarios, terminoBusquedaActual);
+                    mostrarUsuarios(paginaActual, filtrados);
                 } else {
-                    displayUsers(currentPage);
+                    mostrarUsuarios(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
     }
 
     // Función para abrir el modal de edición con datos del usuario
-    function openEditModal(userData) {
-        const editModal = new bootstrap.Modal(document.getElementById('largeModal'));
+    function abrirModalEdicion(datosUsuario) {
+        const modalEdicion = new bootstrap.Modal(document.getElementById('largeModal'));
 
         // Resetear campos de contraseña
-        cancelPasswordChange();
+        cancelarCambioContrasena();
 
         // Configurar event listeners para los botones de contraseña
         document.getElementById('togglePassword').addEventListener('click', function() {
-            togglePasswordVisibility('password');
+            alternarVisibilidadContrasena('password');
         });
         
         document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
-            togglePasswordVisibility('confirmPassword');
+            alternarVisibilidadContrasena('confirmPassword');
         });
         
-        document.getElementById('enablePasswordChange').addEventListener('click', enablePasswordChange);
+        document.getElementById('enablePasswordChange').addEventListener('click', habilitarCambioContrasena);
         
         // datos personales (solo lectura)
-        document.getElementById('cedula').value = userData.nom_ced || '';
-        document.getElementById('usuario').value = userData.usu_usu || '';
-        document.getElementById('nombre').value = userData.usu_nom || '';
-        document.getElementById('apellidos').value = userData.usu_ape || '';
+        document.getElementById('cedula').value = datosUsuario.nom_ced || '';
+        document.getElementById('usuario').value = datosUsuario.usu_usu || '';
+        document.getElementById('nombre').value = datosUsuario.usu_nom || '';
+        document.getElementById('apellidos').value = datosUsuario.usu_ape || '';
         
         // Llenar tipo de usuario (editable)
-        const userTypeSelect = document.getElementById('cargocet');
-        if (userTypeSelect) {
-            userTypeSelect.value = userData.usu_tip.toString();
+        const selectorTipoUsuario = document.getElementById('cargocet');
+        if (selectorTipoUsuario) {
+            selectorTipoUsuario.value = datosUsuario.usu_tip.toString();
         }
         
         // Configurar el botón de guardar
-        const saveButton = document.querySelector('#largeModal .btn-primary');
-        saveButton.onclick = function() {
-            saveUserChanges(userData.usu_ide);
+        const botonGuardar = document.querySelector('#largeModal .btn-primary');
+        botonGuardar.onclick = function() {
+            guardarCambiosUsuario(datosUsuario.usu_ide);
         };
         
         // Mostrar el modal
-        editModal.show();
+        modalEdicion.show();
     }
 
     // Función para guardar los cambios del usuario
-    async function saveUserChanges(userId) {
-        const saveButton = document.querySelector('#largeModal .btn-primary');
-        const originalText = saveButton.innerHTML;
+    async function guardarCambiosUsuario(idUsuario) {
+        const botonGuardar = document.querySelector('#largeModal .btn-primary');
+        const textoOriginal = botonGuardar.innerHTML;
 
         // Validar contraseñas primero
-        if (!validatePasswords()) {
+        if (!validarContrasenas()) {
             return;
         }
         
         // Mostrar spinner y deshabilitar botón
-        saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-        saveButton.disabled = true;
+        botonGuardar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+        botonGuardar.disabled = true;
         
         try {
             // Obtener los datos del formulario
-            const updatedData = {
-                user_id: userId,
+            const datosActualizados = {
+                user_id: idUsuario,
                 user_type: document.getElementById('cargocet').value
             };
 
             // Si se está cambiando la contraseña, incluirla en los datos
-            const password = document.getElementById('password').value;
-            const confirmContainer = document.getElementById('confirmPasswordContainer');
+            const contrasena = document.getElementById('password').value;
+            const contenedorConfirmacion = document.getElementById('confirmPasswordContainer');
             
-            if (confirmContainer.style.display !== 'none' && password) {
-                updatedData.password = password;
+            if (contenedorConfirmacion.style.display !== 'none' && contrasena) {
+                datosActualizados.password = contrasena;
             }
             
             // Validación básica
-            if (!updatedData.user_type) {
+            if (!datosActualizados.user_type) {
                 throw new Error('Seleccione un tipo de usuario');
             }
             
             // Llamada a la API para guardar cambios
-            const response = await fetch('../PHP/api/gest-presupuesto/actualizar_users.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/actualizar_users.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(updatedData)
+                body: JSON.stringify(datosActualizados)
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (result.success) {
+            if (resultado.success) {
                 // Cerrar el modal
                 bootstrap.Modal.getInstance(document.getElementById('largeModal')).hide();
                 
@@ -594,16 +605,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     timer: 1500
                 }).then(async () => {
                     // Recargar los datos
-                    if (isSearching) {
-                        allUsers = await fetchAllUsers();
-                        const filtered = filterUsersLocally(allUsers, currentSearchTerm);
-                        displayUsers(1, filtered);
+                    if (buscando) {
+                        todosUsuarios = await obtenerTodosUsuarios();
+                        const filtrados = filtrarUsuariosLocalmente(todosUsuarios, terminoBusquedaActual);
+                        mostrarUsuarios(1, filtrados);
                     } else {
-                        displayUsers(currentPage);
+                        mostrarUsuarios(paginaActual);
                     }
                 });
             } else {
-                throw new Error(result.message || 'Error al guardar los cambios');
+                throw new Error(resultado.message || 'Error al guardar los cambios');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -616,152 +627,152 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } finally {
             // Restaurar el botón
-            saveButton.innerHTML = originalText;
-            saveButton.disabled = false;
+            botonGuardar.innerHTML = textoOriginal;
+            botonGuardar.disabled = false;
         }
     }
 
     // Función para alternar la visibilidad de la contraseña
-    function togglePasswordVisibility(fieldId) {
-            const field = document.getElementById(fieldId);
-            const toggleBtn = document.querySelector(`#toggle${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)}`);
-            
-            if (field.type === 'password') {
-                field.type = 'text';
-                toggleBtn.innerHTML = '<i class="bx bx-hide"></i>';
-            } else {
-                field.type = 'password';
-                toggleBtn.innerHTML = '<i class="bx bx-show"></i>';
-            }
+    function alternarVisibilidadContrasena(idCampo) {
+        const campo = document.getElementById(idCampo);
+        const botonAlternar = document.querySelector(`#toggle${idCampo.charAt(0).toUpperCase() + idCampo.slice(1)}`);
+        
+        if (campo.type === 'password') {
+            campo.type = 'text';
+            botonAlternar.innerHTML = '<i class="bx bx-hide"></i>';
+        } else {
+            campo.type = 'password';
+            botonAlternar.innerHTML = '<i class="bx bx-show"></i>';
         }
-
-        function enablePasswordChange() {
-        const passwordField = document.getElementById('password');
-        const confirmContainer = document.getElementById('confirmPasswordContainer');
-        
-        passwordField.removeAttribute('readonly');
-        passwordField.value = '';
-        passwordField.focus();
-        
-        confirmContainer.style.display = 'block';
-        
-        const changeBtn = document.getElementById('enablePasswordChange');
-        changeBtn.innerHTML = '<i class="bx bx-x"></i> Cancelar';
-        changeBtn.classList.remove('btn-outline-primary');
-        changeBtn.classList.add('btn-outline-danger');
-        changeBtn.removeEventListener('click', enablePasswordChange);
-        changeBtn.addEventListener('click', cancelPasswordChange);
     }
 
-    function cancelPasswordChange() {
-        const passwordField = document.getElementById('password');
-        const confirmContainer = document.getElementById('confirmPasswordContainer');
-        const confirmField = document.getElementById('confirmPassword');
+    function habilitarCambioContrasena() {
+        const campoContrasena = document.getElementById('password');
+        const contenedorConfirmacion = document.getElementById('confirmPasswordContainer');
         
-        passwordField.value = '';
-        passwordField.setAttribute('readonly', 'true');
-        passwordField.type = 'password';
-        confirmField.value = '';
-        confirmContainer.style.display = 'none';
+        campoContrasena.removeAttribute('readonly');
+        campoContrasena.value = '';
+        campoContrasena.focus();
         
-        const changeBtn = document.getElementById('enablePasswordChange');
-        changeBtn.innerHTML = 'Cambiar';
-        changeBtn.classList.remove('btn-outline-danger');
-        changeBtn.classList.add('btn-outline-primary');
-        changeBtn.removeEventListener('click', cancelPasswordChange);
-        changeBtn.addEventListener('click', enablePasswordChange);
+        contenedorConfirmacion.style.display = 'block';
         
-        passwordField.classList.remove('is-invalid');
-        confirmField.classList.remove('is-invalid');
+        const botonCambio = document.getElementById('enablePasswordChange');
+        botonCambio.innerHTML = '<i class="bx bx-x"></i> Cancelar';
+        botonCambio.classList.remove('btn-outline-primary');
+        botonCambio.classList.add('btn-outline-danger');
+        botonCambio.removeEventListener('click', habilitarCambioContrasena);
+        botonCambio.addEventListener('click', cancelarCambioContrasena);
+    }
+
+    function cancelarCambioContrasena() {
+        const campoContrasena = document.getElementById('password');
+        const contenedorConfirmacion = document.getElementById('confirmPasswordContainer');
+        const campoConfirmacion = document.getElementById('confirmPassword');
+        
+        campoContrasena.value = '';
+        campoContrasena.setAttribute('readonly', 'true');
+        campoContrasena.type = 'password';
+        campoConfirmacion.value = '';
+        contenedorConfirmacion.style.display = 'none';
+        
+        const botonCambio = document.getElementById('enablePasswordChange');
+        botonCambio.innerHTML = 'Cambiar';
+        botonCambio.classList.remove('btn-outline-danger');
+        botonCambio.classList.add('btn-outline-primary');
+        botonCambio.removeEventListener('click', cancelarCambioContrasena);
+        botonCambio.addEventListener('click', habilitarCambioContrasena);
+        
+        campoContrasena.classList.remove('is-invalid');
+        campoConfirmacion.classList.remove('is-invalid');
         document.getElementById('passwordMatchError').style.display = 'none';
     }
 
-    function validatePasswords() {
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        const passwordField = document.getElementById('password');
-        const confirmField = document.getElementById('confirmPassword');
-        const errorElement = document.getElementById('passwordMatchError');
+    function validarContrasenas() {
+        const contrasena = document.getElementById('password').value;
+        const confirmacionContrasena = document.getElementById('confirmPassword').value;
+        const campoContrasena = document.getElementById('password');
+        const campoConfirmacion = document.getElementById('confirmPassword');
+        const elementoError = document.getElementById('passwordMatchError');
         
         if (document.getElementById('confirmPasswordContainer').style.display === 'none') {
             return true;
         }
         
-        if (password !== confirmPassword) {
-            passwordField.classList.add('is-invalid');
-            confirmField.classList.add('is-invalid');
-            errorElement.style.display = 'block';
+        if (contrasena !== confirmacionContrasena) {
+            campoContrasena.classList.add('is-invalid');
+            campoConfirmacion.classList.add('is-invalid');
+            elementoError.style.display = 'block';
             return false;
         }
         
-        if (password.length > 0 && password.length < 8) {
-            errorElement.textContent = 'La contraseña debe tener al menos 8 caracteres';
-            errorElement.style.display = 'block';
-            passwordField.classList.add('is-invalid');
-            confirmField.classList.add('is-invalid');
+        if (contrasena.length > 0 && contrasena.length < 8) {
+            elementoError.textContent = 'La contraseña debe tener al menos 8 caracteres';
+            elementoError.style.display = 'block';
+            campoContrasena.classList.add('is-invalid');
+            campoConfirmacion.classList.add('is-invalid');
             return false;
         }
         
-        passwordField.classList.remove('is-invalid');
-        confirmField.classList.remove('is-invalid');
-        errorElement.style.display = 'none';
+        campoContrasena.classList.remove('is-invalid');
+        campoConfirmacion.classList.remove('is-invalid');
+        elementoError.style.display = 'none';
         return true;
     }
 
     // Función para verificar cambios en bit_usu
-    async function checkForUserUpdates() {
-        if (isUserUpdating) return;
-        isUserUpdating = true;
+    async function verificarActualizacionesUsuarios() {
+        if (actualizandoUsuario) return;
+        actualizandoUsuario = true;
         
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/check_user_updates.php?last_update=${lastUserUpdateTimestamp || ''}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/check_user_updates.php?last_update=${ultimoTimestampActualizacionUsuario || ''}`);
+            const datos = await respuesta.json();
             
-            if (data.success && data.has_changes) {
-                lastUserUpdateTimestamp = data.last_update;
+            if (datos.success && datos.has_changes) {
+                ultimoTimestampActualizacionUsuario = datos.last_update;
                 
                 // Actualizar la tabla con animación suave
-                await smoothUpdateUserTable();
+                await actualizarTablaUsuariosSuavemente();
             }
         } catch (error) {
             console.error('Error al verificar actualizaciones de usuarios:', error);
         } finally {
-            isUserUpdating = false;
+            actualizandoUsuario = false;
         }
     }
 
     // Función para actualizar la tabla de usuarios con animación suave
-    async function smoothUpdateUserTable() {
+    async function actualizarTablaUsuariosSuavemente() {
         // Agregar clase de transición a la tabla
-        const table = document.getElementById('usersTable');
-        table.classList.add('table-updating');
+        const tabla = document.getElementById('usersTable');
+        tabla.classList.add('table-updating');
         
         // Mostrar indicador de actualización
-        const updateIndicator = document.createElement('div');
-        table.parentNode.insertBefore(updateIndicator, table);
+        const indicadorActualizacion = document.createElement('div');
+        tabla.parentNode.insertBefore(indicadorActualizacion, tabla);
         
         // Pequeño retraso para que se vea el indicador
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolver => setTimeout(resolver, 300));
         
         // Recargar datos
-        if (isSearching) {
-            allUsers = await fetchAllUsers();
-            const filtered = filterUsersLocally(allUsers, currentSearchTerm);
-            await displayUsers(currentPage, filtered);
+        if (buscando) {
+            todosUsuarios = await obtenerTodosUsuarios();
+            const filtrados = filtrarUsuariosLocalmente(todosUsuarios, terminoBusquedaActual);
+            await mostrarUsuarios(paginaActual, filtrados);
         } else {
-            await displayUsers(currentPage);
+            await mostrarUsuarios(paginaActual);
         }
         
         // Ocultar indicador y quitar clase de transición
-        updateIndicator.remove();
-        table.classList.remove('table-updating');
+        indicadorActualizacion.remove();
+        tabla.classList.remove('table-updating');
         
         // Mostrar notificación de actualización
-        showUserUpdateNotification();
+        mostrarNotificacionActualizacionUsuarios();
     }
 
     // Función para mostrar notificación de actualización de usuarios
-    function showUserUpdateNotification() {
+    function mostrarNotificacionActualizacionUsuarios() {
         const Toast = Swal.mixin({
             toast: true,
             position: 'bottom-end',
@@ -781,33 +792,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Iniciar el sistema de actualización periódica para usuarios
-    function startUserUpdateChecker() {
+    function iniciarVerificadorActualizacionesUsuarios() {
         // Verificar actualizaciones inmediatamente
-        checkForUserUpdates();
+        verificarActualizacionesUsuarios();
         
         // Configurar intervalo periódico
-        userUpdateTimer = setInterval(checkForUserUpdates, userUpdateInterval);
+        temporizadorActualizacionUsuario = setInterval(verificarActualizacionesUsuarios, intervaloActualizacionUsuario);
         
         // También verificar cuando la ventana gana foco
-        window.addEventListener('focus', checkForUserUpdates);
+        window.addEventListener('focus', verificarActualizacionesUsuarios);
     }
 
     // Detener el sistema de actualización
-    function stopUserUpdateChecker() {
-        if (userUpdateTimer) {
-            clearInterval(userUpdateTimer);
+    function detenerVerificadorActualizacionesUsuarios() {
+        if (temporizadorActualizacionUsuario) {
+            clearInterval(temporizadorActualizacionUsuario);
         }
-        window.removeEventListener('focus', checkForUserUpdates);
+        window.removeEventListener('focus', verificarActualizacionesUsuarios);
     }
 
     // Inicializar la tabla, paginación y buscador
-    displayUsers(currentPage).then(() => {
-        setupSearch();
+    mostrarUsuarios(paginaActual).then(() => {
+        configurarBusqueda();
     });
 
     // Iniciar el sistema de actualización en tiempo real
-    startUserUpdateChecker();
+    iniciarVerificadorActualizacionesUsuarios();
     
     // Detener el checker cuando la página se cierra/recarga
-    window.addEventListener('beforeunload', stopUserUpdateChecker);
+    window.addEventListener('beforeunload', detenerVerificadorActualizacionesUsuarios);
 });

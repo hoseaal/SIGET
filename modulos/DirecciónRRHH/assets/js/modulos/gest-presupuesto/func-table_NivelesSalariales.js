@@ -12,35 +12,35 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Variables para la paginación
-    const rowsPerPage = 7;
-    let currentPage = 1;
-    let totalSalaries = 0;
-    let totalPages = 1;
-    const tableBody = document.querySelector('#salaryTable tbody');
-    const paginationElement = document.getElementById('paginationSalary');
+    const filasPorPagina = 7;
+    let paginaActual = 1;
+    let totalSalarios = 0;
+    let totalPaginas = 1;
+    const cuerpoTabla = document.querySelector('#salaryTable tbody');
+    const elementoPaginacion = document.getElementById('paginationSalary');
 
     // Variable para almacenar todos los niveles salariales
-    let allSalaries = [];
-    let isSearching = false;
-    let currentSearchTerm = '';
+    let todosSalarios = [];
+    let buscando = false;
+    let terminoBusquedaActual = '';
 
-    // Variables para el control de actualización en tiempo real (agregar al inicio)
-    let lastUpdateTimestampSalary = null;
-    let updateIntervalSalary = 1000; // 1 segundo
-    let updateTimerSalary = null;
-    let isUpdatingSalary = false;
+    // Variables para el control de actualización en tiempo real
+    let ultimoTimestampActualizacionSalario = null;
+    let intervaloActualizacionSalario = 1000; // 1 segundo
+    let temporizadorActualizacionSalario = null;
+    let actualizandoSalario = false;
 
     // Función para cargar TODOS los niveles salariales desde la API (para búsqueda)
-    async function fetchAllSalaries() {
+    async function obtenerTodosSalarios() {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_salarios.php?all=true`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/imprimir_salarios.php?all=true`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                allSalaries = data.salaries;
-                return data.salaries;
+            if (datos.success) {
+                todosSalarios = datos.salaries;
+                return datos.salaries;
             } else {
-                console.error('Error al cargar todos los niveles salariales:', data.message);
+                console.error('Error al cargar todos los niveles salariales:', datos.message);
                 smallSwal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -64,23 +64,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para cargar los niveles salariales paginados desde la API
-    async function fetchSalaries(page) {
+    async function obtenerSalarios(pagina) {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_salarios.php?page=${page}&per_page=${rowsPerPage}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/imprimir_salarios.php?page=${pagina}&per_page=${filasPorPagina}`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                totalSalaries = data.total;
-                totalPages = data.total_pages;
+            if (datos.success) {
+                totalSalarios = datos.total;
+                totalPaginas = datos.total_pages;
                 return {
-                    salaries: data.salaries,
-                    total: data.total,
-                    total_pages: data.total_pages
+                    salarios: datos.salaries,
+                    total: datos.total,
+                    total_pages: datos.total_pages
                 };
             } else {
-                console.error('Error al cargar niveles salariales:', data.message);
+                console.error('Error al cargar niveles salariales:', datos.message);
                 return {
-                    salaries: [],
+                    salarios: [],
                     total: 0,
                     total_pages: 0
                 };
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error en la solicitud:', error);
             return {
-                salaries: [],
+                salarios: [],
                 total: 0,
                 total_pages: 0
             };
@@ -96,25 +96,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para filtrar localmente
-    function filterSalariesLocally(salaries, searchTerm) {
-        if (!searchTerm) return salaries;
+    function filtrarSalariosLocalmente(salarios, terminoBusqueda) {
+        if (!terminoBusqueda) return salarios;
         
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        return salaries.filter(salary => {
+        const terminoBusquedaMinusculas = terminoBusqueda.toLowerCase();
+        return salarios.filter(salario => {
             return (
-                (salary.nvl_ran && salary.nvl_ran.toLowerCase().includes(lowerSearchTerm)) ||
-                (salary.nvl_sal && salary.nvl_sal.toString().includes(searchTerm)) ||
-                (salary.ona_car && salary.ona_car.toLowerCase().includes(lowerSearchTerm))
+                (salario.nvl_ran && salario.nvl_ran.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (salario.nvl_sal && salario.nvl_sal.toString().includes(terminoBusqueda)) ||
+                (salario.ona_car && salario.ona_car.toLowerCase().includes(terminoBusquedaMinusculas))
             );
         });
     }
 
     // Función para mostrar los niveles salariales en la página actual
-    async function displaySalaries(page, salariesToDisplay = null) {
-        const isFiltered = salariesToDisplay !== null;
+    async function mostrarSalarios(pagina, salariosAMostrar = null) {
+        const estaFiltrado = salariosAMostrar !== null;
         
         // Mostrar loader mientras carga
-        tableBody.innerHTML = `
+        cuerpoTabla.innerHTML = `
             <tr>
                 <td colspan="4" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
@@ -124,69 +124,69 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `;
         
-        let salaries = [];
-        if (isFiltered) {
-            salaries = salariesToDisplay;
-            totalSalaries = salaries.length;
-            totalPages = Math.ceil(salaries.length / rowsPerPage);
+        let salarios = [];
+        if (estaFiltrado) {
+            salarios = salariosAMostrar;
+            totalSalarios = salarios.length;
+            totalPaginas = Math.ceil(salarios.length / filasPorPagina);
         } else {
-            const result = await fetchSalaries(page);
-            salaries = result.salaries;
-            totalSalaries = result.total;
-            totalPages = result.total_pages;
+            const resultado = await obtenerSalarios(pagina);
+            salarios = resultado.salarios;
+            totalSalarios = resultado.total;
+            totalPaginas = resultado.total_pages;
         }
         
         // Pequeño retraso para evitar parpadeo con cargas rápidas
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolver => setTimeout(resolver, 200));
         
-        tableBody.innerHTML = '';
+        cuerpoTabla.innerHTML = '';
         
-        if (salaries.length === 0) {
+        if (salarios.length === 0) {
             // Crear filas vacías para mantener la altura
-            for (let i = 0; i < rowsPerPage; i++) {
-                const row = document.createElement('tr');
+            for (let i = 0; i < filasPorPagina; i++) {
+                const fila = document.createElement('tr');
                 if (i === 0) {
-                    row.innerHTML = `
+                    fila.innerHTML = `
                         <td colspan="4" class="text-center empty-row">
-                            ${isFiltered ? 'No se encontraron coincidencias' : 'No se encontraron registros'}
+                            ${estaFiltrado ? 'No se encontraron coincidencias' : 'No se encontraron registros'}
                         </td>
                     `;
                 } else {
-                    row.innerHTML = '<td colspan="4" class="empty-row">&nbsp;</td>';
+                    fila.innerHTML = '<td colspan="4" class="empty-row">&nbsp;</td>';
                 }
-                tableBody.appendChild(row);
+                cuerpoTabla.appendChild(fila);
             }
             
             // Actualizar paginación para reflejar que no hay datos
-            setupPagination();
+            configurarPaginacion();
             return;
         }
 
         // Llenar con datos reales
-        salaries.forEach(salary => {
-            const row = document.createElement('tr');
+        salarios.forEach(salario => {
+            const fila = document.createElement('tr');
             
             // Tipos "0" y "1" - solo 3 columnas (sin acciones)
             if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
-                row.innerHTML = `
-                    <td>${salary.nvl_ran}</td>
-                    <td>${salary.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    <td>${salary.ona_car || 'Sin cargo asignado'}</td>
+                fila.innerHTML = `
+                    <td>${salario.nvl_ran}</td>
+                    <td>${salario.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td>${salario.ona_car || 'Sin cargo asignado'}</td>
                 `;
             } 
             // Tipo "2" - 4 columnas (solo editar)
             else if (LOGGED_USER_TYPE === '2') {
-                row.innerHTML = `
-                    <td>${salary.nvl_ran}</td>
-                    <td>${salary.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    <td>${salary.ona_car || 'Sin cargo asignado'}</td>
+                fila.innerHTML = `
+                    <td>${salario.nvl_ran}</td>
+                    <td>${salario.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td>${salario.ona_car || 'Sin cargo asignado'}</td>
                     <td>
                         <div class="dropdown">
                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}">
+                                <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salario.nvl_ide}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
                                 </a>
                             </div>
@@ -196,20 +196,20 @@ document.addEventListener('DOMContentLoaded', function() {
             } 
             // Tipos "3" y "4" - 4 columnas con todas las acciones
             else {
-                row.innerHTML = `
-                    <td>${salary.nvl_ran}</td>
-                    <td>${salary.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    <td>${salary.ona_car || 'Sin cargo asignado'}</td>
+                fila.innerHTML = `
+                    <td>${salario.nvl_ran}</td>
+                    <td>${salario.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td>${salario.ona_car || 'Sin cargo asignado'}</td>
                     <td>
                         <div class="dropdown">
                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}">
+                                <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salario.nvl_ide}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
                                 </a>
-                                <a class="dropdown-item delete-salary-btn" href="javascript:void(0);" data-nvl_ide="${salary.nvl_ide}" data-nvl_ran="${salary.nvl_ran}" data-ona_car="${salary.ona_car || 'Sin cargo asignado'}">
+                                <a class="dropdown-item delete-salary-btn" href="javascript:void(0);" data-nvl_ide="${salario.nvl_ide}" data-nvl_ran="${salario.nvl_ran}" data-ona_car="${salario.ona_car || 'Sin cargo asignado'}">
                                     <i class="bx bx-trash me-1"></i> Eliminar
                                 </a>
                             </div>
@@ -218,55 +218,55 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
             
-            tableBody.appendChild(row);
+            cuerpoTabla.appendChild(fila);
         });
 
-        // Completar con filas vacías si no llega a rowsPerPage
-        if (salaries.length < rowsPerPage) {
-            const remainingRows = rowsPerPage - salaries.length;
-            for (let i = 0; i < remainingRows; i++) {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="4" class="empty-row">&nbsp;</td>';
-                tableBody.appendChild(row);
+        // Completar con filas vacías si no llega a filasPorPagina
+        if (salarios.length < filasPorPagina) {
+            const filasRestantes = filasPorPagina - salarios.length;
+            for (let i = 0; i < filasRestantes; i++) {
+                const fila = document.createElement('tr');
+                fila.innerHTML = '<td colspan="4" class="empty-row">&nbsp;</td>';
+                cuerpoTabla.appendChild(fila);
             }
         }
 
         // Configurar eventos para los botones
-        setupEventListeners();
+        configurarEventos();
         
         // Actualizar paginación
-        setupPagination();
+        configurarPaginacion();
     }
 
     // Función para configurar el buscador
-    function setupSearch() {
-        const searchInput = document.getElementById('salarySearch');
-        let searchTimeout;
+    function configurarBusqueda() {
+        const entradaBusqueda = document.getElementById('salarySearch');
+        let temporizadorBusqueda;
         
         // Cargar todos los registros al iniciar para búsquedas
-        fetchAllSalaries();
+        obtenerTodosSalarios();
         
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
+        entradaBusqueda.addEventListener('input', function() {
+            clearTimeout(temporizadorBusqueda);
             
-            const searchTerm = this.value.trim();
-            currentSearchTerm = searchTerm;
+            const terminoBusqueda = this.value.trim();
+            terminoBusquedaActual = terminoBusqueda;
             
-            if (searchTerm.length === 0) {
+            if (terminoBusqueda.length === 0) {
                 // Si el buscador está vacío, volver a la paginación normal
-                isSearching = false;
-                currentPage = 1;
-                displaySalaries(currentPage);
-                paginationElement.style.display = '';
+                buscando = false;
+                paginaActual = 1;
+                mostrarSalarios(paginaActual);
+                elementoPaginacion.style.display = '';
                 return;
             }
             
             // Pequeño retraso para no hacer búsquedas con cada tecla
-            searchTimeout = setTimeout(async () => {
-                isSearching = true;
+            temporizadorBusqueda = setTimeout(async () => {
+                buscando = true;
                 
                 // Mostrar loader
-                tableBody.innerHTML = `
+                cuerpoTabla.innerHTML = `
                     <tr>
                         <td colspan="4" class="text-center py-4">
                             <div class="spinner-border text-primary" role="status">
@@ -277,41 +277,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 
                 // Si no tenemos todos los registros cargados, intentar cargarlos
-                if (allSalaries.length === 0) {
-                    allSalaries = await fetchAllSalaries();
+                if (todosSalarios.length === 0) {
+                    todosSalarios = await obtenerTodosSalarios();
                 }
                 
                 // Filtrar localmente con todos los datos
-                const filtered = filterSalariesLocally(allSalaries, searchTerm);
-                displaySalaries(1, filtered);
-                paginationElement.style.display = filtered.length > rowsPerPage ? '' : 'none';
+                const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusqueda);
+                mostrarSalarios(1, filtrados);
+                elementoPaginacion.style.display = filtrados.length > filasPorPagina ? '' : 'none';
             }, 300);
         });
         
         // Restaurar paginación si se borra la búsqueda
-        searchInput.addEventListener('keyup', function(e) {
+        entradaBusqueda.addEventListener('keyup', function(e) {
             if (e.key === 'Escape' || this.value.trim() === '') {
                 this.value = '';
-                isSearching = false;
-                currentPage = 1;
-                displaySalaries(currentPage);
-                paginationElement.style.display = '';
+                buscando = false;
+                paginaActual = 1;
+                mostrarSalarios(paginaActual);
+                elementoPaginacion.style.display = '';
             }
         });
     }
 
     // Función para configurar los event listeners
-    function setupEventListeners() {
+    function configurarEventos() {
         if (LOGGED_USER_TYPE === '2' || LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
-            document.querySelectorAll('.edit-salary-btn').forEach(btn => {
-                btn.addEventListener('click', async function() {
+            document.querySelectorAll('.edit-salary-btn').forEach(boton => {
+                boton.addEventListener('click', async function() {
                     const nvl_ide = this.getAttribute('data-nvl_ide');
                     try {
-                        const response = await fetch(`../PHP/api/gest-presupuesto/detalles_salarios.php?nvl_ide=${nvl_ide}`);
-                        const data = await response.json();
+                        const respuesta = await fetch(`../PHP/api/gest-presupuesto/detalles_salarios.php?nvl_ide=${nvl_ide}`);
+                        const datos = await respuesta.json();
                         
-                        if (data.success) {
-                            openEditModal(data.salary);
+                        if (datos.success) {
+                            abrirModalEdicion(datos.salary);
                         } else {
                             alert('No se pudieron cargar los datos del nivel salarial');
                         }
@@ -325,19 +325,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Agregar event listeners para los botones de eliminar
         if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
-            document.querySelectorAll('.delete-salary-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+            document.querySelectorAll('.delete-salary-btn').forEach(boton => {
+                boton.addEventListener('click', function() {
                     const nvl_ide = this.getAttribute('data-nvl_ide');
                     const nvl_ran = this.getAttribute('data-nvl_ran');
                     const ona_car = this.getAttribute('data-ona_car');
-                    showDeleteConfirmation(nvl_ide, nvl_ran, ona_car);
+                    mostrarConfirmacionEliminacion(nvl_ide, nvl_ran, ona_car);
                 });
             });
         }
     }
 
     // Función para mostrar confirmación de eliminación
-    function showDeleteConfirmation(nvl_ide, nvl_ran, ona_car) {
+    function mostrarConfirmacionEliminacion(nvl_ide, nvl_ran, ona_car) {
         smallSwal.fire({
             title: '¿Eliminar nivel salarial?',
             html: `¿Seguro de eliminar el nivel <strong>${nvl_ran}</strong> del cargo <strong>${ona_car}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
@@ -347,8 +347,8 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
+        }).then(async (resultado) => {
+            if (resultado.isConfirmed) {
                 // Mostrar loader durante la eliminación
                 smallSwal.fire({
                     title: 'Eliminando registro',
@@ -361,15 +361,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
                 
-                await deleteSalary(nvl_ide);
+                await eliminarSalario(nvl_ide);
             }
         });
     }
 
     // Función para eliminar un nivel salarial
-     async function deleteSalary(nvl_ide) {
+    async function eliminarSalario(nvl_ide) {
         try {
-            const response = await fetch('../PHP/api/gest-presupuesto/eliminar_salarios.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_salarios.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -377,40 +377,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ nvl_ide: nvl_ide })
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (!response.ok) {
-                throw new Error(result.message || `Error HTTP: ${response.status}`);
+            if (!respuesta.ok) {
+                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
             }
             
-            if (result.success) {
+            if (resultado.success) {
                 // Cerrar cualquier alerta abierta
                 smallSwal.close();
                 
                 // Verificar si debemos cambiar de página
-                if (currentPage > 1 && (totalSalaries - 1) <= ((currentPage - 1) * rowsPerPage)) {
-                    currentPage--;
+                if (paginaActual > 1 && (totalSalarios - 1) <= ((paginaActual - 1) * filasPorPagina)) {
+                    paginaActual--;
                 }
                 
                 // Mostrar mensaje de éxito
                 smallSwal.fire({
                     icon: 'success',
                     title: '¡Eliminado!',
-                    text: result.message || 'Nivel salarial eliminado correctamente',
+                    text: resultado.message || 'Nivel salarial eliminado correctamente',
                     showConfirmButton: false,
                     timer: 1500
                 }).then(async () => {
                     // Recargar la tabla
-                    if (isSearching) {
-                        allSalaries = await fetchAllSalaries();
-                        const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-                        displaySalaries(1, filtered);
+                    if (buscando) {
+                        todosSalarios = await obtenerTodosSalarios();
+                        const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusquedaActual);
+                        mostrarSalarios(1, filtrados);
                     } else {
-                        await displaySalaries(currentPage);
+                        await mostrarSalarios(paginaActual);
                     }
                 });
             } else {
-                throw new Error(result.message || 'Error al eliminar el nivel salarial');
+                throw new Error(resultado.message || 'Error al eliminar el nivel salarial');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
@@ -425,111 +425,110 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para configurar la paginación
-    function setupPagination() {
-        paginationElement.innerHTML = '';
+    function configurarPaginacion() {
+        elementoPaginacion.innerHTML = '';
         
-        if (totalPages <= 1) return;
+        if (totalPaginas <= 1) return;
         
         // Botón Primera página
         let li = document.createElement('li');
-        li.className = 'page-item first' + (currentPage === 1 ? ' disabled' : '');
+        li.className = 'page-item first' + (paginaActual === 1 ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== 1) {
-                currentPage = 1;
-                if (isSearching) {
+            if (paginaActual !== 1) {
+                paginaActual = 1;
+                if (buscando) {
                     // Si estamos buscando, mostrar los primeros resultados filtrados
-                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-                    displaySalaries(1, filtered);
+                    const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusquedaActual);
+                    mostrarSalarios(1, filtrados);
                 } else {
-                    displaySalaries(currentPage);
+                    mostrarSalarios(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Página anterior
         li = document.createElement('li');
-        li.className = 'page-item prev' + (currentPage === 1 ? ' disabled' : '');
+        li.className = 'page-item prev' + (paginaActual === 1 ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                if (isSearching) {
-                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-                    displaySalaries(currentPage, filtered);
+            if (paginaActual > 1) {
+                paginaActual--;
+                if (buscando) {
+                    const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusquedaActual);
+                    mostrarSalarios(paginaActual, filtrados);
                 } else {
-                    displaySalaries(currentPage);
+                    mostrarSalarios(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Números de página
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
+        const paginaInicio = Math.max(1, paginaActual - 2);
+        const paginaFin = Math.min(totalPaginas, paginaActual + 2);
         
-        for (let i = startPage; i <= endPage; i++) {
+        for (let i = paginaInicio; i <= paginaFin; i++) {
             li = document.createElement('li');
-            li.className = 'page-item' + (i === currentPage ? ' active' : '');
+            li.className = 'page-item' + (i === paginaActual ? ' active' : '');
             li.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
             li.addEventListener('click', () => {
-                if (currentPage !== i) {
-                    currentPage = i;
-                    if (isSearching) {
-                        const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-                        displaySalaries(currentPage, filtered);
+                if (paginaActual !== i) {
+                    paginaActual = i;
+                    if (buscando) {
+                        const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusquedaActual);
+                        mostrarSalarios(paginaActual, filtrados);
                     } else {
-                        displaySalaries(currentPage);
+                        mostrarSalarios(paginaActual);
                     }
                 }
             });
-            paginationElement.appendChild(li);
+            elementoPaginacion.appendChild(li);
         }
         
         // Botón Página siguiente
         li = document.createElement('li');
-        li.className = 'page-item next' + (currentPage === totalPages ? ' disabled' : '');
+        li.className = 'page-item next' + (paginaActual === totalPaginas ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                if (isSearching) {
-                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-                    displaySalaries(currentPage, filtered);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                if (buscando) {
+                    const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusquedaActual);
+                    mostrarSalarios(paginaActual, filtrados);
                 } else {
-                    displaySalaries(currentPage);
+                    mostrarSalarios(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Última página
         li = document.createElement('li');
-        li.className = 'page-item last' + (currentPage === totalPages ? ' disabled' : '');
+        li.className = 'page-item last' + (paginaActual === totalPaginas ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== totalPages) {
-                currentPage = totalPages;
-                if (isSearching) {
-                    const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-                    displaySalaries(currentPage, filtered);
+            if (paginaActual !== totalPaginas) {
+                paginaActual = totalPaginas;
+                if (buscando) {
+                    const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusquedaActual);
+                    mostrarSalarios(paginaActual, filtrados);
                 } else {
-                    displaySalaries(currentPage);
+                    mostrarSalarios(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
     }
 
     // Función para abrir el modal de edición con datos
-    async function openEditModal(salaryData) {
-
+    async function abrirModalEdicion(datosSalario) {
         // Limpiar validaciones previas
-        cleanModalValidations();
+        limpiarValidacionesModal();
 
         // Cargar los cargos ONAPRE primero
-        const cargosOnapre = await fetchCargosOnapre();
+        const cargosOnapre = await obtenerCargosOnapre();
         if (!cargosOnapre) {
             alert('No se pudieron cargar los cargos ONAPRE');
             return;
@@ -540,62 +539,62 @@ document.addEventListener('DOMContentLoaded', function() {
         selectOnapre.innerHTML = '<option value="">Seleccione</option>';
         
         cargosOnapre.forEach(cargo => {
-            const option = document.createElement('option');
-            option.value = cargo.ona_ide;
-            option.textContent = cargo.ona_car;
-            selectOnapre.appendChild(option);
+            const opcion = document.createElement('option');
+            opcion.value = cargo.ona_ide;
+            opcion.textContent = cargo.ona_car;
+            selectOnapre.appendChild(opcion);
         });
 
         // Llenar los campos con los datos del nivel salarial
-        document.getElementById('tipoNlvSalarial').value = salaryData.nvl_ran || '';
-        document.getElementById('salarioAsig').value = salaryData.nvl_sal || '';
+        document.getElementById('tipoNlvSalarial').value = datosSalario.nvl_ran || '';
+        document.getElementById('salarioAsig').value = datosSalario.nvl_sal || '';
         
         // Seleccionar el cargo ONAPRE correspondiente
-        if (salaryData.ona_ide) {
-            selectOnapre.value = salaryData.ona_ide;
+        if (datosSalario.ona_ide) {
+            selectOnapre.value = datosSalario.ona_ide;
         }
 
         // Agregar event listeners para validación en tiempo real
         document.getElementById('tipoNlvSalarial').addEventListener('input', function() {
-            validateTipoNivelInput(this);
+            validarInputTipoNivel(this);
         });
 
         document.getElementById('salarioAsig').addEventListener('input', function() {
-            validateSalarioInput(this);
+            validarInputSalario(this);
         });
 
         document.getElementById('OnapreAsig').addEventListener('change', function() {
-            validateOnapreSelect(this);
+            validarSelectOnapre(this);
         });
 
         // Configurar el botón de guardar
-        const saveButton = document.getElementById('confirmChangesBtn');
-        saveButton.onclick = async function() {
-            if (validateForm()) {
-                await updateSalary(salaryData.nvl_ide);
+        const botonGuardar = document.getElementById('confirmChangesBtn');
+        botonGuardar.onclick = async function() {
+            if (validarFormulario()) {
+                await actualizarSalario(datosSalario.nvl_ide);
             } else {
                 // Mostrar todos los mensajes de error
-                validateTipoNivelInput(document.getElementById('tipoNlvSalarial'));
-                validateSalarioInput(document.getElementById('salarioAsig'));
-                validateOnapreSelect(document.getElementById('OnapreAsig'));
+                validarInputTipoNivel(document.getElementById('tipoNlvSalarial'));
+                validarInputSalario(document.getElementById('salarioAsig'));
+                validarSelectOnapre(document.getElementById('OnapreAsig'));
             }
         };
 
         // Mostrar el modal
-        const editModal = new bootstrap.Modal(document.getElementById('ModalNivelSalarial'));
-        editModal.show();
+        const modalEdicion = new bootstrap.Modal(document.getElementById('ModalNivelSalarial'));
+        modalEdicion.show();
     }
 
     // Función para obtener los cargos ONAPRE
-    async function fetchCargosOnapre() {
+    async function obtenerCargosOnapre() {
         try {
-            const response = await fetch('../PHP/api/gest-presupuesto/carga-modal_salarios.php');
-            const data = await response.json();
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/carga-modal_salarios.php');
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                return data.cargos;
+            if (datos.success) {
+                return datos.cargos;
             } else {
-                console.error('Error al cargar cargos ONAPRE:', data.message);
+                console.error('Error al cargar cargos ONAPRE:', datos.message);
                 return null;
             }
         } catch (error) {
@@ -605,17 +604,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para actualizar un nivel salarial
-     async function updateSalary(nvl_ide) {
-        const saveButton = document.querySelector('#ModalNivelSalarial .btn-primary');
-        const originalText = saveButton.innerHTML;
+    async function actualizarSalario(nvl_ide) {
+        const botonGuardar = document.querySelector('#ModalNivelSalarial .btn-primary');
+        const textoOriginal = botonGuardar.innerHTML;
         
         // Mostrar spinner y deshabilitar botón
-        saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-        saveButton.disabled = true;
+        botonGuardar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+        botonGuardar.disabled = true;
         
         try {
             // Obtener los datos del formulario
-            const updatedData = {
+            const datosActualizados = {
                 nvl_ide: nvl_ide,
                 nvl_ran: document.getElementById('tipoNlvSalarial').value,
                 nvl_sal: document.getElementById('salarioAsig').value,
@@ -623,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
 
             // Validación básica
-            if (!updatedData.nvl_ran || !updatedData.nvl_sal) {
+            if (!datosActualizados.nvl_ran || !datosActualizados.nvl_sal) {
                 smallSwal.fire({
                     icon: 'error',
                     title: 'Datos incompletos',
@@ -635,17 +634,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamada a la API para guardar cambios
-            const response = await fetch('../PHP/api/gest-presupuesto/actualizar_salarios.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/actualizar_salarios.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(updatedData)
+                body: JSON.stringify(datosActualizados)
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (result.success) {
+            if (resultado.success) {
                 // Cerrar el modal
                 bootstrap.Modal.getInstance(document.getElementById('ModalNivelSalarial')).hide();
                 
@@ -658,16 +657,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     timer: 1500
                 }).then(async () => {
                     // Recargar los datos
-                    if (isSearching) {
-                        allSalaries = await fetchAllSalaries();
-                        const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-                        displaySalaries(1, filtered);
+                    if (buscando) {
+                        todosSalarios = await obtenerTodosSalarios();
+                        const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusquedaActual);
+                        mostrarSalarios(1, filtrados);
                     } else {
-                        await displaySalaries(currentPage);
+                        await mostrarSalarios(paginaActual);
                     }
                 });
             } else {
-                throw new Error(result.message || 'Error desconocido');
+                throw new Error(resultado.message || 'Error desconocido');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
@@ -680,21 +679,21 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } finally {
             // Restaurar el botón
-            saveButton.innerHTML = originalText;
-            saveButton.disabled = false;
+            botonGuardar.innerHTML = textoOriginal;
+            botonGuardar.disabled = false;
         }
     }
 
     // Función para validar el input de Tipo de Nivel Salarial
-    function validateTipoNivelInput(input) {
+    function validarInputTipoNivel(input) {
         // Eliminar cualquier carácter no permitido (solo letras)
-        const sanitizedValue = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+        const valorSanitizado = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
         
         // Limitar a 5 caracteres
-        if (sanitizedValue.length > 5) {
-            input.value = sanitizedValue.substring(0, 5);
+        if (valorSanitizado.length > 5) {
+            input.value = valorSanitizado.substring(0, 5);
         } else {
-            input.value = sanitizedValue;
+            input.value = valorSanitizado;
         }
         
         // Validar el campo
@@ -708,33 +707,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para validar el input de Salario
-    function validateSalarioInput(input) {
+    function validarInputSalario(input) {
         // Obtener el valor actual
-        let value = input.value;
+        let valor = input.value;
         
         // Eliminar cualquier carácter que no sea número o punto
-        let sanitizedValue = value.replace(/[^0-9.]/g, '');
+        let valorSanitizado = valor.replace(/[^0-9.]/g, '');
         
         // Manejar múltiples puntos decimales
-        const parts = sanitizedValue.split('.');
-        if (parts.length > 2) {
+        const partes = valorSanitizado.split('.');
+        if (partes.length > 2) {
             // Si hay más de un punto, mantener solo el primero
-            sanitizedValue = parts[0] + '.' + parts.slice(1).join('');
+            valorSanitizado = partes[0] + '.' + partes.slice(1).join('');
         }
         
         // Limitar decimales a 2
-        if (parts.length === 2) {
-            parts[1] = parts[1].substring(0, 2);
-            sanitizedValue = parts[0] + '.' + parts[1];
+        if (partes.length === 2) {
+            partes[1] = partes[1].substring(0, 2);
+            valorSanitizado = partes[0] + '.' + partes[1];
         }
         
         // Limitar a 10 caracteres en total
-        if (sanitizedValue.length > 10) {
-            sanitizedValue = sanitizedValue.substring(0, 10);
+        if (valorSanitizado.length > 10) {
+            valorSanitizado = valorSanitizado.substring(0, 10);
         }
         
         // Actualizar el valor del input
-        input.value = sanitizedValue;
+        input.value = valorSanitizado;
         
         // Validar el campo
         if (input.value.trim() === '' || isNaN(Number(input.value))) {
@@ -747,7 +746,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para validar el select de ONAPRE
-    function validateOnapreSelect(select) {
+    function validarSelectOnapre(select) {
         if (select.value === "") {
             select.classList.add('is-invalid');
             return false;
@@ -758,77 +757,77 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para validar todo el formulario antes de guardar
-    function validateForm() {
-        const tipoNivelValid = validateTipoNivelInput(document.getElementById('tipoNlvSalarial'));
-        const salarioValid = validateSalarioInput(document.getElementById('salarioAsig'));
-        const onapreValid = validateOnapreSelect(document.getElementById('OnapreAsig'));
+    function validarFormulario() {
+        const tipoNivelValido = validarInputTipoNivel(document.getElementById('tipoNlvSalarial'));
+        const salarioValido = validarInputSalario(document.getElementById('salarioAsig'));
+        const onapreValido = validarSelectOnapre(document.getElementById('OnapreAsig'));
         
-        return tipoNivelValid && salarioValid && onapreValid;
+        return tipoNivelValido && salarioValido && onapreValido;
     }
 
     // Función para limpiar todas las validaciones del modal
-    function cleanModalValidations() {
+    function limpiarValidacionesModal() {
         const inputs = document.querySelectorAll('#ModalNivelSalarial .form-control, #ModalNivelSalarial .form-select');
         inputs.forEach(input => {
             input.classList.remove('is-invalid');
         });
     }
 
-    // Función para verificar cambios en bit_nvl (agregar después de las funciones existentes)
-    async function checkForSalaryUpdates() {
-        if (isUpdatingSalary) return;
-        isUpdatingSalary = true;
+    // Función para verificar cambios en bit_nvl
+    async function verificarActualizacionesSalarios() {
+        if (actualizandoSalario) return;
+        actualizandoSalario = true;
         
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/check_salary_updates.php?last_update=${lastUpdateTimestampSalary || ''}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/check_salary_updates.php?last_update=${ultimoTimestampActualizacionSalario || ''}`);
+            const datos = await respuesta.json();
             
-            if (data.success && data.has_changes) {
-                lastUpdateTimestampSalary = data.last_update;
+            if (datos.success && datos.has_changes) {
+                ultimoTimestampActualizacionSalario = datos.last_update;
                 
                 // Actualizar la tabla con animación suave
-                await smoothUpdateSalaryTable();
+                await actualizarTablaSalariosSuavemente();
             }
         } catch (error) {
             console.error('Error al verificar actualizaciones de salarios:', error);
         } finally {
-            isUpdatingSalary = false;
+            actualizandoSalario = false;
         }
     }
 
     // Función para actualizar la tabla de salarios con animación suave
-    async function smoothUpdateSalaryTable() {
-        const table = document.getElementById('salaryTable');
-        const updateIndicator = document.createElement('div');
+    async function actualizarTablaSalariosSuavemente() {
+        const tabla = document.getElementById('salaryTable');
+        const indicadorActualizacion = document.createElement('div');
         
         // Aplicar estilos de transición
-        table.classList.add('table-updating');
+        tabla.classList.add('table-updating');
         
         // Mostrar indicador de actualización
-        table.parentNode.insertBefore(updateIndicator, table);
+        tabla.parentNode.insertBefore(indicadorActualizacion, tabla);
         
         // Pequeño retraso para que se vea el indicador
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolver => setTimeout(resolver, 300));
         
         // Recargar datos
-        if (isSearching) {
-            allSalaries = await fetchAllSalaries();
-            const filtered = filterSalariesLocally(allSalaries, currentSearchTerm);
-            await displaySalaries(currentPage, filtered);
+        if (buscando) {
+            todosSalarios = await obtenerTodosSalarios();
+            const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusquedaActual);
+            await mostrarSalarios(paginaActual, filtrados);
         } else {
-            await displaySalaries(currentPage);
+            await mostrarSalarios(paginaActual);
         }
         
         // Ocultar indicador y quitar clase de transición
-        updateIndicator.remove();
-        table.classList.remove('table-updating');
+        indicadorActualizacion.remove();
+        tabla.classList.remove('table-updating');
         
         // Mostrar notificación de actualización
-        showSalaryUpdateNotification();
+        mostrarNotificacionActualizacionSalarios();
     }
 
     // Función para mostrar notificación de actualización
-    function showSalaryUpdateNotification() {
+    function mostrarNotificacionActualizacionSalarios() {
         const Toast = Swal.mixin({
             toast: true,
             position: 'bottom-end',
@@ -850,33 +849,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Iniciar el sistema de actualización periódica para salarios
-    function startSalaryUpdateChecker() {
+    function iniciarVerificadorActualizacionesSalarios() {
         // Verificar actualizaciones inmediatamente
-        checkForSalaryUpdates();
+        verificarActualizacionesSalarios();
         
         // Configurar intervalo periódico
-        updateTimerSalary = setInterval(checkForSalaryUpdates, updateIntervalSalary);
+        temporizadorActualizacionSalario = setInterval(verificarActualizacionesSalarios, intervaloActualizacionSalario);
         
         // También verificar cuando la ventana gana foco
-        window.addEventListener('focus', checkForSalaryUpdates);
+        window.addEventListener('focus', verificarActualizacionesSalarios);
     }
 
     // Detener el sistema de actualización
-    function stopSalaryUpdateChecker() {
-        if (updateTimerSalary) {
-            clearInterval(updateTimerSalary);
+    function detenerVerificadorActualizacionesSalarios() {
+        if (temporizadorActualizacionSalario) {
+            clearInterval(temporizadorActualizacionSalario);
         }
-        window.removeEventListener('focus', checkForSalaryUpdates);
+        window.removeEventListener('focus', verificarActualizacionesSalarios);
     }
 
     // Inicializar la tabla, paginación y buscador
-    displaySalaries(currentPage).then(() => {
-        setupSearch();
+    mostrarSalarios(paginaActual).then(() => {
+        configurarBusqueda();
     });
 
     // Iniciar el sistema de actualización en tiempo real
-    startSalaryUpdateChecker();
+    iniciarVerificadorActualizacionesSalarios();
     
     // Detener el checker cuando la página se cierra/recarga
-    window.addEventListener('beforeunload', stopSalaryUpdateChecker);
+    window.addEventListener('beforeunload', detenerVerificadorActualizacionesSalarios);
 });

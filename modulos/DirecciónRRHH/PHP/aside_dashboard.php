@@ -31,7 +31,7 @@
             <ul class="menu-sub">
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
                 <li class="menu-item">
-                    <a href="Register-NewUser.php" class="menu-link" target="_blank">
+                    <a href="Register-NewUser.php" class="menu-link">
                         <div data-i18n="Basic">Añadir Nuevo Trabajador</div>
                     </a>
                 </li>
@@ -39,7 +39,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4'): ?>
                 <li class="menu-item">
-                    <a href="auth-register-basic.php" class="menu-link" target="_blank">
+                    <a href="auth-register-basic.php" class="menu-link">
                         <div data-i18n="Basic">Registrar Usuario</div>
                     </a>
                 </li>
@@ -47,7 +47,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2' || $GLOBALS['decoded']->data->tipo == '1'): ?>
                 <li class="menu-item">
-                    <a href="Register-AntUser.php" class="menu-link" target="_blank">
+                    <a href="Register-AntUser.php" class="menu-link">
                         <div data-i18n="Basic">Registro de Antigüedades</div>
                     </a>
                 </li>
@@ -65,7 +65,7 @@
             <ul class="menu-sub">
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2' || $GLOBALS['decoded']->data->tipo == '1' || $GLOBALS['decoded']->data->tipo == '0'): ?>
                 <li class="menu-item">
-                    <a href="Table_Nomina.php" class="menu-link" target="_blank">
+                    <a href="Table_Nomina.php" class="menu-link">
                         <div data-i18n="Basic">Tabla Trabajadores</div>
                     </a>
                 </li>
@@ -73,7 +73,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '1'): ?>
                 <li class="menu-item">
-                    <a href="Table_User.php" class="menu-link" target="_blank">
+                    <a href="Table_User.php" class="menu-link">
                         <div data-i18n="Basic">Tabla Usuarios</div>
                     </a>
                 </li>
@@ -81,7 +81,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2' || $GLOBALS['decoded']->data->tipo == '1' || $GLOBALS['decoded']->data->tipo == '0'): ?>
                 <li class="menu-item">
-                    <a href="Tables_Cargos.php" class="menu-link" target="_blank">
+                    <a href="Tables_Cargos.php" class="menu-link">
                         <div data-i18n="Basic">Cargos</div>
                     </a>
                 </li>
@@ -89,7 +89,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2' || $GLOBALS['decoded']->data->tipo == '1'): ?>
                 <li class="menu-item">
-                    <a href="Table_NvlSalarial.php" class="menu-link" target="_blank">
+                    <a href="Table_NvlSalarial.php" class="menu-link">
                         <div data-i18n="Basic">Niveles Salariales</div>
                     </a>
                 </li>
@@ -97,7 +97,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
                 <li class="menu-item">
-                    <a href="Table_NvlSalarial-Hist.php" class="menu-link" target="_blank">
+                    <a href="Table_NvlSalarial-Hist.php" class="menu-link">
                         <div data-i18n="Basic">Histórico de Niveles Salariales</div>
                     </a>
                 </li>
@@ -105,7 +105,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
                 <li class="menu-item">
-                    <a href="Table_suplencias.php" class="menu-link" target="_blank">
+                    <a href="Table_suplencias.php" class="menu-link">
                         <div data-i18n="Basic">Suplencias de los Trabajadores</div>
                     </a>
                 </li>
@@ -113,7 +113,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '1' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
                 <li class="menu-item">
-                    <a href="Tabla_cajaahorrop.php" class="menu-link" target="_blank">
+                    <a href="Tabla_cajaahorrop.php" class="menu-link">
                         <div data-i18n="Basic">Caja de Ahorro Patronal</div>
                     </a>
                 </li>
@@ -121,7 +121,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '1' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
                 <li class="menu-item">
-                    <a href="Table_deduc.php" class="menu-link" target="_blank">
+                    <a href="Table_deduc.php" class="menu-link">
                         <div data-i18n="Basic">Deducciones</div>
                     </a>
                 </li>
@@ -129,7 +129,7 @@
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '1' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
                 <li class="menu-item">
-                    <a href="Table_Asig.php" class="menu-link" target="_blank">
+                    <a href="Table_Asig.php" class="menu-link">
                         <div data-i18n="Basic">Asignaciones</div>
                     </a>
                 </li>
@@ -146,12 +146,12 @@
             </a>
             <ul class="menu-sub">
                 <li class="menu-item">
-                    <a href="Vista_roles.php" class="menu-link" target="_blank">
+                    <a href="Vista_roles.php" class="menu-link">
                         <div data-i18n="Basic">Vista de Permisos</div>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a href="Table_Mod.php" class="menu-link" target="_blank">
+                    <a href="Table_Mod.php" class="menu-link">
                         <div data-i18n="Basic">Tabla de Modificaciones</div>
                     </a>
                 </li>

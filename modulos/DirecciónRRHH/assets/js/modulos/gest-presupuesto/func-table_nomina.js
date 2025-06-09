@@ -1,22 +1,22 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Variables para la paginación
-    const rowsPerPage = 7;
-    let currentPage = 1;
-    let totalWorkers = 0;
-    let totalPages = 1;
-    const tableBody = document.querySelector('#workersTable tbody');
-    const paginationElement = document.getElementById('pagination');
+    const filasPorPagina = 7;
+    let paginaActual = 1;
+    let totalTrabajadores = 0;
+    let totalPaginas = 1;
+    const cuerpoTabla = document.querySelector('#workersTable tbody');
+    const elementoPaginacion = document.getElementById('pagination');
 
     // Variables para búsqueda global
-    let allWorkers = [];
-    let isSearching = false;
-    let currentSearchTerm = '';
+    let todosTrabajadores = [];
+    let buscando = false;
+    let terminoBusquedaActual = '';
 
     // Variables para el control de actualización en tiempo real
-    let lastUpdateTimestamp = null;
-    let updateInterval = 1000; // 1 segundos
-    let updateTimer = null;
-    let isUpdating = false;
+    let ultimoTimestampActualizacion = null;
+    let intervaloActualizacion = 1000; // 1 segundos
+    let temporizadorActualizacion = null;
+    let actualizando = false;
 
     // Funcionamiento de estilos
     const smallSwal = Swal.mixin({
@@ -31,41 +31,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }); 
 
     // Función para validar solo números (sin caracteres especiales)
-    function validarSoloNumeros(event) {
-        const charCode = event.which ? event.which : event.keyCode;
-        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-            event.preventDefault();
+    function validarSoloNumeros(evento) {
+        const codigoCaracter = evento.which ? evento.which : evento.keyCode;
+        if (codigoCaracter > 31 && (codigoCaracter < 48 || codigoCaracter > 57)) {
+            evento.preventDefault();
             return false;
         }
         return true;
     }
 
     // Función para validar solo letras (con acentos)
-    function validarSoloLetras(event) {
-        const charCode = event.which ? event.which : event.keyCode;
+    function validarSoloLetras(evento) {
+        const codigoCaracter = evento.which ? evento.which : evento.keyCode;
         // Permitir teclas de control (backspace, delete, etc.)
-        if (charCode <= 32 || (charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122)) {
+        if (codigoCaracter <= 32 || (codigoCaracter >= 65 && codigoCaracter <= 90) || (codigoCaracter >= 97 && codigoCaracter <= 122)) {
             return true;
         }
         // Permitir letras con acentos (á, é, í, ó, ú, ñ, etc.)
-        if (charCode >= 192 && charCode <= 255) {
+        if (codigoCaracter >= 192 && codigoCaracter <= 255) {
             return true;
         }
-        event.preventDefault();
+        evento.preventDefault();
         return false;
     }
 
     // Función para cargar TODOS los trabajadores desde la API (para búsqueda)
-    async function fetchAllWorkers() {
+    async function obtenerTodosTrabajadores() {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_nomina.php?all=true`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/imprimir_nomina.php?all=true`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                allWorkers = data.workers;
-                return data.workers;
+            if (datos.success) {
+                todosTrabajadores = datos.workers;
+                return datos.workers;
             } else {
-                console.error('Error al cargar todos los trabajadores:', data.message);
+                console.error('Error al cargar todos los trabajadores:', datos.message);
                 return [];
             }
         } catch (error) {
@@ -75,23 +75,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para cargar los trabajadores paginados desde la API
-    async function fetchWorkers(page) {
+    async function obtenerTrabajadores(pagina) {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_nomina.php?page=${page}&per_page=${rowsPerPage}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/imprimir_nomina.php?page=${pagina}&per_page=${filasPorPagina}`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                totalWorkers = data.total;
-                totalPages = data.total_pages;
+            if (datos.success) {
+                totalTrabajadores = datos.total;
+                totalPaginas = datos.total_pages;
                 return {
-                    workers: data.workers,
-                    total: data.total,
-                    total_pages: data.total_pages
+                    trabajadores: datos.workers,
+                    total: datos.total,
+                    total_pages: datos.total_pages
                 };
             } else {
-                console.error('Error al cargar trabajadores:', data.message);
+                console.error('Error al cargar trabajadores:', datos.message);
                 return {
-                    workers: [],
+                    trabajadores: [],
                     total: 0,
                     total_pages: 0
                 };
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error en la solicitud:', error);
             return {
-                workers: [],
+                trabajadores: [],
                 total: 0,
                 total_pages: 0
             };
@@ -107,34 +107,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para filtrar trabajadores localmente
-    function filterWorkersLocally(workers, searchTerm) {
-        if (!searchTerm) return workers;
+    function filtrarTrabajadoresLocalmente(trabajadores, terminoBusqueda) {
+        if (!terminoBusqueda) return trabajadores;
         
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        return workers.filter(worker => {
+        const terminoBusquedaMinusculas = terminoBusqueda.toLowerCase();
+        return trabajadores.filter(trabajador => {
             return (
-                (worker.cedula && worker.cedula.toLowerCase().includes(lowerSearchTerm)) ||
-                (worker.nombres && worker.nombres.toLowerCase().includes(lowerSearchTerm)) ||
-                (worker.apellidos && worker.apellidos.toLowerCase().includes(lowerSearchTerm)) ||
-                (worker.genero && worker.genero.toLowerCase().includes(lowerSearchTerm)) ||
-                (worker.departamento && worker.departamento.toLowerCase().includes(lowerSearchTerm))
+                (trabajador.cedula && trabajador.cedula.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (trabajador.nombres && trabajador.nombres.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (trabajador.apellidos && trabajador.apellidos.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (trabajador.genero && trabajador.genero.toLowerCase().includes(terminoBusquedaMinusculas)) ||
+                (trabajador.departamento && trabajador.departamento.toLowerCase().includes(terminoBusquedaMinusculas))
             );
         });
     }
 
     // Función para mostrar los trabajadores en la página actual
-    async function displayWorkers(page, workersToDisplay = null) {
-        const isFiltered = workersToDisplay !== null;
+    async function mostrarTrabajadores(pagina, trabajadoresAMostrar = null) {
+        const estaFiltrado = trabajadoresAMostrar !== null;
 
-        const actionsHeader = document.querySelector('#actionsColumnHeader');
+        const encabezadoAcciones = document.querySelector('#actionsColumnHeader');
         if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
-            actionsHeader.style.display = 'none';
+            encabezadoAcciones.style.display = 'none';
         } else {
-            actionsHeader.style.display = '';
+            encabezadoAcciones.style.display = '';
         }
 
         // Mostrar loader mientras carga
-        tableBody.innerHTML = `
+        cuerpoTabla.innerHTML = `
             <tr>
                 <td colspan="6" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
@@ -144,76 +144,76 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `;
         
-        let workers = [];
-        if (isFiltered) {
-            workers = workersToDisplay;
-            totalWorkers = workers.length;
-            totalPages = Math.ceil(workers.length / rowsPerPage);
+        let trabajadores = [];
+        if (estaFiltrado) {
+            trabajadores = trabajadoresAMostrar;
+            totalTrabajadores = trabajadores.length;
+            totalPaginas = Math.ceil(trabajadores.length / filasPorPagina);
         } else {
-            const result = await fetchWorkers(page);
-            workers = result.workers;
-            totalWorkers = result.total;
-            totalPages = result.total_pages;
+            const resultado = await obtenerTrabajadores(pagina);
+            trabajadores = resultado.trabajadores;
+            totalTrabajadores = resultado.total;
+            totalPaginas = resultado.total_pages;
         }
         
         // Pequeño retraso para evitar parpadeo con cargas rápidas
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolver => setTimeout(resolver, 200));
         
-        tableBody.innerHTML = '';
+        cuerpoTabla.innerHTML = '';
         
-        if (workers.length === 0) {
+        if (trabajadores.length === 0) {
             // Crear filas vacías para mantener la altura
-            for (let i = 0; i < rowsPerPage; i++) {
-                const row = document.createElement('tr');
+            for (let i = 0; i < filasPorPagina; i++) {
+                const fila = document.createElement('tr');
                 if (i === 0) {
-                    row.innerHTML = `
+                    fila.innerHTML = `
                         <td colspan="6" class="text-center empty-row">
-                            ${isFiltered ? 'No se encontraron coincidencias' : 'No se encontraron trabajadores'}
+                            ${estaFiltrado ? 'No se encontraron coincidencias' : 'No se encontraron trabajadores'}
                         </td>
                     `;
                 } else {
-                    row.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
+                    fila.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
                 }
-                tableBody.appendChild(row);
+                cuerpoTabla.appendChild(fila);
             }
             
             // Actualizar paginación para reflejar que no hay datos
-            setupPagination();
+            configurarPaginacion();
             return;
         }
 
         // Llenar con datos reales
-        workers.forEach(worker => {
-            const row = document.createElement('tr');
+        trabajadores.forEach(trabajador => {
+            const fila = document.createElement('tr');
             
             // Determinar qué mostrar en la columna de acciones según el tipo de usuario
-            let actionsHtml = '';
+            let accionesHtml = '';
             
             if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
                 // Caso 1: No mostrar columna de acciones
-                row.innerHTML = `
-                    <td><strong>${worker.cedula}</strong></td>
-                    <td>${worker.nombres}</td>
-                    <td>${worker.apellidos}</td>
-                    <td>${worker.genero}</td>
-                    <td>${worker.departamento}</td>
+                fila.innerHTML = `
+                    <td><strong>${trabajador.cedula}</strong></td>
+                    <td>${trabajador.nombres}</td>
+                    <td>${trabajador.apellidos}</td>
+                    <td>${trabajador.genero}</td>
+                    <td>${trabajador.departamento}</td>
                     <td></td> <!-- Columna vacía -->
                 `;
             } else if (LOGGED_USER_TYPE === '2') {
                 // Caso 2: Mostrar solo editar
-                row.innerHTML = `
-                    <td><strong>${worker.cedula}</strong></td>
-                    <td>${worker.nombres}</td>
-                    <td>${worker.apellidos}</td>
-                    <td>${worker.genero}</td>
-                    <td>${worker.departamento}</td>
+                fila.innerHTML = `
+                    <td><strong>${trabajador.cedula}</strong></td>
+                    <td>${trabajador.nombres}</td>
+                    <td>${trabajador.apellidos}</td>
+                    <td>${trabajador.genero}</td>
+                    <td>${trabajador.departamento}</td>
                     <td>
                         <div class="dropdown">
                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item edit-worker-btn" href="javascript:void(0);" data-cedula="${worker.cedula}">
+                                <a class="dropdown-item edit-worker-btn" href="javascript:void(0);" data-cedula="${trabajador.cedula}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
                                 </a>
                             </div>
@@ -222,22 +222,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             } else {
                 // Caso 3: Mostrar todo (tipos 3 y 4)
-                row.innerHTML = `
-                    <td><strong>${worker.cedula}</strong></td>
-                    <td>${worker.nombres}</td>
-                    <td>${worker.apellidos}</td>
-                    <td>${worker.genero}</td>
-                    <td>${worker.departamento}</td>
+                fila.innerHTML = `
+                    <td><strong>${trabajador.cedula}</strong></td>
+                    <td>${trabajador.nombres}</td>
+                    <td>${trabajador.apellidos}</td>
+                    <td>${trabajador.genero}</td>
+                    <td>${trabajador.departamento}</td>
                     <td>
                         <div class="dropdown">
                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item edit-worker-btn" href="javascript:void(0);" data-cedula="${worker.cedula}">
+                                <a class="dropdown-item edit-worker-btn" href="javascript:void(0);" data-cedula="${trabajador.cedula}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
                                 </a>
-                                <a class="dropdown-item delete-worker-btn" href="javascript:void(0);" data-cedula="${worker.cedula}">
+                                <a class="dropdown-item delete-worker-btn" href="javascript:void(0);" data-cedula="${trabajador.cedula}">
                                     <i class="bx bx-trash me-1"></i> Eliminar
                                 </a>
                             </div>
@@ -246,55 +246,55 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
             
-            tableBody.appendChild(row);
+            cuerpoTabla.appendChild(fila);
         });
 
-        // Completar con filas vacías si no llega a rowsPerPage
-        if (workers.length < rowsPerPage) {
-            const remainingRows = rowsPerPage - workers.length;
-            for (let i = 0; i < remainingRows; i++) {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
-                tableBody.appendChild(row);
+        // Completar con filas vacías si no llega a filasPorPagina
+        if (trabajadores.length < filasPorPagina) {
+            const filasRestantes = filasPorPagina - trabajadores.length;
+            for (let i = 0; i < filasRestantes; i++) {
+                const fila = document.createElement('tr');
+                fila.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
+                cuerpoTabla.appendChild(fila);
             }
         }
 
         // Configurar eventos para los botones
-        setupEventListeners();
+        configurarEventos();
         
         // Actualizar paginación
-        setupPagination();
+        configurarPaginacion();
     }
 
     // Función para configurar el buscador
-    function setupSearch() {
-        const searchInput = document.getElementById('workersSearch');
-        let searchTimeout;
+    function configurarBusqueda() {
+        const entradaBusqueda = document.getElementById('workersSearch');
+        let temporizadorBusqueda;
         
         // Cargar todos los registros al iniciar para búsquedas
-        fetchAllWorkers();
+        obtenerTodosTrabajadores();
         
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
+        entradaBusqueda.addEventListener('input', function() {
+            clearTimeout(temporizadorBusqueda);
             
-            const searchTerm = this.value.trim();
-            currentSearchTerm = searchTerm;
+            const terminoBusqueda = this.value.trim();
+            terminoBusquedaActual = terminoBusqueda;
             
-            if (searchTerm.length === 0) {
+            if (terminoBusqueda.length === 0) {
                 // Si el buscador está vacío, volver a la paginación normal
-                isSearching = false;
-                currentPage = 1;
-                displayWorkers(currentPage);
-                paginationElement.style.display = '';
+                buscando = false;
+                paginaActual = 1;
+                mostrarTrabajadores(paginaActual);
+                elementoPaginacion.style.display = '';
                 return;
             }
             
             // Pequeño retraso para no hacer búsquedas con cada tecla
-            searchTimeout = setTimeout(async () => {
-                isSearching = true;
+            temporizadorBusqueda = setTimeout(async () => {
+                buscando = true;
                 
                 // Mostrar loader
-                tableBody.innerHTML = `
+                cuerpoTabla.innerHTML = `
                     <tr>
                         <td colspan="6" class="text-center py-4">
                             <div class="spinner-border text-primary" role="status">
@@ -305,38 +305,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 
                 // Si no tenemos todos los registros cargados, intentar cargarlos
-                if (allWorkers.length === 0) {
-                    allWorkers = await fetchAllWorkers();
+                if (todosTrabajadores.length === 0) {
+                    todosTrabajadores = await obtenerTodosTrabajadores();
                 }
                 
                 // Filtrar localmente con todos los datos
-                const filtered = filterWorkersLocally(allWorkers, searchTerm);
-                displayWorkers(1, filtered);
-                paginationElement.style.display = filtered.length > rowsPerPage ? '' : 'none';
+                const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusqueda);
+                mostrarTrabajadores(1, filtrados);
+                elementoPaginacion.style.display = filtrados.length > filasPorPagina ? '' : 'none';
             }, 300);
         });
         
         // Restaurar paginación si se borra la búsqueda
-        searchInput.addEventListener('keyup', function(e) {
+        entradaBusqueda.addEventListener('keyup', function(e) {
             if (e.key === 'Escape' || this.value.trim() === '') {
                 this.value = '';
-                isSearching = false;
-                currentPage = 1;
-                displayWorkers(currentPage);
-                paginationElement.style.display = '';
+                buscando = false;
+                paginaActual = 1;
+                mostrarTrabajadores(paginaActual);
+                elementoPaginacion.style.display = '';
             }
         });
     }
 
     // Función para configurar los event listeners
-    function setupEventListeners() {
+    function configurarEventos() {
         // Agregar event listeners para los botones de editar
-        document.querySelectorAll('.edit-worker-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
+        document.querySelectorAll('.edit-worker-btn').forEach(boton => {
+            boton.addEventListener('click', async function() {
                 const cedula = this.getAttribute('data-cedula');
-                const workerData = await fetchWorkerDetails(cedula);
-                if (workerData) {
-                    openEditModal(workerData);
+                const datosTrabajador = await obtenerDetallesTrabajador(cedula);
+                if (datosTrabajador) {
+                    abrirModalEdicion(datosTrabajador);
                 } else {
                     alert('No se pudieron cargar los datos del trabajador');
                 }
@@ -344,24 +344,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Agregar event listeners para los botones de eliminar
-        document.querySelectorAll('.delete-worker-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+        document.querySelectorAll('.delete-worker-btn').forEach(boton => {
+            boton.addEventListener('click', function() {
                 const cedula = this.getAttribute('data-cedula');
-                showDeleteConfirmation(cedula);
+                mostrarConfirmacionEliminacion(cedula);
             });
         });
     }
 
     // Función para obtener los datos completos de un trabajador
-    async function fetchWorkerDetails(cedula) {
+    async function obtenerDetallesTrabajador(cedula) {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/carga-modal_edit_nomina.php?cedula=${cedula}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/carga-modal_edit_nomina.php?cedula=${cedula}`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                return data.worker;
+            if (datos.success) {
+                return datos.worker;
             } else {
-                console.error('Error al cargar detalles:', data.message);
+                console.error('Error al cargar detalles:', datos.message);
                 return null;
             }
         } catch (error) {
@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para mostrar confirmación de eliminación
-    function showDeleteConfirmation(cedula) {
+    function mostrarConfirmacionEliminacion(cedula) {
         // Verificar si el usuario está intentando eliminarse a sí mismo
         if (typeof LOGGED_USER_CI !== 'undefined' && cedula === LOGGED_USER_CI) {
             smallSwal.fire({
@@ -394,15 +394,15 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, Eliminar',
             cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                deleteWorker(cedula);
+        }).then((resultado) => {
+            if (resultado.isConfirmed) {
+                eliminarTrabajador(cedula);
             }
         });
     }
 
     // Función para eliminar un trabajador
-    async function deleteWorker(cedula) {
+    async function eliminarTrabajador(cedula) {
         // Mostrar loader
         smallSwal.fire({
             title: 'Eliminando trabajador',
@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         try {
-            const response = await fetch('../PHP/api/gest-presupuesto/eliminar-user_nomina.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar-user_nomina.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -425,36 +425,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ cedula: cedula })
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (!response.ok) {
-                throw new Error(result.message || `Error HTTP: ${response.status}`);
+            if (!respuesta.ok) {
+                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
             }
             
-            if (result.success) {
+            if (resultado.success) {
                 // Verificar si debemos cambiar de página
-                if (currentPage > 1 && (totalWorkers - 1) <= ((currentPage - 1) * rowsPerPage)) {
-                    currentPage--;
+                if (paginaActual > 1 && (totalTrabajadores - 1) <= ((paginaActual - 1) * filasPorPagina)) {
+                    paginaActual--;
                 }
                 
                 // Recargar la tabla
-                if (isSearching) {
-                    allWorkers = await fetchAllWorkers();
-                    const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
-                    displayWorkers(1, filtered);
+                if (buscando) {
+                    todosTrabajadores = await obtenerTodosTrabajadores();
+                    const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                    mostrarTrabajadores(1, filtrados);
                 } else {
-                    await displayWorkers(currentPage);
+                    await mostrarTrabajadores(paginaActual);
                 }
                 
                 smallSwal.fire({
                     icon: 'success',
                     title: '¡Eliminado!',
-                    text: result.message || 'Trabajador eliminado correctamente',
+                    text: resultado.message || 'Trabajador eliminado correctamente',
                     showConfirmButton: false,
                     timer: 1500
                 });
             } else {
-                throw new Error(result.message || 'Error al eliminar el trabajador');
+                throw new Error(resultado.message || 'Error al eliminar el trabajador');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
@@ -469,40 +469,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para abrir el modal de edición con datos completos
-    function openEditModal(worker) {
-        const editModal = new bootstrap.Modal(document.getElementById('largeModal'));
+    function abrirModalEdicion(trabajador) {
+        const modalEdicion = new bootstrap.Modal(document.getElementById('largeModal'));
         
         // Limpiar validaciones previas
         $('#largeModal input').off('input keypress');
         $('#largeModal select').off('change');
         
         // Configurar campos con los datos del trabajador
-        document.getElementById('cedula').value = worker.cedula || '';
-        document.getElementById('nombre').value = worker.nombres || '';
-        document.getElementById('apellidos').value = worker.apellidos || '';
-        document.getElementById('fechaingreso').value = worker.fecha_ingreso || '';
-        document.getElementById('numerohijos').value = worker.num_hijos || 0;
+        document.getElementById('cedula').value = trabajador.cedula || '';
+        document.getElementById('nombre').value = trabajador.nombres || '';
+        document.getElementById('apellidos').value = trabajador.apellidos || '';
+        document.getElementById('fechaingreso').value = trabajador.fecha_ingreso || '';
+        document.getElementById('numerohijos').value = trabajador.num_hijos || 0;
         
-        if (worker.genero === 'M' || worker.genero === 'Masculino') {
+        if (trabajador.genero === 'M' || trabajador.genero === 'Masculino') {
             document.getElementById('generoMasculino').checked = true;
-        } else if (worker.genero === 'F' || worker.genero === 'Femenino') {
+        } else if (trabajador.genero === 'F' || trabajador.genero === 'Femenino') {
             document.getElementById('generoFemenino').checked = true;
         }
         
-        if (worker.cargo_cet) {
-            document.getElementById('cargocet').value = worker.cargo_cet;
+        if (trabajador.cargo_cet) {
+            document.getElementById('cargocet').value = trabajador.cargo_cet;
         }
-        if (worker.cargo_onapre) {
-            document.getElementById('cargoonapre').value = worker.cargo_onapre;
+        if (trabajador.cargo_onapre) {
+            document.getElementById('cargoonapre').value = trabajador.cargo_onapre;
         }
-        if (worker.nvl_ran) {
-            document.getElementById('nivelsalarial').value = worker.nvl_ran;
+        if (trabajador.nvl_ran) {
+            document.getElementById('nivelsalarial').value = trabajador.nvl_ran;
         }
-        if (worker.nom_pro) {
-            document.getElementById('nivelprof').value = worker.nom_pro;
+        if (trabajador.nom_pro) {
+            document.getElementById('nivelprof').value = trabajador.nom_pro;
         }
-        if (worker.dep_ide) {
-            document.getElementById('departamentoasig').value = worker.dep_ide;
+        if (trabajador.dep_ide) {
+            document.getElementById('departamentoasig').value = trabajador.dep_ide;
         }
         
         // Configurar validaciones
@@ -538,23 +538,23 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (fechaSeleccionada > hoy) {
                 alert('La fecha de ingreso no puede ser mayor a la fecha actual');
-                this.value = worker.fecha_ingreso || ''; // Restaurar valor anterior
+                this.value = trabajador.fecha_ingreso || ''; // Restaurar valor anterior
             }
         });
 
         // Configurar el botón de guardar
-        const saveButton = document.querySelector('#largeModal .btn-primary');
-        saveButton.onclick = function() {
-            if (validateForm()) {
-                saveWorkerChanges(worker.cedula);
+        const botonGuardar = document.querySelector('#largeModal .btn-primary');
+        botonGuardar.onclick = function() {
+            if (validarFormulario()) {
+                guardarCambiosTrabajador(trabajador.cedula);
             }
         };
         
-        editModal.show();
+        modalEdicion.show();
     }
 
     // Función para guardar los cambios del trabajador
-    async function saveWorkerChanges(originalCedula) {
+    async function guardarCambiosTrabajador(cedulaOriginal) {
         // Mostrar loader
         smallSwal.fire({
             title: 'Guardando cambios',
@@ -569,8 +569,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         try {
-            const updatedData = {
-                cedula_original: originalCedula,
+            const datosActualizados = {
+                cedula_original: cedulaOriginal,
                 cedula: document.getElementById('cedula').value,
                 nombres: document.getElementById('nombre').value,
                 apellidos: document.getElementById('apellidos').value,
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             // Validación adicional por si acaso
-            if (!updatedData.nombres || !updatedData.apellidos || !updatedData.cedula) {
+            if (!datosActualizados.nombres || !datosActualizados.apellidos || !datosActualizados.cedula) {
                 smallSwal.fire({
                     icon: 'error',
                     title: 'Campos requeridos',
@@ -596,17 +596,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const response = await fetch('../PHP/api/gest-presupuesto/actualizar-user_nomina.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/actualizar-user_nomina.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(updatedData)
+                body: JSON.stringify(datosActualizados)
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (result.success) {
+            if (resultado.success) {
                 bootstrap.Modal.getInstance(document.getElementById('largeModal')).hide();
                 
                 smallSwal.fire({
@@ -617,16 +617,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     timer: 1500
                 }).then(async () => {
                     // Recargar los datos
-                    if (isSearching) {
-                        allWorkers = await fetchAllWorkers();
-                        const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
-                        displayWorkers(1, filtered);
+                    if (buscando) {
+                        todosTrabajadores = await obtenerTodosTrabajadores();
+                        const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                        mostrarTrabajadores(1, filtrados);
                     } else {
-                        displayWorkers(currentPage);
+                        mostrarTrabajadores(paginaActual);
                     }
                 });
             } else {
-                throw new Error(result.message || 'Error desconocido');
+                throw new Error(resultado.message || 'Error desconocido');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
@@ -641,104 +641,104 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para configurar la paginación
-    function setupPagination() {
-        paginationElement.innerHTML = '';
+    function configurarPaginacion() {
+        elementoPaginacion.innerHTML = '';
         
-        if (totalPages <= 1) return;
+        if (totalPaginas <= 1) return;
         
         // Botón Primera página
         let li = document.createElement('li');
-        li.className = 'page-item first' + (currentPage === 1 ? ' disabled' : '');
+        li.className = 'page-item first' + (paginaActual === 1 ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== 1) {
-                currentPage = 1;
-                if (isSearching) {
-                    const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
-                    displayWorkers(1, filtered);
+            if (paginaActual !== 1) {
+                paginaActual = 1;
+                if (buscando) {
+                    const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                    mostrarTrabajadores(1, filtrados);
                 } else {
-                    displayWorkers(currentPage);
+                    mostrarTrabajadores(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Página anterior
         li = document.createElement('li');
-        li.className = 'page-item prev' + (currentPage === 1 ? ' disabled' : '');
+        li.className = 'page-item prev' + (paginaActual === 1 ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                if (isSearching) {
-                    const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
-                    displayWorkers(currentPage, filtered);
+            if (paginaActual > 1) {
+                paginaActual--;
+                if (buscando) {
+                    const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                    mostrarTrabajadores(paginaActual, filtrados);
                 } else {
-                    displayWorkers(currentPage);
+                    mostrarTrabajadores(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Números de página
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
+        const paginaInicio = Math.max(1, paginaActual - 2);
+        const paginaFin = Math.min(totalPaginas, paginaActual + 2);
         
-        for (let i = startPage; i <= endPage; i++) {
+        for (let i = paginaInicio; i <= paginaFin; i++) {
             li = document.createElement('li');
-            li.className = 'page-item' + (i === currentPage ? ' active' : '');
+            li.className = 'page-item' + (i === paginaActual ? ' active' : '');
             li.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
             li.addEventListener('click', () => {
-                if (currentPage !== i) {
-                    currentPage = i;
-                    if (isSearching) {
-                        const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
-                        displayWorkers(currentPage, filtered);
+                if (paginaActual !== i) {
+                    paginaActual = i;
+                    if (buscando) {
+                        const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                        mostrarTrabajadores(paginaActual, filtrados);
                     } else {
-                        displayWorkers(currentPage);
+                        mostrarTrabajadores(paginaActual);
                     }
                 }
             });
-            paginationElement.appendChild(li);
+            elementoPaginacion.appendChild(li);
         }
         
         // Botón Página siguiente
         li = document.createElement('li');
-        li.className = 'page-item next' + (currentPage === totalPages ? ' disabled' : '');
+        li.className = 'page-item next' + (paginaActual === totalPaginas ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                if (isSearching) {
-                    const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
-                    displayWorkers(currentPage, filtered);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                if (buscando) {
+                    const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                    mostrarTrabajadores(paginaActual, filtrados);
                 } else {
-                    displayWorkers(currentPage);
+                    mostrarTrabajadores(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Última página
         li = document.createElement('li');
-        li.className = 'page-item last' + (currentPage === totalPages ? ' disabled' : '');
+        li.className = 'page-item last' + (paginaActual === totalPaginas ? ' disabled' : '');
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== totalPages) {
-                currentPage = totalPages;
-                if (isSearching) {
-                    const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
-                    displayWorkers(currentPage, filtered);
+            if (paginaActual !== totalPaginas) {
+                paginaActual = totalPaginas;
+                if (buscando) {
+                    const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+                    mostrarTrabajadores(paginaActual, filtrados);
                 } else {
-                    displayWorkers(currentPage);
+                    mostrarTrabajadores(paginaActual);
                 }
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
     }
 
     // Función para validar el formulario completo
-    function validateForm() {
+    function validarFormulario() {
         // Validar cédula (requerida y exactamente entre 6 y 10 dígitos)
         const cedula = $('#cedula').val();
         if (!cedula || cedula.length < 6 || cedula.length > 10) {
@@ -811,59 +811,59 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para verificar cambios en bit_nom
-    async function checkForUpdates() {
-        if (isUpdating) return;
-        isUpdating = true;
+    async function verificarActualizaciones() {
+        if (actualizando) return;
+        actualizando = true;
         
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/check_nomina_updates.php?last_update=${lastUpdateTimestamp || ''}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/check_nomina_updates.php?last_update=${ultimoTimestampActualizacion || ''}`);
+            const datos = await respuesta.json();
             
-            if (data.success && data.has_changes) {
-                lastUpdateTimestamp = data.last_update;
+            if (datos.success && datos.has_changes) {
+                ultimoTimestampActualizacion = datos.last_update;
                 
                 // Actualizar la tabla con animación suave
-                await smoothUpdateTable();
+                await actualizarTablaSuavemente();
             }
         } catch (error) {
             console.error('Error al verificar actualizaciones:', error);
         } finally {
-            isUpdating = false;
+            actualizando = false;
         }
     }
 
     // Función para actualizar la tabla con animación suave
-    async function smoothUpdateTable() {
+    async function actualizarTablaSuavemente() {
         // Agregar clase de transición a la tabla
-        const table = document.getElementById('workersTable');
-        table.classList.add('table-updating');
+        const tabla = document.getElementById('workersTable');
+        tabla.classList.add('table-updating');
         
         // Mostrar indicador de actualización
-        const updateIndicator = document.createElement('div');
-        table.parentNode.insertBefore(updateIndicator, table);
+        const indicadorActualizacion = document.createElement('div');
+        tabla.parentNode.insertBefore(indicadorActualizacion, tabla);
         
         // Pequeño retraso para que se vea el indicador
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolver => setTimeout(resolver, 300));
         
         // Recargar datos
-        if (isSearching) {
-            allWorkers = await fetchAllWorkers();
-            const filtered = filterWorkersLocally(allWorkers, currentSearchTerm);
-            await displayWorkers(currentPage, filtered);
+        if (buscando) {
+            todosTrabajadores = await obtenerTodosTrabajadores();
+            const filtrados = filtrarTrabajadoresLocalmente(todosTrabajadores, terminoBusquedaActual);
+            await mostrarTrabajadores(paginaActual, filtrados);
         } else {
-            await displayWorkers(currentPage);
+            await mostrarTrabajadores(paginaActual);
         }
         
         // Ocultar indicador y quitar clase de transición
-        updateIndicator.remove();
-        table.classList.remove('table-updating');
+        indicadorActualizacion.remove();
+        tabla.classList.remove('table-updating');
         
         // Mostrar notificación de actualización
-        showUpdateNotification();
+        mostrarNotificacionActualizacion();
     }
 
     // Función para mostrar notificación de actualización
-    function showUpdateNotification() {
+    function mostrarNotificacionActualizacion() {
         smallSwal.fire({
             position: 'bottom-end',
             icon: 'success',
@@ -876,33 +876,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Iniciar el sistema de actualización periódica
-    function startUpdateChecker() {
+    function iniciarVerificadorActualizaciones() {
         // Verificar actualizaciones inmediatamente
-        checkForUpdates();
+        verificarActualizaciones();
         
         // Configurar intervalo periódico
-        updateTimer = setInterval(checkForUpdates, updateInterval);
+        temporizadorActualizacion = setInterval(verificarActualizaciones, intervaloActualizacion);
         
         // También verificar cuando la ventana gana foco
-        window.addEventListener('focus', checkForUpdates);
+        window.addEventListener('focus', verificarActualizaciones);
     }
 
     // Detener el sistema de actualización (para cuando se cierra la página, etc.)
-    function stopUpdateChecker() {
-        if (updateTimer) {
-            clearInterval(updateTimer);
+    function detenerVerificadorActualizaciones() {
+        if (temporizadorActualizacion) {
+            clearInterval(temporizadorActualizacion);
         }
-        window.removeEventListener('focus', checkForUpdates);
+        window.removeEventListener('focus', verificarActualizaciones);
     }
 
     // Inicializar la tabla, paginación y buscador
-    displayWorkers(currentPage).then(() => {
-        setupSearch();
+    mostrarTrabajadores(paginaActual).then(() => {
+        configurarBusqueda();
     });
 
     // Iniciar el sistema de actualización en tiempo real
-    startUpdateChecker();
+    iniciarVerificadorActualizaciones();
     
     // Detener el checker cuando la página se cierra/recarga
-    window.addEventListener('beforeunload', stopUpdateChecker);
+    window.addEventListener('beforeunload', detenerVerificadorActualizaciones);
 });

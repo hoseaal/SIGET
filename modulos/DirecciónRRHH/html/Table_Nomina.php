@@ -207,9 +207,6 @@
     <!-- Main JS -->
     <script src="../assets/js/main.js"></script>
 
-    <!-- Page JS -->
-    <script src="../assets/js/form-basic-inputs.js"></script>
-
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="../js/buttons.js"></script>
 
@@ -242,7 +239,7 @@
                       <!-- Cédula -->
                       <div class="mb-3">
                         <label for="cedula" class="form-label">Cédula</label>
-                        <input type="number" class="form-control" id="cedula" name="cedula" required />
+                        <input type="number" class="form-control" id="cedula" name="cedula" required disabled/>
                       </div>
                       <!-- Nombres -->
                       <div class="mb-3">
