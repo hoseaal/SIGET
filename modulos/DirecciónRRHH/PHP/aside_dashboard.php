@@ -71,7 +71,7 @@
                 </li>
                 <?php endif; ?>
                 
-                <?php if ($GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '1'): ?>
+                <?php if ($GLOBALS['decoded']->data->tipo == '4'): ?>
                 <li class="menu-item">
                     <a href="Table_User.php" class="menu-link">
                         <div data-i18n="Basic">Tabla Usuarios</div>

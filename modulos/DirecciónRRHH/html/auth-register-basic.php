@@ -253,17 +253,17 @@
         }
       });
 
-      // Validación en tiempo real para la contraseña (solo letras, números, . y @)
+      // Validación en tiempo real para contraseña (solo letras y números)
       document.getElementById('password').addEventListener('input', function(e) {
-        this.value = this.value.replace(/[^a-zA-Z0-9.@]/g, '');
+        this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
         if (this.value.length > 16) {
           this.value = this.value.slice(0, 16);
         }
       });
 
-      // Validación en tiempo real para confirmar contraseña (solo letras, números, . y @)
+      // Validación en tiempo real para confirmar contraseña (solo letras y números)
       document.getElementById('confirm_password').addEventListener('input', function(e) {
-        this.value = this.value.replace(/[^a-zA-Z0-9.@]/g, '');
+        this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
         if (this.value.length > 16) {
           this.value = this.value.slice(0, 16);
         }
@@ -340,11 +340,11 @@
         
         // Validar contraseña
         const passwordValue = passwordInput.value;
-        if (!/^[a-zA-Z0-9.@]{1,16}$/.test(passwordValue)) {
+        if (!/^[a-zA-Z0-9]{8,16}$/.test(passwordValue)) {
           smallSwal.fire({
             icon: 'error',
             title: 'Contraseña inválida',
-            html: 'Debe contener:<br>- Letras y números<br>- Solo puntos (.) y arrobas (@) como caracteres especiales<br>- Máximo 16 caracteres',
+            html: 'Debe contener:<br>- Solo letras y números<br>- Mínimo 8 caracteres<br>- Máximo 16 caracteres',
             confirmButtonColor: '#3085d6',
             confirmButtonText: 'Entendido'
           });
