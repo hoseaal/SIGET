@@ -2,26 +2,25 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import Spinner from 'react-bootstrap/Spinner'; // Para indicar carga
-import Alert from 'react-bootstrap/Alert'; // Para mostrar errores
+import Spinner from 'react-bootstrap/Spinner'; 
+import Alert from 'react-bootstrap/Alert'; 
 
-// El componente recibe 'show' y 'handleClose' como props para controlar su visibilidad
 function ModalBM1({ show, handleClose }) {
-  // Estado para la lista de departamentos
+  
   const [departamentos, setDepartamentos] = useState([]);
-  // Estado para el ID del departamento seleccionado en el <select>
+
   const [selectedDep, setSelectedDep] = useState('');
   
-  // Estados para manejar la carga y los errores
-  const [isLoading, setIsLoading] = useState(false); // Para la carga de departamentos
-  const [isGenerating, setIsGenerating] = useState(false); // Para la generación del Excel
+  
+  const [isLoading, setIsLoading] = useState(false); 
+  const [isGenerating, setIsGenerating] = useState(false); 
   const [error, setError] = useState('');
 
-  // useEffect se ejecuta cuando el modal se muestra (show === true)
+
   useEffect(() => {
-    // Solo hacemos la petición si el modal está visible
+    
     if (show) {
-      // Reseteamos estados previos al abrir
+      
       setIsLoading(true);
       setError('');
       setDepartamentos([]);
@@ -30,7 +29,7 @@ function ModalBM1({ show, handleClose }) {
       const fetchDepartamentos = async () => {
         try {
           const response = await fetch('/api/departamentos', {
-             credentials: 'include' // Importante si la API requiere autenticación
+             credentials: 'include'
           });
           if (!response.ok) {
             throw new Error('No se pudo cargar la lista de departamentos. Verifique la conexión o la sesión.');
@@ -145,7 +144,7 @@ function ModalBM1({ show, handleClose }) {
 
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} disabled={isGenerating}>
+        <Button variant="secondary" onClick={handleClose}>
           Cerrar
         </Button>
         <Button 

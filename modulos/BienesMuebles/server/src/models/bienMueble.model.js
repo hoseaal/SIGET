@@ -159,4 +159,12 @@ export class BienMuebleModel {
 
     return rows
   }
+
+  static async countByDepartamento (departamentoId) {
+    const [rows] = await pool.query(
+      'SELECT COUNT(*) AS count FROM tmab_m WHERE dep_ide = ? AND bim_inc = 1',
+      [departamentoId]
+    )
+    return rows[0].count
+  }
 }
