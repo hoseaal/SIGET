@@ -734,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 placeholder: 'Buscar trabajador...',
                 allowClear: true,
                 width: '100%',
-                dropdownParent: $('#modalAgregarCajaAhorro'), // IMPORTANTE para que funcione en modal
+                dropdownParent: $('#modalAgregarCajaAhorro'),
                 language: {
                     noResults: function() {
                         return "No se encontraron trabajadores";
