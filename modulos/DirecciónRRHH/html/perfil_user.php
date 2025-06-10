@@ -241,6 +241,65 @@
           if (confirmarPasswordInput) {
               confirmarPasswordInput.addEventListener('input', validarPassword);
           }
+
+          document.querySelectorAll('.toggle-password').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const input = this.closest('.input-group').querySelector('input');
+                    const icon = this.querySelector('i');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.replace('bx-hide', 'bx-show');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.replace('bx-show', 'bx-hide');
+                    }
+                });
+            });
+
+            document.getElementById('nuevaPassword')?.addEventListener('keypress', function(e) {
+                // Solo permitir caracteres alfanuméricos
+                const allowedChars = /[a-zA-Z0-9]/;
+                if (!allowedChars.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            document.getElementById('confirmarPassword')?.addEventListener('keypress', function(e) {
+                // Solo permitir caracteres alfanuméricos
+                const allowedChars = /[a-zA-Z0-9]/;
+                if (!allowedChars.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            document.getElementById('nuevaPassword')?.addEventListener('paste', function(e) {
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const pastedText = clipboardData.getData('text');
+                
+                if (!/^[a-zA-Z0-9]+$/.test(pastedText)) {
+                    e.preventDefault();
+                    mostrarAlerta('warning', 'Advertencia', 'No puedes pegar texto con caracteres especiales');
+                }
+            });
+
+            document.getElementById('confirmarPassword')?.addEventListener('paste', function(e) {
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const pastedText = clipboardData.getData('text');
+                
+                if (!/^[a-zA-Z0-9]+$/.test(pastedText)) {
+                    e.preventDefault();
+                    mostrarAlerta('warning', 'Advertencia', 'No puedes pegar texto con caracteres especiales');
+                }
+            });
+
+            document.getElementById('nuevaPassword')?.addEventListener('input', function() {
+                validarPassword();
+            });
+
+            document.getElementById('confirmarPassword')?.addEventListener('input', function() {
+                validarPassword();
+            });
       });
 
       // Funciones separadas para mejor organización
@@ -301,95 +360,131 @@
       }
 
       function abrirModalPassword() {
-          const modal = new bootstrap.Modal(document.getElementById('modalCambiarPassword'));
-          const form = document.getElementById('formCambiarPassword');
-          
-          // Resetear el formulario
-          form?.classList.remove('was-validated');
-          form?.reset();
-          document.getElementById('nuevaPassword')?.classList.remove('is-invalid');
-          document.getElementById('confirmarPassword')?.classList.remove('is-invalid');
-          
-          modal.show();
-      }
+            const modal = new bootstrap.Modal(document.getElementById('modalCambiarPassword'));
+            const form = document.getElementById('formCambiarPassword');
+            
+            // Resetear completamente el formulario
+            form?.reset();
+            form?.classList.remove('was-validated');
+            
+            // Limpiar estados de invalidación
+            document.getElementById('nuevaPassword')?.classList.remove('is-invalid');
+            document.getElementById('confirmarPassword')?.classList.remove('is-invalid');
+            
+            // Limpiar mensajes de validación personalizados
+            document.getElementById('nuevaPassword')?.setCustomValidity('');
+            document.getElementById('confirmarPassword')?.setCustomValidity('');
+            
+            modal.show();
+        }
 
       function validarPassword() {
-          const nuevaPassword = document.getElementById('nuevaPassword')?.value;
-          const confirmarPassword = this.value;
-          
-          if (nuevaPassword && confirmarPassword && nuevaPassword !== confirmarPassword) {
-              this.classList.add('is-invalid');
-          } else {
-              this.classList.remove('is-invalid');
-          }
-      }
+            const nuevaPassword = document.getElementById('nuevaPassword');
+            const confirmarPassword = document.getElementById('confirmarPassword');
+            
+            // Validar caracteres permitidos (esto debería ser redundante gracias a la prevención en keypress)
+            const regex = /^[a-zA-Z0-9]*$/;
+            
+            // Validar nueva contraseña
+            if (nuevaPassword.value.length < 8 || nuevaPassword.value.length > 16 || !regex.test(nuevaPassword.value)) {
+                nuevaPassword.classList.add('is-invalid');
+                nuevaPassword.setCustomValidity('La contraseña debe tener 8-16 caracteres alfanuméricos');
+            } else {
+                nuevaPassword.classList.remove('is-invalid');
+                nuevaPassword.setCustomValidity('');
+            }
+            
+            // Validar confirmación
+            if (confirmarPassword.value !== nuevaPassword.value) {
+                confirmarPassword.classList.add('is-invalid');
+                confirmarPassword.setCustomValidity('Las contraseñas no coinciden');
+            } else if (confirmarPassword.value.length < 8 || confirmarPassword.value.length > 16 || !regex.test(confirmarPassword.value)) {
+                confirmarPassword.classList.add('is-invalid');
+                confirmarPassword.setCustomValidity('La contraseña debe tener 8-16 caracteres alfanuméricos');
+            } else {
+                confirmarPassword.classList.remove('is-invalid');
+                confirmarPassword.setCustomValidity('');
+            }
+        }
 
       function confirmarCambioPassword() {
-          const form = document.getElementById('formCambiarPassword');
-          const nuevaPassword = document.getElementById('nuevaPassword')?.value;
-          const confirmarPassword = document.getElementById('confirmarPassword')?.value;
-          
-          // Validación básica
-          if (!nuevaPassword || nuevaPassword.length < 4) {
-              document.getElementById('nuevaPassword')?.classList.add('is-invalid');
-              return;
-          }
-          
-          if (nuevaPassword !== confirmarPassword) {
-              document.getElementById('confirmarPassword')?.classList.add('is-invalid');
-              return;
-          }
-          
-          form?.classList.add('was-validated');
-          cambiarPassword(nuevaPassword);
-      }
+            const form = document.getElementById('formCambiarPassword');
+            const nuevaPassword = document.getElementById('nuevaPassword');
+            const confirmarPassword = document.getElementById('confirmarPassword');
+            
+            // Forzar validación actualizada
+            validarPassword();
+            
+            // Verificar si hay errores de validación
+            if (nuevaPassword.classList.contains('is-invalid') || confirmarPassword.classList.contains('is-invalid')) {
+                // Mostrar todos los errores
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            // Si todo está correcto, proceder con el cambio
+            cambiarPassword(nuevaPassword.value);
+        }
 
       function cambiarPassword(nuevaPassword) {
-          const btnConfirmar = document.getElementById('btnConfirmarCambio');
-          const originalText = btnConfirmar.innerHTML;
-          
-          // Mostrar spinner
-          btnConfirmar.disabled = true;
-          btnConfirmar.innerHTML = `
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              Procesando...
-          `;
-          
-          // Crear objeto con los datos
-          const requestData = {
-              nuevaPassword: nuevaPassword
-          };
-          
-          fetch('../PHP/api/usuarios/cambiar_password.php', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(requestData)
-          })
-          .then(response => {
-              if (!response.ok) throw new Error('Error en la respuesta del servidor');
-              return response.json();
-          })
-          .then(data => {
-              if (data.success) {
-                  // Mostrar mensaje de éxito y cerrar modal
-                  const modal = bootstrap.Modal.getInstance(document.getElementById('modalCambiarPassword'));
-                  modal.hide();
-                  mostrarAlerta('success', 'Contraseña cambiada', 'Tu contraseña ha sido actualizada correctamente.');
-              } else {
-                  throw new Error(data.message || 'Error al cambiar la contraseña');
-              }
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              mostrarAlerta('danger', 'Error', error.message || 'Ocurrió un error al cambiar la contraseña');
-          })
-          .finally(() => {
-              btnConfirmar.disabled = false;
-              btnConfirmar.innerHTML = originalText;
-          });
-      }
+            const btnConfirmar = document.getElementById('btnConfirmarCambio');
+            const originalText = btnConfirmar.innerHTML;
+            
+            btnConfirmar.disabled = true;
+            btnConfirmar.innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Procesando...
+            `;
+            
+            const requestData = {
+                nuevaPassword: nuevaPassword
+            };
+            
+            fetch('../PHP/api/usuarios/cambiar_password.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Mostrar mensaje de éxito con SweetAlert2 y cerrar modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalCambiarPassword'));
+                    modal.hide();
+                    
+                    Swal.fire({
+                        title: 'Contraseña cambiada',
+                        text: 'Tu contraseña ha sido actualizada correctamente.',
+                        icon: 'success',
+                        timer: 3000,
+                        timerProgressBar: true,
+                        showConfirmButton: false
+                    });
+                } else {
+                    throw new Error(data.message || 'Error al cambiar la contraseña');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: error.message || 'Ocurrió un error al cambiar la contraseña',
+                    icon: 'error',
+                    timer: 3000,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+            })
+            .finally(() => {
+                btnConfirmar.disabled = false;
+                btnConfirmar.innerHTML = originalText;
+            });
+        }
 
       // Funciones auxiliares
       function setValueIfExists(id, value) {
@@ -536,19 +631,41 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formCambiarPassword">
+                    <form id="formCambiarPassword" novalidate>
                         <div class="mb-3">
                             <label for="nuevaPassword" class="form-label">Nueva Contraseña</label>
-                            <input type="password" class="form-control" id="nuevaPassword" required>
-                            <div class="invalid-feedback">Por favor ingrese una contraseña</div>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="nuevaPassword" 
+                                    pattern="[a-zA-Z0-9]{8,16}" 
+                                    minlength="8" maxlength="16" 
+                                    title="La contraseña debe tener entre 8 y 16 caracteres alfanuméricos" 
+                                    required>
+                                <span class="input-group-text cursor-pointer toggle-password">
+                                    <i class="bx bx-hide"></i>
+                                </span>
+                                <div class="invalid-feedback">
+                                    La contraseña debe tener entre 8 y 16 caracteres alfanuméricos (sin caracteres especiales)
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="confirmarPassword" class="form-label">Confirmar Contraseña</label>
-                            <input type="password" class="form-control" id="confirmarPassword" required>
-                            <div class="invalid-feedback">Las contraseñas no coinciden</div>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirmarPassword" 
+                                    pattern="[a-zA-Z0-9]{8,16}" 
+                                    minlength="8" maxlength="16" 
+                                    title="La contraseña debe tener entre 8 y 16 caracteres alfanuméricos" 
+                                    required>
+                                <span class="input-group-text cursor-pointer toggle-password">
+                                    <i class="bx bx-hide"></i>
+                                </span>
+                                <div class="invalid-feedback">
+                                    Las contraseñas deben coincidir y cumplir con los requisitos
+                                </div>
+                            </div>
                         </div>
-                        <div class="alert alert-info mt-3">
-                            <i class="bx bx-info-circle"></i> La contraseña debe tener al menos 8 caracteres.
+                        <div class="alert alert-primary mt-3">
+                            <i class="bx bx-info-circle"></i> La contraseña debe tener entre 8 y 16 caracteres alfanuméricos (letras y números).
                         </div>
                     </form>
                 </div>
