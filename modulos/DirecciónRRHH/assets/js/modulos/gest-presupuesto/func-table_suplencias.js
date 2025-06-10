@@ -511,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
             placeholder: 'Buscar empleado...',
             allowClear: true,
             width: '100%',
-            dropdownParent: $('#ModalNuevaSuplencia'), // IMPORTANTE: Esto evita problemas con el modal
+            dropdownParent: $('#ModalNuevaSuplencia'),
             language: {
                 noResults: function() {
                     return "No se encontraron empleados";
