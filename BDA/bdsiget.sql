@@ -682,6 +682,25 @@ CREATE TABLE `bit_pri` (
   `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE ttrpre (
+    pre_ide INT PRIMARY KEY AUTO_INCREMENT COMMENT 'Identificador unico de prestamo',
+    pre_fec DATE NOT NULL COMMENT 'fecha del prestamo',
+    pre_ndo VARCHAR(50) NOT NULL UNIQUE COMMENT 'Número de documento (oficio)', 
+    dep_ide INT NOT NULL COMMENT 'Departamento donde está prestado el bien (destino)', 
+    pre_est TINYINT NOT NULL DEFAULT 1 COMMENT 'Estatus del préstamo (1: activo, 0: inactivo/devuelto)', 
+    FOREIGN KEY (dep_ide) REFERENCES tesdep(dep_ide)
+);
+
+CREATE TABLE ttrdpr (
+    dpr_ide INT PRIMARY KEY AUTO_INCREMENT COMMENT 'identificador unico de detalle del prestamo',
+    pre_ide INT NOT NULL COMMENT 'ID del préstamo al que pertenece (clave foránea a ttrpre)',
+    bim_ide VARCHAR(10) NOT NULL COMMENT 'ID del bien prestado (clave foránea a tmab_m)',
+    dpr_est TINYINT NOT NULL DEFAULT 1 COMMENT 'Estatus del bien en el préstamo (1: prestado, 0: devuelto individualmente si fuera necesario)', -- 
+    FOREIGN KEY (pre_ide) REFERENCES ttrpre(pre_ide),
+    FOREIGN KEY (bim_ide) REFERENCES tmab_m(bim_ide),
+    UNIQUE (bim_ide, dpr_ide) -- Un bien solo puede estar en un préstamo una vez
+);
+
 /* VOLCADO DE LA BASE DE DATOS */
 
 -- TABLA TESCET

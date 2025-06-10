@@ -28,24 +28,24 @@ function ModalRepBm2({ show, handleClose }) {
 
             // Consulta de incorporados
             const resIncorporados = await fetch('/api/bienes?inc=1');
-            const incorporados = await resIncorporados.json();
-            resultados.push(...incorporados.filter(item => {
+            const { data: incorporados } = await resIncorporados.json(); // <-- Aquí el cambio
+            resultados.push(...incorporados?.filter(item => {
                 const fecha = new Date(item.bim_fec);
                 return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
             }).map(item => ({
                 ...item,
-                bim_val: parseFloat(item.bim_val) // Convertir a número aquí
+                bim_val: parseFloat(item.bim_val)
             })));
 
             // Consulta de desincorporados
             const resDesincorporados = await fetch('/api/bienes?inc=0');
-            const desincorporados = await resDesincorporados.json();
+            const { data: desincorporados } = await resDesincorporados.json(); // <-- Aquí el cambio
             resultados.push(...desincorporados.filter(item => {
                 const fecha = new Date(item.bim_fed);
                 return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
             }).map(item => ({
                 ...item,
-                bim_val: parseFloat(item.bim_val) // Convertir a número aquí
+                bim_val: parseFloat(item.bim_val)
             })));
 
             // Enriquecer con jerarquía grupo/subgrupo

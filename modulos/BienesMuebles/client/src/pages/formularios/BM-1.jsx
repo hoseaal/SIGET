@@ -20,8 +20,11 @@ export const Bm1 = () => {
      const [showBM1Modal, setShowBM1Modal] = useState(false);
 
   const handleOpenModal = () => setShowBM1Modal(true);
-  const handleCloseModal = () => setShowBM1Modal(false);
-    
+   const handleCloseModal = () => {
+    console.log("Cerrando modal...", showBM1Modal);
+    setShowBM1Modal(false);
+
+  };
     const [isLoading, setIsLoading] = useState(false);
     const [search, setSearch] = useState();
     const [searchQuery, setSearchQuery] = useState('');
@@ -181,9 +184,12 @@ export const Bm1 = () => {
                 </button>
                 <button id="exportToExcel" className="btn btn-primary" onClick={handleOpenModal}>
                     <i className="bx bx-export me-1"></i> Generar BM1 
-                    <ModalBM1 show={showBM1Modal} handleClose={handleCloseModal} />
                 </button>
             </div>
+            <ModalBM1 
+                show={showBM1Modal} 
+                handleClose={handleCloseModal} 
+            />
             <div className="card">
                 <h5 className="card-header">Relación de Bienes Actuales</h5>
                 <div className="card-body">

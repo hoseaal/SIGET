@@ -67,4 +67,8 @@ export class BienMuebleService {
     if (!searchTerm.trim()) throw new Error('Término de búsqueda requerido')
     return await BienMuebleModel.searchByNombre(searchTerm, { page, limit })
   }
+
+  static async contarPorDepartamento (departamentoId) {
+    return await BienMuebleModel.countByDepartamento(departamentoId)
+  }
 }

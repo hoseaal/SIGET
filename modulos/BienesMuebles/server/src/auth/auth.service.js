@@ -24,7 +24,7 @@ export class AuthService {
         usu_tip: user.usu_tip
       },
       config.SECRET_KEY,
-      { expiresIn: '1h' }
+      { expiresIn: '6h' }
     )
 
     return {

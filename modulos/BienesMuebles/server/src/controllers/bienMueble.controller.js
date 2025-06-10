@@ -106,3 +106,13 @@ export const buscarBienes = async (req, res) => {
     res.status(400).json({ error: error.message })
   }
 }
+
+export const contarBienesPorDepartamento = async (req, res) => {
+  try {
+    const { id } = req.params
+    const count = await BienMuebleService.contarPorDepartamento(id)
+    res.json({ departamentoId: id, count })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}

@@ -107,11 +107,12 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
     'hora',
     'nombreDirectorAdmin',
     'ciDirectorAdmin',
-    'nombreDirectorServicios',
-    'ciDirectorServicios',
+    'nombreDirectorAsignacion',
+    'ciDirectorAsignacion',
     'nombreJefeCompras',
     'ciJefeCompras',
     'codigoBien',
+    'tipodeBien',
     'descripcionIncorporacion',
     'marca',
     'modelo',
@@ -206,11 +207,12 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
       hora,
       nombreDirectorAdmin: formData.nombreDirectorAdmin,
       ciDirectorAdmin: formData.ciDirectorAdmin,
-      nombreDirectorServicios: formData.nombreDirectorServicios,
-      ciDirectorServicios: formData.ciDirectorServicios,
+      nombreDirectorAsignacion: formData.nombreDirectorAsignacion,
+      ciDirectorAsignacion: formData.ciDirectorAsignacion,
       nombreJefeCompras: formData.nombreJefeCompras,
       ciJefeCompras: formData.ciJefeCompras,
       codigoBien: bienData.bim_ide,
+      tipodeBien: bienData.tipo,
       descripcionIncorporacion: bienData.bim_des,
       marca: bienData.marca,
       modelo: bienData.modelo,
@@ -343,6 +345,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
                 ['Marca', bienData.marca],
                 ['Modelo', bienData.modelo],
                 ['Color', bienData.bim_color],
+                ['Tipo de Bien', bienData.tipo],
                 ['Concepto de Movimiento', bienData.concepto]
               ].map(([label, value], idx) => (
                 <Form.Group className="mb-2" key={idx}>
@@ -374,8 +377,6 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
             ['ciJefeCompras', 'CI Jefe de la División de Compras, Bienes e Inventarios'],
             ['nombreAnalistaBienes', 'Nombre Analista de Bienes e Inventarios IV'],
             ['ciAnalistaBienes', 'CI Analista de Bienes e Inventarios IV'],
-            ['nombreDirectorServicios', 'Nombre Director Servicios Generales'],
-            ['ciDirectorServicios', 'CI Director Servicios Generales'],
             ['nombreFuncionarioElabora', 'Funcionario que Elabora el Acta']
           ].map(([name, label]) => (
             <Form.Group className="mb-2" controlId={name} key={name}>

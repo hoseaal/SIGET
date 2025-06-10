@@ -14,6 +14,7 @@ import formaAdquisicionRouter from './src/routes/formaAdquisicion.routes.js'
 import estadoUsoRouter from './src/routes/estadoUso.routes.js'
 import conceptoMovimientoRouter from './src/routes/conceptoMovimiento.routes.js'
 import condicionFisicaRouter from './src/routes/condicionFisica.routes.js'
+import prestamoRouter from './src/routes/prestamo.routes.js'
 import metaRouter from './src/routes/meta.routes.js'
 import pdfRouter from './src/routes/pdf.routes.js'
 import excelRoutes from './src/routes/excel.routes.js'
@@ -59,6 +60,8 @@ app.use('/api/condiciones-fisicas', condicionFisicaRouter)
 app.use('/api/conceptos-movimiento', conceptoMovimientoRouter)
 
 app.use('/api/bienes', bienMuebleRouter)
+
+app.use('/api/prestamos', prestamoRouter)
 
 app.use('/api/meta', metaRouter)
 
