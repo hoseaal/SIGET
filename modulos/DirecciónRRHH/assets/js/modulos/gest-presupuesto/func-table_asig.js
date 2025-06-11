@@ -1,4 +1,4 @@
- document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Configuración común para los alerts pequeños
     const smallSwal = Swal.mixin({
         width: '400px',
@@ -12,31 +12,31 @@
     });
 
     // Variables para la paginación
-    const rowsPerPage = 8;
-    let currentPage = 1;
-    let totalAssignments = 0;
-    let totalPages = 1;
-    const tableBody = document.querySelector('#assignmentsTable tbody');
-    const paginationElement = document.getElementById('paginationAssignments');
+    const filasPorPagina = 8;
+    let paginaActual = 1;
+    let totalAsignaciones = 0;
+    let totalPaginas = 1;
+    const cuerpoTabla = document.querySelector('#assignmentsTable tbody');
+    const elementoPaginacion = document.getElementById('paginationAssignments');
 
-    // Variables para el control de actualización en tiempo real (agregar al inicio)
-    let lastUpdateTimestampAssignments = null;
-    let updateIntervalAssignments = 1000; // 1 segundo
-    let updateTimerAssignments = null;
-    let isUpdatingAssignments = false;
+    // Variables para el control de actualización en tiempo real
+    let ultimoTimestampActualizacionAsignaciones = null;
+    let intervaloActualizacionAsignaciones = 1000; // 1 segundo
+    let temporizadorActualizacionAsignaciones = null;
+    let actualizandoAsignaciones = false;
 
     // Función para cargar las asignaciones desde la API
-    async function fetchAssignments(page) {
+    async function obtenerAsignaciones(pagina) {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/imprimir_asig.php?page=${page}&per_page=${rowsPerPage}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/imprimir_asig.php?page=${pagina}&per_page=${filasPorPagina}`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                totalAssignments = data.total;
-                totalPages = data.total_pages;
-                return data.assignments;
+            if (datos.success) {
+                totalAsignaciones = datos.total;
+                totalPaginas = datos.total_pages;
+                return datos.assignments;
             } else {
-                console.error('Error al cargar asignaciones:', data.message);
+                console.error('Error al cargar asignaciones:', datos.message);
                 smallSwal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -60,15 +60,15 @@
     }
 
     // Función para obtener los datos completos de una asignación
-    async function fetchAssignmentDetails(pri_ide) {
+    async function obtenerDetallesAsignacion(pri_ide) {
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/tomar_asig.php?pri_ide=${pri_ide}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/tomar_asig.php?pri_ide=${pri_ide}`);
+            const datos = await respuesta.json();
             
-            if (data.success) {
-                return data.assignment;
+            if (datos.success) {
+                return datos.assignment;
             } else {
-                console.error('Error al cargar detalles:', data.message);
+                console.error('Error al cargar detalles:', datos.message);
                 return null;
             }
         } catch (error) {
@@ -78,9 +78,9 @@
     }
 
     // Función para mostrar las asignaciones en la página actual
-    async function displayAssignments(page) {
+    async function mostrarAsignaciones(pagina) {
         // Mostrar loader mientras carga
-        tableBody.innerHTML = `
+        cuerpoTabla.innerHTML = `
             <tr>
                 <td colspan="4" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
@@ -90,56 +90,56 @@
             </tr>
         `;
         
-        const assignments = await fetchAssignments(page);
+        const asignaciones = await obtenerAsignaciones(pagina);
         
-        tableBody.innerHTML = '';
+        cuerpoTabla.innerHTML = '';
         
-        if (assignments.length === 0) {
+        if (asignaciones.length === 0) {
             // Crear filas vacías para mantener la altura
-            for (let i = 0; i < rowsPerPage; i++) {
-                const row = document.createElement('tr');
+            for (let i = 0; i < filasPorPagina; i++) {
+                const fila = document.createElement('tr');
                 if (i === 0) {
                     // Solo mostrar el mensaje en la primera fila
-                    row.innerHTML = `
+                    fila.innerHTML = `
                         <td colspan="4" class="text-center empty-row">
                             ${i === 0 ? 'No se encontraron asignaciones' : '&nbsp;'}
                         </td>
                     `;
                 } else {
                     // Filas vacías adicionales
-                    row.innerHTML = '<td colspan="4" class="empty-row">&nbsp;</td>';
+                    fila.innerHTML = '<td colspan="4" class="empty-row">&nbsp;</td>';
                 }
-                tableBody.appendChild(row);
+                cuerpoTabla.appendChild(fila);
             }
             return;
         }
 
         // Llenar con datos reales
-        assignments.forEach((assignment, index) => {
-            const rowNumber = (page - 1) * rowsPerPage + index + 1;
-            const row = document.createElement('tr');
+        asignaciones.forEach((asignacion, indice) => {
+            const numeroFila = (pagina - 1) * filasPorPagina + indice + 1;
+            const fila = document.createElement('tr');
             
-            // Tipos "0" y "1" - solo 3 columnas (sin acciones)
+            // Tipos "0" y "1" - (sin acciones)
             if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
-                row.innerHTML = `
-                    <td>${rowNumber}</td>
-                    <td><strong>${assignment.pri_raz}</strong></td>
-                    <td>${assignment.pri_por}</td>
+                fila.innerHTML = `
+                    <td>${numeroFila}</td>
+                    <td><strong>${asignacion.pri_raz}</strong></td>
+                    <td>${asignacion.pri_por}</td>
                 `;
             } 
-            // Tipo "2" - 4 columnas (solo editar)
+            // Tipo "2" - (solo editar)
             else if (LOGGED_USER_TYPE === '2') {
-                row.innerHTML = `
-                    <td>${rowNumber}</td>
-                    <td><strong>${assignment.pri_raz}</strong></td>
-                    <td>${assignment.pri_por}</td>
+                fila.innerHTML = `
+                    <td>${numeroFila}</td>
+                    <td><strong>${asignacion.pri_raz}</strong></td>
+                    <td>${asignacion.pri_por}</td>
                     <td>
                         <div class="dropdown">
                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item edit-assignment-btn" href="javascript:void(0);" data-id="${assignment.pri_ide}">
+                                <a class="dropdown-item edit-assignment-btn" href="javascript:void(0);" data-id="${asignacion.pri_ide}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
                                 </a>
                             </div>
@@ -147,22 +147,22 @@
                     </td>
                 `;
             } 
-            // Tipos "3" y "4" - 4 columnas con todas las acciones
+            // Tipos "3" y "4" - todas las acciones
             else {
-                row.innerHTML = `
-                    <td>${rowNumber}</td>
-                    <td><strong>${assignment.pri_raz}</strong></td>
-                    <td>${assignment.pri_por}</td>
+                fila.innerHTML = `
+                    <td>${numeroFila}</td>
+                    <td><strong>${asignacion.pri_raz}</strong></td>
+                    <td>${asignacion.pri_por}</td>
                     <td>
                         <div class="dropdown">
                             <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item edit-assignment-btn" href="javascript:void(0);" data-id="${assignment.pri_ide}">
+                                <a class="dropdown-item edit-assignment-btn" href="javascript:void(0);" data-id="${asignacion.pri_ide}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
                                 </a>
-                                <a class="dropdown-item delete-assignment-btn" href="javascript:void(0);" data-id="${assignment.pri_ide}" data-name="${assignment.pri_raz}">
+                                <a class="dropdown-item delete-assignment-btn" href="javascript:void(0);" data-id="${asignacion.pri_ide}" data-name="${asignacion.pri_raz}">
                                     <i class="bx bx-trash me-1"></i> Eliminar
                                 </a>
                             </div>
@@ -171,26 +171,26 @@
                 `;
             }
             
-            tableBody.appendChild(row);
+            cuerpoTabla.appendChild(fila);
         });
 
-        // Completar con filas vacías si no llega a rowsPerPage
-        if (assignments.length < rowsPerPage) {
-            const remainingRows = rowsPerPage - assignments.length;
-            for (let i = 0; i < remainingRows; i++) {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="4" class="empty-row">&nbsp;</td>';
-                tableBody.appendChild(row);
+        // Completar con filas vacías si no llega a filasPorPagina
+        if (asignaciones.length < filasPorPagina) {
+            const filasRestantes = filasPorPagina - asignaciones.length;
+            for (let i = 0; i < filasRestantes; i++) {
+                const fila = document.createElement('tr');
+                fila.innerHTML = '<td colspan="4" class="empty-row">&nbsp;</td>';
+                cuerpoTabla.appendChild(fila);
             }
         }
 
         if (LOGGED_USER_TYPE === '2' || LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
-            document.querySelectorAll('.edit-assignment-btn').forEach(btn => {
-                btn.addEventListener('click', async function() {
+            document.querySelectorAll('.edit-assignment-btn').forEach(boton => {
+                boton.addEventListener('click', async function() {
                     const pri_ide = this.getAttribute('data-id');
-                    const assignmentData = await fetchAssignmentDetails(pri_ide);
-                    if (assignmentData) {
-                        openEditModal(assignmentData);
+                    const datosAsignacion = await obtenerDetallesAsignacion(pri_ide);
+                    if (datosAsignacion) {
+                        abrirModalEdicion(datosAsignacion);
                     } else {
                         alert('No se pudieron cargar los datos de la asignación');
                     }
@@ -200,29 +200,29 @@
 
         // Agregar event listeners para los botones de eliminar (solo tipo 4)
         if (LOGGED_USER_TYPE === '4') {
-            document.querySelectorAll('.delete-assignment-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+            document.querySelectorAll('.delete-assignment-btn').forEach(boton => {
+                boton.addEventListener('click', function() {
                     const pri_ide = this.getAttribute('data-id');
-                    const assignmentName = this.getAttribute('data-name');
-                    showDeleteConfirmation(pri_ide, assignmentName);
+                    const nombreAsignacion = this.getAttribute('data-name');
+                    mostrarConfirmacionEliminacion(pri_ide, nombreAsignacion);
                 });
             });
         }
     }
 
     // Función para mostrar confirmación de eliminación
-    function showDeleteConfirmation(pri_ide, assignmentName) {
+    function mostrarConfirmacionEliminacion(pri_ide, nombreAsignacion) {
         smallSwal.fire({
             title: '¿Eliminar asignación?',
-            html: `¿Seguro de eliminar la asignación <strong>${assignmentName}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
+            html: `¿Seguro de eliminar la asignación <strong>${nombreAsignacion}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
+        }).then(async (resultado) => {
+            if (resultado.isConfirmed) {
                 // Mostrar loader durante la eliminación
                 smallSwal.fire({
                     title: 'Eliminando asignación',
@@ -235,15 +235,15 @@
                     }
                 });
                 
-                await deleteAssignment(pri_ide);
+                await eliminarAsignacion(pri_ide);
             }
         });
     }
 
     // Función para eliminar una asignación
-    async function deleteAssignment(pri_ide) {
+    async function eliminarAsignacion(pri_ide) {
         try {
-            const response = await fetch('../PHP/api/gest-presupuesto/eliminar_asig.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_asig.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -251,29 +251,28 @@
                 body: JSON.stringify({ pri_ide: pri_ide })
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (!response.ok) {
-                throw new Error(result.message || `Error HTTP: ${response.status}`);
+            if (!respuesta.ok) {
+                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
             }
             
-            if (result.success) {
-                // Cerrar cualquier alerta abierta
+            if (resultado.success) {
                 smallSwal.close();
                 
                 // Mostrar mensaje de éxito
                 smallSwal.fire({
                     icon: 'success',
                     title: '¡Eliminado!',
-                    text: result.message || 'Asignación eliminada correctamente',
+                    text: resultado.message || 'Asignación eliminada correctamente',
                     showConfirmButton: false,
                     timer: 1500
                 }).then(async () => {
                     // Recargar la tabla
-                    await displayAssignments(currentPage);
+                    await mostrarAsignaciones(paginaActual);
                 });
             } else {
-                throw new Error(result.message || 'Error al eliminar la asignación');
+                throw new Error(resultado.message || 'Error al eliminar la asignación');
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
@@ -288,52 +287,52 @@
     }
 
     // Función para configurar la paginación
-    function setupPagination() {
-        paginationElement.innerHTML = '';
+    function configurarPaginacion() {
+        elementoPaginacion.innerHTML = '';
         
         // Botón Primera página
         let li = document.createElement('li');
         li.className = 'page-item first';
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== 1) {
-                currentPage = 1;
-                displayAssignments(currentPage);
-                updatePaginationButtons();
+            if (paginaActual !== 1) {
+                paginaActual = 1;
+                mostrarAsignaciones(paginaActual);
+                actualizarBotonesPaginacion();
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Página anterior
         li = document.createElement('li');
         li.className = 'page-item prev';
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-left"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displayAssignments(currentPage);
-                updatePaginationButtons();
+            if (paginaActual > 1) {
+                paginaActual--;
+                mostrarAsignaciones(paginaActual);
+                actualizarBotonesPaginacion();
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Números de página (mostramos máximo 5 páginas alrededor de la actual)
-        const startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, currentPage + 2);
+        const paginaInicio = Math.max(1, paginaActual - 2);
+        const paginaFin = Math.min(totalPaginas, paginaActual + 2);
         
-        for (let i = startPage; i <= endPage; i++) {
+        for (let i = paginaInicio; i <= paginaFin; i++) {
             li = document.createElement('li');
             li.className = 'page-item';
-            if (i === currentPage) li.classList.add('active');
+            if (i === paginaActual) li.classList.add('active');
             li.innerHTML = `<a class="page-link" href="javascript:void(0);">${i}</a>`;
             li.addEventListener('click', () => {
-                if (currentPage !== i) {
-                    currentPage = i;
-                    displayAssignments(currentPage);
-                    updatePaginationButtons();
+                if (paginaActual !== i) {
+                    paginaActual = i;
+                    mostrarAsignaciones(paginaActual);
+                    actualizarBotonesPaginacion();
                 }
             });
-            paginationElement.appendChild(li);
+            elementoPaginacion.appendChild(li);
         }
         
         // Botón Página siguiente
@@ -341,97 +340,97 @@
         li.className = 'page-item next';
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevron-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                displayAssignments(currentPage);
-                updatePaginationButtons();
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                mostrarAsignaciones(paginaActual);
+                actualizarBotonesPaginacion();
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
         
         // Botón Última página
         li = document.createElement('li');
         li.className = 'page-item last';
         li.innerHTML = `<a class="page-link" href="javascript:void(0);"><i class="tf-icon bx bx-chevrons-right"></i></a>`;
         li.addEventListener('click', () => {
-            if (currentPage !== totalPages) {
-                currentPage = totalPages;
-                displayAssignments(currentPage);
-                updatePaginationButtons();
+            if (paginaActual !== totalPaginas) {
+                paginaActual = totalPaginas;
+                mostrarAsignaciones(paginaActual);
+                actualizarBotonesPaginacion();
             }
         });
-        paginationElement.appendChild(li);
+        elementoPaginacion.appendChild(li);
     }
 
     // Función para actualizar el estado de los botones de paginación
-    function updatePaginationButtons() {
-        const pageItems = paginationElement.querySelectorAll('.page-item');
+    function actualizarBotonesPaginacion() {
+        const itemsPagina = elementoPaginacion.querySelectorAll('.page-item');
         
         // Remover clase active de todos los items
-        pageItems.forEach(item => {
+        itemsPagina.forEach(item => {
             item.classList.remove('active');
         });
         
         // Agregar clase active al item correspondiente
-        pageItems.forEach(item => {
-            const pageLink = item.querySelector('.page-link');
-            if (pageLink && pageLink.textContent === currentPage.toString()) {
+        itemsPagina.forEach(item => {
+            const enlacePagina = item.querySelector('.page-link');
+            if (enlacePagina && enlacePagina.textContent === paginaActual.toString()) {
                 item.classList.add('active');
             }
         });
         
         // Actualizar estado de los botones de navegación
-        const firstBtn = paginationElement.querySelector('.first');
-        const prevBtn = paginationElement.querySelector('.prev');
-        const nextBtn = paginationElement.querySelector('.next');
-        const lastBtn = paginationElement.querySelector('.last');
+        const botonPrimero = elementoPaginacion.querySelector('.first');
+        const botonAnterior = elementoPaginacion.querySelector('.prev');
+        const botonSiguiente = elementoPaginacion.querySelector('.next');
+        const botonUltimo = elementoPaginacion.querySelector('.last');
         
-        if (currentPage === 1) {
-            firstBtn.classList.add('disabled');
-            prevBtn.classList.add('disabled');
+        if (paginaActual === 1) {
+            botonPrimero.classList.add('disabled');
+            botonAnterior.classList.add('disabled');
         } else {
-            firstBtn.classList.remove('disabled');
-            prevBtn.classList.remove('disabled');
+            botonPrimero.classList.remove('disabled');
+            botonAnterior.classList.remove('disabled');
         }
         
-        if (currentPage === totalPages) {
-            nextBtn.classList.add('disabled');
-            lastBtn.classList.add('disabled');
+        if (paginaActual === totalPaginas) {
+            botonSiguiente.classList.add('disabled');
+            botonUltimo.classList.add('disabled');
         } else {
-            nextBtn.classList.remove('disabled');
-            lastBtn.classList.remove('disabled');
+            botonSiguiente.classList.remove('disabled');
+            botonUltimo.classList.remove('disabled');
         }
     }
 
     // Función para abrir el modal de edición con datos de la asignación
-    function openEditModal(assignment) {
-    const editModal = new bootstrap.Modal(document.getElementById('ModalAsignaciones'));
+    function abrirModalEdicion(asignacion) {
+        const modalEdicion = new bootstrap.Modal(document.getElementById('ModalAsignaciones'));
 
-    // Llenar los campos del modal con los datos de la asignación
-    document.getElementById('asignacionId').value = assignment.pri_ide;
-    document.getElementById('tipoAsignacion').value = assignment.pri_raz;
-    document.getElementById('primaAsignacion').value = assignment.pri_por;
+        // Llenar los campos del modal con los datos de la asignación
+        document.getElementById('asignacionId').value = asignacion.pri_ide;
+        document.getElementById('tipoAsignacion').value = asignacion.pri_raz;
+        document.getElementById('primaAsignacion').value = asignacion.pri_por;
 
-    // Configurar el botón de guardar
-    const saveButton = document.getElementById('confirmEditAsignacion');
-    saveButton.onclick = function() {
-        saveAssignmentChanges(assignment.pri_ide);
-    };
+        // Configurar el botón de guardar
+        const botonGuardar = document.getElementById('confirmEditAsignacion');
+        botonGuardar.onclick = function() {
+            guardarCambiosAsignacion(asignacion.pri_ide);
+        };
 
-    // Mostrar el modal
-    editModal.show();
+        // Mostrar el modal
+        modalEdicion.show();
     }
 
     // Función para guardar los cambios de la asignación
-    async function saveAssignmentChanges(originalId) {
-        const saveButton = document.getElementById('confirmEditAsignacion');
-        const originalText = saveButton.innerHTML;
-        const primaInput = document.getElementById('primaAsignacion');
+    async function guardarCambiosAsignacion(idOriginal) {
+        const botonGuardar = document.getElementById('confirmEditAsignacion');
+        const textoOriginal = botonGuardar.innerHTML;
+        const inputPrima = document.getElementById('primaAsignacion');
         
         // Validar el formato del valor
-        if (!/^\d*\.?\d*$/.test(primaInput.value)) {
-            primaInput.classList.add('is-invalid');
-            primaInput.focus();
+        if (!/^\d*\.?\d*$/.test(inputPrima.value)) {
+            inputPrima.classList.add('is-invalid');
+            inputPrima.focus();
             
             smallSwal.fire({
                 icon: 'error',
@@ -442,23 +441,23 @@
             });
             return;
         } else {
-            primaInput.classList.remove('is-invalid');
+            inputPrima.classList.remove('is-invalid');
         }
 
         // Mostrar spinner y deshabilitar botón
-        saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-        saveButton.disabled = true;
+        botonGuardar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+        botonGuardar.disabled = true;
 
         try {
             // Obtener los datos del formulario
-            const updatedData = {
-                pri_ide: originalId,
+            const datosActualizados = {
+                pri_ide: idOriginal,
                 pri_raz: document.getElementById('tipoAsignacion').value,
                 pri_por: document.getElementById('primaAsignacion').value
             };
             
             // Validación básica
-            if (!updatedData.pri_raz || !updatedData.pri_por) {
+            if (!datosActualizados.pri_raz || !datosActualizados.pri_por) {
                 smallSwal.fire({
                     icon: 'error',
                     title: 'Datos incompletos',
@@ -470,21 +469,21 @@
             }
             
             // Llamada a la API para guardar cambios
-            const response = await fetch('../PHP/api/gest-presupuesto/actualizar_asig.php', {
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/actualizar_asig.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(updatedData)
+                body: JSON.stringify(datosActualizados)
             });
             
-            const result = await response.json();
+            const resultado = await respuesta.json();
             
-            if (!response.ok) {
-                throw new Error(result.message || `Error HTTP: ${response.status}`);
+            if (!respuesta.ok) {
+                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
             }
             
-            if (result.success) {
+            if (resultado.success) {
                 // Cerrar el modal
                 bootstrap.Modal.getInstance(document.getElementById('ModalAsignaciones')).hide();
                 
@@ -497,10 +496,10 @@
                     timer: 1500
                 }).then(async () => {
                     // Recargar los datos
-                    await displayAssignments(currentPage);
+                    await mostrarAsignaciones(paginaActual);
                 });
             } else {
-                throw new Error(result.message || 'Error al guardar los cambios');
+                throw new Error(resultado.message || 'Error al guardar los cambios');
             }
         } catch (error) {
             console.error('Error al guardar:', error);
@@ -513,8 +512,8 @@
             });
         } finally {
             // Restaurar el botón
-            saveButton.innerHTML = originalText;
-            saveButton.disabled = false;
+            botonGuardar.innerHTML = textoOriginal;
+            botonGuardar.disabled = false;
         }
     }
 
@@ -534,58 +533,58 @@
         }
     });
 
-    // Función para verificar cambios en bit_pri (agregar después de las funciones existentes)
-    async function checkForAssignmentsUpdates() {
-        if (isUpdatingAssignments) return;
-        isUpdatingAssignments = true;
+    // Función para verificar cambios en bit_pri
+    async function verificarActualizacionesAsignaciones() {
+        if (actualizandoAsignaciones) return;
+        actualizandoAsignaciones = true;
         
         try {
-            const response = await fetch(`../PHP/api/gest-presupuesto/check_asig_updates.php?last_update=${lastUpdateTimestampAssignments || ''}`);
-            const data = await response.json();
+            const respuesta = await fetch(`../PHP/api/gest-presupuesto/check_asig_updates.php?last_update=${ultimoTimestampActualizacionAsignaciones || ''}`);
+            const datos = await respuesta.json();
             
-            if (data.success && data.has_changes) {
-                lastUpdateTimestampAssignments = data.last_update;
+            if (datos.success && datos.has_changes) {
+                ultimoTimestampActualizacionAsignaciones = datos.last_update;
                 
                 // Actualizar la tabla con animación suave
-                await smoothUpdateAssignmentsTable();
+                await actualizarTablaAsignacionesSuavemente();
             }
         } catch (error) {
             console.error('Error al verificar actualizaciones de asignaciones:', error);
         } finally {
-            isUpdatingAssignments = false;
+            actualizandoAsignaciones = false;
         }
     }
 
     // Función para actualizar la tabla de asignaciones con animación suave
-    async function smoothUpdateAssignmentsTable() {
-        const table = document.getElementById('assignmentsTable');
-        const pagination = document.getElementById('paginationAssignments');
+    async function actualizarTablaAsignacionesSuavemente() {
+        const tabla = document.getElementById('assignmentsTable');
+        const paginacion = document.getElementById('paginationAssignments');
         
         // Agregar clase de transición
-        table.classList.add('table-updating');
-        pagination.classList.add('pagination-updating');
+        tabla.classList.add('table-updating');
+        paginacion.classList.add('pagination-updating');
         
         // Mostrar indicador de actualización
-        const updateIndicator = document.createElement('div');
-        table.parentNode.insertBefore(updateIndicator, table);
+        const indicadorActualizacion = document.createElement('div');
+        tabla.parentNode.insertBefore(indicadorActualizacion, tabla);
         
         // Pequeño retraso para que se vea el indicador
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolver => setTimeout(resolver, 300));
         
         // Recargar datos manteniendo la página actual
-        await displayAssignments(currentPage);
+        await mostrarAsignaciones(paginaActual);
         
         // Ocultar indicador y quitar clases de transición
-        updateIndicator.remove();
-        table.classList.remove('table-updating');
-        pagination.classList.remove('pagination-updating');
+        indicadorActualizacion.remove();
+        tabla.classList.remove('table-updating');
+        paginacion.classList.remove('pagination-updating');
         
         // Mostrar notificación de actualización
-        showUpdateNotification('Asignaciones actualizadas');
+        mostrarNotificacionActualizacion('Asignaciones actualizadas');
     }
 
-    // Función para mostrar notificación de actualización (adaptada)
-    function showUpdateNotification(message) {
+    // Función para mostrar notificación de actualización
+    function mostrarNotificacionActualizacion(mensaje) {
         const Toast = Swal.mixin({
             toast: true,
             position: 'bottom-end',
@@ -600,41 +599,41 @@
         
         Toast.fire({
             icon: 'success',
-            title: message,
+            title: mensaje,
             background: '#f8f9fa',
             color: '#333'
         });
     }
 
     // Iniciar el sistema de actualización periódica para asignaciones
-    function startAssignmentsUpdateChecker() {
+    function iniciarVerificadorActualizacionesAsignaciones() {
         // Verificar actualizaciones inmediatamente
-        checkForAssignmentsUpdates();
+        verificarActualizacionesAsignaciones();
         
         // Configurar intervalo periódico
-        updateTimerAssignments = setInterval(checkForAssignmentsUpdates, updateIntervalAssignments);
+        temporizadorActualizacionAsignaciones = setInterval(verificarActualizacionesAsignaciones, intervaloActualizacionAsignaciones);
         
         // También verificar cuando la ventana gana foco
-        window.addEventListener('focus', checkForAssignmentsUpdates);
+        window.addEventListener('focus', verificarActualizacionesAsignaciones);
     }
 
     // Detener el sistema de actualización
-    function stopAssignmentsUpdateChecker() {
-        if (updateTimerAssignments) {
-            clearInterval(updateTimerAssignments);
+    function detenerVerificadorActualizacionesAsignaciones() {
+        if (temporizadorActualizacionAsignaciones) {
+            clearInterval(temporizadorActualizacionAsignaciones);
         }
-        window.removeEventListener('focus', checkForAssignmentsUpdates);
+        window.removeEventListener('focus', verificarActualizacionesAsignaciones);
     }
 
     // Inicializar la tabla y paginación
-    displayAssignments(currentPage).then(() => {
-        setupPagination();
-        updatePaginationButtons();
+    mostrarAsignaciones(paginaActual).then(() => {
+        configurarPaginacion();
+        actualizarBotonesPaginacion();
     });
 
     // Iniciar el sistema de actualización en tiempo real
-    startAssignmentsUpdateChecker();
+    iniciarVerificadorActualizacionesAsignaciones();
     
     // Detener el checker cuando la página se cierra/recarga
-    window.addEventListener('beforeunload', stopAssignmentsUpdateChecker);
+    window.addEventListener('beforeunload', detenerVerificadorActualizacionesAsignaciones);
 });

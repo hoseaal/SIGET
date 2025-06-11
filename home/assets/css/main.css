@@ -2053,8 +2053,8 @@ section,
 
 /* Efecto hover */
 .service-item:hover .icon-circle {
-  background-color: #1977cc; /* Fondo azul al hacer hover */
-  border-color: #1977cc; /* Borde azul (mismo color para consistencia) */
+  background-color: #1977cc; /* Fondo azul hover */
+  border-color: #1977cc; /* Borde azul  */
 }
 
 .service-item:hover .icon-circle i {

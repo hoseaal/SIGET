@@ -1,22 +1,23 @@
-let mensajeExpiracionMostrado = false;
 
-async function verificarExpiracionToken() {
-    if (mensajeExpiracionMostrado) return;
+let expirationMessageShown = false;
+
+async function checkExpiracionToken() {
+    if (expirationMessageShown) return;
     
     try {
         const respuesta = await fetch('../PHP/api/check_token.php');
-        const datos = await respuesta.json();
+        const valor = await respuesta.json();
         
-        if (datos.status === 'expired' && !mensajeExpiracionMostrado) {
-            mensajeExpiracionMostrado = true;
-            mostrarMensajeSesionExpirada();
+        if (valor.status === 'expired' && !expirationMessageShown) {
+            expirationMessageShown = true;
+            verMensajeSesionExpirada();
         }
     } catch (error) {
         console.error('Error al verificar token:', error);
     }
 }
 
-function mostrarMensajeSesionExpirada() {
+function verMensajeSesionExpirada() {
     if (window.location.pathname.includes('auth-login-basic.php')) return;
 
     Swal.fire({
@@ -31,9 +32,8 @@ function mostrarMensajeSesionExpirada() {
             Swal.showLoading();
         },
         willClose: () => {
-            clearInterval(intervaloVerificacionToken);
+            clearInterval(tokenCheckInterval);
             document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            // Cambio clave aquí: usar location.replace() en lugar de location.href
             window.location.replace('auth-login-basic.php?nocache=' + Date.now());
             
             // Bloqueo adicional del historial
@@ -47,7 +47,7 @@ function mostrarMensajeSesionExpirada() {
     });
 }
 
-const intervaloVerificacionToken = setInterval(verificarExpiracionToken, 300000);
+const tokenCheckInterval = setInterval(checkExpiracionToken, 30000);
 
 // Verificar al cargar la página
-document.addEventListener('DOMContentLoaded', verificarExpiracionToken);
+document.addEventListener('DOMContentLoaded', checkExpiracionToken);

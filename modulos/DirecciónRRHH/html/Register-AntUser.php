@@ -59,8 +59,8 @@
     <link rel="stylesheet" href="../assets/vendor/libs/apex-charts/apex-charts.css" />
 
     <!-- SweetAlert2 -->
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="../assets/css/sweetalert2.min.css" rel="stylesheet">
+    <script src="../assets/js/sweetalert2.all.min.js"></script>
 
     <!-- Validación de Sesión -->
     <script src="../assets/js/modulos/check_sesion.js"></script>
@@ -124,18 +124,26 @@
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <table class="table table-hover" id="tablaUsuarios">
-                                    <thead>
-                                        <tr>
-                                        <th>Cédula</th>
-                                        <th>Nombres</th>
-                                        <th>Apellidos</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Aquí se insertarán los usuarios vía JavaScript -->
-                                    </tbody>
-                                    </table>
+                                    <div class="mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bx bx-search"></i></span>
+                                            <input type="text" id="filtroUsuarios" class="form-control" placeholder="Buscar por cédula, nombres o apellidos...">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="tablaUsuarios">
+                                            <thead>
+                                                <tr>
+                                                <th>Cédula</th>
+                                                <th>Nombres</th>
+                                                <th>Apellidos</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Aquí se insertarán los usuarios vía JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
@@ -388,7 +396,41 @@
     <script>
         let cedulaSeleccionada = '';
 
+        // Función para filtrar la tabla de usuarios
+        function filtrarUsuarios() {
+            const filtro = $('#filtroUsuarios').val().toLowerCase();
+            let resultados = 0;
+            
+            $('#tablaUsuarios tbody tr').each(function() {
+                const cedula = $(this).find('td:eq(0)').text().toLowerCase();
+                const nombres = $(this).find('td:eq(1)').text().toLowerCase();
+                const apellidos = $(this).find('td:eq(2)').text().toLowerCase();
+                
+                const coincide = cedula.includes(filtro) || 
+                                nombres.includes(filtro) || 
+                                apellidos.includes(filtro);
+                
+                $(this).toggle(coincide);
+                if (coincide) resultados++;
+            });
+            
+            // Mostrar mensaje si no hay resultados
+            const mensajeNoResultados = $('#tablaUsuarios').data('no-results');
+            if (resultados === 0 && filtro !== '') {
+                if (!$('#noResultsRow').length) {
+                    $('#tablaUsuarios tbody').append(
+                        `<tr id="noResultsRow"><td colspan="3" class="text-center py-4">${mensajeNoResultados || 'No se encontraron coincidencias'}</td></tr>`
+                    );
+                }
+            } else {
+                $('#noResultsRow').remove();
+            }
+        }
+
         $(document).ready(function() {
+            $('#filtroUsuarios').on('input', filtrarUsuarios);
+            $('#tablaUsuarios').data('no-results', 'No se encontraron usuarios que coincidan con la búsqueda');
+
             $('#modalUsuarios').on('show.bs.modal', function () {
                 // Limpiar tabla
                 $('#tablaUsuarios tbody').empty();
@@ -631,6 +673,20 @@
         }
 
         document.getElementById('btnLimpiar').addEventListener('click', limpiarCampos);
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalUsuarios = document.getElementById('modalUsuarios');
+
+            modalUsuarios.addEventListener('shown.bs.modal', function () {
+                const botonConfirmar = document.getElementById('confirmarSeleccion');
+                
+                if (botonConfirmar) {
+                    botonConfirmar.focus();
+                }
+            });
+        });
     </script>
 
   </body>
