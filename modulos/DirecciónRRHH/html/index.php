@@ -187,23 +187,108 @@
                           <?php
                               // Consulta unificada para todas las tablas de bitácora
                               $query = "
-                                  (SELECT 'usu' as tipo, bit_operacion, bit_usu_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_usu)
+                                  (SELECT 'usu' as tipo, bit_operacion, bit_usu_ide as id, 
+                                          bit_usuario_responsable, 
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE usu_ide = bit_usu_ide) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE usu_ide = bit_usu_ide)
+                                              ELSE NULL
+                                          END as usu_nombre,
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                              ELSE NULL
+                                          END as responsable_nombre,
+                                          bit_detalles, bit_fecha 
+                                  FROM bit_usu)
                                   UNION ALL
-                                  (SELECT 'nom' as tipo, bit_operacion, bit_nom_ced as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_nom)
+                                  (SELECT 'nom' as tipo, bit_operacion, bit_nom_ced as id, 
+                                          bit_usuario_responsable, 
+                                          NULL as usu_nombre,
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                              ELSE NULL
+                                          END as responsable_nombre,
+                                          bit_detalles, bit_fecha 
+                                  FROM bit_nom)
                                   UNION ALL
-                                  (SELECT 'cet' as tipo, bit_operacion, bit_cet_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_cet)
+                                  (SELECT 'cet' as tipo, bit_operacion, bit_cet_ide as id, 
+                                          bit_usuario_responsable, 
+                                          NULL as usu_nombre,
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                              ELSE NULL
+                                          END as responsable_nombre,
+                                          bit_detalles, bit_fecha 
+                                  FROM bit_cet)
                                   UNION ALL
-                                  (SELECT 'ona' as tipo, bit_operacion, bit_ona_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_ona)
+                                  (SELECT 'ona' as tipo, bit_operacion, bit_ona_ide as id, 
+                                          bit_usuario_responsable, 
+                                          NULL as usu_nombre,
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                              ELSE NULL
+                                          END as responsable_nombre,
+                                          bit_detalles, bit_fecha 
+                                  FROM bit_ona)
                                   UNION ALL
-                                  (SELECT 'nvl' as tipo, bit_operacion, bit_nvl_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_nvl)
+                                  (SELECT 'nvl' as tipo, bit_operacion, bit_nvl_ide as id, 
+                                          bit_usuario_responsable, 
+                                          NULL as usu_nombre,
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                              ELSE NULL
+                                          END as responsable_nombre,
+                                          bit_detalles, bit_fecha 
+                                  FROM bit_nvl)
                                   UNION ALL
-                                  (SELECT 'sup' as tipo, bit_operacion, bit_sup_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_sup)
+                                  (SELECT 'sup' as tipo, bit_operacion, bit_sup_ide as id, 
+                                          bit_usuario_responsable, 
+                                          NULL as usu_nombre,
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                              ELSE NULL
+                                          END as responsable_nombre,
+                                          bit_detalles, bit_fecha 
+                                  FROM bit_sup)
                                   UNION ALL
-                                  (SELECT 'cep' as tipo, bit_operacion, bit_cep_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_cep)
+                                  (SELECT 'cep' as tipo, bit_operacion, bit_cep_ide as id, 
+                                          bit_usuario_responsable, 
+                                          NULL as usu_nombre,
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                              ELSE NULL
+                                          END as responsable_nombre,
+                                          bit_detalles, bit_fecha 
+                                  FROM bit_cep)
                                   UNION ALL
-                                  (SELECT 'ded' as tipo, bit_operacion, bit_ded_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_ded)
+                                  (SELECT 'ded' as tipo, bit_operacion, bit_ded_ide as id, 
+                                          bit_usuario_responsable, 
+                                          NULL as usu_nombre,
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                              ELSE NULL
+                                          END as responsable_nombre,
+                                          bit_detalles, bit_fecha 
+                                  FROM bit_ded)
                                   UNION ALL
-                                  (SELECT 'pri' as tipo, bit_operacion, bit_pri_ide as id, bit_usuario_responsable, bit_detalles, bit_fecha FROM bit_pri)
+                                  (SELECT 'pri' as tipo, bit_operacion, bit_pri_ide as id, 
+                                          bit_usuario_responsable, 
+                                          NULL as usu_nombre,
+                                          CASE 
+                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                              ELSE NULL
+                                          END as responsable_nombre,
+                                          bit_detalles, bit_fecha 
+                                  FROM bit_pri)
                                   ORDER BY bit_fecha DESC
                                   LIMIT 3
                               ";
@@ -276,8 +361,8 @@
                                       
                                       // Mostrar ID según el tipo de registro
                                       $idTexto = match($mod['tipo']) {
-                                          'usu', 'nom' => 'Afectado: ' . htmlspecialchars($mod['id']),
-                                          default => 'Afectado: ' . htmlspecialchars($mod['id'])
+                                          'usu', 'nom' => 'Afectado: ' . htmlspecialchars($mod['usu_nombre']),
+                                          default => 'Afectado: ' . htmlspecialchars($mod['usu_nombre'])
                                       };
                           ?>
                           <li class="d-flex mb-4 pb-1">
@@ -288,7 +373,7 @@
                               <div class="me-2">
                                 <small class="text-muted d-block mb-1"><?= $texto ?></small>
                                 <h6 class="mb-0"><?= $idTexto ?></h6>
-                                <small>Realizado por: <?= htmlspecialchars($mod['bit_usuario_responsable']) ?></small>
+                                <small>Realizado por: <?= htmlspecialchars($mod['responsable_nombre']) ?></small>
                               </div>
                               <div class="user-progress">
                                 <small class="text-muted"><?= date('d/m/Y H:i', strtotime($mod['bit_fecha'])) ?></small>
