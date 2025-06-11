@@ -574,17 +574,6 @@ CREATE TABLE `tescep` (
 
 CREATE TABLE tmacue ( `cue_id` int NOT NULL COMMENT 'Identificador de relacion de cuenta de BM del mes anterior', `cue_cue` float(10.2) NOT NULL COMMENT 'Monto de relacion de cuenta de BM del mes anterior' );
 
-CREATE TABLE ttrpre ( 
-  `pre_ide` INT NOT NULL AUTO_INCREMENT COMMENT "identificador unico de prestamo", 
-  `bim_ide` VARCHAR(10) NOT NULL COMMENT "identificador unico del bien", 
-  `dep_ide` INT NOT NULL COMMENT "identificador unico del departamento", 
-  `pre_des` TEXT COMMENT "Observacion del prestamo", 
-  `pre_est` TINYINT(1) COMMENT "Estado del prestamo (1 para prestado 0 para no prestado)", 
-  PRIMARY KEY (`pre_ide`), FOREIGN KEY (`bim_ide`) REFERENCES `tmab_m`(`bim_ide`), 
-  FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`), 
-  UNIQUE KEY `relacion_unica` (`bim_ide`, `dep_ide`) 
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 ALTER TABLE `tmab_m` 
 ADD COLUMN `dep_ide` INT NULL COMMENT 'Departamento al que pertenece el bien',
 ADD CONSTRAINT `fk_bien_departamento` 
