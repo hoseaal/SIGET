@@ -276,8 +276,8 @@
                                       
                                       // Mostrar ID según el tipo de registro
                                       $idTexto = match($mod['tipo']) {
-                                          'usu', 'nom' => 'CI: ' . htmlspecialchars($mod['id']),
-                                          default => 'ID: ' . htmlspecialchars($mod['id'])
+                                          'usu', 'nom' => 'Afectado: ' . htmlspecialchars($mod['id']),
+                                          default => 'Afectado: ' . htmlspecialchars($mod['id'])
                                       };
                           ?>
                           <li class="d-flex mb-4 pb-1">

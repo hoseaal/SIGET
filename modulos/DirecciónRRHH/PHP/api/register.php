@@ -30,7 +30,7 @@
         }
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT,['cost'=> 12]);
-        $stmt = $pdo->prepare("INSERT INTO tesusu (usu_ide, usu_usu, usu_con, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced) VALUES (:cedula, :usuario, :contrasena, :nombre, :apellidos, :tip, :moduloaccess, :cedula)");
+        $stmt = $pdo->prepare("INSERT INTO tesusu (usu_usu, usu_con, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced) VALUES (:usuario, :contrasena, :nombre, :apellidos, :tip, :moduloaccess, :cedula)");
         $stmt->bindParam(':contrasena', $hashedPassword);
         $stmt->bindParam(':tip', $tip);
         $stmt->bindParam(':cedula', $cedula);
