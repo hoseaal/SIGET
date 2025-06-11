@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             fila.innerHTML = `
                 <td>${numeroFila}</td>
-                <td><strong>${modificacion.bit_tabla} (ID: ${modificacion.affected_id || 'N/A'})</strong></td>
+                <td><strong>${modificacion.bit_tabla} (${modificacion.display_affected_id || 'N/A'})</strong></td>
                 <td>${operacionTraducida}</td>
                 <td>${modificacion.bit_usuario_responsable}</td>
                 <td>${fechaFormateada}</td>
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Llenar los campos del modal
         document.getElementById('viewTableName').value = modificacion.bit_tabla;
         document.getElementById('viewOperation').value = modificacion.bit_operacion;
-        document.getElementById('viewRecordId').value = modificacion.affected_id || 'N/A';
+        document.getElementById('viewRecordId').value = modificacion.display_affected_id || 'N/A';
         document.getElementById('viewResponsibleUser').value = modificacion.bit_usuario_responsable;
         document.getElementById('viewModificationDate').value = fechaFormateada;
         

@@ -32,17 +32,25 @@
     try {
         // Consultar cada tabla de bitácora y combinar resultados
         foreach ($bitacoraTables as $table => $idColumn) {
+            // Consulta base para cada tabla de bitácora
             $query = "SELECT 
                         '{$table}' as source_table,
-                        bit_id,
-                        bit_tabla,
-                        bit_operacion,
-                        {$idColumn} as affected_id,
-                        bit_usuario_responsable,
-                        bit_detalles,
-                        bit_fecha
-                    FROM {$table}
-                    ORDER BY bit_fecha DESC
+                        b.bit_id,
+                        b.bit_tabla,
+                        b.bit_operacion,
+                        b.{$idColumn} as affected_id,
+                        COALESCE(u.usu_usu, b.bit_usuario_responsable) as bit_usuario_responsable,
+                        b.bit_detalles,
+                        b.bit_fecha,
+                        CASE 
+                            WHEN b.bit_tabla = 'tesusu' THEN 
+                                COALESCE(usu.usu_usu, b.{$idColumn})
+                            ELSE b.{$idColumn}
+                        END as display_affected_id
+                    FROM {$table} b
+                    LEFT JOIN tesusu u ON b.bit_usuario_responsable = u.nom_ced
+                    LEFT JOIN tesusu usu ON b.bit_tabla = 'tesusu' AND b.{$idColumn} = usu.usu_ide
+                    ORDER BY b.bit_fecha DESC
                     LIMIT {$offset}, {$perPage}";
             
             $stmt = $pdo->query($query);
