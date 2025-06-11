@@ -18,13 +18,12 @@ export class UserModel {
     // eslint-disable-next-line no-unused-vars
     const [result] = await pool.query(
       `INSERT INTO tesusu 
-       (usu_ide, usu_usu, usu_con, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [ced, usu_usu, hash, nombre, ape, tipoUsuario, modulo, ced]
+       (usu_usu, usu_con, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [usu_usu, hash, nombre, ape, tipoUsuario, modulo, ced]
     )
 
     return {
-      usu_ide: ced,
       usu_nom: nombre,
       usu_ape: ape,
       usu_tip: tipoUsuario
