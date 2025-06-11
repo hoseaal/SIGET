@@ -8,6 +8,7 @@ import Select from 'react-select';
 import ModalActaInc from '../Modales/modalActaInc';
 import ModalRepBm2 from '../Modales/modalRepBm2';
 import ModalInsert from '../Modales/modalInsert';
+import Spinner from 'react-bootstrap/Spinner'; 
 
 export const Bm2 = () => {
     const [refreshKey, setRefreshKey] = useState();
@@ -75,6 +76,8 @@ export const Bm2 = () => {
     const [formEnviado, setFormEnviado] = useState(false)
     const [mensajeMostrado, setMensajeMostrado] = useState(false); 
     const [errorMessage, setErrorMessage] = useState(false); 
+
+    const [lastInsertedBienId, setLastInsertedBienId] = useState(null);
 
     const [formData, setFormData] = useState({
         bim_ide: '',
@@ -269,6 +272,42 @@ export const Bm2 = () => {
     fetchCatEspecificas();
 }, [searchTerm, formData.sca_ide, catEspPage]);
 
+    const [isSaving, setIsSaving] = useState(false); // Para mostrar/ocultar el spinner
+    const [savingMessage, setSavingMessage] = useState(''); // Mensaje "Guardando..."
+
+    const limpiarModal = () => {
+        setFormData({})
+    }
+
+    const limpiarFormulario = () => {
+        setFormData({
+            bim_ide: '',
+            bim_des: '',
+            bim_fec: '',
+            bim_ndo: '',
+            bim_val: '',
+            bim_moneda: '',
+            bim_color: '',
+            bim_cod: '',
+            bim_obs: null,
+            bim_sede: 'PRINCIPAL',
+            est_ide: 4,
+            tip_ide: '',
+            foa_ide: '',
+            con_ide: '',
+            esu_ide: '',
+            mar_ide: '',
+            mod_ide: '',
+            cat_ide: '',
+            sca_ide: '',
+            cae_ide: '',
+            com_ide: '',
+            dep_ide: ''
+        });
+        setErrorMessage('');
+        setMensajeMostrado(false);
+        setFormEnviado(false);
+    };
 
 const handleSubmit = async (e) => {
     e.preventDefault();
@@ -302,6 +341,11 @@ const handleSubmit = async (e) => {
         setTimeout(() => setMensajeMostrado(false), 3000);
         return;
     }
+
+    setIsSaving(true);
+    setSavingMessage('Guardando...');
+
+    const currentBienId = formData.bim_ide;
 
     try {
           const resCheck = await fetch(`/api/bienes/${formData.bim_ide}`, {
@@ -341,6 +385,12 @@ const handleSubmit = async (e) => {
         // 🎉 Éxito
         setFormEnviado(true);
         setMensajeMostrado(true);
+        setLastInsertedBienId(currentBienId);
+
+        limpiarFormulario();
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        setIsSaving(false);
         setShowActInc(true);
         setTimeout(() => setMensajeMostrado(false), 3000);
 
@@ -354,46 +404,19 @@ const handleSubmit = async (e) => {
             ...prev,
             bim_ide: ''
         }));
+        setLastInsertedBienId(null);
     }
 };
-
-//limpiar formulario
-  const limpiarFormulario = () => {
-    setFormData({
-        bim_ide: '',
-        bim_des: '',
-        bim_fec: '',
-        bim_ndo: '',
-        bim_val: '',
-        bim_moneda: '',
-        bim_color: '',
-        bim_cod: '',
-        bim_obs: null,
-        bim_sede: 'PRINCIPAL',
-        est_ide: 4,
-        tip_ide: '',
-        foa_ide: '',
-        con_ide: '',
-        esu_ide: '',
-        mar_ide: '',
-        mod_ide: '',
-        cat_ide: '',
-        sca_ide: '',
-        cae_ide: '',
-        com_ide: '',
-        dep_ide: ''
-    });
-  };
 
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-2</h4>
                 <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowActInc(true)}>
-                    <i className="bx bx-export me-1"></i> Generar acta de Incorporación de Bien
+                    <i className="bx bx-file me-1"></i> Generar acta de Incorporación de Bien
                 </button>
                 <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowRepBm2(true)}>
-                    <i className="bx bx-export me-1"></i> Generar Relacion de Movimiento de BM2
+                    <i className="bx bx-file me-1"></i> Generar Relacion de Movimiento de BM2
                 </button>
                 <ModalRepBm2
                     show= {showRepBm2}
@@ -751,11 +774,18 @@ const handleSubmit = async (e) => {
                                         {formEnviado ? 'Insertado con exito' : `${errorMessage}`}
                                     </Alert>
                                     }
+                                    {isSaving && (
+                                              <div className="text-center">
+                                                <Spinner animation="border" role="status">
+                                                  <span className="visually-hidden">{savingMessage}</span>
+                                                </Spinner>
+                                              </div>
+                                            )}
                                 </form>
                                                     <ModalActaInc show={showActInc}
                                                         handleClose={() => setShowActInc(false)}
-                                                        BienId= {formData.bim_ide} 
-                                                        limpiarFormulario = {() => limpiarFormulario()}
+                                                        BienId= {lastInsertedBienId}
+                                                        limpiarFormulario={limpiarModal}
                                                       />
                             </div>
                         ) : (

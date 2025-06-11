@@ -35,9 +35,21 @@ class BienService {
         { header: 'Categoría Específica', key: 'categoria_especifica', width: 25 },
         { header: 'Código SUDEBIM', key: 'bim_cod', width: 15 }
       ]
+
+      const headerRowNumber = 1
       // Formato para las cabeceras
-      worksheet.getRow(1).font = { bold: true }
-      worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' }
+      worksheet.columns.forEach((column, index) => {
+        const cell = worksheet.getCell(headerRowNumber, index + 1) // index + 1 porque las columnas en Excel son base 1
+        cell.font = { bold: true }
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF89AAF3' } }
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
+      })
 
       // Añadir datos
       bienes.forEach(bien => {

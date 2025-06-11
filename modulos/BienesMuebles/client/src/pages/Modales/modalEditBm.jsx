@@ -10,6 +10,7 @@ const foreignKeyEndpoints = {
     'esu_ide': '/api/estados-uso',
     'con_ide': '/api/condiciones-fisicas',
     'mod_ide': '/api/modelos',
+    'mar_ide': '/api/marcas',
     'tip_ide': '/api/tipos-bien',
     'cae_ide': '/api/categorias',
     'com_ide': '/api/conceptos-movimiento',
@@ -46,12 +47,13 @@ const columnAliasBim = {
     'foa_ide': 'Forma de Adquisición',
     'con_ide': 'Condición Física',
     'esu_ide': 'Estado de Uso',
-    'mod_ide': 'Modelo',
+    'mar_ide': 'Marca',
     'cae_ide': 'Categoría Específica',
     'bim_inc': 'Incorporado',
     'bim_fed': 'Fecha de Desincorporación',
     'com_ide': 'Concepto de Movimiento',
-    'dep_ide': 'Departamento Original' // Mantenemos este alias por claridad
+    'mod_ide': 'Modelo',
+    'dep_ide': 'Departamento Original' 
 };
 
 const estadosBien = [
@@ -71,6 +73,17 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+
+    const truncateText = (text, maxLength = 10) => {
+        if (!text) return 'N/A';
+        if (text.length <= maxLength) return text;
+        
+        return (
+            <span title={text}>
+                {`${text.substring(0, maxLength)}...`}
+            </span>
+        );
+    };
 
     useEffect(() => {
         if (show && BienId) {
@@ -96,7 +109,19 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                             isEditable: isEditable
                         };
                     });
+
+                    if (!formattedColumns.some(c => c.originalName === 'mar_ide')) {
+                        formattedColumns.push({
+                            originalName: 'mar_ide',
+                            displayName: columnAliasBim['mar_ide'],
+                            isPrimaryKey: false,
+                            isEditable: !!editableFields['mar_ide']
+                        });
+                    }
+
                     setColumns(formattedColumns);
+
+                    
 
                     // --- Carga de datos del bien ---
                     const bienRes = await fetch(`/api/bienes/${BienId}`);
@@ -203,6 +228,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
         // Mapeo de campos a sus respectivas propiedades en BienData
         const fieldDisplayMap = {
             'foa_ide': bienData?.forma_adquisicion,
+            'mar_ide': bienData?.marca,
             'mod_ide': bienData?.modelo,
             'cae_ide': bienData?.categoria_especifica,
             'com_ide': bienData?.concepto,
@@ -324,26 +350,35 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 <Modal.Header closeButton>
                     <Modal.Title className="w-100"> {/* w-100 para que ocupe todo el ancho */}
                         <div className="d-flex justify-content-between align-items-center mb-2">
-                            <span>Editar Bien: {bienData?.bim_ide} - {bienData?.bim_des}</span>
+                            <span>Editar Bien: {bienData?.bim_ide} - {truncateText(bienData?.bim_des)}</span>
                             {bienData?.est_ide && (
                                 <div>
                                     {getEstadoBadge(formData.est_ide)}
                                 </div>
                             )}
                         </div>
-                        <Row className="mb-3 g-2"> {/* g-2 para un pequeño gap entre columnas */}
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {loading && !bienData ? (
+                        <div className="text-center"><Spinner animation="border" /><p>Cargando datos...</p></div>
+                    ) : (
+                        <Row className="mb-6 g-2"> {/* g-2 para un pequeño gap entre columnas */}
                             <Col md={6}>
-                                <Form.Label className="mb-0">Departamento Original:</Form.Label>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Departamento Original:</Form.Label>
                                 <Form.Control
                                     type="text"
                                     value={bienData?.departamento || ''}
                                     disabled={true}
                                     readOnly={true}
-                                    className="form-control-readonly"
+                                    className="form-control-readonly "
                                     style={{ fontWeight: 'bold' }}
                                 />
+                                </Form.Group>
                             </Col>
                             <Col md={6}>
+                            <Form.Group className="mb-3">
                             <Form.Label>{prestamoInfo 
                                     ? `BIEN PRESTADO EN (Oficio: ${prestamoInfo.pre_ndo})`
                                     : 'Bien en servicio en su departamento original'}</Form.Label>
@@ -357,16 +392,10 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                                 className={prestamoInfo ? 'form-control-readonly text-dark' : 'form-control-readonly'}
                                 style={{ fontWeight: 'bold' }}
                             />
+                            </Form.Group>
                             </Col>
-                        </Row>
-                        {/* --- FIN Información de Ubicación del Bien --- */}
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {loading && !bienData ? (
-                        <div className="text-center"><Spinner animation="border" /><p>Cargando datos...</p></div>
-                    ) : (
-                        <Row>
+                        
+                        
                             {columns.map((column) => {
                                 // Evitar renderizar el campo 'dep_ide' en el formulario principal
                                 if (column.originalName === 'dep_ide') {

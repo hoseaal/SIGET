@@ -114,7 +114,9 @@ export class BienMuebleModel {
     }
 
     // Construcción de la consulta base
-    let baseQuery = 'SELECT b.*, t.tip_tip AS tipo FROM tmab_m b LEFT JOIN tmatip t ON b.tip_ide = t.tip_ide'
+    let baseQuery = `SELECT b.*, t.tip_tip AS tipo, d.dep_nom AS departamento FROM tmab_m b 
+    LEFT JOIN tmatip t ON b.tip_ide = t.tip_ide
+    LEFT JOIN tesdep d ON b.dep_ide=d.dep_ide`
 
     // Agregar WHERE si hay filtros
     if (whereClauses.length > 0) {
