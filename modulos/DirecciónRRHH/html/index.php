@@ -12,10 +12,10 @@
   $userType = $decoded->data->tipo;
   
   // Redireccionar según el tipo de usuario
-  if (in_array($userType, ['0', '1', '2', '3'])) {
+  if (in_array($userType, ['1', '2', '3', '4'])) {
       header('Location: index_usur.php');
       exit;
-  } elseif ($userType != '4') {
+  } elseif ($userType != '5') {
       header('Location: auth-login-basic.php');
       exit;
   }

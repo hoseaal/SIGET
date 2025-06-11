@@ -230,7 +230,7 @@
                           timer: 1200,
                           timerProgressBar: true,
                           willClose: () => {
-                              if (tipo == 4) {
+                              if (tipo == 5) {
                                   window.location.href = 'index.php';
                               } else {
                                   window.location.href = 'index_usur.php';

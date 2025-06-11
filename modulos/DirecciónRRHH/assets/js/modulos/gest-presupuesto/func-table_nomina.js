@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const estaFiltrado = trabajadoresAMostrar !== null;
 
         const encabezadoAcciones = document.querySelector('#actionsColumnHeader');
-        if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+        if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
             encabezadoAcciones.style.display = 'none';
         } else {
             encabezadoAcciones.style.display = '';
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Determinar qué mostrar en la columna de acciones según el tipo de usuario
             let accionesHtml = '';
             
-            if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+            if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
                 // Caso 1: No mostrar columna de acciones
                 fila.innerHTML = `
                     <td><strong>${trabajador.cedula}</strong></td>
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${trabajador.departamento}</td>
                     <td></td> <!-- Columna vacía -->
                 `;
-            } else if (LOGGED_USER_TYPE === '2') {
+            } else if (LOGGED_USER_TYPE === '3') {
                 // Caso 2: Mostrar solo editar
                 fila.innerHTML = `
                     <td><strong>${trabajador.cedula}</strong></td>

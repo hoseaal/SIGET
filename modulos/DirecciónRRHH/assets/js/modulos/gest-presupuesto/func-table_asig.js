@@ -119,16 +119,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const numeroFila = (pagina - 1) * filasPorPagina + indice + 1;
             const fila = document.createElement('tr');
             
-            // Tipos "0" y "1" - (sin acciones)
-            if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+            // (sin acciones)
+            if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
                     <td><strong>${asignacion.pri_raz}</strong></td>
                     <td>${asignacion.pri_por}</td>
                 `;
             } 
-            // Tipo "2" - (solo editar)
-            else if (LOGGED_USER_TYPE === '2') {
+            // (solo editar)
+            else if (LOGGED_USER_TYPE === '3') {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
                     <td><strong>${asignacion.pri_raz}</strong></td>
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                 `;
             } 
-            // Tipos "3" y "4" - todas las acciones
+            // todas las acciones
             else {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        if (LOGGED_USER_TYPE === '2' || LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
             document.querySelectorAll('.edit-assignment-btn').forEach(boton => {
                 boton.addEventListener('click', async function() {
                     const pri_ide = this.getAttribute('data-id');
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Agregar event listeners para los botones de eliminar (solo tipo 4)
-        if (LOGGED_USER_TYPE === '4') {
+        if (LOGGED_USER_TYPE === '5') {
             document.querySelectorAll('.delete-assignment-btn').forEach(boton => {
                 boton.addEventListener('click', function() {
                     const pri_ide = this.getAttribute('data-id');

@@ -6,8 +6,8 @@
       exit;
   }
 
-  // Verificar si el tipo de usuario es 4
-  if ($decoded->data->tipo != '4') {
+  // Verificar si el tipo de usuario
+  if ($decoded->data->tipo != '5') {
       header('Location: auth-login-basic.php');
       exit;
   }
