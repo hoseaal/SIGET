@@ -32,7 +32,7 @@
         // Si estamos en la página de login y el token es válido, redirigir
         if (basename($_SERVER['PHP_SELF']) == 'auth-login-basic.php') {
             $tipo = $decoded->data->tipo;
-            if ($tipo == 4) {
+            if ($tipo == 5) {
                 header('Location: index.php');
             } else {
                 header('Location: index_usur.php');
