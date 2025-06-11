@@ -277,6 +277,17 @@ CREATE TABLE `tmatip` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Estructura de tabla para la tabla `testip`
+--
+
+CREATE TABLE `testip` ( 
+  `usu_tip` INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador AI de tipos de usuario', 
+  `tip_nom` varchar(50) NOT NULL COMMENT 'Nombre de usuario' 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci; 
+
+ALTER TABLE `testip` AUTO_INCREMENT = 0;
+
+--
 -- Índices para tablas volcadas
 --
 
@@ -1423,6 +1434,13 @@ INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('4', '
 INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('4','Operativo'), ('1', 'Sin etiqueta'), ('2', 'Inoperativo'), ('3', 'Faltante');
 
 INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
+
+INSERT INTO `testip` (`tip_nom`) VALUES
+('Visualizador'),
+('Temporal'),
+('Trabajador'),
+('Jefe de Area'),
+('Administrador');
 
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
 
