@@ -11,7 +11,6 @@ const foreignKeyEndpoints = {
     'con_ide': '/api/condiciones-fisicas',
     'mod_ide': '/api/modelos',
     'mar_ide': '/api/marcas',
-    'tip_ide': '/api/tipos-bien',
     'cae_ide': '/api/categorias',
     'com_ide': '/api/conceptos-movimiento',
     'est_ide': '/api/estados-uso'
@@ -26,7 +25,6 @@ const editableFields = {
     'bim_cod': 'Código SUDEBIM',
     'bim_obs': 'Observación',
     'est_ide': 'Estado del Bien',
-    'tip_ide': 'Tipo de Bien',
     'con_ide': 'Condición Física',
     'esu_ide': 'Estado de Uso',
 };
@@ -43,7 +41,6 @@ const columnAliasBim = {
     'bim_obs': 'Observación',
     'bim_sede': 'Sede',
     'est_ide': 'Estado del Bien',
-    'tip_ide': 'Tipo de Bien',
     'foa_ide': 'Forma de Adquisición',
     'con_ide': 'Condición Física',
     'esu_ide': 'Estado de Uso',

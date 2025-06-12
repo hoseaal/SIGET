@@ -7,7 +7,6 @@ import subcategoriaRouter from './src/routes/subcategoria.routes.js'
 import categoriaEspecificaRouter from './src/routes/categoriaEspecifica.routes.js'
 import marcaRouter from './src/routes/marca.routes.js'
 import modeloRouter from './src/routes/modelo.routes.js'
-import tipoBienRouter from './src/routes/tipoBien.routes.js'
 import bienMuebleRouter from './src/routes/bienMueble.routes.js'
 import departamentoRouter from './src/routes/departamento.routes.js'
 import formaAdquisicionRouter from './src/routes/formaAdquisicion.routes.js'
@@ -52,7 +51,6 @@ app.use('/api/subcategorias', subcategoriaRouter)
 app.use('/api/categorias-especificas', categoriaEspecificaRouter)
 app.use('/api/marcas', marcaRouter)
 app.use('/api/modelos', modeloRouter)
-app.use('/api/tipos-bien', tipoBienRouter)
 app.use('/api/departamentos', departamentoRouter)
 app.use('/api/formas-adquisicion', formaAdquisicionRouter)
 app.use('/api/estados-uso', estadoUsoRouter)

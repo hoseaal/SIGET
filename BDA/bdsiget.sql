@@ -171,7 +171,6 @@ CREATE TABLE `tmab_m` (
   `bim_obs` text COMMENT 'Observacion del bien',
   `bim_sede` varchar(20) NOT NULL COMMENT 'Sede en la que se encuentra el bien (PRINCIPAL)',
   `est_ide` int(11) NOT NULL COMMENT 'Referencia a estado en tmaest',
-  `tip_ide` int(11) NOT NULL COMMENT 'Referencia a tipo en tmatip',
   `foa_ide` int(11) NOT NULL COMMENT 'Referencia a forma adquisición en tmafoa',
   `con_ide` int(11) NOT NULL COMMENT 'Referencia a condición en tmacon',
   `esu_ide` int(11) NOT NULL COMMENT 'Referencia a estado uso en tmaesu',
@@ -265,15 +264,6 @@ CREATE TABLE `tmanom` (
   `ona_ide` int(11) NOT NULL COMMENT 'Referencia a cargo ONAPRE en tesona',
   `nvl_ran` varchar(3) NOT NULL COMMENT 'Referencia a Tipo de nivel salarial',
   `dep_ide` int(11) NOT NULL COMMENT 'Referencia a departamento en tesdep'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Estructura de tabla para la tabla `tmatip`
---
-
-CREATE TABLE `tmatip` (
-  `tip_ide` int(11) NOT NULL COMMENT 'Identificador de tipo debien',
-  `tip_tip` varchar(50) NOT NULL COMMENT 'descripcion del tipo de bien'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -371,7 +361,6 @@ ALTER TABLE `tesusu`
 ALTER TABLE `tmab_m`
   ADD PRIMARY KEY (`bim_ide`),
   ADD KEY `fk_tmabm_tmaest` (`est_ide`),
-  ADD KEY `fk_tmabm_tmatip` (`tip_ide`),
   ADD KEY `fk_tmabm_tmafoa` (`foa_ide`),
   ADD KEY `fk_tmabm_tmacon` (`con_ide`),
   ADD KEY `fk_tmabm_tmaesu` (`esu_ide`),
@@ -422,12 +411,6 @@ ALTER TABLE `tmanom`
   ADD KEY `ona_ide` (`ona_ide`),
   ADD KEY `fk_tmanom_tescet` (`cet_ide`),
   ADD KEY `fk_tmanom_tesdep` (`dep_ide`);
-
---
--- Indices de la tabla `tmatip`
---
-ALTER TABLE `tmatip`
-  ADD PRIMARY KEY (`tip_ide`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -527,8 +510,7 @@ ALTER TABLE `tmab_m`
   ADD CONSTRAINT `fk_tmabm_tmacon` FOREIGN KEY (`con_ide`) REFERENCES `tmacon` (`con_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmabm_tmaest` FOREIGN KEY (`est_ide`) REFERENCES `tmaest` (`est_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_tmabm_tmaesu` FOREIGN KEY (`esu_ide`) REFERENCES `tmaesu` (`esu_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_tmabm_tmafoa` FOREIGN KEY (`foa_ide`) REFERENCES `tmafoa` (`foa_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_tmabm_tmatip` FOREIGN KEY (`tip_ide`) REFERENCES `tmatip` (`tip_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_tmabm_tmafoa` FOREIGN KEY (`foa_ide`) REFERENCES `tmafoa` (`foa_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `tmanom`
@@ -1360,44 +1342,11 @@ INSERT INTO `tmacon` (`con_ide`, `con_con`) VALUES
 (1, 'ÓPTIMO'),
 (2, 'BUENO'),
 (3, 'REGULAR'),
-(4, 'DETERIORADO'),
+(4, 'EN MAL ESTADO'),
 (5, 'AVERIADO'),
 (6, 'CHATARRA'),
 (7, 'NO OPERATIVO'),
 (8, 'OTRA CONDICIÓN FÍSICA');
-
--- TABLA TMATIP
-
-INSERT INTO `tmatip` (`tip_ide`, `tip_tip`) VALUES
-(1, 'CPU'),
-(2, 'SWITCH'),
-(3, 'MONITOR'),
-(4, 'IMPRESORA'),
-(5, 'CALCULADORA'),
-(6, 'TELEFONO'),
-(7, 'SACAPUNTA ELECTRICO'),
-(8, 'SILLA'),
-(9, 'AIRE ACONDICIONADO'),
-(10, 'MESA'),
-(11, 'ESTANTE'),
-(12, 'CARTELERA'),
-(13, 'UPS'),
-(14, 'ENFRIADOR DE AGUA'),
-(15, 'PANEL DE DIVISION'),
-(16, 'PUESTO DE TRABAJO'),
-(17, 'ESTACION'),
-(18, 'REGULADOR'),
-(19, 'ARCHIVADOR'),
-(20, 'VENTILADOR'),
-(21, 'LAPTOP'),
-(22, 'CAMARA'),
-(23, 'PATCH PANEL'),
-(24, 'GABINETE PARA SWITCH DE RED'),
-(25, 'PROTECTOR'),
-(26, 'PIZARRA'),
-(27, 'APARATO TELEFONICO'),
-(28, 'ENGRAPADORA'),
-(29, 'SACAPUNTA');
 
 -- TABLA TMAFOA
 
