@@ -119,16 +119,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const numeroFila = (pagina - 1) * filasPorPagina + indice + 1;
             const fila = document.createElement('tr');
             
-            // Tipos "0" y "1" - solo 4 columnas (sin acciones)
-            if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+            // solo 4 columnas (sin acciones)
+            if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
                     <td><strong>${deduccion.ded_raz}</strong></td>
                     <td>${deduccion.ded_por} %</td>
                 `;
             } 
-            // Tipo "2" - 5 columnas (solo editar)
-            else if (LOGGED_USER_TYPE === '2') {
+            // columnas (solo editar)
+            else if (LOGGED_USER_TYPE === '3') {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
                     <td><strong>${deduccion.ded_raz}</strong></td>
@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Agregar event listeners para los botones de editar
-        if (LOGGED_USER_TYPE === '2' || LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
             document.querySelectorAll('.edit-deduction-btn').forEach(boton => {
                 boton.addEventListener('click', async function() {
                     const dedId = this.getAttribute('data-id');
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Agregar event listeners para los botones de eliminar
-        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+        if (LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
             document.querySelectorAll('.delete-deduction-btn').forEach(boton => {
                 boton.addEventListener('click', function() {
                     const dedId = this.getAttribute('data-id');

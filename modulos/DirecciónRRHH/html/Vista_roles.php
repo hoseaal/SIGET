@@ -6,8 +6,8 @@
       exit;
   }
 
-  // Verificar si el tipo de usuario es 4
-  if ($decoded->data->tipo != '4') {
+  // Verificar si el tipo de usuario
+  if ($decoded->data->tipo != '5') {
       header('Location: auth-login-basic.php');
       exit;
   }
@@ -98,11 +98,11 @@
                                     <label class="form-label">Rol</label>
                                     <select id="rolSeleccionado" name="rolSeleccionado" class="form-select">
                                         <option value="" selected disabled>Seleccione un rol</option>
-                                        <option value="0">Visualizador</option>
-                                        <option value="1">Temporal</option>
-                                        <option value="2">Trabajador</option>
-                                        <option value="3">Jefe de área</option>
-                                        <option value="4">Administrador</option>
+                                        <option value="1">Visualizador</option>
+                                        <option value="2">Temporal</option>
+                                        <option value="3">Trabajador</option>
+                                        <option value="4">Jefe de área</option>
+                                        <option value="5">Administrador</option>
                                     </select>
                                 </div>
                                 <div id="defaultFormControlHelp" class="form-text">
@@ -170,20 +170,20 @@
             
             // Mapeo de roles a sus descripciones
             const descripcionesRoles = {
-                '0': 'Tiene acceso a páginas no críticas para la visualización de datos',
-                '1': 'Tiene acceso a páginas críticas sin capacidad de edición o eliminación',
-                '2': 'Tiene acceso básico a las funciones principales del sistema',
-                '3': 'Tiene acceso a edición y eliminación de todas las páginas de su área',
-                '4': 'Tiene acceso total de las páginas con capacidad de edición y eliminación; además, puede añadir nuevos usuarios al sistema'
+                '1': 'Tiene acceso a páginas no críticas para la visualización de datos',
+                '2': 'Tiene acceso a páginas críticas sin capacidad de edición o eliminación',
+                '3': 'Tiene acceso básico a las funciones principales del sistema',
+                '4': 'Tiene acceso a edición y eliminación de todas las páginas de su área',
+                '5': 'Tiene acceso total de las páginas con capacidad de edición y eliminación; además, puede añadir nuevos usuarios al sistema'
             };
             
             // Mapeo de roles a sus nombres completos
             const nombresRoles = {
-                '0': 'Visualizador',
-                '1': 'Temporal',
-                '2': 'Trabajador',
-                '3': 'Jefe de área',
-                '4': 'Administrador'
+                '1': 'Visualizador',
+                '2': 'Temporal',
+                '3': 'Trabajador',
+                '4': 'Jefe de área',
+                '5': 'Administrador'
             };
             
             // Función para actualizar la visualización de permisos
@@ -223,34 +223,34 @@
                 let detalles = '';
                 
                 switch(rol) {
-                    case '0': // Visualizador
+                    case '1': // Visualizador
                         detalles = `
                             <li class="list-group-item">• Solo puede ver información</li>
                             <li class="list-group-item">• No puede realizar cambios</li>
                         `;
                         break;
-                    case '1': // Temporal
+                    case '2': // Temporal
                         detalles = `
                             <li class="list-group-item">• Acceso temporal usado para usuarios a mediano plazo</li>
                             <li class="list-group-item">• Puede ver información crítica</li>
                             <li class="list-group-item">• No puede modificar datos</li>
                         `;
                         break;
-                    case '2': // Trabajador
+                    case '3': // Trabajador
                         detalles = `
                             <li class="list-group-item">• Acceso completo a funciones básicas</li>
                             <li class="list-group-item">• Puede registrar información</li>
                             <li class="list-group-item">• Acceso a edición de registros</li>
                         `;
                         break;
-                    case '3': // Jefe de área
+                    case '4': // Jefe de área
                         detalles = `
                             <li class="list-group-item">• Acceso total a las páginas de su área</li>
                             <li class="list-group-item">• Puede editar cualquier registro</li>
                             <li class="list-group-item">• Puede eliminar cualquier registro</li>
                         `;
                         break;
-                    case '4': // Administrador
+                    case '5': // Administrador
                         detalles = `
                             <li class="list-group-item">• Acceso completo a todo el sistema</li>
                             <li class="list-group-item">• Gestión de usuarios y roles</li>

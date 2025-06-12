@@ -166,16 +166,16 @@ document.addEventListener('DOMContentLoaded', function() {
         salarios.forEach(salario => {
             const fila = document.createElement('tr');
             
-            // Tipos "0" y "1" - solo 3 columnas (sin acciones)
-            if (LOGGED_USER_TYPE === '0' || LOGGED_USER_TYPE === '1') {
+            // solo 3 columnas (sin acciones)
+            if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
                 fila.innerHTML = `
                     <td>${salario.nvl_ran}</td>
                     <td>${salario.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td>${salario.ona_car || 'Sin cargo asignado'}</td>
                 `;
             } 
-            // Tipo "2" - 4 columnas (solo editar)
-            else if (LOGGED_USER_TYPE === '2') {
+            // columnas (solo editar)
+            else if (LOGGED_USER_TYPE === '3') {
                 fila.innerHTML = `
                     <td>${salario.nvl_ran}</td>
                     <td>${salario.nvl_sal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para configurar los event listeners
     function configurarEventos() {
-        if (LOGGED_USER_TYPE === '2' || LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
             document.querySelectorAll('.edit-salary-btn').forEach(boton => {
                 boton.addEventListener('click', async function() {
                     const nvl_ide = this.getAttribute('data-nvl_ide');
@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Agregar event listeners para los botones de eliminar
-        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+        if (LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
             document.querySelectorAll('.delete-salary-btn').forEach(boton => {
                 boton.addEventListener('click', function() {
                     const nvl_ide = this.getAttribute('data-nvl_ide');

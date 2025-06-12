@@ -6,8 +6,8 @@
       exit;
   }
 
-  // Lista de tipos de usuario permitidos (0, 1, 2, 3, 4)
-  $tiposPermitidos = ['0', '1', '2', '3', '4'];
+  // Lista de tipos de usuario permitidos 
+  $tiposPermitidos = ['1', '2', '3', '4', '5'];
 
   // Redirige al login
   if (!in_array($decoded->data->tipo, $tiposPermitidos)) {
@@ -114,7 +114,7 @@
                 if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { 
                 ?>
                     <button id="exportToExcel" class="btn btn-primary">
-                        <i class="bx bx-export me-1"></i> Exportar salarios de nómina
+                        <i class="bx bx-download"></i> Exportar salarios de nómina
                     </button>
                 <?php } ?>
             </div>

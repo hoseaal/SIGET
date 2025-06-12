@@ -6,8 +6,8 @@
       exit;
   }
 
-  // Lista de tipos de usuario permitidos (0, 1, 2, 3, 4)
-  $tiposPermitidos = ['0', '1', '2', '3', '4'];
+  // Lista de tipos de usuario permitidos
+  $tiposPermitidos = ['1', '2', '3', '4', '5'];
 
   // Redirige al login
   if (!in_array($decoded->data->tipo, $tiposPermitidos)) {
@@ -120,7 +120,6 @@
                                 <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">Seleccionar Usuario</h5>
-                                    <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">

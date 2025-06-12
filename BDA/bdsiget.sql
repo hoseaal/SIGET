@@ -277,6 +277,17 @@ CREATE TABLE `tmatip` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Estructura de tabla para la tabla `testip`
+--
+
+CREATE TABLE `testip` ( 
+  `usu_tip` INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador AI de tipos de usuario', 
+  `tip_nom` varchar(50) NOT NULL COMMENT 'Nombre de usuario' 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci; 
+
+ALTER TABLE `testip` AUTO_INCREMENT = 0;
+
+--
 -- Índices para tablas volcadas
 --
 
@@ -586,6 +597,7 @@ CREATE TABLE `bit_usu` (
   `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada',
   `bit_operacion` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
   `bit_usu_ide` VARCHAR(10) COMMENT 'ID de usuario afectado (usu_ide)',
+  `bit_usu_usu` varchar(10) NOT NULL COMMENT 'Nickname del usuario afectado',
   `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
   `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
   `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
@@ -963,22 +975,22 @@ INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `no
 
 -- TABLA TESUSU (Usuario del CONTRALOR: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('LuisAgui23', '$2y$12$zLekvZkVCw4Iy9TpkjOue.aCIBNdZgT.dwcAGOPxc7bW3CIInF3ku', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '4', '0', '18845038'); 
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('LuisAgui23', '$2y$12$zLekvZkVCw4Iy9TpkjOue.aCIBNdZgT.dwcAGOPxc7bW3CIInF3ku', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '5', '0', '18845038'); 
 
 -- TABLA TESUSU (Usuario de Director General: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('EliCris23', '$2y$12$JzctV2PntXoUkksVmfSMXOdOpMyCHHnvNyOgMiW/DFbjPsPTMSZlW', 'ELIANA CRISTINA', 'RAMIREZ DE GUERRERO', '3', '0', '17368181');
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('EliCris23', '$2y$12$JzctV2PntXoUkksVmfSMXOdOpMyCHHnvNyOgMiW/DFbjPsPTMSZlW', 'ELIANA CRISTINA', 'RAMIREZ DE GUERRERO', '4', '0', '17368181');
 
 -- TABLA TESUSU (Usuario de Jefe de RRHH: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('LuisArias1', '$2y$12$2gsERLg2ZUdQ6/GfQ0Wos.492R3p/SGhKGpFdnKvZ4fUj1BOK4TvS', 'LUIS GERARDO', 'ARIAS NIÑO', '3', '1', '15028510');
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('LuisArias1', '$2y$12$2gsERLg2ZUdQ6/GfQ0Wos.492R3p/SGhKGpFdnKvZ4fUj1BOK4TvS', 'LUIS GERARDO', 'ARIAS NIÑO', '4', '1', '15028510');
 
 -- TABLA TESUSU (Usuario de Jefe de Bienes: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('EnderMar21', '$2y$12$oUKu3BId/VnUQ20cdAUzcO2.j6Y.yKpaClmYurBdCi719xjJ33l4a', 'ENDER NICOLAY', 'MOGOLLON MARQUEZ', '3', '2', '26403363');
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('EnderMar21', '$2y$12$oUKu3BId/VnUQ20cdAUzcO2.j6Y.yKpaClmYurBdCi719xjJ33l4a', 'ENDER NICOLAY', 'MOGOLLON MARQUEZ', '4', '2', '26403363');
 
 -- TABLA TESUSU (Usuario de Área Técnica: CONTRASEÑA ES 12345)
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('JesusCar23', '$2y$12$/FSFzNj8rdiyN9EELET45.rRcUUp5raL7jXmd4x/o8TPzi0RrxqNm', 'JESUS DAVID', 'SALAMANCA CARVAJAL', '4', '0', '14502107');
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('JesusCar23', '$2y$12$/FSFzNj8rdiyN9EELET45.rRcUUp5raL7jXmd4x/o8TPzi0RrxqNm', 'JESUS DAVID', 'SALAMANCA CARVAJAL', '5', '0', '14502107');
 
 -- TABLA TMACAT
 
@@ -1424,6 +1436,13 @@ INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('4','Operativo'), ('1', 'Sin 
 
 INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
 
+INSERT INTO `testip` (`tip_nom`) VALUES
+('Visualizador'),
+('Temporal'),
+('Trabajador'),
+('Jefe de Area'),
+('Administrador');
+
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
 
 -- CIERRE DE FUTUROS VOLCADOS EN LA BASE DE DATOS
@@ -1442,16 +1461,17 @@ INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
             `bit_tabla`,
             `bit_operacion`,
             `bit_usu_ide`,
+            `bit_usu_usu`,
             `bit_usuario_responsable`,
             `bit_detalles`
         ) VALUES (
             'tesusu',
             'INSERT',
             NEW.usu_ide,
+            NEW.usu_usu,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
                 'nuevo', JSON_OBJECT(
-                    'usu_con', '******',  -- No almacenar contraseñas
                     'usu_tip', NEW.usu_tip,
                     'nom_ced', NEW.nom_ced
                 )
@@ -1468,12 +1488,14 @@ INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
             `bit_tabla`,
             `bit_operacion`,
             `bit_usu_ide`,
+            `bit_usu_usu`,
             `bit_usuario_responsable`,
             `bit_detalles`
         ) VALUES (
             'tesusu',
             'UPDATE',
             NEW.usu_ide,
+            NEW.usu_usu,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
                 'antes', JSON_OBJECT(
@@ -1497,12 +1519,14 @@ INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
             `bit_tabla`,
             `bit_operacion`,
             `bit_usu_ide`,
+            `bit_usu_usu`,
             `bit_usuario_responsable`,
             `bit_detalles`
         ) VALUES (
             'tesusu',
             'DELETE',
             OLD.usu_ide,
+            OLD.usu_usu,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
                 'eliminado', JSON_OBJECT(

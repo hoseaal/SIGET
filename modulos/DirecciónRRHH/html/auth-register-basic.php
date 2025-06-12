@@ -7,8 +7,8 @@
       exit;
   }
 
-  // Verificar si el tipo de usuario es 4
-  if ($decoded->data->tipo != '4') {
+  // Verificar si el tipo de usuario
+  if ($decoded->data->tipo != '5') {
       header('Location: auth-login-basic.php');
       exit;
   }
@@ -84,7 +84,7 @@
             <div class="card-body p-2">
               <!-- Logo -->
               <div class="app-brand justify-content-center mb-4">
-                <a href="<?php echo ($GLOBALS['decoded']->data->tipo == '4') ? 'index.php' : 'index_usur.php'; ?>" class="app-brand-link gap-2">
+                <a href="<?php echo ($GLOBALS['decoded']->data->tipo == '5') ? 'index.php' : 'index_usur.php'; ?>" class="app-brand-link gap-2">
                   <span class="app-brand-text demo text-body fw-bolder">SIGET</span>
                 </a>
               </div>
@@ -172,11 +172,11 @@
                       <label for="tip" class="form-label">Rol del usuario</label>
                       <select id="tip" name="tip" class="form-select" required>
                         <option value="">-- Selecciona un rol --</option>
-                        <option value="4">Administrador</option>
-                        <option value="3">Jefe de área</option>
-                        <option value="2">Trabajador</option>
-                        <option value="1">Temporal</option>
-                        <option value="0">Visualizador</option>
+                        <option value="5">Administrador</option>
+                        <option value="4">Jefe de área</option>
+                        <option value="3">Trabajador</option>
+                        <option value="2">Temporal</option>
+                        <option value="1">Visualizador</option>
                       </select>
                     </div>
                   </div>

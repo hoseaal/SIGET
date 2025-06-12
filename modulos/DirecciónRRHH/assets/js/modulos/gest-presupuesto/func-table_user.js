@@ -122,11 +122,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para convertir el tipo de usuario a texto
     function obtenerTextoTipoUsuario(tipo) {
         const tipos = {
-            4: 'Administrador',
-            3: 'Jefe de Área',
-            2: 'Trabajador',
-            1: 'Temporal',
-            0: 'Visualizador'
+            5: 'Administrador',
+            4: 'Jefe de Área',
+            3: 'Trabajador',
+            2: 'Temporal',
+            1: 'Visualizador'
         };
         return tipos[tipo] || 'Desconocido';
     }

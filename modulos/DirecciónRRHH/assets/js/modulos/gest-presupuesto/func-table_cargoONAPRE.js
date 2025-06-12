@@ -113,15 +113,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const numeroFila = (pagina - 1) * filasPorPaginaONAPRE + indice + 1;
             const fila = document.createElement('tr');
             
-            // Usuario tipo "0" - solo 2 columnas
-            if (LOGGED_USER_TYPE === '0') {
+            // solo 2 columnas
+            if (LOGGED_USER_TYPE === '1') {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
                     <td>${cargo.ona_car}</td>
                 `;
             } 
-            // Usuario tipo "1" o "2" - 3 columnas (sin eliminar)
-            else if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
+            // columnas (sin eliminar)
+            else if (LOGGED_USER_TYPE === '2' || LOGGED_USER_TYPE === '3') {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
                     <td>${cargo.ona_car}</td>
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Configurar event listeners solo si el usuario tiene permisos
-        if (LOGGED_USER_TYPE !== '0') {
+        if (LOGGED_USER_TYPE !== '1') {
             // Agregar event listeners para los botones de editar
             document.querySelectorAll('.editar-cargo-btn').forEach(boton => {
                 boton.addEventListener('click', function() {
@@ -187,8 +187,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
 
-            // Agregar event listeners para los botones de eliminar (solo para tipos 3 y 4)
-            if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4') {
+            // Agregar event listeners para los botones de eliminar 
+            if (LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
                 document.querySelectorAll('.eliminar-cargo-btn').forEach(boton => {
                     // Limpiar eventos existentes primero
                     const nuevoBoton = boton.cloneNode(true);

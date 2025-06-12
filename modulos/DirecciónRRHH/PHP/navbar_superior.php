@@ -51,15 +51,15 @@
                     </span>
                     <small class="text-muted">
                       <?php
-                        if ($tipo == 3) {
+                        if ($tipo == 4) {
                           echo "Jefe de Área";
-                        } elseif ($tipo == 2) {
+                        } elseif ($tipo == 3) {
                           echo "Trabajador";
-                        } elseif ($tipo == 4) {
+                        } elseif ($tipo == 5) {
                           echo "Administrador";
-                        } elseif ($tipo == 0) {
-                          echo "Visualizador";
                         } elseif ($tipo == 1) {
+                          echo "Visualizador";
+                        } elseif ($tipo == 2) {
                           echo "Temporal";
                         } else {
                           echo "desconocido";
