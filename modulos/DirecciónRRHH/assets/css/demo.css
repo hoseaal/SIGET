@@ -236,3 +236,85 @@ body.modal-open {
 .is-invalid ~ .invalid-feedback {
     display: block;
 }
+
+/* Estilos para el visualizador de JSON */
+.json-viewer {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.json-viewer .json-object {
+  margin-left: 20px;
+}
+
+.json-viewer .json-property {
+  display: flex;
+  margin-bottom: 5px;
+}
+
+.json-viewer .json-key {
+  color: #d63384;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.json-viewer .json-string {
+  color: #20c997;
+}
+
+.json-viewer .json-number {
+  color: #0d6efd;
+}
+
+.json-viewer .json-boolean {
+  color: #fd7e14;
+}
+
+.json-viewer .json-null {
+  color: #6c757d;
+}
+
+.json-viewer .json-collapsible {
+  cursor: pointer;
+  position: relative;
+  padding-left: 15px;
+}
+
+.json-viewer .json-collapsible::before {
+  content: "−";
+  position: absolute;
+  left: 0;
+}
+
+.json-viewer .json-collapsed::before {
+  content: "+";
+}
+
+.json-viewer .json-collapsed > .json-object,
+.json-viewer .json-collapsed > .json-array {
+  display: none;
+}
+
+.json-viewer .json-toggle {
+  position: relative;
+  padding-left: 15px;
+  cursor: pointer;
+}
+
+.json-viewer .json-toggle::before {
+  content: "▶";
+  position: absolute;
+  left: 0;
+  font-size: 10px;
+  color: #6c757d;
+}
+
+.json-viewer .json-toggle.json-expanded::before {
+  content: "▼";
+}

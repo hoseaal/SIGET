@@ -165,7 +165,7 @@
     <script src="../assets/js/modulos/gest-presupuesto/func-table_mod.js"></script>
 
     <!-- Modal de ver todos los campos de Modificaciones -->
-     <div class="modal fade" id="viewModificationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="viewModificationModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -206,8 +206,8 @@
               <div class="col-md-12">
                 <label class="form-label">Detalles de la Modificación</label>
                 <div class="card">
-                  <div class="card-body">
-                    <pre id="viewDetails" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+                  <div class="card-body p-0">
+                    <div id="jsonViewer" class="json-viewer"></div>
                   </div>
                 </div>
               </div>
