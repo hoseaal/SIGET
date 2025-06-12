@@ -16,7 +16,7 @@
   }
   
   // Exponer la cédula del usuario logueado como variable JavaScript
-  echo '<script>const LOGGED_USER_CI = "' . $decoded->data->cedula . '";</script>';
+  echo '<script>const LOGGED_USER_CI = "' . $decoded->data->id . '";</script>';
 ?>
 
 <!DOCTYPE html>

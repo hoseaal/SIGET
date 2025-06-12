@@ -597,6 +597,7 @@ CREATE TABLE `bit_usu` (
   `bit_tabla` VARCHAR(50) NOT NULL COMMENT 'Nombre de la tabla afectada',
   `bit_operacion` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación',
   `bit_usu_ide` VARCHAR(10) COMMENT 'ID de usuario afectado (usu_ide)',
+  `bit_usu_usu` varchar(10) NOT NULL COMMENT 'Nickname del usuario afectado',
   `bit_usuario_responsable` VARCHAR(10) NOT NULL COMMENT 'Cédula del usuario que realizó el cambio',
   `bit_detalles` JSON COMMENT 'Datos antiguos/nuevos',
   `bit_fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha del cambio'
@@ -1460,16 +1461,17 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             `bit_tabla`,
             `bit_operacion`,
             `bit_usu_ide`,
+            `bit_usu_usu`,
             `bit_usuario_responsable`,
             `bit_detalles`
         ) VALUES (
             'tesusu',
             'INSERT',
             NEW.usu_ide,
+            NEW.usu_usu,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
                 'nuevo', JSON_OBJECT(
-                    'usu_con', '******',  -- No almacenar contraseñas
                     'usu_tip', NEW.usu_tip,
                     'nom_ced', NEW.nom_ced
                 )
@@ -1486,12 +1488,14 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             `bit_tabla`,
             `bit_operacion`,
             `bit_usu_ide`,
+            `bit_usu_usu`,
             `bit_usuario_responsable`,
             `bit_detalles`
         ) VALUES (
             'tesusu',
             'UPDATE',
             NEW.usu_ide,
+            NEW.usu_usu,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
                 'antes', JSON_OBJECT(
@@ -1515,12 +1519,14 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             `bit_tabla`,
             `bit_operacion`,
             `bit_usu_ide`,
+            `bit_usu_usu`,
             `bit_usuario_responsable`,
             `bit_detalles`
         ) VALUES (
             'tesusu',
             'DELETE',
             OLD.usu_ide,
+            OLD.usu_usu,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
                 'eliminado', JSON_OBJECT(

@@ -14,7 +14,7 @@
   }
 
   // Exponer la cédula del usuario logueado como variable JavaScript
-  echo '<script>const LOGGED_USER_ID = "' . $decoded->data->cedula . '";</script>';
+  echo '<script>const LOGGED_USER_ID = "' . $decoded->data->id . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -235,11 +235,11 @@
                         <label for="userType" class="form-label">Tipo de Usuario</label>
                         <select id="cargocet" name="cargocet" class="form-select" required>
                           <option value="">Seleccione</option>
-                          <option value="4">Administrador</option>
-                          <option value="3">Jefe de Área</option>
-                          <option value="2">Trabajador</option>
-                          <option value="1">Temporal</option>
-                          <option value="0">Visualizador</option>
+                          <option value="5">Administrador</option>
+                          <option value="4">Jefe de Área</option>
+                          <option value="3">Trabajador</option>
+                          <option value="2">Temporal</option>
+                          <option value="1">Visualizador</option>
                         </select>
                       </div>
                       

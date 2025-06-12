@@ -1,4 +1,5 @@
 <?php
+    header('Content-Type: application/json');
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
 
@@ -10,8 +11,11 @@
 
     header('Content-Type: application/json');
 
-    // Secret Key
-    $secretKey = 'C0ntr@l0r!aD3lEst4d0T@ch!r@';
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../../../');
+    $dotenv->load();
+
+    // Obtener la clave desde .env
+    $secretKey = $_ENV['JWT_SECRET_KEY'];
 
     $input = json_decode(file_get_contents("php://input"), true);
 
@@ -29,9 +33,8 @@
     }
 
     try {
-        // Buscar usuario por username (usu_usu)
         $stmt = $pdo->prepare("
-            SELECT tu.usu_usu, tu.usu_con, tu.usu_tip, tu.nom_ced, tu.usu_nom, tu.usu_ape
+            SELECT tu.usu_ide, tu.usu_usu, tu.usu_con, tu.usu_tip, tu.nom_ced, tu.usu_nom, tu.usu_ape
             FROM tesusu tu
             WHERE tu.usu_usu = :username
         ");
@@ -45,20 +48,18 @@
 
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Verificar contraseña
         if (!password_verify($password, $user['usu_con'])) {
             echo json_encode(['success' => false, 'message' => 'Contraseña incorrecta.']);
             exit;
         }
 
-        // Crear payload del JWT
         $payload = [
-            'iss' => 'siget.com',
-            'aud' => 'siget.com',
+            'iss' => $_ENV['JWT_ISSUER'],     
+            'aud' => $_ENV['JWT_AUDIENCE'],    
             'iat' => time(),
-            'exp' => time() + (6 * 3600),
+            'exp' => time() + ($_ENV['JWT_EXPIRATION_HOURS'] * 3600), 
             'data' => [
-                'username' => $user['usu_usu'],
+                'id' => $user['usu_ide'],
                 'cedula' => $user['nom_ced'],
                 'nombre' => $user['usu_nom'],
                 'apellido' => $user['usu_ape'],

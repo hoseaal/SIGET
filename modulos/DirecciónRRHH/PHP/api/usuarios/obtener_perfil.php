@@ -1,7 +1,7 @@
 <?php
     require_once '../validar-jwt-js.php';
 
-    if (!isset($decoded) || !isset($decoded->data->cedula)) {
+    if (!isset($decoded) || !isset($decoded->data->id)) {
         header('HTTP/1.1 401 Unauthorized');
         exit;
     }
@@ -9,10 +9,10 @@
     require_once '../../../conexion/conexion.php';
 
     try {
-        $cedula = $decoded->data->cedula;
-        $query = "SELECT * FROM tesusu WHERE nom_ced = ?";
+        $id = $decoded->data->id;
+        $query = "SELECT * FROM tesusu WHERE usu_ide = ?";
         $stmt = $pdo->prepare($query);
-        $stmt->execute([$cedula]);
+        $stmt->execute([$id]);
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$usuario) {

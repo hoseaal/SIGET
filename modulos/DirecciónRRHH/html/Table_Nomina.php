@@ -114,7 +114,7 @@
                 if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { 
                 ?>
                     <button id="exportToExcel" class="btn btn-primary">
-                        <i class="bx bx-export me-1"></i> Exportar salarios de nómina
+                        <i class="bx bx-download"></i> Exportar salarios de nómina
                     </button>
                 <?php } ?>
             </div>

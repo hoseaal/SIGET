@@ -4,13 +4,15 @@
     use Firebase\JWT\JWT;
     use Firebase\JWT\Key;
 
-    $secretKey = 'C0ntr@l0r!aD3lEst4d0T@ch!r@';
+    // Cargar variables de entorno
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../../../');
+    $dotenv->load();
 
-    // Leer el token desde la cookie
+    $secretKey = $_ENV['JWT_SECRET_KEY'];
+
     $token = $_COOKIE['token'] ?? null;
 
     if (!$token) {
-        // Solo redirigir si no estamos ya en la página de login
         if (basename($_SERVER['PHP_SELF']) != 'auth-login-basic.php') {
             header('Location: auth-login-basic.php');
             exit;

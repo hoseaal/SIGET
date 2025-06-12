@@ -154,8 +154,9 @@
                   <div class="col-lg-4 mb-4">
                     <!-- Bienvenida -->
                     <div class="card h-100">
-                      <div class="card-body d-flex flex-column">
-                        <div class="text-center mb-3">
+                      <div class="card-body d-flex flex-column justify-content-between">
+                        <!-- Contenido centrado vertical y horizontalmente -->
+                        <div class="d-flex flex-column align-items-center justify-content-center flex-grow-1 py-3">
                           <img
                             src="../assets/img/illustrations/man-with-laptop-light.png"
                             height="120"
@@ -164,12 +165,13 @@
                             data-app-light-img="illustrations/man-with-laptop-light.png"
                             class="mb-3"
                           />
-                          <h5 class="card-title text-primary">Bienvenido al Sistema 🎉</h5>
+                          <h5 class="card-title text-primary text-center">Bienvenido a SIGET</h5>
+                          <p class="mb-0 text-center">
+                            Automatiza las <span class="fw-bold">nóminas</span> para un trabajo mucho más eficiente y seguro.
+                          </p>
                         </div>
-                        <p class="mb-4 text-center">
-                          Automatiza las <span class="fw-bold">nóminas</span> para un trabajo mucho más eficiente y seguro.
-                        </p>
-                        <div class="text-center mt-auto">
+                        <!-- Botón abajo y centrado -->
+                        <div class="text-center mt-auto pt-2">
                           <a href="Table_Nomina.php" class="btn btn-sm btn-outline-primary">Acceder a nóminas</a>
                         </div>
                       </div>
@@ -187,121 +189,132 @@
                           <?php
                               // Consulta unificada para todas las tablas de bitácora
                               $query = "
-                                  (SELECT 'usu' as tipo, bit_operacion, bit_usu_ide as id, 
-                                          bit_usuario_responsable, 
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE usu_ide = bit_usu_ide) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE usu_ide = bit_usu_ide)
-                                              ELSE NULL
-                                          END as usu_nombre,
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
-                                              ELSE NULL
-                                          END as responsable_nombre,
-                                          bit_detalles, bit_fecha 
-                                  FROM bit_usu)
-                                  UNION ALL
-                                  (SELECT 'nom' as tipo, bit_operacion, bit_nom_ced as id, 
-                                          bit_usuario_responsable, 
-                                          NULL as usu_nombre,
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
-                                              ELSE NULL
-                                          END as responsable_nombre,
-                                          bit_detalles, bit_fecha 
-                                  FROM bit_nom)
-                                  UNION ALL
-                                  (SELECT 'cet' as tipo, bit_operacion, bit_cet_ide as id, 
-                                          bit_usuario_responsable, 
-                                          NULL as usu_nombre,
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
-                                              ELSE NULL
-                                          END as responsable_nombre,
-                                          bit_detalles, bit_fecha 
-                                  FROM bit_cet)
-                                  UNION ALL
-                                  (SELECT 'ona' as tipo, bit_operacion, bit_ona_ide as id, 
-                                          bit_usuario_responsable, 
-                                          NULL as usu_nombre,
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
-                                              ELSE NULL
-                                          END as responsable_nombre,
-                                          bit_detalles, bit_fecha 
-                                  FROM bit_ona)
-                                  UNION ALL
-                                  (SELECT 'nvl' as tipo, bit_operacion, bit_nvl_ide as id, 
-                                          bit_usuario_responsable, 
-                                          NULL as usu_nombre,
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
-                                              ELSE NULL
-                                          END as responsable_nombre,
-                                          bit_detalles, bit_fecha 
-                                  FROM bit_nvl)
-                                  UNION ALL
-                                  (SELECT 'sup' as tipo, bit_operacion, bit_sup_ide as id, 
-                                          bit_usuario_responsable, 
-                                          NULL as usu_nombre,
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
-                                              ELSE NULL
-                                          END as responsable_nombre,
-                                          bit_detalles, bit_fecha 
-                                  FROM bit_sup)
-                                  UNION ALL
-                                  (SELECT 'cep' as tipo, bit_operacion, bit_cep_ide as id, 
-                                          bit_usuario_responsable, 
-                                          NULL as usu_nombre,
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
-                                              ELSE NULL
-                                          END as responsable_nombre,
-                                          bit_detalles, bit_fecha 
-                                  FROM bit_cep)
-                                  UNION ALL
-                                  (SELECT 'ded' as tipo, bit_operacion, bit_ded_ide as id, 
-                                          bit_usuario_responsable, 
-                                          NULL as usu_nombre,
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
-                                              ELSE NULL
-                                          END as responsable_nombre,
-                                          bit_detalles, bit_fecha 
-                                  FROM bit_ded)
-                                  UNION ALL
-                                  (SELECT 'pri' as tipo, bit_operacion, bit_pri_ide as id, 
-                                          bit_usuario_responsable, 
-                                          NULL as usu_nombre,
-                                          CASE 
-                                              WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
-                                              THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
-                                              ELSE NULL
-                                          END as responsable_nombre,
-                                          bit_detalles, bit_fecha 
-                                  FROM bit_pri)
-                                  ORDER BY bit_fecha DESC
-                                  LIMIT 3
+                                  SELECT 
+                                    tipo, 
+                                    bit_operacion, 
+                                    id, 
+                                    bit_usuario_responsable, 
+                                    COALESCE(NULLIF(usu_nombre, ''), 'SISTEMA') AS usu_nombre,
+                                    COALESCE(NULLIF(responsable_nombre, ''), 'SISTEMA') AS responsable_nombre,
+                                    bit_detalles, 
+                                    bit_fecha 
+                                FROM (
+                                    (SELECT 'usu' as tipo, bit_operacion, bit_usu_ide as id, 
+                                            bit_usuario_responsable, 
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE usu_ide = bit_usu_ide) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE usu_ide = bit_usu_ide)
+                                                ELSE bit_usu_usu
+                                            END as usu_nombre,
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                                ELSE NULL
+                                            END as responsable_nombre,
+                                            bit_detalles, bit_fecha 
+                                    FROM bit_usu)
+                                    UNION ALL
+                                    (SELECT 'nom' as tipo, bit_operacion, bit_nom_ced as id, 
+                                            bit_usuario_responsable, 
+                                            bit_nom_ced as usu_nombre,
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                                ELSE NULL
+                                            END as responsable_nombre,
+                                            bit_detalles, bit_fecha 
+                                    FROM bit_nom)
+                                    UNION ALL
+                                    (SELECT 'cet' as tipo, bit_operacion, bit_cet_ide as id, 
+                                            bit_usuario_responsable, 
+                                            NULL as usu_nombre,
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                                ELSE NULL
+                                            END as responsable_nombre,
+                                            bit_detalles, bit_fecha 
+                                    FROM bit_cet)
+                                    UNION ALL
+                                    (SELECT 'ona' as tipo, bit_operacion, bit_ona_ide as id, 
+                                            bit_usuario_responsable, 
+                                            NULL as usu_nombre,
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                                ELSE NULL
+                                            END as responsable_nombre,
+                                            bit_detalles, bit_fecha 
+                                    FROM bit_ona)
+                                    UNION ALL
+                                    (SELECT 'nvl' as tipo, bit_operacion, bit_nvl_ide as id, 
+                                            bit_usuario_responsable, 
+                                            NULL as usu_nombre,
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                                ELSE NULL
+                                            END as responsable_nombre,
+                                            bit_detalles, bit_fecha 
+                                    FROM bit_nvl)
+                                    UNION ALL
+                                    (SELECT 'sup' as tipo, bit_operacion, bit_sup_ide as id, 
+                                            bit_usuario_responsable, 
+                                            NULL as usu_nombre,
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                                ELSE NULL
+                                            END as responsable_nombre,
+                                            bit_detalles, bit_fecha 
+                                    FROM bit_sup)
+                                    UNION ALL
+                                    (SELECT 'cep' as tipo, bit_operacion, bit_cep_ide as id, 
+                                            bit_usuario_responsable, 
+                                            NULL as usu_nombre,
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                                ELSE NULL
+                                            END as responsable_nombre,
+                                            bit_detalles, bit_fecha 
+                                    FROM bit_cep)
+                                    UNION ALL
+                                    (SELECT 'ded' as tipo, bit_operacion, bit_ded_ide as id, 
+                                            bit_usuario_responsable, 
+                                            NULL as usu_nombre,
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                                ELSE NULL
+                                            END as responsable_nombre,
+                                            bit_detalles, bit_fecha 
+                                    FROM bit_ded)
+                                    UNION ALL
+                                    (SELECT 'pri' as tipo, bit_operacion, bit_pri_ide as id, 
+                                            bit_usuario_responsable, 
+                                            NULL as usu_nombre,
+                                            CASE 
+                                                WHEN EXISTS (SELECT 1 FROM tesusu WHERE nom_ced = bit_usuario_responsable) 
+                                                THEN (SELECT usu_usu FROM tesusu WHERE nom_ced = bit_usuario_responsable)
+                                                ELSE NULL
+                                            END as responsable_nombre,
+                                            bit_detalles, bit_fecha 
+                                    FROM bit_pri)
+                                    ORDER BY bit_fecha DESC
+                                    LIMIT 4
+                                ) AS subquery
                               ";
 
                               $stmt = $pdo->query($query);
                               $modificaciones = $stmt->fetchAll();
 
                               if (empty($modificaciones)): ?>
-                                  <li class="d-flex mb-4 pb-1 justify-content-center">
-                                      <div class="text-center">
-                                          <small class="text-muted">No han ocurrido cambios en el sistema</small>
-                                      </div>
-                                  </li>
+                                  <li class="d-flex align-items-center justify-content-center h-100 py-4">
+                                        <div class="text-center">
+                                            <small class="text-muted">No han ocurrido cambios en el sistema</small>
+                                        </div>
+                                  </li> 
                               <?php else:
                                   foreach ($modificaciones as $mod):
                                       // Determinar icono y texto según el tipo de operación y tabla
@@ -335,8 +348,8 @@
                                               'DELETE' => 'Eliminación de cargo ONAPRE'
                                           },
                                           'nvl' => match($mod['bit_operacion']) {
-                                              'UPDATE' => 'Actualización de nivel',
-                                              'DELETE' => 'Eliminación de nivel'
+                                              'UPDATE' => 'Actualización de nivel Salarial',
+                                              'DELETE' => 'Eliminación de nivel Salarial'
                                           },
                                           'sup' => match($mod['bit_operacion']) {
                                               'INSERT' => 'Nueva suplencia',
@@ -362,7 +375,7 @@
                                       // Mostrar ID según el tipo de registro
                                       $idTexto = match($mod['tipo']) {
                                           'usu', 'nom' => 'Afectado: ' . htmlspecialchars($mod['usu_nombre']),
-                                          default => 'Afectado: ' . htmlspecialchars($mod['usu_nombre'])
+                                          default => 'Afectado: ' . htmlspecialchars($mod['id'])
                                       };
                           ?>
                           <li class="d-flex mb-4 pb-1">
@@ -481,13 +494,13 @@
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // Verificar si config está definida (debe estar definida en otro lugar de tu aplicación)
+        // Verificar si config está definida
         if (typeof config === 'undefined') {
           console.error('La variable config no está definida');
           return;
         }
 
-        // Colores para la gráfica (usando la config existente)
+        // Colores para la gráfica
         const colors = {
           primary: config.colors?.primary || '#696cff',
           success: config.colors?.success || '#71dd37',
@@ -507,11 +520,22 @@
           .then(data => {
             console.log('Datos recibidos:', data);
             
+            // Verificar si hay un error en la respuesta
+            if (data.error) {
+              throw new Error(data.error);
+            }
+            
+            // Verificar si no hay empleados
+            if (data.total_empleados === 0) {
+              showEmptyState();
+              return;
+            }
+            
             // Actualizar total de empleados
             const totalElement = document.getElementById('total-empleados');
             if (totalElement) totalElement.textContent = data.total_empleados;
             
-            // Procesar datos para gráfica (valores absolutos)
+            // Procesar datos para gráfica
             const chartData = processChartData(data);
             renderOrderStatisticsChart(chartData, colors);
             renderDepartmentList(data);
@@ -574,7 +598,6 @@
                 right: 15 
               } 
             },
-            // Tooltip NORMAL (muestra nombre departamento + valor)
             tooltip: {
               enabled: true,
               y: {
@@ -677,16 +700,46 @@
               </li>
             `;
           }
-          
-          // Mensaje si no hay datos
-          if (departmentsWithEmployees.length === 0 && (!data.otros || data.otros === 0)) {
-            listElement.innerHTML = '<li class="text-center p-3">No hay empleados registrados</li>';
+        }
+        
+        function showEmptyState() {
+          // Limpiar la gráfica
+          const chartElement = document.getElementById('orderStatisticsChart');
+          if (chartElement) {
+            chartElement.innerHTML = '';
           }
+          
+          // Mostrar el mensaje en la lista
+          const listElement = document.getElementById('lista-departamentos');
+          if (listElement) {
+            listElement.innerHTML = `
+              <li class="d-flex align-items-center justify-content-center h-100 py-4">
+                <div class="text-center">
+                  <small class="text-muted">No se han agregado trabajadores a la nómina del sistema</small>
+                </div>
+              </li>
+            `;
+          }
+          
+          // Actualizar el contador a 0
+          const totalElement = document.getElementById('total-empleados');
+          if (totalElement) totalElement.textContent = '0';
         }
         
         function showError(message) {
           const chartElement = document.getElementById('orderStatisticsChart');
           if (chartElement) chartElement.innerHTML = `<div class="text-center text-danger p-3">${message}</div>`;
+          
+          const listElement = document.getElementById('lista-departamentos');
+          if (listElement) {
+            listElement.innerHTML = `
+              <li class="d-flex align-items-center justify-content-center h-100 py-4">
+                <div class="text-center text-danger">
+                  <small>${message}</small>
+                </div>
+              </li>
+            `;
+          }
         }
       });
     </script>

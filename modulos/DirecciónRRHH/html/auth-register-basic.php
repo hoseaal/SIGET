@@ -84,7 +84,7 @@
             <div class="card-body p-2">
               <!-- Logo -->
               <div class="app-brand justify-content-center mb-4">
-                <a href="<?php echo ($GLOBALS['decoded']->data->tipo == '4') ? 'index.php' : 'index_usur.php'; ?>" class="app-brand-link gap-2">
+                <a href="<?php echo ($GLOBALS['decoded']->data->tipo == '5') ? 'index.php' : 'index_usur.php'; ?>" class="app-brand-link gap-2">
                   <span class="app-brand-text demo text-body fw-bolder">SIGET</span>
                 </a>
               </div>
