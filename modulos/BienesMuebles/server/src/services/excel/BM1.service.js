@@ -83,7 +83,6 @@ class ExcelService {
       // --- CABECERAS DE COLUMNAS (A6:I6) ---
       worksheet.getCell('A6').value = 'Numero'
       worksheet.getCell('B6').value = 'Codigo'
-      worksheet.getCell('C6').value = 'Tipo'
       worksheet.getCell('D6').value = 'Descripcion'
       worksheet.getCell('E6').value = 'Observacion'
       worksheet.getCell('F6').value = 'Sin Etiqueta'
@@ -92,7 +91,7 @@ class ExcelService {
       worksheet.getCell('I6').value = 'Operativo'
 
       // Estilos para las cabeceras de columnas
-      for (let col = 1; col <= 9; col++) {
+      for (let col = 1; col <= 8; col++) {
         const cell = worksheet.getCell(6, col)
         cell.font = { bold: true }
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
@@ -107,7 +106,6 @@ class ExcelService {
 
           worksheet.getCell(`A${rowNumber}`).value = index + 1 // Número secuencial
           worksheet.getCell(`B${rowNumber}`).value = bien.bim_ide // Código
-          worksheet.getCell(`C${rowNumber}`).value = bien.tipo // Tipo
           worksheet.getCell(`D${rowNumber}`).value = bien.bim_des // Descripción
           worksheet.getCell(`E${rowNumber}`).value = bien.bim_obs || ' ' // Observación
 
@@ -149,7 +147,6 @@ class ExcelService {
       worksheet.columns = [
         { key: 'numero', width: 8 }, // A
         { key: 'codigo', width: 15 }, // B
-        { key: 'tipo', width: 20 }, // C
         { key: 'descripcion', width: 40 }, // D
         { key: 'observacion', width: 40 }, // E
         { key: 'sin_etiqueta', width: 12 }, // F

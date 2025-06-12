@@ -112,7 +112,6 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
     'nombreJefeCompras',
     'ciJefeCompras',
     'codigoBien',
-    'tipodeBien',
     'descripcionIncorporacion',
     'marca',
     'modelo',
@@ -212,7 +211,6 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
       nombreJefeCompras: formData.nombreJefeCompras,
       ciJefeCompras: formData.ciJefeCompras,
       codigoBien: bienData.bim_ide,
-      tipodeBien: bienData.tipo,
       descripcionIncorporacion: bienData.bim_des,
       marca: bienData.marca,
       modelo: bienData.modelo,
@@ -345,7 +343,6 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
                 ['Marca', bienData.marca],
                 ['Modelo', bienData.modelo],
                 ['Color', bienData.bim_color],
-                ['Tipo de Bien', bienData.tipo],
                 ['Concepto de Movimiento', bienData.concepto]
               ].map(([label, value], idx) => (
                 <Form.Group className="mb-2" key={idx}>

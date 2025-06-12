@@ -14,7 +14,7 @@ export class Validaciones {
     const camposRequeridos = [
       'bim_ide', 'bim_des', 'bim_fec', 'bim_ndo',
       'bim_val', 'bim_moneda', 'bim_sede',
-      'est_ide', 'tip_ide', 'foa_ide', 'con_ide', 'esu_ide'
+      'est_ide', 'foa_ide', 'con_ide', 'esu_ide'
     ]
 
     camposRequeridos.forEach(campo => {
@@ -27,7 +27,6 @@ export class Validaciones {
     const camposNumericos = {
       bim_val: 'valor',
       est_ide: 'estado',
-      tip_ide: 'tipo',
       foa_ide: 'forma de adquisición',
       con_ide: 'condición',
       esu_ide: 'estado de uso',

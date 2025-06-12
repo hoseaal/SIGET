@@ -34,7 +34,6 @@ export class BienMuebleModel {
       SELECT 
     b.*,
     e.est_est AS estado,
-    t.tip_tip AS tipo,
     f.foa_nom AS forma_adquisicion,
     c.con_con AS condicion,
     eu.esu_esu AS estado_uso,
@@ -46,7 +45,6 @@ export class BienMuebleModel {
     d.dep_nom AS departamento
     FROM tmab_m b
     LEFT JOIN tmaest e ON b.est_ide = e.est_ide
-    LEFT JOIN tmatip t ON b.tip_ide = t.tip_ide
     LEFT JOIN tmafoa f ON b.foa_ide = f.foa_ide
     LEFT JOIN tmacon c ON b.con_ide = c.con_ide
     LEFT JOIN tmaesu eu ON b.esu_ide = eu.esu_ide
@@ -103,19 +101,13 @@ export class BienMuebleModel {
       queryParams.push(filters.inc)
     }
 
-    if (filters.tipo) {
-      whereClauses.push('b.tip_ide = ?')
-      queryParams.push(filters.tipo)
-    }
-
     if (filters.dep) {
       whereClauses.push('b.dep_ide = ?')
       queryParams.push(filters.dep)
     }
 
     // Construcción de la consulta base
-    let baseQuery = `SELECT b.*, t.tip_tip AS tipo, d.dep_nom AS departamento FROM tmab_m b 
-    LEFT JOIN tmatip t ON b.tip_ide = t.tip_ide
+    let baseQuery = `SELECT b.*, d.dep_nom AS departamento FROM tmab_m b
     LEFT JOIN tesdep d ON b.dep_ide=d.dep_ide`
 
     // Agregar WHERE si hay filtros

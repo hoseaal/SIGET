@@ -91,7 +91,6 @@ export const Bm2 = () => {
         bim_obs: null,
         bim_sede: 'PRINCIPAL',
         est_ide: 4,
-        tip_ide: '',
         foa_ide: '',
         con_ide: '',
         esu_ide: '',
@@ -124,7 +123,6 @@ export const Bm2 = () => {
     const [condicionFisica, setCondicionFisica] = useState([]);
     const [mar_ide, setmar_ide] = useState([]);
     const [mod_ide, setmod_ide] = useState([]);
-    const [tipoBien, setTipoBien] = useState([]);
     const [catGen, setCatgen] = useState([]);
     const [subCat, setsubCat] = useState([]);
     const [catEsp, setCatEsp] = useState([]);
@@ -139,7 +137,6 @@ export const Bm2 = () => {
                     estadoUsoRes,
                     condicionFisicaRes,
                     marcasRes,
-                    tiposBienRes,
                     categoriasGenRes,
                     conceptosMovRes
                 ] = await Promise.all([
@@ -148,7 +145,6 @@ export const Bm2 = () => {
                     fetch('/api/estados-uso'),
                     fetch('/api/condiciones-fisicas'),
                     fetch('/api/marcas', { credentials: 'include' } ),
-                    fetch('/api/tipos-bien'),
                     fetch('/api/categorias'),
                     fetch('/api/conceptos-movimiento')
                 ]);
@@ -159,7 +155,6 @@ export const Bm2 = () => {
                     estadoUsoData,
                     condicionFisicaData,
                     marcasData,
-                    tiposBienData,
                     categoriasGenData,
                     conceptosMovData
                 ] = await Promise.all([
@@ -168,7 +163,6 @@ export const Bm2 = () => {
                     estadoUsoRes.json(),
                     condicionFisicaRes.json(),
                     marcasRes.json(),
-                    tiposBienRes.json(),
                     categoriasGenRes.json(),
                     conceptosMovRes.json()
                 ]);
@@ -182,7 +176,6 @@ export const Bm2 = () => {
                 setEstadoUso(estadoUsoData);
                 setCondicionFisica(condicionFisicaData);
                 setmar_ide(marcasData);
-                setTipoBien(tiposBienData);
                 setCatgen(categoriasGenData);
                 setConceptoMov(conceptosMovData);
             } catch (error) {
@@ -292,7 +285,6 @@ export const Bm2 = () => {
             bim_obs: null,
             bim_sede: 'PRINCIPAL',
             est_ide: 4,
-            tip_ide: '',
             foa_ide: '',
             con_ide: '',
             esu_ide: '',
@@ -323,7 +315,6 @@ const handleSubmit = async (e) => {
         bim_cod: formData.bim_cod,
         bim_sede: 'PRINCIPAL',
         est_ide: 4,
-        tip_ide: formData.tip_ide,
         foa_ide: formData.foa_ide,
         con_ide: formData.con_ide,
         esu_ide: formData.esu_ide,
@@ -673,21 +664,6 @@ const handleSubmit = async (e) => {
                                             {mod_ide.map((item) => (
                                                 <option key={item.mod_ide} value={item.mod_ide}>
                                                     {item.mod_mod}
-                                                </option>
-                                            ))}
-                                        </Form.Select>
-                                    </Form.Group>
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Tipo de Bien</Form.Label>
-                                        <Form.Select 
-                                            name='tip_ide'
-                                            value={formData.tip_ide}
-                                            onChange={handleChange}
-                                        >
-                                            <option value="">Seleccione una opción</option>
-                                            {tipoBien.map((item) => (
-                                                <option key={item.tip_ide} value={item.tip_ide}>
-                                                    {item.tip_tip}
                                                 </option>
                                             ))}
                                         </Form.Select>

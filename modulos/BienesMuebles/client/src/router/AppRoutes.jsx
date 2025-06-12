@@ -14,7 +14,6 @@ import { Bm1 } from "../pages/formularios/BM-1";
 
 import { Categorias } from "../pages/configuracion/categorias";
 import { ModelosyMarcas } from "../pages/configuracion/modelosymarcas"
-import { Tipos } from "../pages/configuracion/tipos";
 
 import { AccordionPage } from "../pages/user-interface/AccordionPage";
 import { AlertPage } from "../pages/user-interface/AlertPage";
@@ -72,12 +71,6 @@ const AppRoutes = () => {
             <Route path="/Configuracion/ModelosyMarcas" element={
                 <ProtectedRoute>
                     <ModelosyMarcas/>
-                </ProtectedRoute>
-            } />
-              
-            <Route path="/Configuracion/Tipos" element={
-                <ProtectedRoute>
-                    <Tipos/>
                 </ProtectedRoute>
             } />
 

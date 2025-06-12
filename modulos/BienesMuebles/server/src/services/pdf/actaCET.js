@@ -50,7 +50,7 @@ export const generarActaCET = (datos) => {
                                   `${datos.nombreDirectorAdmin || '___'} titular de la cédula de identidad Nº V-${datos.ciDirectorAdmin || '__________'}, ${datos.nombreJefeCompras || '___'}, titular de la cédula de identidad Nº V-${datos.ciJefeCompras || '__________'}, Jefe de División General Bienes Compras e Inventarios; y ${datos.nombreDirectorAsignacion || '___'}, titular de Cédula de Identidad Nº V-${datos.ciDirectorAsignacion || '__________'}, Director de ${datos.unidadDestino || '__________________'}, para dejar constancia ` +
                                   `por medio de la presente acta de la INCORPORACIÓN, BAJO EL CONCEPTO DE ` +
                                   `COMPRA (Código 03), del bien que se detalla a continuación: ` +
-                                  `Nº${datos.codigoBien} ${datos.tipodeBien || '__________________'}, Marca: ${datos.marca || '__________________'}, ` +
+                                  `Nº${datos.codigoBien}, Marca: ${datos.marca || '__________________'}, ` +
                                   `Modelo: ${datos.modelo || '__________________'}, Color: ${datos.color || '__________________'} ` +
                                   `${datos.descripcionIncorporacion || '_____________________________________'} . Se incorpora el anterior bien a la ${datos.unidadDestino || '______________________________________'}. ` +
                                   `En fe de lo expuesto, se elaboran tres ejemplares a un solo tenor y un mismo efecto y en conformidad firman`

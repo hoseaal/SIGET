@@ -4,7 +4,7 @@ import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
 import ModalBM1 from '../Modales/modalBM1';
-import {TipoBienSelect, EstadoSelect} from '../layouts/selectInfinito';
+import { EstadoSelect} from '../layouts/selectInfinito';
 import { FixedSizeList as List } from 'react-window';
 
 export const Bm1 = () => {
@@ -12,7 +12,6 @@ export const Bm1 = () => {
     const [data, setData] = useState([]);
     const [meta, setMeta] = useState({});
     const [unidadAdmin, setUnidadAdmin] = useState([]);
-    const [tipoBien, setTipoBien] = useState([]);
 
     const [editingItem, setEditingItem] = useState(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -30,7 +29,6 @@ export const Bm1 = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
     const [filtros, setFiltros] = useState({
-        tipo: null,
         estado: null,
     });
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
@@ -50,7 +48,6 @@ export const Bm1 = () => {
                 url = `/api/bienes/des?search=${encodeURIComponent(searchQuery)}&page=1&limit=20`;
             } else {
                 url = `/api/bienes?inc=1&page=${page}&limit=${limit}`;
-                if (filtros.tipo) url += `&tipo=${filtros.tipo}`;
                 if (filtros.estado) url += `&estado=${filtros.estado}`;
             }
             
@@ -67,22 +64,13 @@ export const Bm1 = () => {
     };
     
     loadData();
-}, [page, filtros.tipo, filtros.estado, searchQuery, refreshKey]);
+}, [page, filtros.estado, searchQuery, refreshKey]);
 
     useEffect(() => {
         const fetchAllData = async () => {
             const unidadAdminRes = await fetch('/api/departamentos');
             const unidadAdminData = await unidadAdminRes.json();
             setUnidadAdmin(unidadAdminData || []);
-        };
-        fetchAllData();
-    }, []);
-
-    useEffect(() => {
-        const fetchAllData = async () => {
-            const tipoBienRes = await fetch('/api/tipos-bien');
-            const tipoBienData = await tipoBienRes.json();
-            setTipoBien(tipoBienData || []);
         };
         fetchAllData();
     }, []);
@@ -105,11 +93,6 @@ export const Bm1 = () => {
             "est_est": "Operativo"
         }
     ]
-
-    const tiposMap = tipoBien.reduce((acc, tip) => {
-        acc[tip.tip_ide] = tip.tip_tip;
-        return acc;
-    }, {});
 
     const departamentosMap = unidadAdmin.reduce((acc, dep) => {
         acc[dep.dep_ide] = dep.dep_nom;
@@ -154,22 +137,12 @@ export const Bm1 = () => {
         );
     };
 
-     
-
-        const handleTipoChange = (tipoId) => {
-            setFiltros(prev => ({ ...prev, tipo: tipoId }));
-            setPage(1);
-            
-            // Aquí puedes agregar lógica adicional cuando cambia el tipo
-            console.log("Tipo seleccionado:", tipoId);
-        };
-
         const handleEstadoChange = (estadoId) => {
             setFiltros(prev => ({ ...prev, estado: estadoId }));
             setPage(1);
             
-            // Aquí puedes agregar lógica adicional cuando cambia el tipo
-            console.log("Tipo seleccionado:", estadoId);
+            // Aquí puedes agregar lógica adicional cuando cambia el estado
+            console.log("estado seleccionado:", estadoId);
         };
 
   const [loading, setLoading] = useState(false);
@@ -253,11 +226,6 @@ export const Bm1 = () => {
                             </button>
                         )}
                         <hr className="my-5" />
-                            <TipoBienSelect
-                                tipoBien={tipoBien}
-                                value={filtros.tipo}
-                                onChange={handleTipoChange}
-                            />
 
                             <EstadoSelect
                                 tipoBien={Estados}
@@ -270,7 +238,6 @@ export const Bm1 = () => {
                             <thead>
                                 <tr>
                                     <th>Código</th>
-                                    <th>Tipo de Bien</th>
                                     <th>Descripción</th>
                                     <th>Observación</th>
                                     <th>Estado</th>
@@ -288,7 +255,6 @@ export const Bm1 = () => {
                                         {bienes.map((item, index) => (
                                             <tr key={`${depId}-${index}`}>
                                                 <td>{item.bim_ide || ' '}</td>
-                                                <td>{tiposMap[item.tip_ide] || ' '}</td>
                                                 <td>{truncateText(item.bim_des)}</td>
                                                 <td>{truncateText(item.bim_obs)}</td>
                                                 <td>{getEstadoBadge(item.est_ide)}</td>
