@@ -169,15 +169,11 @@
                     </div>
                     
                     <div class="mb-3">
-                      <label for="tip" class="form-label">Rol del usuario</label>
-                      <select id="tip" name="tip" class="form-select" required>
-                        <option value="">-- Selecciona un rol --</option>
-                        <option value="5">Administrador</option>
-                        <option value="4">Jefe de área</option>
-                        <option value="3">Trabajador</option>
-                        <option value="2">Temporal</option>
-                        <option value="1">Visualizador</option>
-                      </select>
+                        <label for="tip" class="form-label">Rol del usuario</label>
+                        <select id="tip" name="tip" class="form-select" required>
+                            <option value="">-- Selecciona un rol --</option>
+                            <!-- Las opciones se cargarán dinámicamente con JavaScript -->
+                        </select>
                     </div>
                   </div>
                 </div>
@@ -457,6 +453,52 @@
           }
         });
       });
+
+      // Función para cargar los roles desde la base de datos
+      function cargarRoles() {
+          fetch('../PHP/api/usuarios/get_roles.php')
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      const select = document.getElementById('tip');
+                      
+                      // Limpiar opciones existentes (excepto la primera)
+                      while (select.options.length > 1) {
+                          select.remove(1);
+                      }
+                      
+                      // Agregar nuevas opciones
+                      data.roles.forEach(rol => {
+                          const option = document.createElement('option');
+                          option.value = rol.usu_tip;
+                          option.textContent = rol.tip_nom;
+                          select.appendChild(option);
+                      });
+                  } else {
+                      console.error('Error al cargar roles:', data.message);
+                      smallSwal.fire({
+                          icon: 'warning',
+                          title: 'Advertencia',
+                          text: 'No se pudieron cargar los roles. Recargue la página.',
+                          confirmButtonColor: '#3085d6',
+                          confirmButtonText: 'Entendido'
+                      });
+                  }
+              })
+              .catch(error => {
+                  console.error('Error de conexión:', error);
+                  smallSwal.fire({
+                      icon: 'error',
+                      title: 'Error de conexión',
+                      text: 'No se pudo conectar al servidor para obtener los roles',
+                      confirmButtonColor: '#3085d6',
+                      confirmButtonText: 'Entendido'
+                  });
+              });
+      }
+
+      // Cargar los roles cuando la página se cargue
+      document.addEventListener('DOMContentLoaded', cargarRoles);
     </script>
 
 

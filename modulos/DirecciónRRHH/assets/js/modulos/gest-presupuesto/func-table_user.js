@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para abrir el modal de edición con datos del usuario
-    function abrirModalEdicion(datosUsuario) {
+    async function abrirModalEdicion(datosUsuario) {
         const modalEdicion = new bootstrap.Modal(document.getElementById('largeModal'));
 
         // Resetear campos de contraseña
@@ -531,11 +531,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('nombre').value = datosUsuario.usu_nom || '';
         document.getElementById('apellidos').value = datosUsuario.usu_ape || '';
         
-        // Llenar tipo de usuario (editable)
-        const selectorTipoUsuario = document.getElementById('cargocet');
-        if (selectorTipoUsuario) {
-            selectorTipoUsuario.value = datosUsuario.usu_tip.toString();
-        }
+        // Cargar tipos de usuario dinámicamente y seleccionar el actual
+        await cargarRolesEnModal(datosUsuario.usu_tip);
         
         // Configurar el botón de guardar
         const botonGuardar = document.querySelector('#largeModal .btn-primary');
@@ -545,6 +542,51 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Mostrar el modal
         modalEdicion.show();
+    }
+
+    async function cargarRolesEnModal(usu_tip_actual) {
+        const selectorTipoUsuario = document.getElementById('cargocet');
+        
+        try {
+            // Mostrar estado de carga
+            selectorTipoUsuario.innerHTML = '<option value="">Cargando roles...</option>';
+            
+            const respuesta = await fetch('../PHP/api/usuarios/get_roles.php');
+            const datos = await respuesta.json();
+            
+            if (datos.success && datos.roles.length > 0) {
+                // Limpiar y llenar el select
+                selectorTipoUsuario.innerHTML = '<option value="">-- Seleccione un rol --</option>';
+                
+                datos.roles.forEach(rol => {
+                    const option = document.createElement('option');
+                    option.value = rol.usu_tip;
+                    option.textContent = rol.tip_nom;
+                    
+                    // Seleccionar el rol actual del usuario
+                    if (rol.usu_tip == usu_tip_actual) {
+                        option.selected = true;
+                    }
+                    
+                    selectorTipoUsuario.appendChild(option);
+                });
+            } else {
+                selectorTipoUsuario.innerHTML = '<option value="">Error al cargar roles</option>';
+                console.error('Error al cargar roles:', datos.message);
+            }
+        } catch (error) {
+            selectorTipoUsuario.innerHTML = '<option value="">Error de conexión</option>';
+            console.error('Error al cargar roles:', error);
+            
+            // Opcional: Mostrar alerta al usuario
+            smallSwal.fire({
+                icon: 'warning',
+                title: 'Advertencia',
+                text: 'No se pudieron cargar los roles. Recargue la página.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
+        }
     }
 
     // Función para guardar los cambios del usuario
