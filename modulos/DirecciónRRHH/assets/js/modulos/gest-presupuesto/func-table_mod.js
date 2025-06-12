@@ -159,14 +159,124 @@ document.addEventListener('DOMContentLoaded', function() {
         // Mostrar los detalles (JSON) formateados
         try {
             const detalles = modificacion.bit_detalles ? JSON.parse(modificacion.bit_detalles) : {};
-            document.getElementById('viewDetails').textContent = JSON.stringify(detalles, null, 2);
+            renderJsonViewer(detalles);
         } catch (e) {
-            document.getElementById('viewDetails').textContent = modificacion.bit_detalles || 'No hay detalles disponibles';
+            document.getElementById('jsonViewer').innerHTML = 
+                `<div class="text-danger">Error al parsear los detalles: ${e.message}</div>`;
         }
         
         // Mostrar el modal
         const modalVer = new bootstrap.Modal(document.getElementById('viewModificationModal'));
         modalVer.show();
+    }
+
+    function renderJsonViewer(data) {
+        const container = document.getElementById('jsonViewer');
+        container.innerHTML = '';
+        
+        if (!data || typeof data !== 'object') {
+            container.innerHTML = `<div class="text-muted">No hay detalles disponibles</div>`;
+            return;
+        }
+        
+        // Función recursiva para renderizar el JSON
+        function renderValue(value, depth = 0) {
+            const div = document.createElement('div');
+            div.className = 'json-value';
+            
+            if (value === null) {
+                div.innerHTML = `<span class="json-null">null</span>`;
+                return div;
+            }
+            
+            const type = typeof value;
+            
+            switch (type) {
+                case 'string':
+                    div.innerHTML = `<span class="json-string">"${value}"</span>`;
+                    break;
+                case 'number':
+                    div.innerHTML = `<span class="json-number">${value}</span>`;
+                    break;
+                case 'boolean':
+                    div.innerHTML = `<span class="json-boolean">${value}</span>`;
+                    break;
+                case 'object':
+                    if (Array.isArray(value)) {
+                        if (value.length === 0) {
+                            div.innerHTML = `<span class="json-array">[]</span>`;
+                        } else {
+                            const toggle = document.createElement('span');
+                            toggle.className = 'json-toggle';
+                            toggle.textContent = `[${value.length}]`;
+                            div.appendChild(toggle);
+                            
+                            const arrayContainer = document.createElement('div');
+                            arrayContainer.className = 'json-array';
+                            arrayContainer.style.marginLeft = '20px';
+                            arrayContainer.style.display = 'none';
+                            
+                            value.forEach((item, index) => {
+                                const itemDiv = document.createElement('div');
+                                itemDiv.className = 'json-array-item';
+                                itemDiv.appendChild(renderValue(item, depth + 1));
+                                arrayContainer.appendChild(itemDiv);
+                            });
+                            
+                            div.appendChild(arrayContainer);
+                            
+                            toggle.addEventListener('click', function() {
+                                this.classList.toggle('json-expanded');
+                                arrayContainer.style.display = 
+                                    this.classList.contains('json-expanded') ? 'block' : 'none';
+                            });
+                        }
+                    } else {
+                        const keys = Object.keys(value);
+                        if (keys.length === 0) {
+                            div.innerHTML = `<span class="json-object">{}</span>`;
+                        } else {
+                            const toggle = document.createElement('span');
+                            toggle.className = 'json-toggle';
+                            toggle.textContent = `{${keys.length}}`;
+                            div.appendChild(toggle);
+                            
+                            const objectContainer = document.createElement('div');
+                            objectContainer.className = 'json-object';
+                            objectContainer.style.marginLeft = '20px';
+                            objectContainer.style.display = 'none';
+                            
+                            keys.forEach(key => {
+                                const propertyDiv = document.createElement('div');
+                                propertyDiv.className = 'json-property';
+                                
+                                const keySpan = document.createElement('span');
+                                keySpan.className = 'json-key';
+                                keySpan.textContent = `"${key}":`;
+                                
+                                propertyDiv.appendChild(keySpan);
+                                propertyDiv.appendChild(renderValue(value[key], depth + 1));
+                                objectContainer.appendChild(propertyDiv);
+                            });
+                            
+                            div.appendChild(objectContainer);
+                            
+                            toggle.addEventListener('click', function() {
+                                this.classList.toggle('json-expanded');
+                                objectContainer.style.display = 
+                                    this.classList.contains('json-expanded') ? 'block' : 'none';
+                            });
+                        }
+                    }
+                    break;
+                default:
+                    div.innerHTML = `<span>${value}</span>`;
+            }
+            
+            return div;
+        }
+        
+        container.appendChild(renderValue(data));
     }
 
     // Función para configurar la paginación
