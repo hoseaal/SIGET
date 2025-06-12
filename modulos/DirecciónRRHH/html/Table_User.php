@@ -234,12 +234,8 @@
                       <div class="mb-3">
                         <label for="userType" class="form-label">Tipo de Usuario</label>
                         <select id="cargocet" name="cargocet" class="form-select" required>
-                          <option value="">Seleccione</option>
-                          <option value="5">Administrador</option>
-                          <option value="4">Jefe de Área</option>
-                          <option value="3">Trabajador</option>
-                          <option value="2">Temporal</option>
-                          <option value="1">Visualizador</option>
+                          <option value="">Cargando roles...</option>
+                          <!-- Las opciones se cargarán dinámicamente con JavaScript -->
                         </select>
                       </div>
                       
