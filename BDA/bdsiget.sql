@@ -1396,12 +1396,10 @@ INSERT INTO `testip` (`tip_nom`) VALUES
 
 -- CIERRE DE FUTUROS VOLCADOS EN LA BASE DE DATOS
 
-/* DISPARADORES DE LA BASE DE DATOS */
-
-  /* INICIO DE TRIGGER'S DE LA TABLA TESUSU */
+/* INICIO DE DISPARADORES DE LA BASE DE DATOS */
+  /* TRIGGER PARA TABLA TESUSU */
     DELIMITER //
 
-    -- Trigger después de INSERT
     CREATE TRIGGER `despues_insertar_usuario`
     AFTER INSERT ON `tesusu`
     FOR EACH ROW
@@ -1420,46 +1418,74 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             NEW.usu_usu,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'nuevo', JSON_OBJECT(
+                'nuevo_registro', JSON_OBJECT(
+                    'usu_usu', NEW.usu_usu,
+                    'usu_con', '[PROTEGIDO]',
+                    'usu_nom', NEW.usu_nom,
+                    'usu_ape', NEW.usu_ape,
                     'usu_tip', NEW.usu_tip,
+                    'usu_mod', NEW.usu_mod,
                     'nom_ced', NEW.nom_ced
                 )
             )
         );
     END//
 
-    -- Trigger después de UPDATE
     CREATE TRIGGER `despues_actualizar_usuario`
     AFTER UPDATE ON `tesusu`
     FOR EACH ROW
     BEGIN
-        INSERT INTO `bit_usu` (
-            `bit_tabla`,
-            `bit_operacion`,
-            `bit_usu_ide`,
-            `bit_usu_usu`,
-            `bit_usuario_responsable`,
-            `bit_detalles`
-        ) VALUES (
-            'tesusu',
-            'UPDATE',
-            NEW.usu_ide,
-            NEW.usu_usu,
-            IFNULL(@usuario_php, 'SISTEMA'),
-            JSON_OBJECT(
-                'antes', JSON_OBJECT(
-                    'usu_tip', OLD.usu_tip,
-                    'nom_ced', OLD.nom_ced
-                ),
-                'despues', JSON_OBJECT(
-                    'usu_tip', NEW.usu_tip,
-                    'nom_ced', NEW.nom_ced
-                )
-            )
-        );
+        DECLARE cambios JSON DEFAULT JSON_OBJECT();
+        
+        -- Solo registrar campos que realmente cambiaron
+        IF NEW.usu_usu != OLD.usu_usu THEN
+            SET cambios = JSON_SET(cambios, '$.usu_usu', JSON_OBJECT('antes', OLD.usu_usu, 'ahora', NEW.usu_usu));
+        END IF;
+        
+        IF NEW.usu_con != OLD.usu_con THEN
+            SET cambios = JSON_SET(cambios, '$.usu_con', JSON_OBJECT('antes', '[PROTEGIDO]', 'ahora', '[PROTEGIDO]'));
+        END IF;
+        
+        IF NEW.usu_nom != OLD.usu_nom THEN
+            SET cambios = JSON_SET(cambios, '$.usu_nom', JSON_OBJECT('antes', OLD.usu_nom, 'ahora', NEW.usu_nom));
+        END IF;
+        
+        IF NEW.usu_ape != OLD.usu_ape THEN
+            SET cambios = JSON_SET(cambios, '$.usu_ape', JSON_OBJECT('antes', OLD.usu_ape, 'ahora', NEW.usu_ape));
+        END IF;
+        
+        IF NEW.usu_tip != OLD.usu_tip THEN
+            SET cambios = JSON_SET(cambios, '$.usu_tip', JSON_OBJECT('antes', OLD.usu_tip, 'ahora', NEW.usu_tip));
+        END IF;
+        
+        IF NEW.usu_mod != OLD.usu_mod THEN
+            SET cambios = JSON_SET(cambios, '$.usu_mod', JSON_OBJECT('antes', OLD.usu_mod, 'ahora', NEW.usu_mod));
+        END IF;
+        
+        IF NEW.nom_ced != OLD.nom_ced THEN
+            SET cambios = JSON_SET(cambios, '$.nom_ced', JSON_OBJECT('antes', OLD.nom_ced, 'ahora', NEW.nom_ced));
+        END IF;
+        
+        -- Solo registrar si hubo cambios reales
+        IF JSON_LENGTH(cambios) > 0 THEN
+            INSERT INTO `bit_usu` (
+                `bit_tabla`,
+                `bit_operacion`,
+                `bit_usu_ide`,
+                `bit_usu_usu`,
+                `bit_usuario_responsable`,
+                `bit_detalles`
+            ) VALUES (
+                'tesusu',
+                'UPDATE',
+                NEW.usu_ide,
+                NEW.usu_usu,
+                IFNULL(@usuario_php, 'SISTEMA'),
+                cambios
+            );
+        END IF;
     END//
 
-    -- Trigger después de DELETE
     CREATE TRIGGER `despues_eliminar_usuario`
     AFTER DELETE ON `tesusu`
     FOR EACH ROW
@@ -1478,8 +1504,13 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             OLD.usu_usu,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'eliminado', JSON_OBJECT(
+                'registro_eliminado', JSON_OBJECT(
+                    'usu_usu', OLD.usu_usu,
+                    'usu_con', '[PROTEGIDO]',
+                    'usu_nom', OLD.usu_nom,
+                    'usu_ape', OLD.usu_ape,
                     'usu_tip', OLD.usu_tip,
+                    'usu_mod', OLD.usu_mod,
                     'nom_ced', OLD.nom_ced
                 )
             )
@@ -1487,12 +1518,10 @@ INSERT INTO `testip` (`tip_nom`) VALUES
     END//
 
     DELIMITER ;
-  /* FIN DE TRIGGER'S DE LA TABLA TESUSU */
 
-  /* INICIO DE TRIGGER'S DE LA TABLA TMANOM*/
+    /* TRIGGER PARA TABLA TMANOM */
     DELIMITER //
 
-    -- Trigger después de INSERT
     CREATE TRIGGER `despues_insertar_nomina`
     AFTER INSERT ON `tmanom`
     FOR EACH ROW
@@ -1509,47 +1538,85 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             NEW.nom_ced,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'nuevo', JSON_OBJECT(
-                    'nombre', NEW.nom_nom,
-                    'apellidos', NEW.nom_ape,
-                    'departamento', NEW.dep_ide
+                'nuevo_registro', JSON_OBJECT(
+                    'nom_nom', NEW.nom_nom,
+                    'nom_ape', NEW.nom_ape,
+                    'nom_fec', NEW.nom_fec,
+                    'nom_gen', NEW.nom_gen,
+                    'nom_nhi', NEW.nom_nhi,
+                    'nom_pro', NEW.nom_pro,
+                    'cet_ide', NEW.cet_ide,
+                    'ona_ide', NEW.ona_ide,
+                    'nvl_ran', NEW.nvl_ran,
+                    'dep_ide', NEW.dep_ide
                 )
             )
         );
     END//
 
-    -- Trigger después de UPDATE
     CREATE TRIGGER `despues_actualizar_nomina`
     AFTER UPDATE ON `tmanom`
     FOR EACH ROW
     BEGIN
-        INSERT INTO `bit_nom` (
-            `bit_tabla`,
-            `bit_operacion`,
-            `bit_nom_ced`,
-            `bit_usuario_responsable`,
-            `bit_detalles`
-        ) VALUES (
-            'tmanom',
-            'UPDATE',
-            NEW.nom_ced,
-            IFNULL(@usuario_php, 'SISTEMA'),
-            JSON_OBJECT(
-                'antes', JSON_OBJECT(
-                    'nombre', OLD.nom_nom,
-                    'apellidos', OLD.nom_ape,
-                    'departamento', OLD.dep_ide
-                ),
-                'despues', JSON_OBJECT(
-                    'nombre', NEW.nom_nom,
-                    'apellidos', NEW.nom_ape,
-                    'departamento', NEW.dep_ide
-                )
-            )
-        );
+        DECLARE cambios JSON DEFAULT JSON_OBJECT();
+        
+        IF NEW.nom_nom != OLD.nom_nom THEN
+            SET cambios = JSON_SET(cambios, '$.nom_nom', JSON_OBJECT('antes', OLD.nom_nom, 'ahora', NEW.nom_nom));
+        END IF;
+        
+        IF NEW.nom_ape != OLD.nom_ape THEN
+            SET cambios = JSON_SET(cambios, '$.nom_ape', JSON_OBJECT('antes', OLD.nom_ape, 'ahora', NEW.nom_ape));
+        END IF;
+        
+        IF NEW.nom_fec != OLD.nom_fec THEN
+            SET cambios = JSON_SET(cambios, '$.nom_fec', JSON_OBJECT('antes', OLD.nom_fec, 'ahora', NEW.nom_fec));
+        END IF;
+        
+        IF NEW.nom_gen != OLD.nom_gen THEN
+            SET cambios = JSON_SET(cambios, '$.nom_gen', JSON_OBJECT('antes', OLD.nom_gen, 'ahora', NEW.nom_gen));
+        END IF;
+        
+        IF NEW.nom_nhi != OLD.nom_nhi THEN
+            SET cambios = JSON_SET(cambios, '$.nom_nhi', JSON_OBJECT('antes', OLD.nom_nhi, 'ahora', NEW.nom_nhi));
+        END IF;
+        
+        IF NEW.nom_pro != OLD.nom_pro THEN
+            SET cambios = JSON_SET(cambios, '$.nom_pro', JSON_OBJECT('antes', OLD.nom_pro, 'ahora', NEW.nom_pro));
+        END IF;
+        
+        IF NEW.cet_ide != OLD.cet_ide THEN
+            SET cambios = JSON_SET(cambios, '$.cet_ide', JSON_OBJECT('antes', OLD.cet_ide, 'ahora', NEW.cet_ide));
+        END IF;
+        
+        IF NEW.ona_ide != OLD.ona_ide THEN
+            SET cambios = JSON_SET(cambios, '$.ona_ide', JSON_OBJECT('antes', OLD.ona_ide, 'ahora', NEW.ona_ide));
+        END IF;
+        
+        IF NEW.nvl_ran != OLD.nvl_ran THEN
+            SET cambios = JSON_SET(cambios, '$.nvl_ran', JSON_OBJECT('antes', OLD.nvl_ran, 'ahora', NEW.nvl_ran));
+        END IF;
+        
+        IF NEW.dep_ide != OLD.dep_ide THEN
+            SET cambios = JSON_SET(cambios, '$.dep_ide', JSON_OBJECT('antes', OLD.dep_ide, 'ahora', NEW.dep_ide));
+        END IF;
+        
+        IF JSON_LENGTH(cambios) > 0 THEN
+            INSERT INTO `bit_nom` (
+                `bit_tabla`,
+                `bit_operacion`,
+                `bit_nom_ced`,
+                `bit_usuario_responsable`,
+                `bit_detalles`
+            ) VALUES (
+                'tmanom',
+                'UPDATE',
+                NEW.nom_ced,
+                IFNULL(@usuario_php, 'SISTEMA'),
+                cambios
+            );
+        END IF;
     END//
 
-    -- Trigger después de DELETE
     CREATE TRIGGER `despues_eliminar_nomina`
     AFTER DELETE ON `tmanom`
     FOR EACH ROW
@@ -1566,22 +1633,27 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             OLD.nom_ced,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'eliminado', JSON_OBJECT(
-                    'nombre', OLD.nom_nom,
-                    'apellidos', OLD.nom_ape,
-                    'departamento', OLD.dep_ide
+                'registro_eliminado', JSON_OBJECT(
+                    'nom_nom', OLD.nom_nom,
+                    'nom_ape', OLD.nom_ape,
+                    'nom_fec', OLD.nom_fec,
+                    'nom_gen', OLD.nom_gen,
+                    'nom_nhi', OLD.nom_nhi,
+                    'nom_pro', OLD.nom_pro,
+                    'cet_ide', OLD.cet_ide,
+                    'ona_ide', OLD.ona_ide,
+                    'nvl_ran', OLD.nvl_ran,
+                    'dep_ide', OLD.dep_ide
                 )
             )
         );
     END//
 
     DELIMITER ;
-  /* FIN DE TRIGGER'S DE LA TABLA TMANOM*/
 
-  /* INICIO DE TRIGGER'S DE LA TABLA TESCET*/
+    /* TRIGGER PARA TABLA TESCET */
     DELIMITER //
 
-    -- Trigger después de INSERT
     CREATE TRIGGER `despues_insertar_cargo_cet`
     AFTER INSERT ON `tescet`
     FOR EACH ROW
@@ -1598,41 +1670,39 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             NEW.cet_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'nuevo', JSON_OBJECT(
+                'nuevo_registro', JSON_OBJECT(
                     'cet_car', NEW.cet_car
                 )
             )
         );
     END//
 
-    -- Trigger después de UPDATE
     CREATE TRIGGER `despues_actualizar_cargo_cet`
     AFTER UPDATE ON `tescet`
     FOR EACH ROW
     BEGIN
-        INSERT INTO `bit_cet` (
-            `bit_tabla`,
-            `bit_operacion`,
-            `bit_cet_ide`,
-            `bit_usuario_responsable`,
-            `bit_detalles`
-        ) VALUES (
-            'tescet',
-            'UPDATE',
-            NEW.cet_ide,
-            IFNULL(@usuario_php, 'SISTEMA'),
-            JSON_OBJECT(
-                'antes', JSON_OBJECT(
-                    'cet_car', OLD.cet_car
-                ),
-                'despues', JSON_OBJECT(
-                    'cet_car', NEW.cet_car
+        IF NEW.cet_car != OLD.cet_car THEN
+            INSERT INTO `bit_cet` (
+                `bit_tabla`,
+                `bit_operacion`,
+                `bit_cet_ide`,
+                `bit_usuario_responsable`,
+                `bit_detalles`
+            ) VALUES (
+                'tescet',
+                'UPDATE',
+                NEW.cet_ide,
+                IFNULL(@usuario_php, 'SISTEMA'),
+                JSON_OBJECT(
+                    'cet_car', JSON_OBJECT(
+                        'antes', OLD.cet_car,
+                        'ahora', NEW.cet_car
+                    )
                 )
-            )
-        );
+            );
+        END IF;
     END//
 
-    -- Trigger después de DELETE
     CREATE TRIGGER `despues_eliminar_cargo_cet`
     AFTER DELETE ON `tescet`
     FOR EACH ROW
@@ -1649,7 +1719,7 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             OLD.cet_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'eliminado', JSON_OBJECT(
+                'registro_eliminado', JSON_OBJECT(
                     'cet_car', OLD.cet_car
                 )
             )
@@ -1657,12 +1727,10 @@ INSERT INTO `testip` (`tip_nom`) VALUES
     END//
 
     DELIMITER ;
-  /* FIN DE TRIGGER'S DE LA TABLA TESCET*/
 
-  /* INICIO DE TRIGGER'S DE LA TABLA TESONA*/
+    /* TRIGGER PARA TABLA TESONA */
     DELIMITER //
 
-    -- Trigger después de INSERT
     CREATE TRIGGER `despues_insertar_cargo_onapre`
     AFTER INSERT ON `tesona`
     FOR EACH ROW
@@ -1679,41 +1747,39 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             NEW.ona_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'nuevo', JSON_OBJECT(
+                'nuevo_registro', JSON_OBJECT(
                     'ona_car', NEW.ona_car
                 )
             )
         );
     END//
 
-    -- Trigger después de UPDATE
     CREATE TRIGGER `despues_actualizar_cargo_onapre`
     AFTER UPDATE ON `tesona`
     FOR EACH ROW
     BEGIN
-        INSERT INTO `bit_ona` (
-            `bit_tabla`,
-            `bit_operacion`,
-            `bit_ona_ide`,
-            `bit_usuario_responsable`,
-            `bit_detalles`
-        ) VALUES (
-            'tesona',
-            'UPDATE',
-            NEW.ona_ide,
-            IFNULL(@usuario_php, 'SISTEMA'),
-            JSON_OBJECT(
-                'antes', JSON_OBJECT(
-                    'ona_car', OLD.ona_car
-                ),
-                'despues', JSON_OBJECT(
-                    'ona_car', NEW.ona_car
+        IF NEW.ona_car != OLD.ona_car THEN
+            INSERT INTO `bit_ona` (
+                `bit_tabla`,
+                `bit_operacion`,
+                `bit_ona_ide`,
+                `bit_usuario_responsable`,
+                `bit_detalles`
+            ) VALUES (
+                'tesona',
+                'UPDATE',
+                NEW.ona_ide,
+                IFNULL(@usuario_php, 'SISTEMA'),
+                JSON_OBJECT(
+                    'ona_car', JSON_OBJECT(
+                        'antes', OLD.ona_car,
+                        'ahora', NEW.ona_car
+                    )
                 )
-            )
-        );
+            );
+        END IF;
     END//
 
-    -- Trigger después de DELETE
     CREATE TRIGGER `despues_eliminar_cargo_onapre`
     AFTER DELETE ON `tesona`
     FOR EACH ROW
@@ -1730,7 +1796,7 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             OLD.ona_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'eliminado', JSON_OBJECT(
+                'registro_eliminado', JSON_OBJECT(
                     'ona_car', OLD.ona_car
                 )
             )
@@ -1738,43 +1804,58 @@ INSERT INTO `testip` (`tip_nom`) VALUES
     END//
 
     DELIMITER ;
-  /* FIN DE TRIGGER'S DE LA TABLA TESONA*/
 
-  /* INICIO DE TRIGGER'S DE LA TABLA TESNVL*/
+    /* TRIGGER PARA TABLA TESNVL */
     DELIMITER //
 
-    -- Trigger después de UPDATE
     CREATE TRIGGER `despues_actualizar_nivel`
     AFTER UPDATE ON `tesnvl`
     FOR EACH ROW
     BEGIN
-        INSERT INTO `bit_nvl` (
-            `bit_tabla`,
-            `bit_operacion`,
-            `bit_nvl_ide`,
-            `bit_usuario_responsable`,
-            `bit_detalles`
-        ) VALUES (
-            'tesnvl',
-            'UPDATE',
-            NEW.nvl_ide,
-            IFNULL(@usuario_php, 'SISTEMA'),
-            JSON_OBJECT(
-                'antes', JSON_OBJECT(
-                    'nvl_ran', OLD.nvl_ran,
-                    'nvl_sal', OLD.nvl_sal,
-                    'ona_ide', OLD.ona_ide
-                ),
-                'despues', JSON_OBJECT(
-                    'nvl_ran', NEW.nvl_ran,
-                    'nvl_sal', NEW.nvl_sal,
-                    'ona_ide', NEW.ona_ide
-                )
-            )
-        );
+        DECLARE cambios JSON DEFAULT JSON_OBJECT();
+        
+        IF NEW.nvl_ran != OLD.nvl_ran THEN
+            SET cambios = JSON_SET(cambios, '$.nvl_ran', JSON_OBJECT('antes', OLD.nvl_ran, 'ahora', NEW.nvl_ran));
+        END IF;
+        
+        IF NEW.nvl_sal != OLD.nvl_sal THEN
+            SET cambios = JSON_SET(cambios, '$.nvl_sal', JSON_OBJECT('antes', OLD.nvl_sal, 'ahora', NEW.nvl_sal));
+            
+            -- Registrar en histórico cuando cambia el salario
+            INSERT INTO `tesnvl_historico` (
+                `nvl_ran`,
+                `nvl_sal`,
+                `ona_ide`,
+                `nvl_fec`
+            ) VALUES (
+                OLD.nvl_ran,
+                OLD.nvl_sal,
+                OLD.ona_ide,
+                CURDATE()
+            );
+        END IF;
+        
+        IF NEW.ona_ide != OLD.ona_ide THEN
+            SET cambios = JSON_SET(cambios, '$.ona_ide', JSON_OBJECT('antes', OLD.ona_ide, 'ahora', NEW.ona_ide));
+        END IF;
+        
+        IF JSON_LENGTH(cambios) > 0 THEN
+            INSERT INTO `bit_nvl` (
+                `bit_tabla`,
+                `bit_operacion`,
+                `bit_nvl_ide`,
+                `bit_usuario_responsable`,
+                `bit_detalles`
+            ) VALUES (
+                'tesnvl',
+                'UPDATE',
+                NEW.nvl_ide,
+                IFNULL(@usuario_php, 'SISTEMA'),
+                cambios
+            );
+        END IF;
     END//
 
-    -- Trigger después de DELETE
     CREATE TRIGGER `despues_eliminar_nivel`
     AFTER DELETE ON `tesnvl`
     FOR EACH ROW
@@ -1791,7 +1872,7 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             OLD.nvl_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'eliminado', JSON_OBJECT(
+                'registro_eliminado', JSON_OBJECT(
                     'nvl_ran', OLD.nvl_ran,
                     'nvl_sal', OLD.nvl_sal,
                     'ona_ide', OLD.ona_ide
@@ -1801,12 +1882,10 @@ INSERT INTO `testip` (`tip_nom`) VALUES
     END//
 
     DELIMITER ;
-  /* FIN DE TRIGGER'S DE LA TABLA TESNVL*/
 
-  /* INICIO DE TRIGGER'S DE LA TABLA TESSUP*/
+    /* TRIGGER PARA TABLA TESSUP */
     DELIMITER //
 
-    -- Trigger después de INSERT
     CREATE TRIGGER `despues_insertar_suplencia`
     AFTER INSERT ON `tessup`
     FOR EACH ROW
@@ -1823,7 +1902,7 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             NEW.sup_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'nuevo', JSON_OBJECT(
+                'nuevo_registro', JSON_OBJECT(
                     'nom_ced', NEW.nom_ced,
                     'sup_fec_ini', NEW.sup_fec_ini,
                     'sup_fec_fin', NEW.sup_fec_fin,
@@ -1837,48 +1916,61 @@ INSERT INTO `testip` (`tip_nom`) VALUES
         );
     END//
 
-    -- Trigger después de UPDATE
     CREATE TRIGGER `despues_actualizar_suplencia`
     AFTER UPDATE ON `tessup`
     FOR EACH ROW
     BEGIN
-        INSERT INTO `bit_sup` (
-            `bit_tabla`,
-            `bit_operacion`,
-            `bit_sup_ide`,
-            `bit_usuario_responsable`,
-            `bit_detalles`
-        ) VALUES (
-            'tessup',
-            'UPDATE',
-            NEW.sup_ide,
-            IFNULL(@usuario_php, 'SISTEMA'),
-            JSON_OBJECT(
-                'antes', JSON_OBJECT(
-                    'nom_ced', OLD.nom_ced,
-                    'sup_fec_ini', OLD.sup_fec_ini,
-                    'sup_fec_fin', OLD.sup_fec_fin,
-                    'cet_ide', OLD.cet_ide,
-                    'ona_ide', OLD.ona_ide,
-                    'nvl_ran', OLD.nvl_ran,
-                    'dep_ide', OLD.dep_ide,
-                    'sup_activa', OLD.sup_activa
-                ),
-                'despues', JSON_OBJECT(
-                    'nom_ced', NEW.nom_ced,
-                    'sup_fec_ini', NEW.sup_fec_ini,
-                    'sup_fec_fin', NEW.sup_fec_fin,
-                    'cet_ide', NEW.cet_ide,
-                    'ona_ide', NEW.ona_ide,
-                    'nvl_ran', NEW.nvl_ran,
-                    'dep_ide', NEW.dep_ide,
-                    'sup_activa', NEW.sup_activa
-                )
-            )
-        );
+        DECLARE cambios JSON DEFAULT JSON_OBJECT();
+        
+        IF NEW.nom_ced != OLD.nom_ced THEN
+            SET cambios = JSON_SET(cambios, '$.nom_ced', JSON_OBJECT('antes', OLD.nom_ced, 'ahora', NEW.nom_ced));
+        END IF;
+        
+        IF NEW.sup_fec_ini != OLD.sup_fec_ini THEN
+            SET cambios = JSON_SET(cambios, '$.sup_fec_ini', JSON_OBJECT('antes', OLD.sup_fec_ini, 'ahora', NEW.sup_fec_ini));
+        END IF;
+        
+        IF NEW.sup_fec_fin != OLD.sup_fec_fin THEN
+            SET cambios = JSON_SET(cambios, '$.sup_fec_fin', JSON_OBJECT('antes', OLD.sup_fec_fin, 'ahora', NEW.sup_fec_fin));
+        END IF;
+        
+        IF NEW.cet_ide != OLD.cet_ide THEN
+            SET cambios = JSON_SET(cambios, '$.cet_ide', JSON_OBJECT('antes', OLD.cet_ide, 'ahora', NEW.cet_ide));
+        END IF;
+        
+        IF NEW.ona_ide != OLD.ona_ide THEN
+            SET cambios = JSON_SET(cambios, '$.ona_ide', JSON_OBJECT('antes', OLD.ona_ide, 'ahora', NEW.ona_ide));
+        END IF;
+        
+        IF NEW.nvl_ran != OLD.nvl_ran THEN
+            SET cambios = JSON_SET(cambios, '$.nvl_ran', JSON_OBJECT('antes', OLD.nvl_ran, 'ahora', NEW.nvl_ran));
+        END IF;
+        
+        IF NEW.dep_ide != OLD.dep_ide THEN
+            SET cambios = JSON_SET(cambios, '$.dep_ide', JSON_OBJECT('antes', OLD.dep_ide, 'ahora', NEW.dep_ide));
+        END IF;
+        
+        IF NEW.sup_activa != OLD.sup_activa THEN
+            SET cambios = JSON_SET(cambios, '$.sup_activa', JSON_OBJECT('antes', OLD.sup_activa, 'ahora', NEW.sup_activa));
+        END IF;
+        
+        IF JSON_LENGTH(cambios) > 0 THEN
+            INSERT INTO `bit_sup` (
+                `bit_tabla`,
+                `bit_operacion`,
+                `bit_sup_ide`,
+                `bit_usuario_responsable`,
+                `bit_detalles`
+            ) VALUES (
+                'tessup',
+                'UPDATE',
+                NEW.sup_ide,
+                IFNULL(@usuario_php, 'SISTEMA'),
+                cambios
+            );
+        END IF;
     END//
 
-    -- Trigger después de DELETE
     CREATE TRIGGER `despues_eliminar_suplencia`
     AFTER DELETE ON `tessup`
     FOR EACH ROW
@@ -1895,7 +1987,7 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             OLD.sup_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'eliminado', JSON_OBJECT(
+                'registro_eliminado', JSON_OBJECT(
                     'nom_ced', OLD.nom_ced,
                     'sup_fec_ini', OLD.sup_fec_ini,
                     'sup_fec_fin', OLD.sup_fec_fin,
@@ -1910,126 +2002,125 @@ INSERT INTO `testip` (`tip_nom`) VALUES
     END//
 
     DELIMITER ;
-  /* FIN DE TRIGGER'S DE LA TABLA TESSUP*/
 
-  /* INICIO DE TRIGGER'S DE LA TABLA TESCEP*/
-  DELIMITER //
-
-  -- Trigger después de INSERT
-  CREATE TRIGGER `despues_insertar_caja_ahorro`
-  AFTER INSERT ON `tescep`
-  FOR EACH ROW
-  BEGIN
-      INSERT INTO `bit_cep` (
-          `bit_tabla`,
-          `bit_operacion`,
-          `bit_cep_ide`,
-          `bit_usuario_responsable`,
-          `bit_detalles`
-      ) VALUES (
-          'tescep',
-          'INSERT',
-          NEW.cep_ide,
-          IFNULL(@usuario_php, 'SISTEMA'),
-          JSON_OBJECT(
-              'nuevo', JSON_OBJECT(
-                  'cep_activa', NEW.cep_activa,
-                  'nom_ced', NEW.nom_ced
-              )
-          )
-      );
-  END//
-
-  -- Trigger después de UPDATE
-  CREATE TRIGGER `despues_actualizar_caja_ahorro`
-  AFTER UPDATE ON `tescep`
-  FOR EACH ROW
-  BEGIN
-      INSERT INTO `bit_cep` (
-          `bit_tabla`,
-          `bit_operacion`,
-          `bit_cep_ide`,
-          `bit_usuario_responsable`,
-          `bit_detalles`
-      ) VALUES (
-          'tescep',
-          'UPDATE',
-          NEW.cep_ide,
-          IFNULL(@usuario_php, 'SISTEMA'),
-          JSON_OBJECT(
-              'antes', JSON_OBJECT(
-                  'cep_activa', OLD.cep_activa,
-                  'nom_ced', OLD.nom_ced
-              ),
-              'despues', JSON_OBJECT(
-                  'cep_activa', NEW.cep_activa,
-                  'nom_ced', NEW.nom_ced
-              )
-          )
-      );
-  END//
-
-  -- Trigger después de DELETE
-  CREATE TRIGGER `despues_eliminar_caja_ahorro`
-  AFTER DELETE ON `tescep`
-  FOR EACH ROW
-  BEGIN
-      INSERT INTO `bit_cep` (
-          `bit_tabla`,
-          `bit_operacion`,
-          `bit_cep_ide`,
-          `bit_usuario_responsable`,
-          `bit_detalles`
-      ) VALUES (
-          'tescep',
-          'DELETE',
-          OLD.cep_ide,
-          IFNULL(@usuario_php, 'SISTEMA'),
-          JSON_OBJECT(
-              'eliminado', JSON_OBJECT(
-                  'cep_activa', OLD.cep_activa,
-                  'nom_ced', OLD.nom_ced
-              )
-          )
-      );
-  END//
-
-  DELIMITER ;
-  /* FIN DE TRIGGER'S DE LA TABLA TESCEP*/
-
-  /* INICIO DE TRIGGER'S DE LA TABLA TESDED*/
+    /* TRIGGER PARA TABLA TESCEP */
     DELIMITER //
 
-    -- Trigger después de ACTUALIZAR deducción
-    CREATE TRIGGER `despues_actualizar_deduccion`
-    AFTER UPDATE ON `tesded`
+    CREATE TRIGGER `despues_insertar_caja_ahorro`
+    AFTER INSERT ON `tescep`
     FOR EACH ROW
     BEGIN
-        INSERT INTO `bit_ded` (
+        INSERT INTO `bit_cep` (
             `bit_tabla`,
             `bit_operacion`,
-            `bit_ded_ide`,
+            `bit_cep_ide`,
             `bit_usuario_responsable`,
             `bit_detalles`
         ) VALUES (
-            'tesded',
-            'UPDATE',
-            NEW.ded_ide,
+            'tescep',
+            'INSERT',
+            NEW.cep_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'antes', JSON_OBJECT(
-                    'ded_raz', OLD.ded_raz,
-                    'ded_por', OLD.ded_por
-                ),
-                'despues', JSON_OBJECT(
-                    'ded_raz', NEW.ded_raz,
-                    'ded_por', NEW.ded_por
+                'nuevo_registro', JSON_OBJECT(
+                    'cep_activa', NEW.cep_activa,
+                    'nom_ced', NEW.nom_ced
                 )
             )
         );
     END//
 
-    -- Trigger después de ELIMINAR deducción
+    CREATE TRIGGER `despues_actualizar_caja_ahorro`
+    AFTER UPDATE ON `tescep`
+    FOR EACH ROW
+    BEGIN
+        DECLARE cambios JSON DEFAULT JSON_OBJECT();
+        
+        IF NEW.cep_activa != OLD.cep_activa THEN
+            SET cambios = JSON_SET(cambios, '$.cep_activa', JSON_OBJECT('antes', OLD.cep_activa, 'ahora', NEW.cep_activa));
+        END IF;
+        
+        IF NEW.nom_ced != OLD.nom_ced THEN
+            SET cambios = JSON_SET(cambios, '$.nom_ced', JSON_OBJECT('antes', OLD.nom_ced, 'ahora', NEW.nom_ced));
+        END IF;
+        
+        IF JSON_LENGTH(cambios) > 0 THEN
+            INSERT INTO `bit_cep` (
+                `bit_tabla`,
+                `bit_operacion`,
+                `bit_cep_ide`,
+                `bit_usuario_responsable`,
+                `bit_detalles`
+            ) VALUES (
+                'tescep',
+                'UPDATE',
+                NEW.cep_ide,
+                IFNULL(@usuario_php, 'SISTEMA'),
+                cambios
+            );
+        END IF;
+    END//
+
+    CREATE TRIGGER `despues_eliminar_caja_ahorro`
+    AFTER DELETE ON `tescep`
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO `bit_cep` (
+            `bit_tabla`,
+            `bit_operacion`,
+            `bit_cep_ide`,
+            `bit_usuario_responsable`,
+            `bit_detalles`
+        ) VALUES (
+            'tescep',
+            'DELETE',
+            OLD.cep_ide,
+            IFNULL(@usuario_php, 'SISTEMA'),
+            JSON_OBJECT(
+                'registro_eliminado', JSON_OBJECT(
+                    'cep_activa', OLD.cep_activa,
+                    'nom_ced', OLD.nom_ced
+                )
+            )
+        );
+    END//
+
+    DELIMITER ;
+
+    /* TRIGGER PARA TABLA TESDED */
+    DELIMITER //
+
+    CREATE TRIGGER `despues_actualizar_deduccion`
+    AFTER UPDATE ON `tesded`
+    FOR EACH ROW
+    BEGIN
+        DECLARE cambios JSON DEFAULT JSON_OBJECT();
+        
+        IF NEW.ded_raz != OLD.ded_raz THEN
+            SET cambios = JSON_SET(cambios, '$.ded_raz', JSON_OBJECT('antes', OLD.ded_raz, 'ahora', NEW.ded_raz));
+        END IF;
+        
+        IF NEW.ded_por != OLD.ded_por THEN
+            SET cambios = JSON_SET(cambios, '$.ded_por', JSON_OBJECT('antes', OLD.ded_por, 'ahora', NEW.ded_por));
+        END IF;
+        
+        IF JSON_LENGTH(cambios) > 0 THEN
+            INSERT INTO `bit_ded` (
+                `bit_tabla`,
+                `bit_operacion`,
+                `bit_ded_ide`,
+                `bit_usuario_responsable`,
+                `bit_detalles`
+            ) VALUES (
+                'tesded',
+                'UPDATE',
+                NEW.ded_ide,
+                IFNULL(@usuario_php, 'SISTEMA'),
+                cambios
+            );
+        END IF;
+    END//
+
     CREATE TRIGGER `despues_eliminar_deduccion`
     AFTER DELETE ON `tesded`
     FOR EACH ROW
@@ -2046,7 +2137,7 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             OLD.ded_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'eliminado', JSON_OBJECT(
+                'registro_eliminado', JSON_OBJECT(
                     'ded_raz', OLD.ded_raz,
                     'ded_por', OLD.ded_por
                 )
@@ -2055,41 +2146,41 @@ INSERT INTO `testip` (`tip_nom`) VALUES
     END//
 
     DELIMITER ;
-  /* FIN DE TRIGGER'S DE LA TABLA TESDED*/
 
-  /* INICIO DE TRIGGER'S DE LA TABLA TESPRI*/
+    /* TRIGGER PARA TABLA TESPRI */
     DELIMITER //
 
-    -- Trigger después de UPDATE
     CREATE TRIGGER `despues_actualizar_prima`
     AFTER UPDATE ON `tespri`
     FOR EACH ROW
     BEGIN
-        INSERT INTO `bit_pri` (
-            `bit_tabla`,
-            `bit_operacion`,
-            `bit_pri_ide`,
-            `bit_usuario_responsable`,
-            `bit_detalles`
-        ) VALUES (
-            'tespri',
-            'UPDATE',
-            NEW.pri_ide,
-            IFNULL(@usuario_php, 'SISTEMA'),
-            JSON_OBJECT(
-                'antes', JSON_OBJECT(
-                    'pri_raz', OLD.pri_raz,
-                    'pri_por', OLD.pri_por
-                ),
-                'despues', JSON_OBJECT(
-                    'pri_raz', NEW.pri_raz,
-                    'pri_por', NEW.pri_por
-                )
-            )
-        );
+        DECLARE cambios JSON DEFAULT JSON_OBJECT();
+        
+        IF NEW.pri_raz != OLD.pri_raz THEN
+            SET cambios = JSON_SET(cambios, '$.pri_raz', JSON_OBJECT('antes', OLD.pri_raz, 'ahora', NEW.pri_raz));
+        END IF;
+        
+        IF NEW.pri_por != OLD.pri_por THEN
+            SET cambios = JSON_SET(cambios, '$.pri_por', JSON_OBJECT('antes', OLD.pri_por, 'ahora', NEW.pri_por));
+        END IF;
+        
+        IF JSON_LENGTH(cambios) > 0 THEN
+            INSERT INTO `bit_pri` (
+                `bit_tabla`,
+                `bit_operacion`,
+                `bit_pri_ide`,
+                `bit_usuario_responsable`,
+                `bit_detalles`
+            ) VALUES (
+                'tespri',
+                'UPDATE',
+                NEW.pri_ide,
+                IFNULL(@usuario_php, 'SISTEMA'),
+                cambios
+            );
+        END IF;
     END//
 
-    -- Trigger después de DELETE
     CREATE TRIGGER `despues_eliminar_prima`
     AFTER DELETE ON `tespri`
     FOR EACH ROW
@@ -2106,7 +2197,7 @@ INSERT INTO `testip` (`tip_nom`) VALUES
             OLD.pri_ide,
             IFNULL(@usuario_php, 'SISTEMA'),
             JSON_OBJECT(
-                'eliminado', JSON_OBJECT(
+                'registro_eliminado', JSON_OBJECT(
                     'pri_raz', OLD.pri_raz,
                     'pri_por', OLD.pri_por
                 )
@@ -2115,7 +2206,8 @@ INSERT INTO `testip` (`tip_nom`) VALUES
     END//
 
     DELIMITER ;
-  /* FIN DE TRIGGER'S DE LA TABLA TESPRI*/
+
+/* FIN DE DISPARADORES DE LA BASE DE DATOS */
 
 /*VISTAS */
 
