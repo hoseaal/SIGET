@@ -5,6 +5,11 @@ class BienModel {
     const [rows] = await pool.query('SELECT * FROM vw_bienes_muebles')
     return rows
   }
+
+  static async getBM1ForExcel () {
+    const [rows] = await pool.query('SELECT * FROM vw_bienes_muebles_bm1')
+    return rows
+  }
 }
 
 export default BienModel

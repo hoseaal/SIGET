@@ -3,7 +3,6 @@ import { useState, useEffect } from "react"
 import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
-import ModalBM1 from '../Modales/modalBM1';
 import { EstadoSelect} from '../layouts/selectInfinito';
 import { FixedSizeList as List } from 'react-window';
 
@@ -173,6 +172,31 @@ export const Bm1 = () => {
 }
   };
 
+  const handleDownloadBM1 = async () => {
+   try {
+  // Hacer la petición para el Excel (GET en lugar de POST)
+  const excelResp = await fetch('/api/excel/BM1', {
+    method: 'GET',
+    credentials: 'include'
+  }).then(response => response.blob());
+
+  // Crear y descargar el archivo
+  const url = window.URL.createObjectURL(excelResp);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `BM1-${new Date().toISOString().split('T')[0]}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+
+} catch (error) {
+  console.error('Error al generar Excel:', error);
+} finally {
+  setLoading(false);
+}
+  };
+
 
     return (
         <>
@@ -182,14 +206,10 @@ export const Bm1 = () => {
                 <button id="exportToExcel" className="btn btn-primary" onClick={handleDownload}>
                     <i className="bx bx-file me-1"></i> SUDEBIM carga de bienes muebles
                 </button>
-                <button id="exportToExcel" className="btn btn-primary" onClick={handleOpenModal}>
+                <button id="exportToExcel" className="btn btn-primary" onClick={handleDownloadBM1}>
                     <i className="bx bx-file me-1"></i> Generar BM1 
                 </button>
             </div>
-            <ModalBM1 
-                show={showBM1Modal} 
-                handleClose={handleCloseModal} 
-            />
             <div className="card">
                 <h5 className="card-header">Relación de Bienes Actuales</h5>
                 <div className="card-body">

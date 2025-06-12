@@ -1,165 +1,150 @@
 import ExcelJS from 'exceljs'
+import BienModel from '../../models/excelSUDEBIM.model.js'
 import fs from 'fs'
 import path from 'path'
 
 class ExcelService {
   static async generateBM1Excel (departmentCode, req) {
-    try {
-      // --- PASO 1: OBTENCIÓN DE DATOS ---
-      const token = req.cookies.access_token
-      if (!token) {
-        throw new Error('No se encontró el token de autenticación en la petición.')
-      }
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('Inventario BM-1')
 
-      const apiUrl = `${req.protocol}://${req.get('host')}/api/bienes?dep=${departmentCode}&inc=1`
-      const response = await fetch(apiUrl, {
-        headers: {
-          Cookie: `access_token=${token}`
-        }
+    // Establecer la fuente predeterminada para toda la hoja de trabajo
+    worksheet.eachRow({ includeEmpty: true }, function (row) {
+      row.eachCell({ includeEmpty: true }, function (cell) {
+        cell.font = { name: 'Arial', size: 12 }
       })
+    })
 
-      if (!response.ok) {
-        throw new Error(`Error al obtener los bienes. El servidor respondió con estado: ${response.status}`)
-      }
+    // --- Encabezado Principal (Filas 1-7) ---
 
-      const responseData = await response.json()
-      const bienes = responseData.data || []
+    // Fusionar celdas para el encabezado principal (C1:G7 para dejar espacio al logo)
+    // El texto va de C1:G7 y el logo de A1:B3
+    worksheet.mergeCells('B1:G7')
+    const headerCell = worksheet.getCell('C1') // Accedemos a la celda fusionada
+    headerCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
+    headerCell.font = { name: 'Arial', size: 12}
 
-      let departmentName = `DEPARTAMENTO CÓDIGO ${departmentCode}` // Valor por defecto
-      try {
-        const depRes = await fetch(`${req.protocol}://${req.get('host')}/api/departamentos/${departmentCode}`, {
-          headers: {
-            Cookie: `access_token=${token}`
-          }
+    // Construir el texto del encabezado principal
+    const today = new Date()
+    const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`
+
+    const headerText = [
+      'Formulario BM-1',
+      'INVENTARIO DE BIENES MUEBLES',
+      '1. Entidad propietaria: EJECUTIVO DEL ESTADO TACHIRA   2. Servicio: CONTRALORÍA DEL ESTADO TACHIRA',
+      '3. Unidad de trabajo o Dependencia: DIRECCION DE ADMINISTRACION',
+      '4. Estado: TACHIRA 5. Municipio: SAN CRISTOBAL 6. Parroquia: LA CONCORDIA',
+      '7. Direccion o Lugar: PROLONGACION 5TA AVENIDA, EDIFICIO CREMCO, LA CONCORDIA, SAN CRISTOBAL',
+      `8. Fecha: ${formattedDate}`
+    ].join('\n')
+
+    headerCell.value = headerText
+
+    // --- Añadir el Logo ---
+    try {
+      const logoPath = path.join(process.cwd(), 'public', 'img', 'logo-contraloria-home1.png')
+
+      if (fs.existsSync(logoPath)) {
+        const logo = workbook.addImage({
+          buffer: fs.readFileSync(logoPath),
+          extension: 'png'
         })
-        if (depRes.ok) {
-          const depData = await depRes.json()
-          departmentName = depData.dep_nom || departmentName // Usamos el nombre si existe, sino mantenemos el valor por defecto
-        }
-      } catch (depError) {
-        console.warn('Advertencia: No se pudo obtener el nombre del departamento', depError.message)
-      }
-
-      // --- PASO 2: CREACIÓN DEL EXCEL CON FORMATO SOLICITADO ---
-      const workbook = new ExcelJS.Workbook()
-      workbook.creator = 'Contraloría del Estado Táchira'
-      workbook.lastModifiedBy = 'Sistema de Inventario'
-      workbook.created = new Date()
-
-      const worksheet = workbook.addWorksheet(`BM1-${departmentCode}`)
-
-      // --- LOGO (A1:C5) ---
-      try {
-        const logoPath = path.join(process.cwd(), 'public', 'img', 'logo-contraloria-home1.png')
-
-        if (fs.existsSync(logoPath)) {
-          const logo = workbook.addImage({
-            buffer: fs.readFileSync(logoPath),
-            extension: 'png'
-          })
-          worksheet.addImage(logo, 'A1:C5')
-        }
-      } catch (logoError) {
-        console.warn('Advertencia: No se pudo procesar el logo.', logoError.message)
-      }
-
-      // --- ENCABEZADO (D1:D5) ---
-      const today = new Date()
-      const formattedDate = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`
-
-      worksheet.getCell('D1').value = 'REPORTE DE VERIFICACION DEL INVENTARIO DE BIENES MUEBLES'
-      worksheet.getCell('D2').value = 'UNIDAD EJECUTORA: CONTRALORIA DEL ESTADO TACHIRA'
-      worksheet.getCell('D3').value = 'DIRECCION O UNIDAD ADMINISTRATIVA: DIRECCION ADMINISTRACION'
-      worksheet.getCell('D4').value = `FECHA DEL REPORTE: ${formattedDate}`
-      worksheet.getCell('D5').value = departmentName
-
-      // Estilos para el encabezado
-      for (let i = 1; i <= 5; i++) {
-        const cell = worksheet.getCell(`D${i}`)
-        cell.font = { name: 'Arial', size: 11, bold: i === 1 }
-        cell.alignment = { vertical: 'middle', horizontal: 'center' }
-      }
-
-      // --- CABECERAS DE COLUMNAS (A6:I6) ---
-      worksheet.getCell('A6').value = 'Numero'
-      worksheet.getCell('B6').value = 'Codigo'
-      worksheet.getCell('D6').value = 'Descripcion'
-      worksheet.getCell('E6').value = 'Observacion'
-      worksheet.getCell('F6').value = 'Sin Etiqueta'
-      worksheet.getCell('G6').value = 'Inoperativo'
-      worksheet.getCell('H6').value = 'Faltante'
-      worksheet.getCell('I6').value = 'Operativo'
-
-      // Estilos para las cabeceras de columnas
-      for (let col = 1; col <= 8; col++) {
-        const cell = worksheet.getCell(6, col)
-        cell.font = { bold: true }
-        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF89AAF3' } }
-        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-      }
-
-      // --- DATOS DE LOS BIENES (A7:I7 en adelante) ---
-      if (bienes.length > 0) {
-        bienes.forEach((bien, index) => {
-          const rowNumber = 7 + index
-
-          worksheet.getCell(`A${rowNumber}`).value = index + 1 // Número secuencial
-          worksheet.getCell(`B${rowNumber}`).value = bien.bim_ide // Código
-          worksheet.getCell(`D${rowNumber}`).value = bien.bim_des // Descripción
-          worksheet.getCell(`E${rowNumber}`).value = bien.bim_obs || ' ' // Observación
-
-          // Marcar el estado correspondiente con "X"
-          switch (bien.est_ide) {
-            case 1: worksheet.getCell(`F${rowNumber}`).value = 'X'; break
-            case 2: worksheet.getCell(`G${rowNumber}`).value = 'X'; break
-            case 3: worksheet.getCell(`H${rowNumber}`).value = 'X'; break
-            case 4: worksheet.getCell(`I${rowNumber}`).value = 'X'; break
-          }
-
-          // Aplicar estilos a toda la fila
-          for (let col = 1; col <= 9; col++) {
-            const cell = worksheet.getCell(rowNumber, col)
-            cell.border = {
-              top: { style: 'thin' },
-              left: { style: 'thin' },
-              bottom: { style: 'thin' },
-              right: { style: 'thin' }
-            }
-            // Alineación especial para columnas de texto largo
-            if (col === 4 || col === 5) { // Descripción y Observación
-              cell.alignment = { wrapText: true, vertical: 'top' }
-            } else {
-              cell.alignment = { vertical: 'middle', horizontal: 'center' }
-            }
-          }
-        })
+        // Posicionar el logo de A1 a B3
+        worksheet.addImage(logo, 'A1:A3')
       } else {
-        // Si no hay bienes, mostrar mensaje
-        worksheet.mergeCells('A7:I7')
-        const noDataCell = worksheet.getCell('A7')
-        noDataCell.value = 'No se encontraron bienes para este departamento.'
-        noDataCell.alignment = { horizontal: 'center' }
-        noDataCell.font = { italic: true }
+        console.warn('Advertencia: El archivo del logo no se encontró en la ruta especificada:', logoPath)
       }
-
-      // Ajustar el ancho de las columnas
-      worksheet.columns = [
-        { key: 'numero', width: 8 }, // A
-        { key: 'codigo', width: 15 }, // B
-        { key: 'descripcion', width: 40 }, // D
-        { key: 'observacion', width: 40 }, // E
-        { key: 'sin_etiqueta', width: 12 }, // F
-        { key: 'inoperativo', width: 12 }, // G
-        { key: 'faltante', width: 12 }, // H
-        { key: 'operativo', width: 12 }// I
-      ]
-
-      return await workbook.xlsx.writeBuffer()
-    } catch (error) {
-      console.error('Error crítico en generateBM1Excel:', error.message)
-      throw error
+    } catch (logoError) {
+      console.warn('Advertencia: No se pudo procesar el logo.', logoError.message)
     }
+
+    // --- Fila 8: Clasificación (código) ---
+    worksheet.mergeCells('A8:G8')
+    const classificationCell = worksheet.getCell('A8')
+    classificationCell.value = 'Clasificacion (codigo)'
+    classificationCell.alignment = { horizontal: 'left', vertical: 'middle' }
+    classificationCell.font = { name: 'Arial', size: 12}
+    classificationCell.border = {
+      top: { style: 'thin' }, left: { style: 'thin' },
+      bottom: { style: 'thin' }, right: { style: 'thin' }
+    }
+    // Color gris solo para esta celda
+    classificationCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3D3D3' } } // Gris claro
+
+    const columnDefinitions = [
+      { header: 'Grupo', key: 'categoria_general', width: 15 },
+      { header: 'Sub-grupo', key: 'subcategoria', width: 15 },
+      { header: 'Seccion', key: 'categoria_especifica', width: 15 },
+      { header: 'Cantidad', key: 'cantidad', width: 15 },
+      { header: 'Numero de identificacion', key: 'bim_ide', width: 30 },
+      { header: 'Nombre y descripción de los elementos', key: 'bim_des', width: 70 },
+      { header: 'Valor', key: 'bim_val', width: 20 }
+    ]
+
+    // Establecer las propiedades de las columnas (anchos y mapeo de keys)
+    // NOTA IMPORTANTE: Esto NO imprime los headers en la hoja directamente.
+    // Solo configura la estructura de las columnas para las filas de datos.
+    worksheet.columns = columnDefinitions.map(col => ({
+      key: col.key, // Solo la clave para mapear los datos
+      width: col.width // El ancho
+    }))
+
+    // AHORA, AGREGAMOS LA FILA 9 EXPLICITAMENTE CON LOS HEADERS
+    const headerValues = columnDefinitions.map(col => col.header)
+    const headerRow = worksheet.getRow(9)
+    headerRow.values = headerValues // Asignar los valores de los headers a la fila 9
+
+    // Aplicar estilos a las celdas de la fila 9 (encabezados de la tabla)
+    headerRow.eachCell((cell, colNumber) => {
+      cell.font = { name: 'Arial', size: 10, bold: true }
+      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3D3D3' } } // Color gris
+      cell.border = {
+        top: { style: 'thin' }, left: { style: 'thin' },
+        bottom: { style: 'thin' }, right: { style: 'thin' }
+      }
+    })
+
+    // --- Datos de la Base de Datos (a partir de la fila 10) ---
+    const bienes = await BienModel.getBM1ForExcel()
+
+    bienes.forEach(bien => {
+      worksheet.addRow({
+        categoria_general: bien.categoria_general,
+        subcategoria: bien.subcategoria,
+        categoria_especifica: bien.categoria_especifica,
+        cantidad: '01', // Siempre '01'
+        bim_ide: bien.bim_ide,
+        bim_des: bien.bim_des,
+        bim_val: bien.bim_val
+      })
+    })
+
+    // Aplicar bordes a las celdas de datos y formatear el valor
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 9) { // Aplicar a partir de la fila 10 (después de los encabezados)
+        row.height = 30
+        row.eachCell((cell, colNumber) => {
+          cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
+          cell.border = {
+            top: { style: 'thin' }, left: { style: 'thin' },
+            bottom: { style: 'thin' }, right: { style: 'thin' }
+          }
+          // Formatear la columna 'Valor' como moneda
+          if (colNumber === columnDefinitions.findIndex(col => col.key === 'bim_val') + 1) {
+            cell.numFmt = '#,##0.00' // Formato de número con dos decimales y separador de miles
+          }
+        })
+      }
+    })
+
+    // Retornar el buffer del archivo Excel
+    return await workbook.xlsx.writeBuffer()
+  }
+
+  catch (error) {
+    console.error('Error crítico en generateBM1Excel:', error.message)
+    throw error
   }
 }
 
