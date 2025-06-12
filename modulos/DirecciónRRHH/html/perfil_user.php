@@ -192,11 +192,11 @@
                   
                   // Convertir tipo de usuario a texto
                   const tipoUsuario = {
-                      0: 'Visualizador',
-                      1: 'Temporal',
-                      2: 'Trabajador',
-                      3: 'Jefe de Área',
-                      4: 'Administrador'
+                      1: 'Visualizador',
+                      2: 'Temporal',
+                      3: 'Trabajador',
+                      4: 'Jefe de Área',
+                      5: 'Administrador'
                   }[data.usu_tip] || 'Desconocido';
                   
                   document.getElementById('tipoUsuario').value = tipoUsuario;

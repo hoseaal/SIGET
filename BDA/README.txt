@@ -8,4 +8,8 @@ composer require firebase/php-jwt
 
 composer require phpoffice/phpspreadsheet
 
-3) ...
+3) Dependencia para el funcionamiento de variables de entorno para el token
+
+composer require vlucas/phpdotenv
+
+4) ...

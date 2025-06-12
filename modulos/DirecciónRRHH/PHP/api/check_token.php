@@ -6,7 +6,12 @@
 
     header('Content-Type: application/json');
 
-    $secretKey = 'C0ntr@l0r!aD3lEst4d0T@ch!r@';
+    // Cargar variables de entorno
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../../../');
+    $dotenv->load();
+
+    $secretKey = $_ENV['JWT_SECRET_KEY'];
+
     $token = $_COOKIE['token'] ?? null;
 
     if (!$token) {
