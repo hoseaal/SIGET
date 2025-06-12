@@ -106,6 +106,11 @@ export class BienMuebleModel {
       queryParams.push(filters.dep)
     }
 
+    if (filters.con) {
+      whereClauses.push('b.con_ide = ?')
+      queryParams.push(filters.con)
+    }
+
     // Construcción de la consulta base
     let baseQuery = `SELECT b.*, d.dep_nom AS departamento FROM tmab_m b
     LEFT JOIN tesdep d ON b.dep_ide=d.dep_ide`
