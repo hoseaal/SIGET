@@ -117,7 +117,7 @@ const InfiniteSelect = ({ options, value, onChange, direction = 'right', onToggl
 };
 
 // Componente para el filtro de tipo
-const TipoBienSelect = ({ tipoBien, value, onChange }) => {
+const CondicionFisicaSelect = ({ tipoBien, value, onChange }) => {
   // Preparar opciones
   const options = [
     { value: null, label: 'Tipos de Bien' },

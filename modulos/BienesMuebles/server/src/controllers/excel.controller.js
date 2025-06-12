@@ -26,17 +26,11 @@ class BienController {
 
   static async generateBM1Report (req, res) {
     try {
-      const { dep } = req.query // Obtenemos el código del departamento desde la URL
-
-      if (!dep) {
-        return res.status(400).json({ message: 'El código del departamento (dep) es requerido.' })
-      }
       // Llamamos al servicio para que genere el buffer del archivo Excel
-      const excelBuffer = await excelService.generateBM1Excel(dep, req)
+      const excelBuffer = await excelService.generateBM1Excel(req)
 
       // Configuramos las cabeceras de la respuesta para la descarga
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-      res.setHeader('Content-Disposition', `attachment; filename="BM1_DEP-${dep}.xlsx"`)
 
       // Enviamos el buffer
       res.send(excelBuffer)

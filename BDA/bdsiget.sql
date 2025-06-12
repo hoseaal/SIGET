@@ -2240,5 +2240,19 @@ LEFT JOIN tmamar mar ON m.mar_ide = mar.mar_ide
 LEFT JOIN tescae ca ON b.cae_ide = ca.cae_ide
 LEFT JOIN tessca sc ON sc.sca_ide = ca.sca_ide
 LEFT JOIN tmacat cat ON cat.cat_ide = sc.cat_ide
-LEFT JOIN tesdep d ON b.dep_ide = d.dep_ide;
+LEFT JOIN tesdep d ON b.dep_ide = d.dep_ide
+WHERE b.bim_inc = 1;
   
+CREATE VIEW vw_bienes_muebles_bm1 AS
+SELECT 
+    b.bim_ide,
+    b.bim_des,
+    b.bim_val,
+    cat.cat_ide AS categoria_general,
+    sc.sca_ide AS subcategoria,
+    ca.cae_ide AS categoria_especifica
+FROM tmab_m b 
+LEFT JOIN tescae ca ON b.cae_ide = ca.cae_ide
+LEFT JOIN tessca sc ON sc.sca_ide = ca.sca_ide
+LEFT JOIN tmacat cat ON cat.cat_ide = sc.cat_ide
+WHERE b.bim_inc = 1;
