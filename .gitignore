@@ -3,3 +3,4 @@ vendor/firebase/php-jwt/
 /.env
 modulos/BienesMuebles/server/node_modules/
 /vendor/composer
+/vendor
