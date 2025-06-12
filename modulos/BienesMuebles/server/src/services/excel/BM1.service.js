@@ -1,7 +1,6 @@
 import ExcelJS from 'exceljs'
 import fs from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import path from 'path'
 
 class ExcelService {
   static async generateBM1Excel (departmentCode, req) {
@@ -51,9 +50,7 @@ class ExcelService {
 
       // --- LOGO (A1:C5) ---
       try {
-        const __filename = fileURLToPath(import.meta.url)
-        const __dirname = dirname(__filename)
-        const logoPath = join(__dirname, '..', '..', 'public', 'images', 'logo.png')
+        const logoPath = path.join(process.cwd(), 'public', 'img', 'logo-contraloria-home1.png')
 
         if (fs.existsSync(logoPath)) {
           const logo = workbook.addImage({
@@ -80,7 +77,7 @@ class ExcelService {
       for (let i = 1; i <= 5; i++) {
         const cell = worksheet.getCell(`D${i}`)
         cell.font = { name: 'Arial', size: 11, bold: i === 1 }
-        cell.alignment = { vertical: 'middle', horizontal: 'left' }
+        cell.alignment = { vertical: 'middle', horizontal: 'center' }
       }
 
       // --- CABECERAS DE COLUMNAS (A6:I6) ---
@@ -99,7 +96,7 @@ class ExcelService {
         const cell = worksheet.getCell(6, col)
         cell.font = { bold: true }
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3D3D3' } }
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF89AAF3' } }
         cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
       }
 
@@ -112,7 +109,7 @@ class ExcelService {
           worksheet.getCell(`B${rowNumber}`).value = bien.bim_ide // Código
           worksheet.getCell(`C${rowNumber}`).value = bien.tipo // Tipo
           worksheet.getCell(`D${rowNumber}`).value = bien.bim_des // Descripción
-          worksheet.getCell(`E${rowNumber}`).value = bien.bim_obs || 'N/A' // Observación
+          worksheet.getCell(`E${rowNumber}`).value = bien.bim_obs || ' ' // Observación
 
           // Marcar el estado correspondiente con "X"
           switch (bien.est_ide) {

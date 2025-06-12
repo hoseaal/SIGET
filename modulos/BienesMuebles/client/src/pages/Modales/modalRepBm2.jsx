@@ -19,6 +19,17 @@ function ModalRepBm2({ show, handleClose }) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+     const truncateText = (text, maxLength = 10) => {
+        if (!text) return 'N/A';
+        if (text.length <= maxLength) return text;
+        
+        return (
+            <span title={text}>
+                {`${text.substring(0, maxLength)}...`}
+            </span>
+        );
+    };
+
     const añoActual = new Date().getFullYear();
 
     const obtenerDatos = async (mesIndex) => {
@@ -153,7 +164,7 @@ function ModalRepBm2({ show, handleClose }) {
                 {!loading && datos.length > 0 && (
                     <>
                         <p><strong>PERIODO DE LA CUENTA:</strong> {meses[mesSeleccionado]?.toUpperCase()} {añoActual}</p>
-                        <Table bordered hover size="sm">
+                        <Table bordered hover size="sm" responsive>
                             <thead>
                                 <tr>
                                     <th>GRUPO</th>
@@ -174,7 +185,7 @@ function ModalRepBm2({ show, handleClose }) {
                                         <td>{item.com_ide}</td>
                                         <td>01</td>
                                         <td>{item.bim_ide}</td>
-                                        <td>{item.bim_des}</td>
+                                        <td>{truncateText(item.bim_des)}</td>
                                         <td>{item.bim_inc === 1 ? item.bim_val : ''}</td>
                                         <td>{item.bim_inc === 0 ? item.bim_val : ''}</td>
                                     </tr>

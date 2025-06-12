@@ -299,7 +299,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
     }
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg">
+    <Modal show={show} onHide={() => { handleClose(); limpiarFormulario(); }} size="lg">
       <Modal.Header closeButton>
         <Modal.Title>Generar Acta de Incorporación</Modal.Title>
       </Modal.Header>

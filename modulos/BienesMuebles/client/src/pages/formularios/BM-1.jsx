@@ -4,7 +4,8 @@ import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
 import ModalBM1 from '../Modales/modalBM1';
-import TipoBienSelect from '../layouts/selectInfinito';
+import {TipoBienSelect, EstadoSelect} from '../layouts/selectInfinito';
+import { FixedSizeList as List } from 'react-window';
 
 export const Bm1 = () => {
 
@@ -25,7 +26,6 @@ export const Bm1 = () => {
     setShowBM1Modal(false);
 
   };
-    const [isLoading, setIsLoading] = useState(false);
     const [search, setSearch] = useState();
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
@@ -87,6 +87,25 @@ export const Bm1 = () => {
         fetchAllData();
     }, []);
 
+    const Estados = [
+        {   
+            "est_ide": "1",
+            "est_est": "Sin etiqueta"
+        },
+        {   
+            "est_ide": "2",
+            "est_est": "inoperativo"
+        },
+        {   
+            "est_ide": "3",
+            "est_est": "Faltante"
+        },
+        {   
+            "est_ide": "4",
+            "est_est": "Operativo"
+        }
+    ]
+
     const tiposMap = tipoBien.reduce((acc, tip) => {
         acc[tip.tip_ide] = tip.tip_tip;
         return acc;
@@ -124,7 +143,7 @@ export const Bm1 = () => {
     };
 
 
-    const truncateText = (text, maxLength = 30) => {
+    const truncateText = (text, maxLength = 10) => {
         if (!text) return 'N/A';
         if (text.length <= maxLength) return text;
         
@@ -143,6 +162,14 @@ export const Bm1 = () => {
             
             // Aquí puedes agregar lógica adicional cuando cambia el tipo
             console.log("Tipo seleccionado:", tipoId);
+        };
+
+        const handleEstadoChange = (estadoId) => {
+            setFiltros(prev => ({ ...prev, estado: estadoId }));
+            setPage(1);
+            
+            // Aquí puedes agregar lógica adicional cuando cambia el tipo
+            console.log("Tipo seleccionado:", estadoId);
         };
 
   const [loading, setLoading] = useState(false);
@@ -180,10 +207,10 @@ export const Bm1 = () => {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-1</h4>
                 <button id="exportToExcel" className="btn btn-primary" onClick={handleDownload}>
-                    <i className="bx bx-export me-1"></i> SUDEBIM carga de bienes muebles
+                    <i className="bx bx-file me-1"></i> SUDEBIM carga de bienes muebles
                 </button>
                 <button id="exportToExcel" className="btn btn-primary" onClick={handleOpenModal}>
-                    <i className="bx bx-export me-1"></i> Generar BM1 
+                    <i className="bx bx-file me-1"></i> Generar BM1 
                 </button>
             </div>
             <ModalBM1 
@@ -193,14 +220,13 @@ export const Bm1 = () => {
             <div className="card">
                 <h5 className="card-header">Relación de Bienes Actuales</h5>
                 <div className="card-body">
-                    <div className="table-responsive text-nowrap">
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
                             setSearchQuery(search); // Solo dispara búsqueda cuando se presiona el botón
                             setPage(1);
                         }}
-                        className="p-3 d-flex gap-2 align-items-center"
+                        className=" d-flex gap-2 align-items-center"
                         >
                         <input
                             type="text"
@@ -226,27 +252,20 @@ export const Bm1 = () => {
                             Limpiar
                             </button>
                         )}
+                        <hr className="my-5" />
                             <TipoBienSelect
                                 tipoBien={tipoBien}
                                 value={filtros.tipo}
                                 onChange={handleTipoChange}
                             />
 
-                            <div className="dropdown ">
-                                <select 
-                                    id="estado-select"
-                                    className="btn btn-primary dropdown-toggle"
-                                    value={filtros.estado || ''}
-                                    onChange={(e) => setFiltros({...filtros, estado: e.target.value || null})}
-                                >
-                                    <option className="form-control" value="">Estado</option>
-                                    <option className="form-control" value="1">Sin Etiqueta</option>
-                                    <option className="form-control" value="2">Inoperativo</option>
-                                    <option className="form-control" value="3">Faltante</option>
-                                    <option className="form-control" value="4">Operativo</option>
-                                </select>
-                            </div>
+                            <EstadoSelect
+                                tipoBien={Estados}
+                                value={filtros.estado}
+                                onChange={handleEstadoChange}
+                            />
                         </form>
+                        <div className="table-responsive text-nowrap">
                         <table className="table table-bordered table-striped">
                             <thead>
                                 <tr>
@@ -268,8 +287,8 @@ export const Bm1 = () => {
                                         </tr>
                                         {bienes.map((item, index) => (
                                             <tr key={`${depId}-${index}`}>
-                                                <td>{item.bim_ide || 'N/A'}</td>
-                                                <td>{tiposMap[item.tip_ide] || 'N/A'}</td>
+                                                <td>{item.bim_ide || ' '}</td>
+                                                <td>{tiposMap[item.tip_ide] || ' '}</td>
                                                 <td>{truncateText(item.bim_des)}</td>
                                                 <td>{truncateText(item.bim_obs)}</td>
                                                 <td>{getEstadoBadge(item.est_ide)}</td>
