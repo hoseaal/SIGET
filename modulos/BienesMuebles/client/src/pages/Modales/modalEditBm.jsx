@@ -131,7 +131,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     setFormData(bien);
 
                     // --- Carga de información de préstamo ---
-                    const prestamoRes = await fetch(`/api/prestamos/check-bien/${BienId}`);
+                    const prestamoRes = await fetch(`/api/prestamos/estado-bien/${BienId}`);
                     if (!prestamoRes.ok) {
                         if (prestamoRes.status === 404) {
                             setPrestamoInfo(null);
@@ -216,6 +216,8 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
             setLoading(false);
         }
     };
+
+    console.log(prestamoInfo)
 
     const renderFormField = (column) => {
         const fieldName = column.originalName;
@@ -382,7 +384,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                             <Form.Control
                                 type="text"
                                 value={prestamoInfo 
-                                    ? `${prestamoInfo.departamento_destino}`
+                                    ? `${prestamoInfo.departamento_destino_nombre}`
                                     : 'Bien en servicio en su departamento original'}
                                 disabled={true} // Siempre deshabilitado
                                 readOnly={true}
