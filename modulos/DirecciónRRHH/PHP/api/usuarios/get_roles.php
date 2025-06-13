@@ -4,7 +4,6 @@
     require_once '../../../conexion/conexion.php';
 
     try {
-        // Verifica si la conexión PDO está disponible
         if (!isset($pdo)) {
             throw new Exception('No se pudo establecer conexión con la base de datos');
         }

@@ -45,28 +45,32 @@
                       <img src="../assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
                     </div>
                   </div>
-                  <div class="flex-grow-1">
-                    <span class="fw-semibold d-block">
-                        <?= htmlspecialchars($nombre . ' ' . $apellido) ?>
-                    </span>
-                    <small class="text-muted">
-                      <?php
-                        if ($tipo == 4) {
-                          echo "Jefe de Área";
-                        } elseif ($tipo == 3) {
-                          echo "Trabajador";
-                        } elseif ($tipo == 5) {
-                          echo "Administrador";
-                        } elseif ($tipo == 1) {
-                          echo "Visualizador";
-                        } elseif ($tipo == 2) {
-                          echo "Temporal";
-                        } else {
-                          echo "desconocido";
-                        }
-                      ?>
-                  </small>
+                  <div class="flex-grow-1" style="min-width: 0; overflow: hidden;">
+                  <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                      <div style="flex: 1; min-width: 0;">
+                          <span class="fw-semibold d-block text-truncate">
+                              <?= htmlspecialchars($nombre . ' ' . $apellido) ?>
+                          </span>
+                          <small class="text-muted">
+                              <?php
+                                if ($tipo == 4) {
+                                  echo "Jefe de Área";
+                                } elseif ($tipo == 3) {
+                                  echo "Trabajador";
+                                } elseif ($tipo == 5) {
+                                  echo "Administrador";
+                                } elseif ($tipo == 1) {
+                                  echo "Visualizador";
+                                } elseif ($tipo == 2) {
+                                  echo "Temporal";
+                                } else {
+                                  echo "desconocido";
+                                }
+                              ?>
+                          </small>
+                      </div>
                   </div>
+              </div>
                 </div>
               </a>
             </li>

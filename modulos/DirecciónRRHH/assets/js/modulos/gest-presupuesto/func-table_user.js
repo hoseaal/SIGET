@@ -314,11 +314,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Verificar si el usuario está intentando eliminarse a sí mismo
         if (typeof LOGGED_USER_ID !== 'undefined' && idUsuario === LOGGED_USER_ID) {
             smallSwal.fire({
-                icon: 'error',
+                icon: 'warning',
                 title: 'Acción no permitida',
-                html: '<div class="text-center mb-3"><i class="bx bx-error-circle text-warning" style="font-size: 3rem;"></i></div>' +
-                      '<p class="text-center">No puede eliminarse a sí mismo del sistema.</p>' +
-                      '<p class="text-center text-muted">Por razones de seguridad, esta acción está restringida.</p>',
+                html: 'No puede eliminarse a sí mismo del sistema.<br><small class="text-muted">Por razones de seguridad, esta acción está restringida.</small>',
                 confirmButtonColor: '#3085d6',
                 confirmButtonText: 'Entendido'
             });
@@ -531,8 +529,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('nombre').value = datosUsuario.usu_nom || '';
         document.getElementById('apellidos').value = datosUsuario.usu_ape || '';
         
-        // Cargar tipos de usuario dinámicamente y seleccionar el actual
-        await cargarRolesEnModal(datosUsuario.usu_tip);
+        // Cargar tipos de usuario y acceso dinámicamente
+        await Promise.all([
+            cargarRolesEnModal(datosUsuario.usu_tip),
+            cargarAccesosEnModal(datosUsuario.usu_mod)
+        ]);
         
         // Configurar el botón de guardar
         const botonGuardar = document.querySelector('#largeModal .btn-primary');
@@ -589,6 +590,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    async function cargarAccesosEnModal(usu_mod_actual) {
+        const selectorTipoAcceso = document.getElementById('accessType');
+        
+        try {
+            // Mostrar estado de carga
+            selectorTipoAcceso.innerHTML = '<option value="">Cargando accesos...</option>';
+            
+            const respuesta = await fetch('../PHP/api/usuarios/get_accesos.php');
+            const datos = await respuesta.json();
+            
+            if (datos.success && datos.access.length > 0) {
+                // Limpiar y llenar el select
+                selectorTipoAcceso.innerHTML = '<option value="">-- Seleccione un acceso --</option>';
+                
+                datos.access.forEach(acceso => {
+                    const option = document.createElement('option');
+                    option.value = acceso.usu_mod;
+                    option.textContent = acceso.acc_nom;
+                    
+                    // Seleccionar el acceso actual del usuario
+                    if (acceso.usu_mod == usu_mod_actual) {
+                        option.selected = true;
+                    }
+                    
+                    selectorTipoAcceso.appendChild(option);
+                });
+            } else {
+                selectorTipoAcceso.innerHTML = '<option value="">Error al cargar accesos</option>';
+                console.error('Error al cargar accesos:', datos.message);
+            }
+        } catch (error) {
+            selectorTipoAcceso.innerHTML = '<option value="">Error de conexión</option>';
+            console.error('Error al cargar accesos:', error);
+            
+            // Opcional: Mostrar alerta al usuario
+            smallSwal.fire({
+                icon: 'warning',
+                title: 'Advertencia',
+                text: 'No se pudieron cargar los tipos de acceso. Recargue la página.',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    }
+
     // Función para guardar los cambios del usuario
     async function guardarCambiosUsuario(idUsuario) {
         const botonGuardar = document.querySelector('#largeModal .btn-primary');
@@ -607,7 +653,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Obtener los datos del formulario
             const datosActualizados = {
                 user_id: idUsuario,
-                user_type: document.getElementById('cargocet').value
+                user_type: document.getElementById('cargocet').value,
+                access_type: document.getElementById('accessType').value
             };
 
             // Si se está cambiando la contraseña, incluirla en los datos
@@ -622,6 +669,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!datosActualizados.user_type) {
                 throw new Error('Seleccione un tipo de usuario');
             }
+
+            if (!datosActualizados.access_type) {
+                throw new Error('Seleccione un tipo de acceso');
+            }   
             
             // Llamada a la API para guardar cambios
             const respuesta = await fetch('../PHP/api/gest-presupuesto/actualizar_users.php', {

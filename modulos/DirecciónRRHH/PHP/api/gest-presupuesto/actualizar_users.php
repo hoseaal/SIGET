@@ -11,12 +11,13 @@
     try {
         $data = json_decode(file_get_contents('php://input'), true);
         
-        if (!$data || !isset($data['user_id']) || !isset($data['user_type'])) {
+        if (!$data || !isset($data['user_id']) || !isset($data['user_type']) || !isset($data['access_type'])) {
             throw new Exception('Datos no recibidos o incompletos');
         }
 
         $userId = $data['user_id'];
         $userType = $data['user_type'];
+        $accessType = $data['access_type'];
         $usuarioResponsable = $decoded->data->cedula;
         
         // Nueva contraseña (opcional)
@@ -48,15 +49,16 @@
         try {
             // Construir la consulta de actualización
             if ($newPassword !== null) {
-                // Actualizar tipo de usuario y contraseña
-                $query = $pdo->prepare("UPDATE tesusu SET usu_tip = :user_type, usu_con = :password WHERE usu_ide = :user_id");
+                // Actualizar tipo de usuario, tipo de acceso y contraseña
+                $query = $pdo->prepare("UPDATE tesusu SET usu_tip = :user_type, usu_mod = :access_type, usu_con = :password WHERE usu_ide = :user_id");
                 $query->bindParam(':password', $hashedPassword);
             } else {
-                // Actualizar solo el tipo de usuario
-                $query = $pdo->prepare("UPDATE tesusu SET usu_tip = :user_type WHERE usu_ide = :user_id");
+                // Actualizar tipo de usuario y tipo de acceso
+                $query = $pdo->prepare("UPDATE tesusu SET usu_tip = :user_type, usu_mod = :access_type WHERE usu_ide = :user_id");
             }
             
             $query->bindParam(':user_type', $userType);
+            $query->bindParam(':access_type', $accessType);
             $query->bindParam(':user_id', $userId);
             
             if (!$query->execute()) {

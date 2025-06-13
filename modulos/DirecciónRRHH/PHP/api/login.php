@@ -34,7 +34,7 @@
 
     try {
         $stmt = $pdo->prepare("
-            SELECT tu.usu_ide, tu.usu_usu, tu.usu_con, tu.usu_tip, tu.nom_ced, tu.usu_nom, tu.usu_ape
+            SELECT tu.usu_ide, tu.usu_usu, tu.usu_con, tu.usu_tip, tu.usu_mod, tu.nom_ced, tu.usu_nom, tu.usu_ape
             FROM tesusu tu
             WHERE tu.usu_usu = :username
         ");
@@ -53,6 +53,12 @@
             exit;
         }
 
+        // Validar si el usuario tiene acceso al módulo de Recursos Humanos
+        if ($user['usu_mod'] == '3') {
+            echo json_encode(['success' => false, 'message' => 'Su usuario no tiene acceso al módulo de Recursos Humanos']);
+            exit;
+        }
+
         $payload = [
             'iss' => $_ENV['JWT_ISSUER'],     
             'aud' => $_ENV['JWT_AUDIENCE'],    
@@ -64,6 +70,7 @@
                 'nombre' => $user['usu_nom'],
                 'apellido' => $user['usu_ape'],
                 'tipo' => $user['usu_tip'],
+                'Acc' => $user['usu_mod']
             ]
         ];
 
@@ -90,3 +97,4 @@
             'message' => 'Error al iniciar sesión: ' . $e->getMessage()
         ]);
     }
+?>
