@@ -1,83 +1,72 @@
 /* eslint-disable camelcase */
 import { PrestamoService } from '../services/prestamo.service.js'
 
-export const crearPrestamo = async (req, res) => {
+export const createLoan = async (req, res) => {
   try {
-    const nuevoPrestamo = await PrestamoService.crear(req.body)
-    res.status(201).json(nuevoPrestamo)
+    const newLoan = await PrestamoService.createLoan(req.body)
+    res.status(201).json(newLoan)
   } catch (error) {
+    console.error('Error al crear préstamo:', error)
     res.status(400).json({ error: error.message })
   }
 }
 
-export const obtenerPrestamos = async (req, res) => {
+export const getNormalLoans = async (req, res) => {
   try {
-    // Puedes agregar filtros si necesitas, por ejemplo, para obtener solo préstamos activos
     const filters = req.query
-    const prestamos = await PrestamoService.obtenerTodos(filters)
-    res.json(prestamos)
+    const loans = await PrestamoService.getNormalLoans(filters)
+    res.json(loans)
   } catch (error) {
+    console.error('Error al obtener préstamos normales:', error)
     res.status(500).json({ error: error.message })
   }
 }
 
-export const obtenerPrestamoPorId = async (req, res) => {
+export const getWarehouseItems = async (req, res) => {
   try {
-    const { id } = req.params
-    const prestamo = await PrestamoService.obtenerPorId(id)
-    if (!prestamo) {
-      return res.status(404).json({ error: 'Préstamo no encontrado' })
-    }
-    res.json(prestamo)
+    const filters = req.query
+    const items = await PrestamoService.getWarehouseItems(filters)
+    res.json(items)
   } catch (error) {
+    console.error('Error al obtener bienes en almacén:', error)
     res.status(500).json({ error: error.message })
   }
 }
 
-export const actualizarPrestamo = async (req, res) => {
+export const getLoanById = async (req, res) => {
   try {
     const { id } = req.params
-    const actualizado = await PrestamoService.actualizar(id, req.body)
-    res.json({ success: actualizado })
+    const loan = await PrestamoService.getLoanById(id)
+    res.json(loan)
   } catch (error) {
+    console.error('Error al obtener préstamo por ID:', error)
+    res.status(404).json({ error: error.message }) // 404 si no encontrado, 500 para otros errores
+  }
+}
+
+export const updateLoanStatus = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { pre_est } = req.body
+    const updated = await PrestamoService.updateLoanStatus(id, pre_est)
+    res.json({ success: updated })
+  } catch (error) {
+    console.error('Error al actualizar estatus de préstamo:', error)
     res.status(400).json({ error: error.message })
   }
 }
 
-export const cambiarEstatusPrestamo = async (req, res) => {
-  try {
-    const { id } = req.params
-    const { pre_est } = req.body // Esperamos un pre_est (0 o 1) en el cuerpo de la solicitud
-    if (pre_est === undefined || (pre_est !== 0 && pre_est !== 1)) {
-      return res.status(400).json({ error: 'El estatus del préstamo es inválido. Debe ser 0 (inactivo) o 1 (activo).' })
-    }
-    const result = await PrestamoService.cambiarEstatus(id, pre_est)
-    res.json({ success: result })
-  } catch (error) {
-    res.status(400).json({ error: error.message })
-  }
-}
-
-export const obtenerBienesPrestadosPorDepartamento = async (req, res) => {
-  try {
-    const { dep_origen_id } = req.query // <--- ¡Nueva línea! Leer el query param
-    const bienesPrestados = await PrestamoService.obtenerReporteBienesPrestados(dep_origen_id) // <--- ¡Modificado! Pasar el parámetro
-    res.json(bienesPrestados)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-}
-
-export const checkBienPrestado = async (req, res) => {
+export const checkBienActivelyInvolved = async (req, res) => {
   try {
     const { bim_ide } = req.params
-    const prestamoInfo = await PrestamoService.checkBienPrestadoActivo(bim_ide)
-    if (prestamoInfo) {
-      res.json(prestamoInfo)
+    const status = await PrestamoService.checkBienActivelyInvolved(bim_ide)
+    if (status) {
+      res.json(status)
     } else {
-      res.status(404).json({ error: 'El bien no se encuentra prestado activamente.' })
+      res.status(404).json({ error: 'El bien no está activamente involucrado en ningún préstamo/movimiento.' })
     }
   } catch (error) {
+    console.error('Error al verificar estado de bien:', error)
     res.status(500).json({ error: error.message })
   }
 }

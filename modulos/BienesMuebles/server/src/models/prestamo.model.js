@@ -1,17 +1,30 @@
 /* eslint-disable camelcase */
-// src/models/prestamo.model.js
-import pool from '../utils/database.js' // Asegúrate de que la ruta sea correcta
+import pool from '../utils/database.js'
+
+// Constantes para IDs específicos
+const DEP_ALMACEN_ID = 11
+const CON_MAL_ESTADO_ID = 4
 
 export class PrestamoModel {
-  static async create ({ pre_fec, pre_ndo, dep_ide, bienes }) {
+  /**
+   * Crea un nuevo registro de préstamo (ttrpre) y sus detalles (ttrdpr).
+   * @param {object} data - Datos del préstamo.
+   * @param {string} data.pre_fec - Fecha del préstamo (YYYY-MM-DD).
+   * @param {string} data.pre_ndo - Número de oficio.
+   * @param {number} data.dep_ide - ID del departamento de destino.
+   * @param {number} data.dep_origen_ide - ID del departamento de origen (asumiendo que ttrpre lo tiene).
+   * @param {string[]} data.bienes - Array de bim_ide de los bienes prestados.
+   * @returns {Promise<object>} Objeto del préstamo creado.
+   */
+  static async create ({ pre_fec, pre_ndo, dep_ide, dep_origen_ide, bienes }) {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
 
       // Insertar el préstamo principal
       const [resultPrestamo] = await connection.query(
-        'INSERT INTO ttrpre (pre_fec, pre_ndo, dep_ide) VALUES (?, ?, ?)',
-        [pre_fec, pre_ndo, dep_ide]
+        'INSERT INTO ttrpre (pre_fec, pre_ndo, dep_ide, dep_origen_ide) VALUES (?, ?, ?, ?)',
+        [pre_fec, pre_ndo, dep_ide, dep_origen_ide]
       )
       const pre_ide = resultPrestamo.insertId
 
@@ -25,7 +38,7 @@ export class PrestamoModel {
       }
 
       await connection.commit()
-      return { pre_ide, pre_fec, pre_ndo, dep_ide, bienes }
+      return { pre_ide, pre_fec, pre_ndo, dep_ide, dep_origen_ide, bienes }
     } catch (error) {
       await connection.rollback()
       throw error
@@ -34,45 +47,136 @@ export class PrestamoModel {
     }
   }
 
-  static async getAll (filters = {}) {
+  /**
+   * Obtiene una lista de préstamos "normales" (excluyendo bienes en almacén por mal estado).
+   * @param {object} filters - Filtros para la consulta.
+   * @param {string} [filters.pre_ndo] - Filtro por número de oficio.
+   * @param {number} [filters.dep_origen_id] - Filtro por ID de departamento de origen.
+   * @param {number} [filters.dep_destino_id] - Filtro por ID de departamento de destino.
+   * @returns {Promise<Array>} Lista de préstamos normales.
+   */
+  static async getNormalLoans (filters = {}) {
     let query = `
       SELECT
         tp.pre_ide,
         tp.pre_fec,
         tp.pre_ndo,
         tp.pre_est,
-        td.dep_nom AS departamento_destino,
-        COUNT(tdd.dpr_ide) AS total_bienes_prestados
+        td_destino.dep_nom AS departamento_destino_nombre,
+        td_origen.dep_nom AS departamento_origen_nombre
       FROM ttrpre tp
-      LEFT JOIN tesdep td ON tp.dep_ide = td.dep_ide
-      LEFT JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
+      LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
     `
     const whereClauses = []
     const params = []
 
-    if (filters.pre_est !== undefined && (filters.pre_est === '0' || filters.pre_est === '1')) {
-      whereClauses.push('tp.pre_est = ?')
-      params.push(filters.pre_est)
-    }
-    if (filters.dep_ide) {
-      whereClauses.push('tp.dep_ide = ?')
-      params.push(filters.dep_ide)
-    }
+    // Parametro: El préstamo debe estar activo
+    whereClauses.push('tp.pre_est = 1')
+
+    // EXCLUSIÓN CLAVE para préstamos normales:
+    // NO incluir si el destino es Almacén (11) Y la condición física de ALGUN BIEN es Mal Estado (4)
+    // Esto requiere un subquery o JOIN adicional para verificar la condición de los bienes asociados.
+    // Una forma simple es verificar si ALGÚN BIEN de este préstamo cumple la condición de exclusión.
+    whereClauses.push(`
+      NOT EXISTS (
+        SELECT 1 FROM ttrdpr tdd_excl
+        JOIN tmab_m tmab_excl ON tdd_excl.bim_ide = tmab_excl.bim_ide
+        WHERE tdd_excl.pre_ide = tp.pre_ide
+          AND tmab_excl.con_ide = ?
+          AND tp.dep_ide = ?
+      )
+    `)
+    params.push(CON_MAL_ESTADO_ID, DEP_ALMACEN_ID)
+
+    // Filtros opcionales
     if (filters.pre_ndo) {
       whereClauses.push('tp.pre_ndo LIKE ?')
       params.push(`%${filters.pre_ndo}%`)
+    }
+    if (filters.dep_origen_id) { // Filtro por el nuevo campo dep_origen_ide en ttrpre
+      whereClauses.push('tp.dep_origen_ide = ?')
+      params.push(filters.dep_origen_id)
+    }
+    if (filters.dep_destino_id) { // Filtro por dep_ide de ttrpre
+      whereClauses.push('tp.dep_ide = ?')
+      params.push(filters.dep_destino_id)
     }
 
     if (whereClauses.length > 0) {
       query += ' WHERE ' + whereClauses.join(' AND ')
     }
 
-    query += ' GROUP BY tp.pre_ide ORDER BY tp.pre_fec DESC'
+    query += ' ORDER BY tp.pre_fec DESC, tp.pre_ndo ASC'
 
     const [rows] = await pool.query(query, params)
     return rows
   }
 
+  /**
+   * Obtiene una lista de bienes en almacén por mal estado.
+   * @param {object} filters - Filtros para la consulta.
+   * @param {string} [filters.pre_ndo] - Filtro por número de oficio.
+   * @param {number} [filters.dep_origen_id] - Filtro por ID de departamento de origen del bien.
+   * @returns {Promise<Array>} Lista de bienes en almacén por mal estado.
+   */
+  static async getWarehouseItems (filters = {}) {
+    let query = `
+      SELECT
+        tp.pre_ide,
+        tp.pre_fec,
+        tp.pre_ndo,
+        tp.pre_est,
+        td_destino.dep_nom AS departamento_destino_nombre,
+        td_origen.dep_nom AS departamento_origen_nombre,
+        tdd.bim_ide,
+        tmab.bim_des,
+        tmab.bim_cod,
+        tmab.con_ide
+      FROM ttrpre tp
+      JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
+      JOIN tmab_m tmab ON tdd.bim_ide = tmab.bim_ide
+      LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
+    `
+    const whereClauses = []
+    const params = []
+
+    // Inclusión CLAVE para bienes en almacén:
+    // Que el préstamo esté activo
+    whereClauses.push('tp.pre_est = 1')
+    // Que el destino del préstamo sea el Almacén
+    whereClauses.push('tp.dep_ide = ?')
+    params.push(DEP_ALMACEN_ID)
+    // Que la condición física del bien sea Mal Estado
+    whereClauses.push('tmab.con_ide = ?')
+    params.push(CON_MAL_ESTADO_ID)
+
+    // Filtros opcionales
+    if (filters.pre_ndo) {
+      whereClauses.push('tp.pre_ndo LIKE ?')
+      params.push(`%${filters.pre_ndo}%`)
+    }
+    if (filters.dep_origen_id) { // Filtro por el nuevo campo dep_origen_ide en ttrpre
+      whereClauses.push('tp.dep_origen_ide = ?')
+      params.push(filters.dep_origen_id)
+    }
+
+    if (whereClauses.length > 0) {
+      query += ' WHERE ' + whereClauses.join(' AND ')
+    }
+
+    query += ' ORDER BY tp.pre_fec DESC, tp.pre_ndo ASC, tmab.bim_cod ASC'
+
+    const [rows] = await pool.query(query, params)
+    return rows
+  }
+
+  /**
+   * Obtiene los detalles de un préstamo específico por su ID.
+   * @param {number} id - ID del préstamo (pre_ide).
+   * @returns {Promise<object|null>} Objeto del préstamo con detalles de bienes, o null si no se encuentra.
+   */
   static async getById (id) {
     const [rows] = await pool.query(`
       SELECT
@@ -80,12 +184,22 @@ export class PrestamoModel {
         tp.pre_fec,
         tp.pre_ndo,
         tp.pre_est,
-        td.dep_nom AS departamento_destino,
-        GROUP_CONCAT(JSON_OBJECT('bim_ide', tdd.bim_ide, 'bim_cod', tm.bim_cod, 'bim_des', tm.bim_des, 'dpr_est', tdd.dpr_est)) AS bienes_detalles
+        td_destino.dep_nom AS departamento_destino_nombre,
+        td_origen.dep_nom AS departamento_origen_nombre, -- Usar dep_origen_ide de ttrpre
+        GROUP_CONCAT(JSON_OBJECT(
+            'bim_ide', tdd.bim_ide,
+            'bim_cod', tm.bim_cod,
+            'bim_des', tm.bim_des,
+            'dpr_est', tdd.dpr_est,
+            'con_ide', tm.con_ide,
+            'con_des', tc.con_des -- Descripción de la condición
+        )) AS bienes_detalles
       FROM ttrpre tp
-      LEFT JOIN tesdep td ON tp.dep_ide = td.dep_ide
+      LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
       LEFT JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
       LEFT JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
+      LEFT JOIN tmaecon AS tc ON tm.con_ide = tc.con_ide
       WHERE tp.pre_ide = ?
       GROUP BY tp.pre_ide
     `, [id])
@@ -93,80 +207,83 @@ export class PrestamoModel {
     if (rows[0] && rows[0].bienes_detalles) {
       rows[0].bienes_detalles = JSON.parse(`[${rows[0].bienes_detalles}]`)
     } else {
+      // Si no hay bienes asociados, asegurar que 'bienes_detalles' sea un array vacío
       rows[0].bienes_detalles = []
     }
     return rows[0] || null
   }
 
-  static async update (id, datos) {
+  /**
+   * Actualiza el estado de un préstamo (pre_est).
+   * @param {number} id - ID del préstamo (pre_ide).
+   * @param {number} pre_est - Nuevo estado (0 para inactivo, 1 para activo).
+   * @returns {Promise<boolean>} True si se actualizó, false en caso contrario.
+   */
+  static async updateStatus (id, pre_est) {
     const [result] = await pool.query(
-      'UPDATE ttrpre SET ? WHERE pre_ide = ?',
-      [datos, id]
+      'UPDATE ttrpre SET pre_est = ? WHERE pre_ide = ?',
+      [pre_est, id]
     )
     return result.affectedRows > 0
   }
 
-  static async getByOficio (pre_ndo) {
-    const [rows] = await pool.query(
-      'SELECT * FROM ttrpre WHERE pre_ndo = ?',
-      [pre_ndo]
-    )
-    return rows[0] || null
-  }
-
-  static async checkBienPrestadoActivo (bim_ide) {
-    // Verifica si un bien está prestado en un préstamo ACTIVO
+  /**
+   * Verifica si un bien está prestado activamente en un préstamo que NO es de almacén por mal estado.
+   * @param {string} bim_ide - ID del bien.
+   * @returns {Promise<object|null>} Información del préstamo activo si existe y es un préstamo normal, o null.
+   */
+  static async checkBienPrestadoActiveNormalLoan (bim_ide) {
     const [rows] = await pool.query(`
       SELECT
-        td.dep_nom AS departamento_destino,
+        tp.pre_ide,
+        tp.pre_fec,
         tp.pre_ndo,
-        tp.pre_ide
+        tp.pre_est,
+        td_destino.dep_nom AS departamento_destino_nombre,
+        td_origen.dep_nom AS departamento_origen_nombre,
+        tmab.con_ide,
+        tc.con_des AS condicion_descripcion
       FROM ttrdpr tdd
       JOIN ttrpre tp ON tdd.pre_ide = tp.pre_ide
-      JOIN tesdep td ON tp.dep_ide = td.dep_ide
-      WHERE tdd.bim_ide = ? AND tp.pre_est = 1
-    `, [bim_ide])
+      LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
+      JOIN tmab_m tmab ON tdd.bim_ide = tmab.bim_ide
+      LEFT JOIN tmaecon tc ON tmab.con_ide = tc.con_ide
+      WHERE tdd.bim_ide = ?
+        AND tp.pre_est = 1
+        -- Excluir si es de almacén por mal estado (condición 4 en dep 11)
+        AND NOT (tp.dep_ide = ? AND tmab.con_ide = ?)
+    `, [bim_ide, DEP_ALMACEN_ID, CON_MAL_ESTADO_ID])
     return rows[0] || null
   }
 
-  static async getBienesPrestadosReport (depOrigenId = null) { // <--- ¡Modificado! Aceptar parámetro
-    let query = `
+  /**
+   * Verifica si un bien está prestado activamente como ITEM EN ALMACEN (mal estado).
+   * @param {string} bim_ide - ID del bien.
+   * @returns {Promise<object|null>} Información del item en almacén si existe, o null.
+   */
+  static async checkBienEnAlmacenMalEstado (bim_ide) {
+    const [rows] = await pool.query(`
       SELECT
-        tdep_m_origen.dep_nom AS departamento_original,
-        tdep_m_destino.dep_nom AS departamento_prestado_a,
-        tprt_m.pre_ndo,
-        tprt_m.pre_fec,
-        tmab_m.bim_cod,
-        tmab_m.bim_des,
-        tmab_m.bim_ide
-      FROM
-        ttrdpr AS tprt_d
-      INNER JOIN
-        ttrpre AS tprt_m ON tprt_d.pre_ide = tprt_m.pre_ide
-      INNER JOIN
-        tmab_m ON tprt_d.bim_ide = tmab_m.bim_ide
-      INNER JOIN
-        tesdep AS tdep_m_destino ON tprt_m.dep_ide = tdep_m_destino.dep_ide
-      INNER JOIN
-        tesdep AS tdep_m_origen ON tmab_m.dep_ide = tdep_m_origen.dep_ide
-      WHERE
-        tprt_m.pre_est = 1 -- Solo préstamos activos
-    `
-    const params = []
-
-    if (depOrigenId) {
-      query += ' AND tdep_m_origen.dep_ide = ?'
-      params.push(depOrigenId)
-    }
-
-    query += `
-      ORDER BY
-        tdep_m_origen.dep_nom,
-        tdep_m_destino.dep_nom,
-        tprt_m.pre_ndo,
-        tmab_m.bim_cod;
-    `
-    const [rows] = await pool.query(query, params) // <--- ¡Modificado! Pasar los parámetros
-    return rows
+        tp.pre_ide,
+        tp.pre_fec,
+        tp.pre_ndo,
+        tp.pre_est,
+        td_destino.dep_nom AS departamento_destino_nombre,
+        td_origen.dep_nom AS departamento_origen_nombre,
+        tmab.con_ide,
+        tc.con_des AS condicion_descripcion
+      FROM ttrdpr tdd
+      JOIN ttrpre tp ON tdd.pre_ide = tp.pre_ide
+      LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
+      JOIN tmab_m tmab ON tdd.bim_ide = tmab.bim_ide
+      LEFT JOIN tmaecon tc ON tmab.con_ide = tc.con_ide
+      WHERE tdd.bim_ide = ?
+        AND tp.pre_est = 1
+        AND tp.dep_ide = ?
+        AND tmab.con_ide = ?
+    `, [bim_ide, DEP_ALMACEN_ID, CON_MAL_ESTADO_ID])
+    return rows[0] || null
   }
 }
