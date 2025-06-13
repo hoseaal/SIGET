@@ -1,438 +1,557 @@
-# Documentación de Base de Datos: `dbsiget`
+# Documentación de Base de Datos: dbsiget
 
-## Tabla: `tesant` (Antigüedades)
+## Tabla: tesant
 
-*Descripción:* Registra los rangos de antigüedad de los empleados.
+*Descripción:* Almacena información sobre las antigüedades de los empleados.
 
-| Columna    | Tipo       | Clave | Nulo | Valor por defecto | Comentario                           |
-|------------|------------|-------|------|-------------------|---------------------------------------|
-| `ant_ide`  | INT(11)    | PK    | No   | AUTO_INCREMENT    | Identificador único de antigüedad    |
-| `ant_ani`  | DATE       |       | No   |                   | Años de antigüedad inicial           |
-| `ant_anf`  | DATE       |       | No   |                   | Años de antigüedad final             |
-| `nom_ced`  | VARCHAR(10)| FK    | No   |                   | Cédula del empleado (FK a `tmanom`)  |
-
-*Relaciones:*
-- `nom_ced` → FK a `tmanom.nom_ced`
-
----
-
-## Tabla: `tescae` (Categorías Específicas)
-
-*Descripción:* Almacena categorías específicas de bienes muebles.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                              |
-|------------|--------------|-------|------|-------------------|------------------------------------------|
-| `cae_ide`  | INT(11)      | PK    | No   |                   | Identificador de categoría específica    |
-| `cae_cae`  | VARCHAR(100) |       | No   |                   | Descripción de categoría específica      |
-| `sca_ide`  | INT(11)      | FK    | No   |                   | Referencia a subcategoría en `tessca`   |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| ant_ide      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador único de antigüedad      |
+| ant_ani      | DATE         |           | No   |                   | Años de antigüedad inicial             |
+| ant_anf      | DATE         |           | No   |                   | Años de antigüedad final               |
+| nom_ced      | VARCHAR(10)  | FK        | No   |                   | Cédula del empleado                    |
 
 *Relaciones:*
-- `sca_ide` → FK a `tessca.sca_ide`
+- nom_ced → FK hacia tmanom.nom_ced
 
 ---
 
-## Tabla: `tescet` (Cargos CET)
+## Tabla: tescae
 
-*Descripción:* Catálogo de cargos del personal CET.
+*Descripción:* Almacena categorías específicas de bienes.
 
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `cet_ide`  | INT(11)      | PK    | No   | AUTO_INCREMENT    | Identificador único de cargo CET|
-| `cet_car`  | VARCHAR(50)  |       | No   |                   | Nombre del cargo CET           |
-
----
-
-## Tabla: `tesded` (Deducciones)
-
-*Descripción:* Registra las deducciones aplicables a nómina.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `ded_ide`  | INT(11)      | PK    | No   | AUTO_INCREMENT    | Identificador único de deducción|
-| `ded_raz`  | VARCHAR(100) |       | No   |                   | Razón de la deducción          |
-| `ded_por`  | DECIMAL(10,2)|       | No   |                   | Porcentaje de la deducción     |
-
----
-
-## Tabla: `tesdep` (Departamentos)
-
-*Descripción:* Estructura organizacional de departamentos.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `dep_ide`  | INT(11)      | PK    | No   | AUTO_INCREMENT    | Identificador único de departamento|
-| `dep_nom`  | VARCHAR(255) |       | No   |                   | Nombre del departamento        |
-| `dep_des`  | TEXT         |       | Sí   | NULL              | Descripción del departamento   |
-
----
-
-## Tabla: `tesmod` (Modelos)
-
-*Descripción:* Catálogo de modelos de bienes muebles.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `mod_ide`  | VARCHAR(10)  | PK    | No   |                   | Identificador de modelo        |
-| `mod_mod`  | VARCHAR(50)  |       | No   |                   | Descripción de modelo          |
-| `mar_ide`  | INT(11)      | FK    | No   |                   | Referencia a marca en `tmamar` |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| cae_ide      | INT          | PK        | No   |                   | Identificador de categoría específica  |
+| cae_cae      | VARCHAR(100) |           | No   |                   | Descripción de categoría específica    |
+| sca_ide      | INT          | FK        | No   |                   | Referencia a subcategoría en tessca    |
 
 *Relaciones:*
-- `mar_ide` → FK a `tmamar.mar_ide`
+- sca_ide → FK hacia tessca.sca_ide
 
 ---
 
-## Tabla: `tesona` (Cargos ONAPRE)
+## Tabla: tescet
 
-*Descripción:* Catálogo de cargos del personal ONAPRE.
+*Descripción:* Almacena los cargos CET.
 
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                      |
-|------------|--------------|-------|------|-------------------|----------------------------------|
-| `ona_ide`  | INT(11)      | PK    | No   | AUTO_INCREMENT    | Identificador único de cargo ONAPRE|
-| `ona_car`  | VARCHAR(50)  |       | No   |                   | Nombre del cargo ONAPRE         |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| cet_ide      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador único de cargo CET       |
+| cet_car      | VARCHAR(50)  |           | No   |                   | Nombre del cargo CET                   |
 
 ---
 
-## Tabla: `tesnvl` (Niveles Salariales)
+## Tabla: tesded
 
-*Descripción:* Define los rangos salariales.
+*Descripción:* Almacena las deducciones aplicables.
 
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                      |
-|------------|--------------|-------|------|-------------------|----------------------------------|
-| `nvl_ide`  | INT(11)      | PK    | No   | AUTO_INCREMENT    | Identificador único del rango   |
-| `nvl_ran`  | VARCHAR(5)   |       | No   |                   | Tipo de nivel salarial          |
-| `nvl_sal`  | DECIMAL(10,2)|       | No   |                   | Salario correspondiente         |
-| `ona_ide`  | INT(11)      | FK    | Sí   | NULL              | Referencia a cargo ONAPRE       |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| ded_ide      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador único de deducción       |
+| ded_raz      | VARCHAR(100) |           | No   |                   | Razón de la deducción                  |
+| ded_por      | DECIMAL(10,2)|           | No   |                   | Porcentaje de la deducción             |
+
+---
+
+## Tabla: tesdep
+
+*Descripción:* Almacena los departamentos de la organización.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| dep_ide      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador único de departamento    |
+| dep_nom      | VARCHAR(255) |           | No   |                   | Nombre del departamento               |
+| dep_des      | TEXT         |           | Sí   | NULL              | Descripción del departamento          |
+
+---
+
+## Tabla: tesmod
+
+*Descripción:* Almacena los modelos de bienes.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| mod_ide      | VARCHAR(10)  | PK        | No   |                   | Identificador de modelo               |
+| mod_mod      | VARCHAR(50)  |           | No   |                   | Descripción de modelo                 |
+| mar_ide      | INT          | FK        | No   |                   | Referencia a marca en tmamar          |
 
 *Relaciones:*
-- `ona_ide` → FK a `tesona.ona_ide`
+- mar_ide → FK hacia tmamar.mar_ide
 
 ---
 
-## Tabla: `tesnvl_historico` (Histórico de Niveles Salariales)
+## Tabla: tesona
 
-*Descripción:* Registro histórico de cambios salariales.
+*Descripción:* Almacena los cargos ONAPRE.
 
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                      |
-|------------|--------------|-------|------|-------------------|----------------------------------|
-| `nvl_ide`  | INT(11)      | PK    | No   | AUTO_INCREMENT    | Identificador único             |
-| `nvl_ran`  | VARCHAR(5)   |       | No   |                   | Tipo de nivel salarial          |
-| `nvl_sal`  | DECIMAL(10,2)|       | No   |                   | Salario histórico               |
-| `ona_ide`  | INT(11)      | FK    | Sí   | NULL              | Referencia a cargo ONAPRE       |
-| `nvl_fec`  | DATE         |       | No   |                   | Fecha del salario histórico     |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| ona_ide      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador único de cargo ONAPRE    |
+| ona_car      | VARCHAR(50)  |           | No   |                   | Nombre del cargo ONAPRE                |
+
+---
+
+## Tabla: tesnvl
+
+*Descripción:* Almacena los niveles salariales.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| nvl_ide      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador único del rango         |
+| nvl_ran      | VARCHAR(5)   |           | No   |                   | Tipo de nivel salarial                |
+| nvl_sal      | DECIMAL(10,2)|           | No   |                   | Salario correspondiente               |
+| ona_ide      | INT          | FK        | Sí   | NULL              | Referencia a cargo ONAPRE en tesona   |
 
 *Relaciones:*
-- `ona_ide` → FK a `tesona.ona_ide`
+- ona_ide → FK hacia tesona.ona_ide
 
 ---
 
-## Tabla: `tespri` (Primas)
+## Tabla: tesnvl_historico
 
-*Descripción:* Registra las primas aplicables a nómina.
+*Descripción:* Almacena el histórico de cambios en los niveles salariales.
 
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `pri_ide`  | INT(11)      | PK    | No   | AUTO_INCREMENT    | Identificador único de prima   |
-| `pri_raz`  | VARCHAR(100) |       | No   |                   | Razón de la prima              |
-| `pri_por`  | DECIMAL(5,2) |       | No   |                   | Porcentaje de la prima         |
-
----
-
-## Tabla: `tessca` (Subcategorías)
-
-*Descripción:* Subcategorías de bienes muebles.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `sca_ide`  | INT(11)      | PK    | No   |                   | Identificador de subcategoría   |
-| `sca_sca`  | VARCHAR(100) |       | No   |                   | Descripción de subcategoría    |
-| `cat_ide`  | INT(11)      | FK    | No   |                   | Referencia a categoría en `tmacat` |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| nvl_ide      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador único del rango         |
+| nvl_ran      | VARCHAR(5)   |           | No   |                   | Tipo de nivel salarial                |
+| nvl_sal      | DECIMAL(10,2)|           | No   |                   | Salario histórico                     |
+| ona_ide      | INT          | FK        | Sí   | NULL              | Referencia a cargo ONAPRE en tesona   |
+| nvl_fec      | DATE         |           | No   |                   | Fecha del salario histórico           |
 
 *Relaciones:*
-- `cat_ide` → FK a `tmacat.cat_ide`
+- ona_ide → FK hacia tesona.ona_ide
 
 ---
 
-## Tabla: `tesusu` (Usuarios)
+## Tabla: tespri
 
-*Descripción:* Registro de usuarios del sistema.
+*Descripción:* Almacena las primas aplicables.
 
-| Columna      | Tipo         | Clave | Nulo | Valor por defecto | Comentario                           |
-|--------------|--------------|-------|------|-------------------|---------------------------------------|
-| `usu_ide`    | VARCHAR(10)  | PK    | No   |                   | Identificador único del usuario       |
-| `usu_usu`    | VARCHAR(10)  |       | No   |                   | Nickname del usuario                  |
-| `usu_con`    | VARCHAR(255) |       | No   |                   | Contraseña (hashed)                   |
-| `usu_nom`    | VARCHAR(50)  |       | No   |                   | Nombres del usuario                   |
-| `usu_ape`    | VARCHAR(50)  |       | No   |                   | Apellidos del usuario                 |
-| `usu_tip`    | INT(1)       |       | No   |                   | Perfil/tipo de usuario                |
-| `usu_mod`    | INT(2)       |       | No   |                   | Módulos de acceso                     |
-| `nom_ced`    | VARCHAR(10)  | FK    | Sí   | NULL              | Cédula del empleado (FK a `tmanom`)  |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| pri_ide      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador único de prima          |
+| pri_raz      | VARCHAR(100) |           | No   |                   | Razón de la prima                     |
+| pri_por      | DECIMAL(5,2) |           | No   |                   | Porcentaje de la prima                |
+
+---
+
+## Tabla: tessca
+
+*Descripción:* Almacena las subcategorías de bienes.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| sca_ide      | INT          | PK        | No   |                   | Identificador de subcategoría         |
+| sca_sca      | VARCHAR(100) |           | No   |                   | Descripción de subcategoría           |
+| cat_ide      | INT          | FK        | No   |                   | Referencia a categoría en tmacat      |
 
 *Relaciones:*
-- `nom_ced` → FK a `tmanom.nom_ced`
+- cat_ide → FK hacia tmacat.cat_ide
 
 ---
 
-## Tabla: `tmab_m` (Bienes Muebles)
+## Tabla: tesusu
 
-*Descripción:* Inventario de bienes muebles.
+*Descripción:* Almacena los usuarios del sistema.
 
-| Columna       | Tipo          | Clave | Nulo | Valor por defecto | Comentario                           |
-|---------------|---------------|-------|------|-------------------|---------------------------------------|
-| `bim_ide`     | VARCHAR(10)   | PK    | No   |                   | Código interno del bien              |
-| `bim_des`     | TEXT          |       | No   |                   | Descripción del bien                 |
-| `bim_fec`     | DATE          |       | No   |                   | Fecha de adquisición                 |
-| `bim_ndo`     | VARCHAR(10)   |       | No   |                   | Número de documento (factura)        |
-| `bim_val`     | DECIMAL(10,0) |       | No   |                   | Valor monetario                      |
-| `bim_moneda`  | VARCHAR(10)   |       | No   |                   | Moneda (Bolívares)                   |
-| `bim_color`   | VARCHAR(30)   |       | No   |                   | Color del bien                       |
-| `bim_cod`     | VARCHAR(20)   |       | No   |                   | Código SUDEBIN                       |
-| `bim_obs`     | TEXT          |       | Sí   | NULL              | Observaciones                        |
-| `bim_sede`    | VARCHAR(20)   |       | No   |                   | Sede (PRINCIPAL)                     |
-| `est_ide`     | INT(11)       | FK    | No   |                   | Estado (FK a `tmaest`)               |
-| `tip_ide`     | INT(11)       | FK    | No   |                   | Tipo (FK a `tmatip`)                 |
-| `foa_ide`     | INT(11)       | FK    | No   |                   | Forma adquisición (FK a `tmafoa`)    |
-| `con_ide`     | INT(11)       | FK    | No   |                   | Condición (FK a `tmacon`)            |
-| `esu_ide`     | INT(11)       | FK    | No   |                   | Estado uso (FK a `tmaesu`)           |
-| `mod_ide`     | VARCHAR(10)   | FK    | Sí   | NULL              | Modelo (FK a `tesmod`)               |
-| `cae_ide`     | INT(11)       | FK    | Sí   | NULL              | Categoría específica (FK a `tescae`) |
-| `bim_inc`     | TINYINT(1)    |       | Sí   | 1                 | Incorporado (1) o desincorporado (0) |
-| `bim_fed`     | DATE          |       | Sí   | NULL              | Fecha de desincorporación            |
-| `com_ide`     | INT(11)       | FK    | Sí   | NULL              | Concepto movimiento (FK a `tmacom`)  |
-| `dep_ide`     | INT(11)       | FK    | Sí   | NULL              | Departamento (FK a `tesdep`)         |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| usu_ide      | VARCHAR(10)  | PK        | No   |                   | Identificador único del usuario       |
+| usu_usu      | VARCHAR(10)  |           | No   |                   | Nickname del usuario                  |
+| usu_con      | VARCHAR(255) |           | No   |                   | Contraseña del usuario (hashed)       |
+| usu_nom      | VARCHAR(50)  |           | No   |                   | Nombres del usuario                   |
+| usu_ape      | VARCHAR(50)  |           | No   |                   | Apellidos del usuario                 |
+| usu_tip      | INT(1)       | FK        | No   |                   | Perfil o tipo de usuario              |
+| usu_mod      | INT(2)       | FK        | No   |                   | Módulos de acceso                     |
+| nom_ced      | VARCHAR(10)  | FK        | Sí   | NULL              | Cédula del empleado (referencia)      |
 
 *Relaciones:*
-- `est_ide` → FK a `tmaest.est_ide`
-- `tip_ide` → FK a `tmatip.tip_ide`
-- `foa_ide` → FK a `tmafoa.foa_ide`
-- `con_ide` → FK a `tmacon.con_ide`
-- `esu_ide` → FK a `tmaesu.esu_ide`
-- `mod_ide` → FK a `tesmod.mod_ide`
-- `cae_ide` → FK a `tescae.cae_ide`
-- `com_ide` → FK a `tmacom.com_ide`
-- `dep_ide` → FK a `tesdep.dep_ide`
+- usu_tip → FK hacia testip.usu_tip
+- usu_mod → FK hacia tesacc.usu_mod
+- nom_ced → FK hacia tmanom.nom_ced
 
 ---
 
-## Tabla: `tmacat` (Categorías)
+## Tabla: tmab_m
 
-*Descripción:* Categorías principales de bienes.
+*Descripción:* Almacena los bienes muebles del sistema.
 
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `cat_ide`  | INT          | PK    | No   |                   | Identificador de categoría      |
-| `cat_cat`  | VARCHAR(100) |       | No   |                   | Descripción de categoría        |
-
----
-
-## Tabla: `tmacon` (Condiciones Físicas)
-
-*Descripción:* Estados físicos de los bienes.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `con_ide`  | INT(11)      | PK    | No   |                   | Identificador de condición      |
-| `con_con`  | VARCHAR(50)  |       | No   |                   | Descripción de condición        |
-
----
-
-## Tabla: `tmaest` (Estatus de Bienes)
-
-*Descripción:* Estatus administrativos de los bienes.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `est_ide`  | INT(11)      | PK    | No   |                   | Identificador de status         |
-| `est_est`  | VARCHAR(50)  |       | No   |                   | Descripción de status           |
-
----
-
-## Tabla: `tmaesu` (Estados de Uso)
-
-*Descripción:* Estados operativos de los bienes.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `esu_ide`  | INT(11)      | PK    | No   |                   | Identificador de estado de uso  |
-| `esu_esu`  | VARCHAR(50)  |       | No   |                   | Descripción de estado de uso    |
-
----
-
-## Tabla: `tmafoa` (Formas de Adquisición)
-
-*Descripción:* Métodos de obtención de bienes.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `foa_ide`  | INT(11)      | PK    | No   |                   | Identificador de forma adquisición|
-| `foa_nom`  | VARCHAR(50)  |       | No   |                   | Descripción de forma adquisición|
-
----
-
-## Tabla: `tmamar` (Marcas)
-
-*Descripción:* Catálogo de marcas de bienes.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `mar_ide`  | INT(11)      | PK    | No   | AUTO_INCREMENT    | Identificador único de marca   |
-| `mar_mar`  | VARCHAR(100) |       | No   |                   | Descripción de marca           |
-
----
-
-## Tabla: `tmanom` (Nómina)
-
-*Descripción:* Registro completo de empleados.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                           |
-|------------|--------------|-------|------|-------------------|---------------------------------------|
-| `nom_ced`  | VARCHAR(10)  | PK    | No   |                   | Cédula del empleado                   |
-| `nom_nom`  | VARCHAR(50)  |       | No   |                   | Nombre del empleado                   |
-| `nom_ape`  | VARCHAR(50)  |       | No   |                   | Apellido del empleado                 |
-| `nom_fec`  | DATE         |       | No   |                   | Fecha de ingreso                      |
-| `nom_gen`  | ENUM('M','F')|       | No   |                   | Género (M/F)                          |
-| `nom_nhi`  | INT(11)      |       | No   |                   | Número de hijos                       |
-| `nom_pro`  | INT(1)       |       | No   |                   | Profesionalización (1=Profesional)    |
-| `cet_ide`  | INT(11)      | FK    | No   |                   | Cargo CET (FK a `tescet`)             |
-| `ona_ide`  | INT(11)      | FK    | No   |                   | Cargo ONAPRE (FK a `tesona`)          |
-| `nvl_ran`  | VARCHAR(3)   |       | No   |                   | Nivel salarial                        |
-| `dep_ide`  | INT(11)      | FK    | No   |                   | Departamento (FK a `tesdep`)          |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| bim_ide      | VARCHAR(10)  | PK        | No   |                   | Código interno del bien               |
+| bim_des      | TEXT         |           | No   |                   | Descripción del bien                  |
+| bim_fec      | DATE         |           | No   |                   | Fecha de adquisición                  |
+| bim_ndo      | VARCHAR(10)  |           | No   |                   | Número de documento (factura)         |
+| bim_val      | DECIMAL(10,0)|           | No   |                   | Valor monetario de adquisición        |
+| bim_moneda   | VARCHAR(10)  |           | No   |                   | Moneda (Bolívares)                    |
+| bim_color    | VARCHAR(30)  |           | No   |                   | Color del bien                        |
+| bim_cod      | VARCHAR(20)  |           | No   |                   | Código de SUDEBIN                     |
+| bim_obs      | TEXT         |           | Sí   | NULL              | Observaciones                         |
+| bim_sede     | VARCHAR(20)  |           | No   | PRINCIPAL         | Sede del bien                         |
+| est_ide      | INT          | FK        | No   |                   | Estado del bien                       |
+| foa_ide      | INT          | FK        | No   |                   | Forma de adquisición                  |
+| con_ide      | INT          | FK        | No   |                   | Condición física                      |
+| esu_ide      | INT          | FK        | No   |                   | Estado de uso                         |
+| mod_ide      | VARCHAR(10)  | FK        | Sí   | NULL              | Modelo del bien                       |
+| cae_ide      | INT          | FK        | Sí   | NULL              | Categoría específica                  |
+| bim_inc      | TINYINT(1)   |           | Sí   | 1                 | Estado de incorporación (1=inc)       |
+| bim_fed      | DATE         |           | Sí   | NULL              | Fecha de desincorporación             |
+| com_ide      | INT          | FK        | Sí   | NULL              | Concepto de movimiento                |
+| dep_ide      | INT          | FK        | Sí   | NULL              | Departamento del bien                 |
 
 *Relaciones:*
-- `cet_ide` → FK a `tescet.cet_ide`
-- `ona_ide` → FK a `tesona.ona_ide`
-- `dep_ide` → FK a `tesdep.dep_ide`
+- est_ide → FK hacia tmaest.est_ide
+- foa_ide → FK hacia tmafoa.foa_ide
+- con_ide → FK hacia tmacon.con_ide
+- esu_ide → FK hacia tmaesu.esu_ide
+- mod_ide → FK hacia tesmod.mod_ide
+- cae_ide → FK hacia tescae.cae_ide
+- com_ide → FK hacia tmacom.com_ide
+- dep_ide → FK hacia tesdep.dep_ide
 
 ---
 
-## Tabla: `tmatip` (Tipos de Bienes)
+## Tabla: tmacat
 
-*Descripción:* Clasificación de tipos de bienes.
+*Descripción:* Almacena las categorías generales de bienes.
 
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `tip_ide`  | INT(11)      | PK    | No   |                   | Identificador de tipo de bien  |
-| `tip_tip`  | VARCHAR(50)  |       | No   |                   | Descripción del tipo de bien   |
-
----
-
-## Tabla: `tmacom` (Conceptos de Movimiento)
-
-*Descripción:* Tipos de movimientos de bienes.
-
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                     |
-|------------|--------------|-------|------|-------------------|---------------------------------|
-| `com_ide`  | INT(11)      | PK    | No   |                   | Identificador de concepto       |
-| `com_com`  | VARCHAR(50)  |       | No   |                   | Descripción de concepto         |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| cat_ide      | INT          | PK        | No   |                   | Identificador de categoría            |
+| cat_cat      | VARCHAR(100) |           | No   |                   | Descripción de categoría              |
 
 ---
 
-## Tabla: `tessup` (Suplencias)
+## Tabla: tmacon
 
-*Descripción:* Registro de suplencias de personal.
+*Descripción:* Almacena las condiciones físicas de los bienes.
 
-| Columna       | Tipo         | Clave | Nulo | Valor por defecto | Comentario                           |
-|---------------|--------------|-------|------|-------------------|---------------------------------------|
-| `sup_ide`     | INT(11)      | PK    | No   | AUTO_INCREMENT    | ID único de suplencia                |
-| `nom_ced`     | VARCHAR(10)  | FK    | No   |                   | Cédula del empleado suplente         |
-| `sup_fec_ini` | DATE         |       | No   |                   | Fecha de inicio                      |
-| `sup_fec_fin` | DATE         |       | Sí   | NULL              | Fecha de fin (NULL si activa)        |
-| `cet_ide`     | INT(11)      | FK    | Sí   | NULL              | Cargo CET que suple                  |
-| `ona_ide`     | INT(11)      | FK    | Sí   | NULL              | Cargo ONAPRE que suple               |
-| `nvl_ran`     | VARCHAR(3)   |       | Sí   | NULL              | Nivel salarial durante suplencia     |
-| `dep_ide`     | INT(11)      | FK    | Sí   | NULL              | Departamento durante suplencia       |
-| `sup_activa`  | TINYINT(1)   |       | Sí   | 1                 | 1=Activa, 0=Inactiva                 |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| con_ide      | INT          | PK        | No   |                   | Identificador de condición            |
+| con_con      | VARCHAR(50)  |           | No   |                   | Descripción de condición              |
+
+---
+
+## Tabla: tmaest
+
+*Descripción:* Almacena los estados de los bienes.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| est_ide      | INT          | PK        | No   |                   | Identificador de status               |
+| est_est      | VARCHAR(50)  |           | No   |                   | Descripción de status                 |
+
+---
+
+## Tabla: tmaesu
+
+*Descripción:* Almacena los estados de uso de los bienes.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| esu_ide      | INT          | PK        | No   |                   | Identificador de estado de uso        |
+| esu_esu      | VARCHAR(50)  |           | No   |                   | Descripción de estado de uso          |
+
+---
+
+## Tabla: tmafoa
+
+*Descripción:* Almacena las formas de adquisición de bienes.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| foa_ide      | INT          | PK        | No   |                   | Identificador de forma de adquisición |
+| foa_nom      | VARCHAR(50)  |           | No   |                   | Descripción de forma de adquisición   |
+
+---
+
+## Tabla: tmamar
+
+*Descripción:* Almacena las marcas de los bienes.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| mar_ide      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador único de marca          |
+| mar_mar      | VARCHAR(100) |           | No   |                   | Descripción de la marca               |
+
+---
+
+## Tabla: tmanom
+
+*Descripción:* Almacena la información de los empleados.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| nom_ced      | VARCHAR(10)  | PK        | No   |                   | Cédula del empleado                   |
+| nom_nom      | VARCHAR(50)  |           | No   |                   | Nombre del empleado                   |
+| nom_ape      | VARCHAR(50)  |           | No   |                   | Apellido del empleado                 |
+| nom_fec      | DATE         |           | No   |                   | Fecha de ingreso                      |
+| nom_gen      | ENUM('M','F')|           | No   |                   | Género del empleado                   |
+| nom_nhi      | INT          |           | No   |                   | Número de hijos                       |
+| nom_pro      | INT(1)       |           | No   |                   | Valor de profesionalización           |
+| cet_ide      | INT          | FK        | No   |                   | Cargo CET                             |
+| ona_ide      | INT          | FK        | No   |                   | Cargo ONAPRE                          |
+| nvl_ran      | VARCHAR(3)   |           | No   |                   | Tipo de nivel salarial                |
+| dep_ide      | INT          | FK        | No   |                   | Departamento                          |
 
 *Relaciones:*
-- `nom_ced` → FK a `tmanom.nom_ced`
-- `cet_ide` → FK a `tescet.cet_ide`
-- `ona_ide` → FK a `tesona.ona_ide`
-- `dep_ide` → FK a `tesdep.dep_ide`
+- cet_ide → FK hacia tescet.cet_ide
+- ona_ide → FK hacia tesona.ona_ide
+- dep_ide → FK hacia tesdep.dep_ide
 
 ---
 
-## Tabla: `tescep` (Caja de Ahorro Patronal)
+## Tabla: testip
 
-*Descripción:* Registro de cajas de ahorro de empleados.
+*Descripción:* Almacena los tipos de usuarios del sistema.
 
-| Columna      | Tipo         | Clave | Nulo | Valor por defecto | Comentario                           |
-|--------------|--------------|-------|------|-------------------|---------------------------------------|
-| `cep_ide`    | INT(11)      | PK    | No   | AUTO_INCREMENT    | ID único de registro                 |
-| `cep_activa` | TINYINT(1)   |       | Sí   | 1                 | 1=Activa, 0=Inactiva                 |
-| `nom_ced`    | VARCHAR(10)  | FK    | No   |                   | Cédula del empleado (FK a `tmanom`)  |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| usu_tip      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador de tipos de usuario     |
+| tip_nom      | VARCHAR(50)  |           | No   |                   | Nombre de usuario                     |
+
+---
+
+## Tabla: tesacc
+
+*Descripción:* Almacena los tipos de acceso al sistema.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| usu_mod      | INT          | PK        | No   | AUTO_INCREMENT    | Identificador de tipos de acceso      |
+| acc_nom      | VARCHAR(50)  |           | No   |                   | Acceso al sistema                     |
+
+---
+
+## Tabla: tmacom
+
+*Descripción:* Almacena los conceptos de movimiento de bienes.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| com_ide      | INT          | PK        | No   |                   | Identificador de concepto             |
+| com_com      | VARCHAR(50)  |           | No   |                   | Descripción de concepto               |
+
+---
+
+## Tabla: tessup
+
+*Descripción:* Almacena información sobre suplencias de empleados.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| sup_ide      | INT          | PK        | No   | AUTO_INCREMENT    | ID único de suplencia                 |
+| nom_ced      | VARCHAR(10)  | FK        | No   |                   | Cédula del empleado suplente          |
+| sup_fec_ini  | DATE         |           | No   |                   | Fecha de inicio                       |
+| sup_fec_fin  | DATE         |           | Sí   | NULL              | Fecha de fin                          |
+| cet_ide      | INT          | FK        | Sí   | NULL              | Cargo CET que suple                   |
+| ona_ide      | INT          | FK        | Sí   | NULL              | Cargo ONAPRE que suple                |
+| nvl_ran      | VARCHAR(3)   |           | Sí   | NULL              | Nivel salarial                        |
+| dep_ide      | INT          | FK        | Sí   | NULL              | Departamento                          |
+| sup_activa   | TINYINT(1)   |           | Sí   | 1                 | Indicador de suplencia activa         |
 
 *Relaciones:*
-- `nom_ced` → FK a `tmanom.nom_ced`
+- nom_ced → FK hacia tmanom.nom_ced
+- cet_ide → FK hacia tescet.cet_ide
+- ona_ide → FK hacia tesona.ona_ide
+- dep_ide → FK hacia tesdep.dep_ide
 
 ---
 
-## Tabla: `ttrpre` (Préstamos de Bienes)
+## Tabla: tescep
 
-*Descripción:* Control de préstamos de bienes a departamentos.
+*Descripción:* Almacena información sobre cajas de ahorro de empleados.
 
-| Columna    | Tipo         | Clave | Nulo | Valor por defecto | Comentario                           |
-|------------|--------------|-------|------|-------------------|---------------------------------------|
-| `pre_ide`  | INT          | PK    | No   | AUTO_INCREMENT    | ID único de préstamo                 |
-| `bim_ide`  | VARCHAR(10)  | FK    | No   |                   | Bien prestado (FK a `tmab_m`)        |
-| `dep_ide`  | INT          | FK    | No   |                   | Departamento (FK a `tesdep`)         |
-| `pre_des`  | TEXT         |       | Sí   | NULL              | Observaciones del préstamo           |
-| `pre_est`  | TINYINT(1)   |       | Sí   |                   | 1=Prestado, 0=Devuelto               |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| cep_ide      | INT          | PK        | No   | AUTO_INCREMENT    | ID único de caja de ahorro            |
+| cep_activa   | TINYINT(1)   |           | Sí   | 1                 | Indicador de caja activa              |
+| nom_ced      | VARCHAR(10)  | FK        | No   |                   | Cédula del empleado                   |
 
 *Relaciones:*
-- `bim_ide` → FK a `tmab_m.bim_ide`
-- `dep_ide` → FK a `tesdep.dep_ide`
+- nom_ced → FK hacia tmanom.nom_ced
 
 ---
 
-## Bitácoras
+## Tabla: ttrpre
 
-### Estructura común de bitácoras:
-Todas las tablas de bitácora comparten esta estructura:
+*Descripción:* Almacena información sobre préstamos de bienes.
 
-| Columna                     | Tipo                         | Comentario                                      |
-|-----------------------------|------------------------------|------------------------------------------------|
-| `bit_id`                    | INT AUTO_INCREMENT           | ID único del registro                          |
-| `bit_tabla`                 | VARCHAR(50)                  | Nombre de la tabla afectada                    |
-| `bit_operacion`             | ENUM('INSERT','UPDATE','DELETE') | Tipo de operación registrada               |
-| `bit_[tabla]_[clave]`       | Depende de la tabla          | ID del registro afectado (ej: `bit_nom_ced`)  |
-| `bit_usuario_responsable`   | VARCHAR(10)                  | Cédula del usuario que realizó el cambio      |
-| `bit_detalles`              | JSON                         | Datos antiguos/nuevos en formato JSON         |
-| `bit_fecha`                 | TIMESTAMP                    | Fecha del cambio (CURRENT_TIMESTAMP)          |
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| pre_ide      | INT          | PK        | No   | AUTO_INCREMENT    | ID único de préstamo                  |
+| pre_fec      | DATE         |           | No   |                   | Fecha del préstamo                    |
+| pre_ndo      | VARCHAR(50)  | UNIQUE    | No   |                   | Número de documento (oficio)          |
+| dep_ide      | INT          | FK        | No   |                   | Departamento destino                  |
+| pre_est      | TINYINT      |           | No   | 1                 | Estatus (1=activo, 0=inactivo)        |
+| dep_origen_ide| INT         | FK        | No   |                   | Departamento origen                   |
 
-### Tablas de bitácora:
-1. `bit_usu` - Cambios en usuarios (`tesusu`)
-2. `bit_nom` - Cambios en nómina (`tmanom`)
-3. `bit_cet` - Cambios en cargos CET (`tescet`)
-4. `bit_ona` - Cambios en cargos ONAPRE (`tesona`)
-5. `bit_nvl` - Cambios en niveles salariales (`tesnvl`)
-6. `bit_sup` - Cambios en suplencias (`tessup`)
-7. `bit_cep` - Cambios en caja de ahorro (`tescep`)
-8. `bit_ded` - Cambios en deducciones (`tesded`)
-9. `bit_pri` - Cambios en primas (`tespri`)
+*Relaciones:*
+- dep_ide → FK hacia tesdep.dep_ide
+- dep_origen_ide → FK hacia tesdep.dep_ide
 
 ---
+
+## Tabla: ttrdpr
+
+*Descripción:* Almacena el detalle de los préstamos de bienes.
+
+| Columna      | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|--------------|--------------|-----------|------|-------------------|----------------------------------------|
+| dpr_ide      | INT          | PK        | No   | AUTO_INCREMENT    | ID único de detalle                   |
+| pre_ide      | INT          | FK        | No   |                   | ID del préstamo                       |
+| bim_ide      | VARCHAR(10)  | FK        | No   |                   | ID del bien prestado                  |
+| dpr_est      | TINYINT      |           | No   | 1                 | Estatus del bien en préstamo          |
+
+*Relaciones:*
+- pre_ide → FK hacia ttrpre.pre_ide
+- bim_ide → FK hacia tmab_m.bim_ide
+
+---
+
+## Tabla: bit_usu
+
+*Descripción:* Registra cambios en la tabla de usuarios (tesusu).
+
+| Columna                   | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|---------------------------|--------------|-----------|------|-------------------|----------------------------------------|
+| bit_id                    | INT          | PK        | No   | AUTO_INCREMENT    | ID único del registro de bitácora      |
+| bit_tabla                 | VARCHAR(50)  |           | No   |                   | Nombre de la tabla auditada            |
+| bit_operacion             | ENUM('INSERT','UPDATE','DELETE') | No |      | Tipo de operación registrada         |
+| bit_usu_ide               | VARCHAR(10)  |           | Sí   | NULL              | ID de usuario afectado                 |
+| bit_usu_usu               | VARCHAR(10)  |           | No   |                   | Nickname del usuario afectado          |
+| bit_usuario_responsable   | VARCHAR(10)  |           | No   |                   | Usuario que realizó el cambio          |
+| bit_detalles              | JSON         |           | Sí   | NULL              | Detalles de cambios en formato JSON    |
+| bit_fecha                 | TIMESTAMP    |           | No   | CURRENT_TIMESTAMP | Fecha y hora del cambio                |
+
+---
+
+## Tabla: bit_nom
+
+*Descripción:* Registra cambios en la tabla de empleados (tmanom).
+
+| Columna                   | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|---------------------------|--------------|-----------|------|-------------------|----------------------------------------|
+| bit_id                    | INT          | PK        | No   | AUTO_INCREMENT    | ID único del registro                 |
+| bit_tabla                 | VARCHAR(50)  |           | No   |                   | Siempre 'tmanom'                       |
+| bit_operacion             | ENUM('INSERT','UPDATE','DELETE') | No |      | Tipo de operación                 |
+| bit_nom_ced               | VARCHAR(10)  |           | Sí   | NULL              | Cédula del empleado afectado           |
+| bit_usuario_responsable   | VARCHAR(10)  |           | No   |                   | Usuario que realizó el cambio          |
+| bit_detalles              | JSON         |           | Sí   | NULL              | Campos modificados en JSON             |
+| bit_fecha                 | TIMESTAMP    |           | No   | CURRENT_TIMESTAMP | Fecha del cambio                       |
+
+---
+
+## Tabla: bit_nvl
+
+*Descripción:* Registra cambios en niveles salariales (tesnvl).
+
+| Columna                   | Tipo         | Clave     | Nulo | Valor por defecto | Comentario                            |
+|---------------------------|--------------|-----------|------|-------------------|----------------------------------------|
+| bit_id                    | INT          | PK        | No   | AUTO_INCREMENT    | ID único del registro                 |
+| bit_tabla                 | VARCHAR(50)  |           | No   |                   | Siempre 'tesnvl'                       |
+| bit_operacion             | ENUM('UPDATE','DELETE') | No |      | Operaciones permitidas          |
+| bit_nvl_ide               | INT          |           | Sí   | NULL              | ID de nivel afectado                   |
+| bit_usuario_responsable   | VARCHAR(10)  |           | No   |                   | Usuario que realizó el cambio          |
+| bit_detalles              | JSON         |           | Sí   | NULL              | Datos antiguos/nuevos                  |
+| bit_fecha                 | TIMESTAMP    |           | No   | CURRENT_TIMESTAMP | Fecha del cambio                       |
+
+*Relaciones:*
+- bit_nvl_ide → Referencia a tesnvl.nvl_ide
+
+---
+
+## Vista: vw_bienes_muebles
+
+*Descripción:* Vista completa de bienes muebles incorporados con información relacionada.
+
+| Columna origen            | Tabla origen | Tipo         | Descripción                                |
+|---------------------------|--------------|--------------|--------------------------------------------|
+| bim_ide                   | tmab_m       | VARCHAR(10)  | Código interno del bien                    |
+| bim_des                   | tmab_m       | TEXT         | Descripción detallada                      |
+| bim_fec                   | tmab_m       | DATE         | Fecha de adquisición                       |
+| bim_ndo                   | tmab_m       | VARCHAR(10)  | Número de documento                        |
+| bim_val                   | tmab_m       | DECIMAL(10,0)| Valor monetario                            |
+| bim_moneda                | tmab_m       | VARCHAR(10)  | Moneda (siempre "Bolívares")               |
+| bim_color                 | tmab_m       | VARCHAR(30)  | Color del bien                             |
+| bim_cod                   | tmab_m       | VARCHAR(20)  | Código SUDEBIN                             |
+| bim_sede                  | tmab_m       | VARCHAR(20)  | Sede física                                |
+| forma_adquisicion         | tmafoa       | VARCHAR(50)  | Nombre de la forma de adquisición          |
+| condicion                 | tmacon       | VARCHAR(50)  | Estado físico del bien                     |
+| estado_uso                | tmaesu       | VARCHAR(50)  | Descripción del estado de uso              |
+| marca                     | tmamar       | VARCHAR(100) | Nombre de la marca                         |
+| modelo                    | tesmod       | VARCHAR(50)  | Nombre del modelo                          |
+| categoria_general         | tmacat       | VARCHAR(100) | Categoría de nivel superior                |
+| subcategoria              | tessca       | VARCHAR(100) | Subclasificación del bien                  |
+| categoria_especifica      | tescae       | VARCHAR(100) | Clasificación detallada                    |
+| departamento              | tesdep       | VARCHAR(255) | Departamento asignado                      |
+
+*Filtro:* Solo incluye bienes con bim_inc = 1 (incorporados)
+
+---
+
+## Vista: vw_bienes_muebles_bm1
+
+*Descripción:* Vista optimizada para reporte BM1.
+
+| Columna origen            | Tabla origen | Tipo         | Descripción                                |
+|---------------------------|--------------|--------------|--------------------------------------------|
+| bim_ide                   | tmab_m       | VARCHAR(10)  | Identificador del bien                     |
+| bim_des                   | tmab_m       | TEXT         | Descripción abreviada                      |
+| bim_val                   | tmab_m       | DECIMAL(10,0)| Valor en bolívares                         |
+| categoria_general         | tmacat       | INT          | ID de categoría general                    |
+| subcategoria              | tessca       | INT          | ID de subcategoría                         |
+| categoria_especifica      | tescae       | INT          | ID de categoría específica                 |
+
+*Filtro:* Solo incluye bienes incorporados (bim_inc = 1)
+*Optimización:* Campos mínimos necesarios para el reporte BM1
+
+---
+
+## Triggers (Disparadores)
+
+*Propósito:* Los triggers automatizan procesos críticos y mantienen la integridad de los datos mediante acciones que se ejecutan ante eventos específicos.
+
+*Tablas afectadas:* Todas las tablas de bitácoras contienen disparadores que realizan los inserts cuando existen modificaciones reales dentro de la base de datos (aplicables siempre para: Insert, update o delete).
+
+### Estructura General
+Todos los triggers siguen este patrón básico:
+```sql
+CREATE TRIGGER [nombre]
+[BEFORE/AFTER] [INSERT/UPDATE/DELETE] ON [tabla]
+FOR EACH ROW
+BEGIN
+    -- Lógica del trigger
+END
 
 ## Diagrama de Relaciones
+
 ```mermaid
 erDiagram
     tmanom ||--o{ tesant : "nom_ced"
-    tmanom ||--|{ tesusu : "nom_ced"
+    tmanom ||--o{ tesusu : "nom_ced"
     tmanom }|--|| tescet : "cet_ide"
     tmanom }|--|| tesona : "ona_ide"
     tmanom }|--|| tesdep : "dep_ide"
+    tmanom }|--|| tesnvl : "nvl_ran"
     tessca }|--|| tmacat : "cat_ide"
     tescae }|--|| tessca : "sca_ide"
     tmab_m }|--|| tescae : "cae_ide"
     tmab_m }|--|| tesmod : "mod_ide"
     tesmod }|--|| tmamar : "mar_ide"
     tmab_m }|--|| tmaest : "est_ide"
-    tmab_m }|--|| tmatip : "tip_ide"
     tmab_m }|--|| tmafoa : "foa_ide"
     tmab_m }|--|| tmacon : "con_ide"
     tmab_m }|--|| tmaesu : "esu_ide"
     tmab_m }|--|| tmacom : "com_ide"
     tmab_m }|--|| tesdep : "dep_ide"
-    ttrpre }|--|| tmab_m : "bim_ide"
+    ttrdpr }|--|| ttrpre : "pre_ide"
+    ttrdpr }|--|| tmab_m : "bim_ide"
     ttrpre }|--|| tesdep : "dep_ide"
+    ttrpre }|--|| tesdep : "dep_origen_ide"
     tesnvl }|--|| tesona : "ona_ide"
     tesnvl_historico }|--|| tesona : "ona_ide"
     tessup }|--|| tmanom : "nom_ced"
@@ -440,3 +559,5 @@ erDiagram
     tessup }|--|| tesona : "ona_ide"
     tessup }|--|| tesdep : "dep_ide"
     tescep }|--|| tmanom : "nom_ced"
+    tesusu }|--|| testip : "usu_tip"
+    tesusu }|--|| tesacc : "usu_mod"
