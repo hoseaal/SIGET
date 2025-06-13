@@ -13,7 +13,8 @@
         $query = $pdo->prepare("
             SELECT 
                 u.usu_ide, 
-                u.usu_tip, 
+                u.usu_tip,
+                u.usu_mod, 
                 u.usu_usu,
                 u.nom_ced, 
                 u.usu_nom, 

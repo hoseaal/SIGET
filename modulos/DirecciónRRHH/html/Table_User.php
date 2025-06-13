@@ -238,6 +238,13 @@
                           <!-- Las opciones se cargarán dinámicamente con JavaScript -->
                         </select>
                       </div>
+
+                      <div class="mb-3">
+                        <label for="accessType" class="form-label">Tipo de Acceso</label>
+                        <select id="accessType" name="accessType" class="form-select" required>
+                          <option value="">Cargando accesos...</option>
+                        </select>
+                      </div>
                       
                       <!-- Campo de Contraseña -->
                       <div class="mb-3">

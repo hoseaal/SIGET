@@ -130,6 +130,11 @@
                                       <label for="tipoUsuario" class="form-label">Tipo de Usuario</label>
                                       <input type="text" class="form-control" id="tipoUsuario" disabled />
                                   </div>
+                                  <!-- Tipo de Usuario -->
+                                  <div class="mb-3">
+                                      <label for="tipoAccess" class="form-label">Modulos de Accesos</label>
+                                      <input type="text" class="form-control" id="tipoAccess" disabled />
+                                  </div>
                                   <!-- Cambiar Contraseña -->
                                   <div class="mb-3">
                                       <label class="form-label">Cambiar Contraseña</label>
@@ -198,8 +203,16 @@
                       4: 'Jefe de Área',
                       5: 'Administrador'
                   }[data.usu_tip] || 'Desconocido';
+
+                  // Convertir tipo de acceso a texto
+                  const tipoAccess = {
+                      1: 'Acceso Global',
+                      2: 'Módulo de Recursos Humanos',
+                      3: 'Módulo de Bienes'
+                  }[data.usu_mod] || 'Desconocido';
                   
                   document.getElementById('tipoUsuario').value = tipoUsuario;
+                  document.getElementById('tipoAccess').value = tipoAccess;
 
                   // Verificar si está en nómina
                   return fetch('../PHP/api/usuarios/verificar_nomina.php');

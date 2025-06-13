@@ -122,9 +122,6 @@
                       <label for="moduloaccess" class="form-label">Módulos</label>
                       <select id="moduloaccess" name="moduloaccess" class="form-select" required>
                         <option value="">-- Selecciona --</option>
-                        <option value="3">Dirección De Administración</option>
-                        <option value="2">Dirección de Recursos Humanos</option>
-                        <option value="1">Todos</option>
                       </select>
                     </div>
                   </div>
@@ -172,7 +169,6 @@
                         <label for="tip" class="form-label">Rol del usuario</label>
                         <select id="tip" name="tip" class="form-select" required>
                             <option value="">-- Selecciona un rol --</option>
-                            <!-- Las opciones se cargarán dinámicamente con JavaScript -->
                         </select>
                     </div>
                   </div>
@@ -497,8 +493,52 @@
               });
       }
 
+      // Función para cargar los ripos de accesos
+      function cargarAccesos() {
+          fetch('../PHP/api/usuarios/get_accesos.php')
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      const select2 = document.getElementById('moduloaccess');
+                      
+                      // Limpiar opciones existentes (excepto la primera)
+                      while (select2.options.length > 1) {
+                          select2.remove(1);
+                      }
+                      
+                      // Agregar nuevas opciones
+                      data.access.forEach(access => {
+                          const option = document.createElement('option');
+                          option.value = access.usu_mod;
+                          option.textContent = access.acc_nom;
+                          select2.appendChild(option);
+                      });
+                  } else {
+                      console.error('Error al cargar accesos:', data.message);
+                      smallSwal.fire({
+                          icon: 'warning',
+                          title: 'Advertencia',
+                          text: 'No se pudieron cargar los accesos. Recargue la página.',
+                          confirmButtonColor: '#3085d6',
+                          confirmButtonText: 'Entendido'
+                      });
+                  }
+              })
+              .catch(error => {
+                  console.error('Error de conexión:', error);
+                  smallSwal.fire({
+                      icon: 'error',
+                      title: 'Error de conexión',
+                      text: 'No se pudo conectar al servidor para obtener los accesos',
+                      confirmButtonColor: '#3085d6',
+                      confirmButtonText: 'Entendido'
+                  });
+              });
+      }
+
       // Cargar los roles cuando la página se cargue
       document.addEventListener('DOMContentLoaded', cargarRoles);
+      document.addEventListener('DOMContentLoaded', cargarAccesos);
     </script>
 
 
