@@ -103,7 +103,7 @@
                             <th>Operación</th>
                             <th>Usuario</th>
                             <th>Fecha y Hora</th>
-                            <th>Acciones</th>
+                            <!-- Se eliminó la columna Acciones -->
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">
@@ -163,63 +163,6 @@
 
     <!-- Funcionamiento de la tabla de Modificaciones -->
     <script src="../assets/js/modulos/gest-presupuesto/func-table_mod.js"></script>
-
-    <!-- Modal de ver todos los campos de Modificaciones -->
-    <div class="modal fade" id="viewModificationModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="viewModificationModalLabel">Detalles Completos de la Modificación</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body">
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label">Tabla Afectada</label>
-                <input type="text" id="viewTableName" class="form-control" readonly>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Operación</label>
-                <input type="text" id="viewOperation" class="form-control" readonly>
-              </div>
-            </div>
-            
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label">ID del Registro Afectado</label>
-                <input type="text" id="viewRecordId" class="form-control" readonly>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Usuario Responsable</label>
-                <input type="text" id="viewResponsibleUser" class="form-control" readonly>
-              </div>
-            </div>
-            
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label">Fecha de Modificación</label>
-                <input type="text" id="viewModificationDate" class="form-control" readonly>
-              </div>
-            </div>
-            
-            <div class="row">
-              <div class="col-md-12">
-                <label class="form-label">Detalles de la Modificación</label>
-                <div class="card">
-                  <div class="card-body p-0">
-                    <div id="jsonViewer" class="json-viewer"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
 
   </body>
 </html>

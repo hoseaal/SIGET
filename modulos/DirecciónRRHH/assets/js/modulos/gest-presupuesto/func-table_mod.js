@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Mostrar loader mientras carga
         cuerpoTabla.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center py-4">
+                <td colspan="5" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Cargando...</span>
                     </div>
@@ -52,12 +52,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const fila = document.createElement('tr');
                 if (i === 0) {
                     fila.innerHTML = `
-                        <td colspan="6" class="text-center empty-row">
+                        <td colspan="5" class="text-center empty-row">
                             ${i === 0 ? 'No se encontraron modificaciones' : '&nbsp;'}
                         </td>
                     `;
                 } else {
-                    fila.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
+                    fila.innerHTML = '<td colspan="5" class="empty-row">&nbsp;</td>';
                 }
                 cuerpoTabla.appendChild(fila);
             }
@@ -95,13 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${operacionTraducida}</td>
                 <td>${modificacion.bit_usuario_responsable}</td>
                 <td>${fechaFormateada}</td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-outline-primary view-details-btn" 
-                            data-id="${modificacion.bit_id}" 
-                            data-source="${modificacion.source_table}">
-                        <i class="bx bx-show me-1"></i> Ver Todo
-                    </button>
-                </td>
+                <!-- Se eliminó el botón de acciones -->
             `;
             cuerpoTabla.appendChild(fila);
         });
@@ -111,172 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const filasRestantes = filasPorPagina - modificaciones.length;
             for (let i = 0; i < filasRestantes; i++) {
                 const fila = document.createElement('tr');
-                fila.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
+                fila.innerHTML = '<td colspan="5" class="empty-row">&nbsp;</td>';
                 cuerpoTabla.appendChild(fila);
             }
         }
-
-        // Agregar event listeners para los botones de ver detalles
-        document.querySelectorAll('.view-details-btn').forEach(boton => {
-            boton.addEventListener('click', function() {
-                const bitId = this.getAttribute('data-id');
-                const tablaOrigen = this.getAttribute('data-source');
-                
-                // Buscar la modificación correcta
-                const modificacion = todosDatosModificaciones.find(mod => 
-                    mod.bit_id == bitId && mod.source_table === tablaOrigen
-                );
-                
-                if (modificacion) {
-                    mostrarDetallesModificacion(modificacion);
-                } else {
-                    console.error('No se encontró la modificación con ID:', bitId, 'y tabla:', tablaOrigen);
-                }
-            });
-        });
-    }
-
-    // Función para mostrar los detalles completos de una modificación
-    function mostrarDetallesModificacion(modificacion) {
-        // Formatear la fecha para mostrarla mejor
-        const fechaModificacion = new Date(modificacion.bit_fecha);
-        const fechaFormateada = fechaModificacion.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-        
-        // Llenar los campos del modal
-        document.getElementById('viewTableName').value = modificacion.bit_tabla;
-        document.getElementById('viewOperation').value = modificacion.bit_operacion;
-        document.getElementById('viewRecordId').value = modificacion.display_affected_id || 'N/A';
-        document.getElementById('viewResponsibleUser').value = modificacion.bit_usuario_responsable;
-        document.getElementById('viewModificationDate').value = fechaFormateada;
-        
-        // Mostrar los detalles (JSON) formateados
-        try {
-            const detalles = modificacion.bit_detalles ? JSON.parse(modificacion.bit_detalles) : {};
-            renderJsonViewer(detalles);
-        } catch (e) {
-            document.getElementById('jsonViewer').innerHTML = 
-                `<div class="text-danger">Error al parsear los detalles: ${e.message}</div>`;
-        }
-        
-        // Mostrar el modal
-        const modalVer = new bootstrap.Modal(document.getElementById('viewModificationModal'));
-        modalVer.show();
-    }
-
-    function renderJsonViewer(data) {
-        const container = document.getElementById('jsonViewer');
-        container.innerHTML = '';
-        
-        if (!data || typeof data !== 'object') {
-            container.innerHTML = `<div class="text-muted">No hay detalles disponibles</div>`;
-            return;
-        }
-        
-        // Función recursiva para renderizar el JSON
-        function renderValue(value, depth = 0) {
-            const div = document.createElement('div');
-            div.className = 'json-value';
-            
-            if (value === null) {
-                div.innerHTML = `<span class="json-null">null</span>`;
-                return div;
-            }
-            
-            const type = typeof value;
-            
-            switch (type) {
-                case 'string':
-                    div.innerHTML = `<span class="json-string">"${value}"</span>`;
-                    break;
-                case 'number':
-                    div.innerHTML = `<span class="json-number">${value}</span>`;
-                    break;
-                case 'boolean':
-                    div.innerHTML = `<span class="json-boolean">${value}</span>`;
-                    break;
-                case 'object':
-                    if (Array.isArray(value)) {
-                        if (value.length === 0) {
-                            div.innerHTML = `<span class="json-array">[]</span>`;
-                        } else {
-                            const toggle = document.createElement('span');
-                            toggle.className = 'json-toggle';
-                            toggle.textContent = `[${value.length}]`;
-                            div.appendChild(toggle);
-                            
-                            const arrayContainer = document.createElement('div');
-                            arrayContainer.className = 'json-array';
-                            arrayContainer.style.marginLeft = '20px';
-                            arrayContainer.style.display = 'none';
-                            
-                            value.forEach((item, index) => {
-                                const itemDiv = document.createElement('div');
-                                itemDiv.className = 'json-array-item';
-                                itemDiv.appendChild(renderValue(item, depth + 1));
-                                arrayContainer.appendChild(itemDiv);
-                            });
-                            
-                            div.appendChild(arrayContainer);
-                            
-                            toggle.addEventListener('click', function() {
-                                this.classList.toggle('json-expanded');
-                                arrayContainer.style.display = 
-                                    this.classList.contains('json-expanded') ? 'block' : 'none';
-                            });
-                        }
-                    } else {
-                        const keys = Object.keys(value);
-                        if (keys.length === 0) {
-                            div.innerHTML = `<span class="json-object">{}</span>`;
-                        } else {
-                            const toggle = document.createElement('span');
-                            toggle.className = 'json-toggle';
-                            toggle.textContent = `{${keys.length}}`;
-                            div.appendChild(toggle);
-                            
-                            const objectContainer = document.createElement('div');
-                            objectContainer.className = 'json-object';
-                            objectContainer.style.marginLeft = '20px';
-                            objectContainer.style.display = 'none';
-                            
-                            keys.forEach(key => {
-                                const propertyDiv = document.createElement('div');
-                                propertyDiv.className = 'json-property';
-                                
-                                const keySpan = document.createElement('span');
-                                keySpan.className = 'json-key';
-                                keySpan.textContent = `"${key}":`;
-                                
-                                propertyDiv.appendChild(keySpan);
-                                propertyDiv.appendChild(renderValue(value[key], depth + 1));
-                                objectContainer.appendChild(propertyDiv);
-                            });
-                            
-                            div.appendChild(objectContainer);
-                            
-                            toggle.addEventListener('click', function() {
-                                this.classList.toggle('json-expanded');
-                                objectContainer.style.display = 
-                                    this.classList.contains('json-expanded') ? 'block' : 'none';
-                            });
-                        }
-                    }
-                    break;
-                default:
-                    div.innerHTML = `<span>${value}</span>`;
-            }
-            
-            return div;
-        }
-        
-        container.appendChild(renderValue(data));
     }
 
     // Función para configurar la paginación
