@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Alert, Row, Col } from 'react-bootstrap';
-import Select from 'react-select'; // Importa react-select para una mejor experiencia de usuario en selección de bienes
+import Select from 'react-select';
 
 function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
     const [formData, setFormData] = useState({
@@ -8,8 +8,6 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
         pre_fec: new Date().toISOString().slice(0, 10), // Fecha actual por defecto
         dep_origen_ide: '',    // Departamento de origen
         dep_ide: '',           // Departamento de destino
-        usu_ide: '',           // Usuario que registra el préstamo (asumimos que lo obtendremos del contexto de autenticación o de otra forma)
-        pre_obs: '',           // Observaciones del préstamo
         bienesSeleccionados: [], // Array para los bienes seleccionados
     });
 
@@ -19,14 +17,13 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
     const [filteredBienes, setFilteredBienes] = useState([]); // Bienes filtrados por departamento de origen
 
     const [formEnviado, setFormEnviado] = useState(false);
-    const [mensajeMostrado, setMensajeMostrado] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [alertMessage, setAlertMessage] = useState('');
     const [showAlert, setShowAlert] = useState(false);
 
     // IDs de exclusión
     const CONDICION_FISICA_EXCLUIDA = 4; // "Mal estado en almacén"
-    const DEPARTAMENTO_EXCLUIDO = 11;    // ID del departamento "Almacén" (si existe)
+    const DEPARTAMENTO_ALMACEN_ID = 11; // ID del departamento "Almacén"
 
     useEffect(() => {
         if (show) {
@@ -36,8 +33,6 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                 pre_fec: new Date().toISOString().slice(0, 10),
                 dep_origen_ide: '',
                 dep_ide: '',
-                usu_ide: '', // Podrías pre-llenar esto con el ID del usuario logueado
-                pre_obs: '',
                 bienesSeleccionados: [],
             });
             setErrorMessage('');
@@ -48,14 +43,13 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
         }
     }, [show]);
 
-    // Cargar departamentos, condiciones físicas y todos los bienes (no filtrados inicialmente)
+    // Cargar departamentos, condiciones físicas y todos los bienes
     const fetchInitialData = async () => {
         try {
-            // Departamentos
             const [depRes, condRes, bienesRes] = await Promise.all([
                 fetch('/api/departamentos', { credentials: 'include' }),
                 fetch('/api/condiciones-fisicas', { credentials: 'include' }),
-                fetch('/api/bienes', { credentials: 'include' }), // Traemos todos los bienes inicialmente
+                fetch('/api/bienes', { credentials: 'include' }),
             ]);
 
             if (!depRes.ok || !condRes.ok || !bienesRes.ok) {
@@ -68,9 +62,10 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
 
             setDepartamentos(depData || []);
             // Filtrar condición física 4 ("Mal estado en almacén")
-            setCondicionesFisicas(condData.filter(cond => cond.cof_ide !== CONDICION_FISICA_EXCLUIDA) || []);
-            setBienesDisponibles(bienesData.data || []); // Guarda todos los bienes
-            setFilteredBienes(bienesData.data || []); // Inicialmente, todos los bienes están disponibles para selección
+            setCondicionesFisicas(condData.filter(cond => cond.con_ide !== CONDICION_FISICA_EXCLUIDA) || []);
+            setBienesDisponibles(bienesData.data || []);
+            // No filtramos initialBienes aquí, se hace en el useEffect para dep_origen_ide
+            setFilteredBienes([]); // Reset filteredBienes when modal opens
         } catch (error) {
             console.error('Error fetching initial data:', error);
             setErrorMessage('No se pudieron cargar los datos necesarios para el formulario.');
@@ -84,13 +79,23 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             const depOrigenId = parseInt(formData.dep_origen_ide);
             const bienesFiltrados = bienesDisponibles.filter(bien =>
                 bien.dep_ide === depOrigenId && // Bienes que pertenecen al departamento de origen seleccionado
-                bien.cof_ide !== CONDICION_FISICA_EXCLUIDA && // No "Mal estado en almacén"
-                bien.dep_ide !== DEPARTAMENTO_EXCLUIDO // No del departamento "Almacén"
+                bien.con_ide !== CONDICION_FISICA_EXCLUIDA && // No "Mal estado en almacén"
+                bien.dep_ide !== DEPARTAMENTO_ALMACEN_ID // No del departamento "Almacén"
             );
             setFilteredBienes(bienesFiltrados);
+            // Si los bienes seleccionados ya no están en el filteredBienes, removerlos
+            setFormData(prev => ({
+                ...prev,
+                bienesSeleccionados: prev.bienesSeleccionados.filter(bienId =>
+                    bienesFiltrados.some(bien => bien.bim_ide === bienId)
+                ),
+            }));
         } else {
-            // Si no hay departamento de origen seleccionado, no hay bienes para añadir
             setFilteredBienes([]);
+            setFormData(prev => ({
+                ...prev,
+                bienesSeleccionados: [],
+            }));
         }
     }, [formData.dep_origen_ide, bienesDisponibles]);
 
@@ -128,14 +133,13 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             return;
         }
 
-        // Exclusión de Departamento 11 (Almacén) como destino para préstamos normales
-        if (parseInt(formData.dep_ide) === DEPARTAMENTO_EXCLUIDO) {
+        // Exclusión de Departamento "Almacén" como destino para préstamos normales
+        if (parseInt(formData.dep_ide) === DEPARTAMENTO_ALMACEN_ID) {
             setErrorMessage('No se puede realizar un préstamo normal al Departamento de Almacén. Use la gestión de "Bienes en Mal Estado".');
             setShowAlert(true);
             return;
         }
 
-        // Mapear los IDs de bienes seleccionados para enviarlos
         const bienesParaEnviar = formData.bienesSeleccionados;
 
         if (bienesParaEnviar.length === 0) {
@@ -149,10 +153,6 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             pre_fec: formData.pre_fec,
             dep_origen_ide: parseInt(formData.dep_origen_ide),
             dep_ide: parseInt(formData.dep_ide),
-            pre_obs: formData.pre_obs,
-            // Asume que usu_ide se obtendrá del contexto del backend o de un valor de usuario logueado.
-            // Para el ejemplo, podríamos poner un valor quemado o manejarlo en el backend.
-            usu_ide: 1, // **AJUSTAR ESTO: Reemplazar con el ID del usuario autenticado**
             bienes: bienesParaEnviar, // IDs de los bienes
         };
 
@@ -186,21 +186,10 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
         }
     };
 
-     const truncateText = (text, maxLength = 10) => {
-        if (!text) return 'N/A';
-        if (text.length <= maxLength) return text;
-        
-        return (
-            <span title={text}>
-                {`${text.substring(0, maxLength)}...`}
-            </span>
-        );
-    };
-
     // Opciones para react-select
     const bienOptions = filteredBienes.map(bien => ({
-        value: bien.bie_ide,
-        label: `${bien.bim_ide} - ${bien.bim_des.substring(0, 50)+'...'}`,
+        value: bien.bim_ide,
+        label: `${bien.bim_ide} - ${bien.bim_des}`,
     }));
 
     return (
@@ -255,14 +244,13 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                     required
                                 >
                                     <option value="">Seleccione un departamento</option>
-                                    {departamentos.map(dep => (
-                                        // Excluir el departamento con ID 11 "Almacén" como origen para préstamos normales
-                                        // Un préstamo normal NO PUEDE ORIGINARSE del almacén con esta lógica.
-                                        // Si un bien ya está en almacén, se gestiona con el endpoint de "mal estado".
-                                        dep.dep_ide !== DEPARTAMENTO_EXCLUIDO && (
-                                            <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
-                                        )
-                                    ))}
+                                    {departamentos
+                                        .filter(dep => dep.dep_ide !== DEPARTAMENTO_ALMACEN_ID && dep.dep_ide !== parseInt(formData.dep_ide)) // Excluir "Almacén" y el destino
+                                        .map(dep => (
+                                            <option key={dep.dep_ide} value={dep.dep_ide}>
+                                                {dep.dep_nom}
+                                            </option>
+                                        ))}
                                 </Form.Control>
                             </Form.Group>
                         </Col>
@@ -277,17 +265,18 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                     required
                                 >
                                     <option value="">Seleccione un departamento</option>
-                                    {departamentos.map(dep => (
-                                        // Excluir el departamento con ID 11 "Almacén" como destino para préstamos normales
-                                        dep.dep_ide !== DEPARTAMENTO_EXCLUIDO && (
-                                            <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
-                                        )
-                                    ))}
+                                    {departamentos
+                                        .filter(dep => dep.dep_ide !== DEPARTAMENTO_ALMACEN_ID && dep.dep_ide !== parseInt(formData.dep_origen_ide)) // Excluir "Almacén" y el origen
+                                        .map(dep => (
+                                            <option key={dep.dep_ide} value={dep.dep_ide}>
+                                                {dep.dep_nom}
+                                            </option>
+                                        ))}
                                 </Form.Control>
                             </Form.Group>
                         </Col>
                     </Row>
-                    
+
                     <Form.Group className="mb-3">
                         <Form.Label>Bienes a Prestar</Form.Label>
                         <Select
@@ -301,21 +290,9 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                             placeholder="Seleccione los bienes a prestar"
                             noOptionsMessage={() => "No hay bienes disponibles o no se ha seleccionado departamento de origen."}
                         />
-                         <Form.Text className="text-muted">
-                            Solo se muestran bienes del departamento de origen seleccionado que no están en "mal estado en almacén" y no pertenecen al departamento "Almacén".
+                        <Form.Text className="text-muted">
+                            Solo se muestran bienes del departamento de origen seleccionado que no están en almacén.
                         </Form.Text>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                        <Form.Label>Observaciones</Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            name="pre_obs"
-                            value={formData.pre_obs}
-                            onChange={handleChange}
-                            rows={3}
-                            placeholder="Ingrese cualquier observación adicional sobre el préstamo"
-                        />
                     </Form.Group>
                 </Form>
             </Modal.Body>

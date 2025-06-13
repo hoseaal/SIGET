@@ -42,7 +42,7 @@
                 ]
             },
             {
-                "text": "Préstamos",
+                "text": "Gestion de Movimientos",
                 "icon": "bx bx-transfer",
                 "available": true,  
                 "link": "",

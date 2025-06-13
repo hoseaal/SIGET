@@ -188,18 +188,17 @@ export class PrestamoModel {
         td_origen.dep_nom AS departamento_origen_nombre, -- Usar dep_origen_ide de ttrpre
         GROUP_CONCAT(JSON_OBJECT(
             'bim_ide', tdd.bim_ide,
-            'bim_cod', tm.bim_cod,
             'bim_des', tm.bim_des,
             'dpr_est', tdd.dpr_est,
             'con_ide', tm.con_ide,
-            'con_des', tc.con_des -- Descripción de la condición
+            'con_con', tc.con_con -- Descripción de la condición
         )) AS bienes_detalles
       FROM ttrpre tp
       LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
       LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
       LEFT JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
       LEFT JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
-      LEFT JOIN tmaecon AS tc ON tm.con_ide = tc.con_ide
+      LEFT JOIN tmacon AS tc ON tm.con_ide = tc.con_ide
       WHERE tp.pre_ide = ?
       GROUP BY tp.pre_ide
     `, [id])
@@ -219,12 +218,64 @@ export class PrestamoModel {
    * @param {number} pre_est - Nuevo estado (0 para inactivo, 1 para activo).
    * @returns {Promise<boolean>} True si se actualizó, false en caso contrario.
    */
+  static async updateStatusBien (bim_ide, dpr_est, pre_ide) {
+    const connection = await pool.getConnection()
+    try {
+      await connection.beginTransaction()
+
+      // 1. Actualizar el estado del bien en ttrdpr
+      const [result] = await connection.query(
+        'UPDATE ttrdpr SET dpr_est = ? WHERE bim_ide = ? AND pre_ide = ?',
+        [dpr_est, bim_ide, pre_ide]
+      )
+
+      if (result.affectedRows === 0) {
+        throw new Error('No se pudo actualizar el estado del bien o el bien no está en este préstamo.')
+      }
+
+      await connection.commit()
+      return true
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
+    }
+  }
+
   static async updateStatus (id, pre_est) {
-    const [result] = await pool.query(
-      'UPDATE ttrpre SET pre_est = ? WHERE pre_ide = ?',
-      [pre_est, id]
-    )
-    return result.affectedRows > 0
+    const connection = await pool.getConnection()
+    try {
+      await connection.beginTransaction()
+
+      // 1. Actualizar el estado del préstamo principal (ttrpre.pre_est)
+      const [result] = await connection.query(
+        'UPDATE ttrpre SET pre_est = ? WHERE pre_ide = ?',
+        [pre_est, id]
+      )
+
+      if (result.affectedRows === 0) {
+        throw new Error('No se pudo actualizar el estado del préstamo o el préstamo no existe.')
+      }
+
+      // Si el préstamo se está marcando como inactivo (devuelto),
+      // actualizamos el estado de todos sus bienes asociados y los movemos a origen.
+      if (pre_est === 0) {
+        // 2. Actualizar dpr_est a 0 para todos los bienes de este préstamo en ttrdpr
+        await connection.query(
+          'UPDATE ttrdpr SET dpr_est = 0 WHERE pre_ide = ?',
+          [id]
+        )
+      }
+
+      await connection.commit()
+      return true // Éxito en la actualización y operaciones relacionadas
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
+    }
   }
 
   /**
@@ -239,20 +290,21 @@ export class PrestamoModel {
         tp.pre_fec,
         tp.pre_ndo,
         tp.pre_est,
+        tdd.dpr_est, -- ¡Importante! Estado del detalle del bien
         td_destino.dep_nom AS departamento_destino_nombre,
         td_origen.dep_nom AS departamento_origen_nombre,
         tmab.con_ide,
-        tc.con_des AS condicion_descripcion
+        tc.con_con AS condicion_descripcion
       FROM ttrdpr tdd
       JOIN ttrpre tp ON tdd.pre_ide = tp.pre_ide
       LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
-      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
+      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
       JOIN tmab_m tmab ON tdd.bim_ide = tmab.bim_ide
-      LEFT JOIN tmaecon tc ON tmab.con_ide = tc.con_ide
+      LEFT JOIN tmacon tc ON tmab.con_ide = tc.con_ide
       WHERE tdd.bim_ide = ?
-        AND tp.pre_est = 1
-        -- Excluir si es de almacén por mal estado (condición 4 en dep 11)
-        AND NOT (tp.dep_ide = ? AND tmab.con_ide = ?)
+        AND tdd.dpr_est = 1 -- El detalle del bien está activo (prestado)
+        AND tp.pre_est = 1  -- El préstamo principal está activo
+        AND NOT (tp.dep_ide = ? AND tmab.con_ide = ?) -- NO es un préstamo a almacén por mal estado
     `, [bim_ide, DEP_ALMACEN_ID, CON_MAL_ESTADO_ID])
     return rows[0] || null
   }
@@ -272,13 +324,13 @@ export class PrestamoModel {
         td_destino.dep_nom AS departamento_destino_nombre,
         td_origen.dep_nom AS departamento_origen_nombre,
         tmab.con_ide,
-        tc.con_des AS condicion_descripcion
+        tc.con_con AS condicion_descripcion
       FROM ttrdpr tdd
       JOIN ttrpre tp ON tdd.pre_ide = tp.pre_ide
       LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
       LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
       JOIN tmab_m tmab ON tdd.bim_ide = tmab.bim_ide
-      LEFT JOIN tmaecon tc ON tmab.con_ide = tc.con_ide
+      LEFT JOIN tmacon tc ON tmab.con_ide = tc.con_ide
       WHERE tdd.bim_ide = ?
         AND tp.pre_est = 1
         AND tp.dep_ide = ?

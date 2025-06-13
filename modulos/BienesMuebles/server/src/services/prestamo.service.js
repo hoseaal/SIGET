@@ -97,6 +97,21 @@ export class PrestamoService {
     return await PrestamoModel.updateStatus(id, newStatus)
   }
 
+  static async updateStatusBien (bim_ide, dpr_est, pre_ide) {
+    if (!bim_ide || (dpr_est !== 0 && dpr_est !== 1) || !pre_ide) {
+      throw new Error('ID de bien, estado válido (0 o 1) e ID de préstamo son requeridos.')
+    }
+    console.log(dpr_est)
+    const loanDetail = await PrestamoModel.checkBienPrestadoActiveNormalLoan(bim_ide)
+    if (!loanDetail || loanDetail.length === 0) {
+      throw new Error('El bien no pertenece a este préstamo.')
+    }
+    if (loanDetail.dpr_est === dpr_est) {
+      return true
+    }
+    return await PrestamoModel.updateStatusBien(bim_ide, dpr_est, pre_ide)
+  }
+
   /**
    * Verifica si un bien está involucrado en un préstamo activo (normal o en almacén).
    * @param {string} bim_ide - ID del bien.

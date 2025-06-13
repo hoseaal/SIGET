@@ -5,6 +5,7 @@ import {
   getWarehouseItems,
   getLoanById,
   updateLoanStatus,
+  updateStatusBien,
   checkBienActivelyInvolved
 } from '../controllers/prestamo.controller.js'
 import { authenticate } from '../auth/auth.middleware.js'
@@ -26,7 +27,10 @@ router.post('/', authenticate, createLoan)
 // 5. Endpoint para actualizar el estado de un préstamo (ej. a inactivo/devuelto)
 router.patch('/:id/estado', authenticate, updateLoanStatus)
 
-// 6. Endpoint para verificar si un bien está activamente involucrado en un préstamo/movimiento
+// 6. Endpoint para actualizar el estado de un solo bien en el detalle de préstamo (dpr_est)
+router.patch('/bien/:id/estado', authenticate, updateStatusBien)
+
+// 7. Endpoint para verificar si un bien está activamente involucrado en un préstamo/movimiento
 router.get('/estado-bien/:bim_ide', authenticate, checkBienActivelyInvolved)
 
 export default router

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown, Form, Button, Table, Pagination } from 'react-bootstrap';
 import ModalRegistrarPrestamo from '../Modales/modalRegistrarPrestamo'; 
+import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo';
 
 export const Prestamos = () => {
     const [data, setData] = useState([]);
@@ -20,6 +21,19 @@ export const Prestamos = () => {
     });
 
     const [showCreateModal, setShowCreateModal] = useState(false);
+
+     const [showDetallesModal, setShowDetallesModal] = useState(false);
+    const [selectedPrestamoId, setSelectedPrestamoId] = useState(null);
+
+    const handleVerDetalles = (prestamoId) => {
+        setSelectedPrestamoId(prestamoId);
+        setShowDetallesModal(true);
+    };
+
+    const handleCloseDetallesModal = () => {
+        setShowDetallesModal(false);
+        setSelectedPrestamoId(null); // Limpiar el ID seleccionado al cerrar
+    };
 
     // --- Cargar datos de préstamos normales activos ---
     useEffect(() => {
@@ -49,7 +63,9 @@ export const Prestamos = () => {
                 }
                 const result = await response.json();
                 
-                setData(Array.isArray(result) ? result : []); // Asegúrate de que siempre sea un array
+                // Si la API devuelve un objeto con una propiedad 'data', úsala.
+                // De lo contrario, asume que el resultado es directamente el array.
+                setData(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : []); 
             } catch (err) {
                 console.error('Error al cargar préstamos normales:', err);
                 setError('No se pudieron cargar los préstamos. ' + err.message);
@@ -70,8 +86,9 @@ export const Prestamos = () => {
                 if (!response.ok) {
                     throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }
-                const data = await response.json();
-                setDepartamentos(data || []);
+                const result = await response.json();
+                // Aquí también aplica el .data si tu API lo requiere
+                setDepartamentos(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : []);
             } catch (err) {
                 console.error('Error al cargar departamentos:', err);
                 // Manejar error de carga de departamentos
@@ -79,12 +96,6 @@ export const Prestamos = () => {
         };
         fetchDepartamentos();
     }, []);
-
-    // Mapeo de IDs de departamento a nombres para mostrar en la tabla
-    const departamentosMap = departamentos.reduce((acc, dep) => {
-        acc[dep.dep_ide] = dep.dep_nom;
-        return acc;
-    }, {});
 
     // --- Manejadores de eventos ---
     const handleSearchOficio = (e) => {
@@ -126,16 +137,18 @@ export const Prestamos = () => {
         }
     };
 
-     const handleCloseCreateModal = () => {
+    const handleCloseCreateModal = () => {
         setShowCreateModal(false);
         setRefreshKey(prevKey => prevKey + 1); // Forzar la recarga de la tabla de préstamos
     };
+
+    // console.log(data) // Mantener para depuración si es necesario
 
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Gestión de Movimientos /</span> Préstamos Normales</h4>
-                <Button variant="primary"  onClick={() => setShowCreateModal(true)}>
+                <Button variant="primary" onClick={() => setShowCreateModal(true)}>
                     Registrar Nuevo Préstamo
                 </Button>
             </div>
@@ -145,13 +158,13 @@ export const Prestamos = () => {
                 <div className="card-body">
                     {/* Sección de Filtros y Búsqueda */}
                     <Form onSubmit={handleSearchOficio} className="d-flex flex-wrap gap-2 align-items-center mb-4">
-                        {/* Input de Búsqueda por Oficio */}
+                        <div className=" d-flex gap-3 align-items-center"> 
                         <Form.Control
                             type="text"
                             placeholder="Buscar por número de oficio..."
                             value={searchOficio}
                             onChange={(e) => setSearchOficio(e.target.value)}
-                            className="flex-grow-1"
+                            className="flex-grow-5"
                         />
                         <Button type="submit" variant="outline-primary">
                             Buscar
@@ -161,10 +174,7 @@ export const Prestamos = () => {
                                 Limpiar Búsqueda
                             </Button>
                         )}
-                        
-                        {/* Filtros Dropdown para Departamentos */}
-                        <hr className="my-2 w-100" /> {/* Separador visual */}
-                        
+
                         <Form.Group controlId="filtroDepOrigen" className="flex-grow-1">
                             <Form.Label className="visually-hidden">Departamento Origen</Form.Label>
                             <Form.Control
@@ -172,9 +182,13 @@ export const Prestamos = () => {
                                 value={filtros.dep_origen_id}
                                 onChange={(e) => handleFiltroChange('dep_origen_id', e.target.value)}
                             >
-                                <option value="">Filtrar por Depto. Origen</option>
+                                <option value="">Departamento Origen</option>
                                 {departamentos.map(dep => (
-                                    <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
+                                    // Excluir el departamento de destino de la lista de origen para la UX
+                                    // y el Almacén (ID 11) si no es relevante para el filtro de origen
+                                    (dep.dep_ide !== parseInt(filtros.dep_destino_id) && dep.dep_ide !== 11) && ( 
+                                        <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
+                                    )
                                 ))}
                             </Form.Control>
                         </Form.Group>
@@ -186,13 +200,22 @@ export const Prestamos = () => {
                                 value={filtros.dep_destino_id}
                                 onChange={(e) => handleFiltroChange('dep_destino_id', e.target.value)}
                             >
-                                <option value="">Filtrar por Depto. Destino</option>
+                                <option value="">Departamento Destino</option>
                                 {departamentos.map(dep => (
-                                    <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
+                                    // Excluir el departamento de origen de la lista de destino para la UX
+                                    // y el Almacén (ID 11) si no es relevante para el filtro de destino
+                                    (dep.dep_ide !== parseInt(filtros.dep_origen_id) && dep.dep_ide !== 11) && (
+                                        <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
+                                    )
                                 ))}
                             </Form.Control>
                         </Form.Group>
+                        </div>
                     </Form>
+                        
+                        <hr className="my-2 w-100" /> {/* Separador visual */}
+                        
+                        
 
                     {/* Tabla de Préstamos */}
                     {loading ? (
@@ -218,8 +241,9 @@ export const Prestamos = () => {
                                             <tr key={prestamo.pre_ide}>
                                                 <td><strong>{truncateText(prestamo.pre_ndo)}</strong></td>
                                                 <td>{new Date(prestamo.pre_fec).toLocaleDateString('es-ES')}</td>
-                                                <td>{departamentosMap[prestamo.dep_origen_ide] || 'N/A'}</td> {/* Usar dep_origen_ide de ttrpre */}
-                                                <td>{departamentosMap[prestamo.dep_ide] || 'N/A'}</td> {/* dep_ide es el departamento de destino */}
+                                                {/* Usar los nombres que vienen directamente de la API */}
+                                                <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
+                                                <td>{prestamo.departamento_destino_nombre || 'N/A'}</td> 
                                                 <td>{getEstadoPrestamoBadge(prestamo.pre_est)}</td>
                                                 <td>
                                                     <Dropdown>
@@ -227,7 +251,7 @@ export const Prestamos = () => {
                                                             <i className="bx bx-dots-vertical-rounded"></i>
                                                         </Dropdown.Toggle>
                                                         <Dropdown.Menu>
-                                                            <Dropdown.Item href="#" onClick={() => console.log('Ver detalles de:', prestamo.pre_ide)}>
+                                                            <Dropdown.Item href="#" onClick={() => handleVerDetalles(prestamo.pre_ide)}>
                                                                 <i className="bx bx-info-circle me-1"></i> Ver Detalles
                                                             </Dropdown.Item>
                                                             {/* Aquí irían otras acciones como "Devolver Préstamo" si pre_est es 1 */}
@@ -250,20 +274,17 @@ export const Prestamos = () => {
                     )}
                     
                     {/* Aquí iría la paginación si tu endpoint /normales la soportara */}
-                    {/* <Pagination className="mt-4">
-                        <Pagination.Prev onClick={() => handlePageChange(page - 1)} disabled={page === 1} />
-                        {[...Array(meta.totalPages)].map((_, i) => (
-                            <Pagination.Item key={i + 1} active={i + 1 === page} onClick={() => handlePageChange(i + 1)}>
-                                {i + 1}
-                            </Pagination.Item>
-                        ))}
-                        <Pagination.Next onClick={() => handlePageChange(page + 1)} disabled={page === meta.totalPages} />
-                    </Pagination> */}
                 </div>
             </div>
-             <ModalRegistrarPrestamo
+            <ModalRegistrarPrestamo
                 show={showCreateModal}
                 handleClose={handleCloseCreateModal}
+            />
+
+            <ModalVerDetallesPrestamo
+                show={showDetallesModal}
+                handleClose={handleCloseDetallesModal}
+                prestamoId={selectedPrestamoId}
             />
         </>
     );

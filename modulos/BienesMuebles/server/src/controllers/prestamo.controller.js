@@ -56,6 +56,21 @@ export const updateLoanStatus = async (req, res) => {
   }
 }
 
+export const updateStatusBien = async (req, res) => {
+  try {
+    const { id } = req.params // Esto será bim_ide
+    const { dpr_est, pre_ide } = req.body // pre_ide se espera en el body para el contexto del detalle
+    if (!pre_ide) {
+      return res.status(400).json({ success: false, error: 'pre_ide es requerido en el cuerpo de la solicitud.' })
+    }
+    const success = await PrestamoService.updateStatusBien(id, dpr_est, pre_ide)
+    res.json({ success, message: 'Estado del bien en el detalle de préstamo actualizado.' })
+  } catch (error) {
+    console.error('Error al actualizar estado del bien en el detalle:', error)
+    res.status(400).json({ success: false, error: error.message })
+  }
+}
+
 export const checkBienActivelyInvolved = async (req, res) => {
   try {
     const { bim_ide } = req.params
