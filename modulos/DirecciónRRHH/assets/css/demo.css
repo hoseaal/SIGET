@@ -318,3 +318,15 @@ body.modal-open {
 .json-viewer .json-toggle.json-expanded::before {
   content: "▼";
 }
+
+/* Estilo para mantener altura fija de la tabla */
+.table-responsive.fixed-height {
+    height: 450px; 
+    overflow-y: auto;
+}
+
+/* Estilo para filas vacías que mantienen la altura */
+.empty-row {
+    height: 57px;
+    border-bottom: 1px solid #e0e0e0;
+}

@@ -122,9 +122,9 @@
                       <label for="moduloaccess" class="form-label">Módulos</label>
                       <select id="moduloaccess" name="moduloaccess" class="form-select" required>
                         <option value="">-- Selecciona --</option>
-                        <option value="2">Dirección De Administración</option>
-                        <option value="1">Dirección de Recursos Humanos</option>
-                        <option value="0">Todos</option>
+                        <option value="3">Dirección De Administración</option>
+                        <option value="2">Dirección de Recursos Humanos</option>
+                        <option value="1">Todos</option>
                       </select>
                     </div>
                   </div>

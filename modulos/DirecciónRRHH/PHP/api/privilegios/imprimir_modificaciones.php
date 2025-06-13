@@ -34,24 +34,39 @@
         foreach ($bitacoraTables as $table => $idColumn) {
             // Consulta base para cada tabla de bitácora
             $query = "SELECT 
-                        '{$table}' as source_table,
-                        b.bit_id,
-                        b.bit_tabla,
-                        b.bit_operacion,
-                        b.{$idColumn} as affected_id,
-                        COALESCE(u.usu_usu, b.bit_usuario_responsable) as bit_usuario_responsable,
-                        b.bit_detalles,
-                        b.bit_fecha,
-                        CASE 
-                            WHEN b.bit_tabla = 'tesusu' THEN 
-                                COALESCE(usu.usu_usu, b.{$idColumn})
-                            ELSE b.{$idColumn}
-                        END as display_affected_id
-                    FROM {$table} b
-                    LEFT JOIN tesusu u ON b.bit_usuario_responsable = u.nom_ced
-                    LEFT JOIN tesusu usu ON b.bit_tabla = 'tesusu' AND b.{$idColumn} = usu.usu_ide
-                    ORDER BY b.bit_fecha DESC
-                    LIMIT {$offset}, {$perPage}";
+                    '{$table}' as source_table,
+                    b.bit_id,
+                    CASE 
+                        WHEN b.bit_tabla = 'tescep' THEN 'Caja de Ahorro'
+                        WHEN b.bit_tabla = 'tescet' THEN 'Gestión de cargos CET'
+                        WHEN b.bit_tabla = 'tesded' THEN 'Deducciones'
+                        WHEN b.bit_tabla = 'tmanom' THEN 'Gestión de Nómina'
+                        WHEN b.bit_tabla = 'tesnvl' THEN 'Gestión de Niveles Salariales'
+                        WHEN b.bit_tabla = 'tesona' THEN 'Gestión de cargos ONAPRE'
+                        WHEN b.bit_tabla = 'tespri' THEN 'Asignaciones'
+                        WHEN b.bit_tabla = 'tessup' THEN 'Gestión de Suplencias'
+                        WHEN b.bit_tabla = 'tesusu' THEN 'Gestión de Usuarios'
+                        ELSE b.bit_tabla
+                    END as bit_tabla,
+                    b.bit_operacion,
+                    b.{$idColumn} as affected_id,
+                    COALESCE(u.usu_usu, b.bit_usuario_responsable) as bit_usuario_responsable,
+                    b.bit_detalles,
+                    b.bit_fecha,
+                    CASE 
+                        WHEN b.bit_tabla = 'tesusu' THEN 
+                            COALESCE(
+                                (SELECT bu.bit_usu_usu FROM bit_usu bu WHERE bu.bit_usu_ide = b.{$idColumn} LIMIT 1),
+                                usu.usu_usu,
+                                b.{$idColumn}
+                            )
+                        ELSE b.{$idColumn}
+                    END as display_affected_id
+                FROM {$table} b
+                LEFT JOIN tesusu u ON b.bit_usuario_responsable = u.nom_ced
+                LEFT JOIN tesusu usu ON b.bit_tabla = 'tesusu' AND b.{$idColumn} = usu.usu_ide
+                ORDER BY b.bit_fecha DESC
+                LIMIT {$offset}, {$perPage}";
             
             $stmt = $pdo->query($query);
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);

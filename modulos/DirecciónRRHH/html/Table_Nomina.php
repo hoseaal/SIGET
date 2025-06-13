@@ -74,20 +74,6 @@
     <script src="../assets/js/config.js"></script>
 
     <?php require_once '../PHP/api/usuarios/carga_select.php'; ?>
-
-    <style>
-      /* Estilo para mantener altura fija de la tabla */
-      .table-responsive.fixed-height {
-          height: 450px; 
-          overflow-y: auto;
-      }
-
-      /* Estilo para filas vacías que mantienen la altura */
-      .empty-row {
-          height: 57px;
-          border-bottom: 1px solid #e0e0e0;
-      }
-    </style>
   </head>
 
   <body>
@@ -358,59 +344,6 @@
         </div>
       </div>
     </div>
-
-    <script>
-      $(document).ready(function() {
-          // Lista de cargos ONAPRE que deben mostrar solo nivel I
-          const cargosEspeciales = [
-              "COORDINADOR(A) DE ÁREA",
-              "DIRECTOR DE LINEA",
-              "DIRECTOR GENERAL",
-              "JEFE DE DIVISIÓN",
-              "JEFE DE DIVISIÓN (COORDINADOR DE ÁREA)",
-              "JEFE DE DIVISIÓN DE REMUNERACIONES",
-              "JEFE DE DIVISIÓN GENERAL",
-              "CONTRALOR(A) DEL ESTADO"
-          ];
-
-          // Escuchar cambios en el select de Cargo ONAPRE
-          $('#cargoonapre').change(function() {
-              const selectedOptionText = $(this).find('option:selected').text().trim();
-              const nivelSalarialSelect = $('#nivelsalarial');
-              
-              if (cargosEspeciales.includes(selectedOptionText)) {
-                  // Si es un cargo especial, mostrar solo opción I
-                  nivelSalarialSelect.html(`
-                      <option value="">Seleccione</option>
-                      <option value="I" selected>I</option>
-                  `);
-              } else {
-                  // Si no es un cargo especial, mostrar todas las opciones
-                  nivelSalarialSelect.html(`
-                      <option value="">Seleccione</option>
-                      <option value="I">I</option>
-                      <option value="II">II</option>
-                      <option value="III">III</option>
-                      <option value="IV">IV</option>
-                      <option value="V">V</option>
-                      <option value="VI">VI</option>
-                      <option value="VII">VII</option>
-                  `);
-              }
-          });
-
-          // También validar al cargar el modal si ya hay un cargo seleccionado
-          $('#largeModal').on('show.bs.modal', function() {
-              const selectedOptionText = $('#cargoonapre').find('option:selected').text().trim();
-              if (cargosEspeciales.includes(selectedOptionText)) {
-                  $('#nivelsalarial').html(`
-                      <option value="">Seleccione</option>
-                      <option value="I" selected>I</option>
-                  `);
-              }
-          });
-      });
-    </script>
 
   </body>
 </html>

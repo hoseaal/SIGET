@@ -278,6 +278,15 @@ CREATE TABLE `testip` (
 ALTER TABLE `testip` AUTO_INCREMENT = 0;
 
 --
+-- Estructura de tabla para la tabla `tesacc`
+--
+
+CREATE TABLE `tesacc` ( 
+  `usu_mod` INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador AI de tipos de acceso', 
+  `acc_nom` varchar(50) NOT NULL COMMENT 'Acceso al sistema' 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci; 
+
+--
 -- Índices para tablas volcadas
 --
 
@@ -494,6 +503,18 @@ ALTER TABLE `tessca`
 --
 ALTER TABLE `tesusu`
 MODIFY `usu_ide` INT NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico del usuario';
+
+--
+-- Ajuste para la tabla `tesusu`
+--
+ALTER TABLE `tesusu`
+  ADD CONSTRAINT `fk_tesusu_roles` FOREIGN KEY (`usu_tip`) REFERENCES `testip` (`usu_tip`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ajuste para la tabla `tesusu`
+--
+ALTER TABLE `tesusu`
+  ADD CONSTRAINT `fk_tesusu_accesos` FOREIGN KEY (`usu_mod`) REFERENCES `tesacc` (`usu_mod`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `tesant`
@@ -934,6 +955,22 @@ INSERT INTO `tespri` (`pri_raz`, `pri_por`) VALUES
 ('Complemento de Alimentación', 5.00),
 ('Prima por Hijos', 12.50);
 
+-- TABLA TESTIP
+
+INSERT INTO `testip` (`tip_nom`) VALUES
+('Visualizador'),
+('Temporal'),
+('Trabajador'),
+('Jefe de Area'),
+('Administrador');
+
+-- TABLA TESACC
+
+INSERT INTO `tesacc` (`acc_nom`) VALUES
+('Acceso Global'),
+('Módulo de Recursos Humanos'),
+('Módulo de Bienes');
+
 -- TABLA TMANOM (Contralor: Luis Aguilar DATA REAL)
 
 INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `nom_nhi`, `nom_pro`, `cet_ide`, `ona_ide`, `nvl_ran`, `dep_ide`) VALUES 
@@ -957,22 +994,22 @@ INSERT INTO `tmanom` (`nom_ced`, `nom_nom`, `nom_ape`, `nom_fec`, `nom_gen`, `no
 
 -- TABLA TESUSU (Usuario del CONTRALOR: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('LuisAgui23', '$2y$12$zLekvZkVCw4Iy9TpkjOue.aCIBNdZgT.dwcAGOPxc7bW3CIInF3ku', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '5', '0', '18845038'); 
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('LuisAgui23', '$2y$12$zLekvZkVCw4Iy9TpkjOue.aCIBNdZgT.dwcAGOPxc7bW3CIInF3ku', 'LUIS ALEJANDRO', 'AGUILAR MONTILVA', '5', '1', '18845038'); 
 
 -- TABLA TESUSU (Usuario de Director General: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('EliCris23', '$2y$12$JzctV2PntXoUkksVmfSMXOdOpMyCHHnvNyOgMiW/DFbjPsPTMSZlW', 'ELIANA CRISTINA', 'RAMIREZ DE GUERRERO', '4', '0', '17368181');
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('EliCris23', '$2y$12$JzctV2PntXoUkksVmfSMXOdOpMyCHHnvNyOgMiW/DFbjPsPTMSZlW', 'ELIANA CRISTINA', 'RAMIREZ DE GUERRERO', '4', '1', '17368181');
 
 -- TABLA TESUSU (Usuario de Jefe de RRHH: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('LuisArias1', '$2y$12$2gsERLg2ZUdQ6/GfQ0Wos.492R3p/SGhKGpFdnKvZ4fUj1BOK4TvS', 'LUIS GERARDO', 'ARIAS NIÑO', '4', '1', '15028510');
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('LuisArias1', '$2y$12$2gsERLg2ZUdQ6/GfQ0Wos.492R3p/SGhKGpFdnKvZ4fUj1BOK4TvS', 'LUIS GERARDO', 'ARIAS NIÑO', '4', '2', '15028510');
 
 -- TABLA TESUSU (Usuario de Jefe de Bienes: CONTRASEÑA ES 12345)
 
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('EnderMar21', '$2y$12$oUKu3BId/VnUQ20cdAUzcO2.j6Y.yKpaClmYurBdCi719xjJ33l4a', 'ENDER NICOLAY', 'MOGOLLON MARQUEZ', '4', '2', '26403363');
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('EnderMar21', '$2y$12$oUKu3BId/VnUQ20cdAUzcO2.j6Y.yKpaClmYurBdCi719xjJ33l4a', 'ENDER NICOLAY', 'MOGOLLON MARQUEZ', '4', '3', '26403363');
 
 -- TABLA TESUSU (Usuario de Área Técnica: CONTRASEÑA ES 12345)
-INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('JesusCar23', '$2y$12$/FSFzNj8rdiyN9EELET45.rRcUUp5raL7jXmd4x/o8TPzi0RrxqNm', 'JESUS DAVID', 'SALAMANCA CARVAJAL', '5', '0', '14502107');
+INSERT INTO `tesusu` (`usu_usu`, `usu_con`, `usu_nom`, `usu_ape`, `usu_tip`, `usu_mod`, `nom_ced`) VALUES ('JesusCar23', '$2y$12$/FSFzNj8rdiyN9EELET45.rRcUUp5raL7jXmd4x/o8TPzi0RrxqNm', 'JESUS DAVID', 'SALAMANCA CARVAJAL', '5', '1', '14502107');
 
 -- TABLA TMACAT
 
@@ -1384,13 +1421,6 @@ INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('4', '
 INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('4','Operativo'), ('1', 'Sin etiqueta'), ('2', 'Inoperativo'), ('3', 'Faltante');
 
 INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
-
-INSERT INTO `testip` (`tip_nom`) VALUES
-('Visualizador'),
-('Temporal'),
-('Trabajador'),
-('Jefe de Area'),
-('Administrador');
 
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
 

@@ -470,6 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para abrir el modal de edición con datos completos
     function abrirModalEdicion(trabajador) {
+        
         const modalEdicion = new bootstrap.Modal(document.getElementById('largeModal'));
         
         // Limpiar validaciones previas
@@ -894,6 +895,69 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         window.removeEventListener('focus', verificarActualizaciones);
     }
+
+        // Función para configurar el comportamiento del modal de edición
+    function configurarModalEdicion() {
+        // Lista de cargos ONAPRE que deben mostrar solo nivel I
+        const cargosEspeciales = [
+            "COORDINADOR(A) DE ÁREA",
+            "DIRECTOR DE LINEA",
+            "DIRECTOR GENERAL",
+            "JEFE DE DIVISIÓN",
+            "JEFE DE DIVISIÓN (COORDINADOR DE ÁREA)",
+            "JEFE DE DIVISIÓN DE REMUNERACIONES",
+            "JEFE DE DIVISIÓN GENERAL",
+            "CONTRALOR(A) DEL ESTADO"
+        ];
+
+        // Función para actualizar el select de nivel salarial
+        function actualizarNivelSalarial(selectedOptionText, mantenerValorActual = false) {
+            const nivelSalarialSelect = $('#nivelsalarial');
+            const valorActual = nivelSalarialSelect.val();
+            
+            if (cargosEspeciales.includes(selectedOptionText)) {
+                // Si es un cargo especial, mostrar solo opción I
+                nivelSalarialSelect.html(`
+                    <option value="">Seleccione</option>
+                    <option value="I" selected>I</option>
+                `);
+            } else {
+                // Si no es un cargo especial, mostrar todas las opciones
+                let opciones = `
+                    <option value="">Seleccione</option>
+                    <option value="I">I</option>
+                    <option value="II">II</option>
+                    <option value="III">III</option>
+                    <option value="IV">IV</option>
+                    <option value="V">V</option>
+                    <option value="VI">VI</option>
+                    <option value="VII">VII</option>
+                `;
+                
+                nivelSalarialSelect.html(opciones);
+                
+                // Restaurar el valor anterior si es válido
+                if (mantenerValorActual && valorActual && ['I','II','III','IV','V','VI','VII'].includes(valorActual)) {
+                    nivelSalarialSelect.val(valorActual);
+                }
+            }
+        }
+
+        // Configurar evento change para el select de Cargo ONAPRE
+        $(document).on('change', '#cargoonapre', function() {
+            const selectedOptionText = $(this).find('option:selected').text().trim();
+            actualizarNivelSalarial(selectedOptionText, true);
+        });
+
+        // Configurar evento cuando se muestra el modal
+        $(document).on('show.bs.modal', '#largeModal', function() {
+            const selectedOptionText = $('#cargoonapre').find('option:selected').text().trim();
+            actualizarNivelSalarial(selectedOptionText);
+        });
+    }
+
+    // Inicializar la configuración del modal
+    configurarModalEdicion();
 
     // Inicializar la tabla, paginación y buscador
     mostrarTrabajadores(paginaActual).then(() => {
