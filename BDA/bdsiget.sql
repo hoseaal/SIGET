@@ -684,6 +684,10 @@ CREATE TABLE ttrdpr (
     UNIQUE (bim_ide, dpr_ide) -- Un bien solo puede estar en un préstamo una vez
 );
 
+ALTER TABLE ttrpre
+ADD COLUMN dep_origen_ide INT NOT NULL COMMENT 'Departamento de origen de los bienes en este prestamo',
+ADD CONSTRAINT fk_ttrpre_dep_origen FOREIGN KEY (dep_origen_ide) REFERENCES tesdep(dep_ide);
+
 /* VOLCADO DE LA BASE DE DATOS */
 
 -- TABLA TESCET

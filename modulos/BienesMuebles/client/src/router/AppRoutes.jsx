@@ -12,6 +12,8 @@ import { MaintenancePage } from "../pages/misc/MaintenancePage";
 import { Bm2 } from "../pages/formularios/BM-2";
 import { Bm1 } from "../pages/formularios/BM-1";
 
+import { Prestamos } from "../pages/prestamos/prestamos";
+
 import { Categorias } from "../pages/configuracion/categorias";
 import { ModelosyMarcas } from "../pages/configuracion/modelosymarcas"
 
@@ -83,6 +85,12 @@ const AppRoutes = () => {
             <Route path="/BM/BM-1" element={
                 <ProtectedRoute>
                     <Bm1 />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Prestamos" element={
+                <ProtectedRoute>
+                    <Prestamos />
                 </ProtectedRoute>
             } />
 

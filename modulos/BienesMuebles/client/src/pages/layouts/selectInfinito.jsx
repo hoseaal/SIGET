@@ -159,4 +159,4 @@ const EstadoSelect = ({ tipoBien, value, onChange, onToggle }) => {
   );
 };
 
-export {TipoBienSelect, EstadoSelect};
+export {EstadoSelect};

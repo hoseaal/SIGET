@@ -42,35 +42,20 @@
                 ]
             },
             {
-                "text": "Bienes en Almacen",
-                "icon": "bx bx-box",
+                "text": "Préstamos",
+                "icon": "bx bx-transfer",
                 "available": true,  
                 "link": "",
                 "submenu": [
                     {
-                        "text": "Papelería ",
+                        "text": "Bienes en Almacen",
                         "available": true,
-                        "link": " "
+                        "link": "/BienesAlmacen"
                     },
                     {
-                        "text": "Ferretería",
+                        "text": "Préstamos",
                         "available": true,
-                        "link": " "
-                    },
-                    {
-                        "text": "Repuestos",
-                        "available": true,
-                        "link": " "
-                    },
-                    {
-                        "text": "Medicamentos",
-                        "available": true,
-                        "link": " "
-                    },
-                    {
-                        "text": "Productos de limpienza",
-                        "available": true,
-                        "link": " "
+                        "link": "/Prestamos"
                     }
                 ]
             }
