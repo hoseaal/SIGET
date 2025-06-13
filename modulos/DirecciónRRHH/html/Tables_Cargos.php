@@ -101,7 +101,7 @@
                   <div class="card-body">
                     <!-- Tabla de Cargos CET -->
                     <div class="table-responsive text-nowrap">
-                      <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { ?>
+                      <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1') { ?>
                           <button
                               type="button"
                               class="btn btn-primary mb-3"
@@ -157,7 +157,7 @@
                           <tr>
                             <th>N°</th>
                             <th>Nombre</th>
-                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { ?>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1') { ?>
                                 <th>Acción</th>
                             <?php } ?>
                           </tr>
@@ -191,7 +191,7 @@
                   <div class="card-body">
                     <!-- Tabla de Cargos ONAPRE -->
                     <div class="table-responsive text-nowrap">
-                      <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { ?>
+                      <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1') { ?>
                           <button
                               type="button"
                               class="btn btn-primary mb-3"
@@ -251,7 +251,7 @@
                           <tr>
                             <th>N°</th>
                             <th>Nombre</th>
-                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { ?>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1') { ?>
                                 <th>Acción</th>
                             <?php } ?>
                           </tr>

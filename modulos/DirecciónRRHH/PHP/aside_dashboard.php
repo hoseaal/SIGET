@@ -86,6 +86,14 @@
                     </a>
                 </li>
                 <?php endif; ?>
+
+                <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2' || $GLOBALS['decoded']->data->tipo == '1'): ?>
+                <li class="menu-item">
+                    <a href="Table_Depart.php" class="menu-link">
+                        <div data-i18n="Basic">Tabla de Departamentos</div>
+                    </a>
+                </li>
+                <?php endif; ?>
                 
                 <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
                 <li class="menu-item">
@@ -111,7 +119,7 @@
                 </li>
                 <?php endif; ?>
                 
-                <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '2' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '1'): ?>
+                <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '2' || $GLOBALS['decoded']->data->tipo == '4'): ?>
                 <li class="menu-item">
                     <a href="Tabla_cajaahorrop.php" class="menu-link">
                         <div data-i18n="Basic">Caja de Ahorro Patronal</div>

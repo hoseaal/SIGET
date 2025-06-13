@@ -95,34 +95,35 @@
                                   </div>
                               </div>
                           </div>
-                          
-                          <div class="col-md-6 col-lg-3 mb-4">
-                              <div class="card h-100">
-                                  <div class="card-body text-center">
-                                      <div class="card-title d-flex align-items-start justify-content-between">
-                                          <div class="avatar flex-shrink-0 mx-auto">
-                                              <img src="../assets/img/icons/unicons/Porcen_area.png" alt="Áreas" class="rounded"/>
-                                          </div>
-                                      </div>
-                                      <span class="fw-semibold d-block mb-1">% por Área</span>
-                                      <h3 class="card-title mb-2" id="promedioArea">Cargando...</h3>
-                                  </div>
-                              </div>
-                          </div>
-                          
-                          <div class="col-md-6 col-lg-3 mb-4">
-                              <div class="card h-100">
-                                  <div class="card-body text-center">
-                                      <div class="card-title d-flex align-items-start justify-content-between">
-                                          <div class="avatar flex-shrink-0 mx-auto">
-                                              <img src="../assets/img/icons/unicons/Salida_nominaT.png" alt="Nómina" class="rounded"/>
-                                          </div>
-                                      </div>
-                                      <span class="fw-semibold d-block mb-1">Salida total de nómina</span>
-                                      <h3 class="card-title mb-2" id="totalNomina">Cargando...</h3>
-                                  </div>
-                              </div>
-                          </div>
+                          <?php 
+                          if (isset($decoded->data->tipo) && $decoded->data->tipo != '1' && $decoded->data->tipo != '2') { ?>
+                            <div class="col-md-6 col-lg-3 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <div class="card-title d-flex align-items-start justify-content-between">
+                                            <div class="avatar flex-shrink-0 mx-auto">
+                                                <img src="../assets/img/icons/unicons/Porcen_area.png" alt="Áreas" class="rounded"/>
+                                            </div>
+                                        </div>
+                                        <span class="fw-semibold d-block mb-1">% por Área</span>
+                                        <h3 class="card-title mb-2" id="promedioArea">Cargando...</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <div class="card-title d-flex align-items-start justify-content-between">
+                                            <div class="avatar flex-shrink-0 mx-auto">
+                                                <img src="../assets/img/icons/unicons/Salida_nominaT.png" alt="Nómina" class="rounded"/>
+                                            </div>
+                                        </div>
+                                        <span class="fw-semibold d-block mb-1">Salida total de nómina</span>
+                                        <h3 class="card-title mb-2" id="totalNomina">Cargando...</h3>
+                                    </div>
+                                </div>
+                            </div>
+                          <?php } ?>
                       </div>
 
                       <!-- Segunda fila - centrada z-->
@@ -130,25 +131,27 @@
                           <div class="col-lg-4 mb-4">
                               <!-- Bienvenida -->
                               <div class="card h-100">
-                                  <div class="card-body d-flex flex-column text-center">
-                                      <div class="text-center mb-3">
-                                          <img
-                                              src="../assets/img/illustrations/man-with-laptop-light.png"
-                                              height="120"
-                                              alt="View Badge User"
-                                              data-app-dark-img="illustrations/man-with-laptop-dark.png"
-                                              data-app-light-img="illustrations/man-with-laptop-light.png"
-                                              class="mb-3"
-                                          />
-                                          <h5 class="card-title text-primary">Bienvenido al Sistema 🎉</h5>
-                                      </div>
-                                      <p class="mb-4">
-                                          Automatiza las <span class="fw-bold">nóminas</span> para un trabajo mucho más eficiente y seguro.
-                                      </p>
-                                      <div class="mt-auto">
-                                          <a href="Table_Nomina.php" class="btn btn-sm btn-outline-primary">Acceder a nóminas</a>
-                                      </div>
+                                <div class="card-body d-flex flex-column justify-content-between">
+                                  <!-- Contenido centrado vertical y horizontalmente -->
+                                  <div class="d-flex flex-column align-items-center justify-content-center flex-grow-1 py-3">
+                                    <img
+                                      src="../assets/img/illustrations/man-with-laptop-light.png"
+                                      height="120"
+                                      alt="View Badge User"
+                                      data-app-dark-img="illustrations/man-with-laptop-dark.png"
+                                      data-app-light-img="illustrations/man-with-laptop-light.png"
+                                      class="mb-3"
+                                    />
+                                    <h5 class="card-title text-primary text-center">Bienvenido a SIGET</h5>
+                                    <p class="mb-0 text-center">
+                                      Automatiza las <span class="fw-bold">nóminas</span> para un trabajo mucho más eficiente y seguro.
+                                    </p>
                                   </div>
+                                  <!-- Botón abajo y centrado -->
+                                  <div class="text-center mt-auto pt-2">
+                                    <a href="Table_Nomina.php" class="btn btn-sm btn-outline-primary">Acceder a nóminas</a>
+                                  </div>
+                                </div>
                               </div>
                           </div>
                           

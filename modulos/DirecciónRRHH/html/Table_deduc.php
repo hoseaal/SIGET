@@ -106,7 +106,7 @@
                             <th>Deducciones</th>
                             <th>Descripción</th>
                             <th>Porcentaje</th>
-                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0' && $decoded->data->tipo != '1') { ?>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1' && $decoded->data->tipo != '2') { ?>
                                 <th>Acciones</th>
                             <?php } ?>
                           </tr>

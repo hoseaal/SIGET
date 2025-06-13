@@ -85,8 +85,7 @@
           <div class="content-wrapper">
           <!-- Content -->
           <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Agregar /</span> Registro de Antigüedades</h4>
-
+            <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Privilegios /</span> Vista de Roles</h4>
             <form id="formRoles">
                 <div class="row">
                     <!-- Selección de Rol -->

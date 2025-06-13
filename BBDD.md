@@ -511,22 +511,6 @@
 
 ---
 
-## Triggers (Disparadores)
-
-*Propósito:* Los triggers automatizan procesos críticos y mantienen la integridad de los datos mediante acciones que se ejecutan ante eventos específicos.
-
-*Tablas afectadas:* Todas las tablas de bitácoras contienen disparadores que realizan los inserts cuando existen modificaciones reales dentro de la base de datos (aplicables siempre para: Insert, update o delete).
-
-### Estructura General
-Todos los triggers siguen este patrón básico:
-```sql
-CREATE TRIGGER [nombre]
-[BEFORE/AFTER] [INSERT/UPDATE/DELETE] ON [tabla]
-FOR EACH ROW
-BEGIN
-    -- Lógica del trigger
-END
-
 ## Diagrama de Relaciones
 
 ```mermaid
@@ -561,3 +545,21 @@ erDiagram
     tescep }|--|| tmanom : "nom_ced"
     tesusu }|--|| testip : "usu_tip"
     tesusu }|--|| tesacc : "usu_mod"
+```
+---
+
+## Triggers (Disparadores)
+
+*Propósito:* Los triggers automatizan procesos críticos y mantienen la integridad de los datos mediante acciones que se ejecutan ante eventos específicos.
+
+*Tablas afectadas:* Todas las tablas de bitácoras contienen disparadores que realizan los inserts cuando existen modificaciones reales dentro de la base de datos (aplicables siempre para: Insert, update o delete).
+
+### Estructura General
+Todos los triggers siguen este patrón básico:
+```sql
+CREATE TRIGGER [nombre]
+[BEFORE/AFTER] [INSERT/UPDATE/DELETE] ON [tabla]
+FOR EACH ROW
+BEGIN
+    -- Lógica del trigger
+END
