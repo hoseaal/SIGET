@@ -97,8 +97,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Gestión de Presupuesto /</span> Nómina</h4>
                 <?php 
-                if (isset($decoded->data->tipo) && $decoded->data->tipo != '0') { 
-                ?>
+                if (isset($decoded->data->tipo) && $decoded->data->tipo != '1' && $decoded->data->tipo != '2') { ?>
                     <button id="exportToExcel" class="btn btn-primary">
                         <i class="bx bx-download"></i> Exportar salarios de nómina
                     </button>

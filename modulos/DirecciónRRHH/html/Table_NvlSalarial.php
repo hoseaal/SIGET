@@ -7,7 +7,7 @@
   }
 
   // Lista de tipos de usuario permitidos 
-  $tiposPermitidos = ['1', '2', '3', '4', '5'];
+  $tiposPermitidos = ['2', '3', '4', '5'];
 
   // Redirige al login
   if (!in_array($decoded->data->tipo, $tiposPermitidos)) {
@@ -118,7 +118,7 @@
                             <th>Nivel salarial</th>
                             <th>Salario</th>
                             <th>CARGO ONAPRE</th>
-                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '0' && $decoded->data->tipo != '1') { ?>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1' && $decoded->data->tipo != '2') { ?>
                                 <th>Acciones</th>
                             <?php } ?>
                           </tr>
