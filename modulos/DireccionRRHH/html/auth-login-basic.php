@@ -1,5 +1,41 @@
-<?php 
-  require_once '../PHP/api/validar-jwt.php';
+<?php
+  // Headers de no-caché extremos
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Cache-Control: post-check=0, pre-check=0", false);
+  header("Pragma: no-cache");
+  header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
+
+  // Verificar si hay token válido
+  $token = $_COOKIE['token'] ?? null;
+  if ($token) {
+      require_once '../PHP/api/validar-jwt.php';
+      
+      if (isset($decoded) && isset($decoded->data->tipo)) {
+          if ($decoded->data->tipo == 5) {
+              header('Location: index.php');
+          } else {
+              header('Location: index_usur.php');
+          }
+          exit;
+      }
+  }
+
+  // Bloqueo adicional para Firefox
+  echo <<<HTML
+  <script>
+      // Bloqueo persistente del historial
+      if (navigator.userAgent.includes('Firefox')) {
+          history.replaceState(null, null, location.href);
+          setInterval(function() {
+              history.replaceState(null, null, location.href);
+          }, 1000);
+          
+          window.addEventListener('popstate', function() {
+              history.replaceState(null, null, location.href);
+          });
+      }
+  </script>
+  HTML;
 ?>
 
 <!DOCTYPE html>

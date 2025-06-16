@@ -1,4 +1,8 @@
 <?php
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Cache-Control: post-check=0, pre-check=0", false);
+  header("Pragma: no-cache"); 
+  
   require_once '../PHP/api/validar-jwt.php';
 
   if (!isset($decoded) || !isset($decoded->data->tipo)) {
@@ -7,7 +11,7 @@
   }
 
   // Lista de tipos de usuario permitidos 
-  $tiposPermitidos = ['2', '3', '4', '5'];
+  $tiposPermitidos = ['1', '2', '3', '4', '5'];
 
   // Redirige al login
   if (!in_array($decoded->data->tipo, $tiposPermitidos)) {
@@ -15,8 +19,20 @@
       exit;
   }
 
-  echo '<script>const LOGGED_USER_CI = "' . $decoded->data->id . '";</script>';
-  echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
+  if (empty($_COOKIE['token'])) {
+      header("Location: /SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?nocache=".time());
+      exit;
+  }
+
+  // Script anti-retroceso
+  echo '<script>
+      if (window.history && window.history.pushState) {
+          window.history.pushState(null, null, document.URL);
+          window.addEventListener("popstate", function() {
+              window.location.href = "/SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?force=" + Date.now();
+          });
+      }
+  </script>';
 ?>
 
 <!DOCTYPE html>
@@ -91,24 +107,12 @@
           <div class="content-wrapper">
           <!-- Content -->
           <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Gestión de Presupuesto /</span> Niveles Salariales</h4>
+            <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Gestión de Presupuesto /</span>Histórico de Niveles Salariales</h4>
             <div class="row">
               <!-- Tabla de Niveles Salariales -->
               <div class="col-md-12">
                 <div class="card mb-4">
-                  <h5 class="card-header d-flex justify-content-between align-items-center">
-                    <span>Tabla de Niveles Salariales</span>
-                    <div class="input-group input-group-merge" style="width: 280px;">
-                      <span class="input-group-text"><i class="bx bx-search"></i></span>
-                      <input 
-                        type="text" 
-                        class="form-control" 
-                        id="salarySearch" 
-                        placeholder="Buscar nivel..." 
-                        aria-label="Buscar nivel salarial"
-                      >
-                    </div>
-                  </h5>
+                  <h5 class="card-header">Tabla de Niveles Salariales (Histórico)</h5>
                   <div class="card-body">
                     <!-- Tabla de Salarios -->
                     <div class="table-responsive text-nowrap fixed-height">
@@ -118,9 +122,8 @@
                             <th>Nivel salarial</th>
                             <th>Salario</th>
                             <th>CARGO ONAPRE</th>
-                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1' && $decoded->data->tipo != '2') { ?>
-                                <th>Acciones</th>
-                            <?php } ?>
+                            <th>FECHA DE MODIFICACIÓN</th>
+                            <th>Acciones</th>
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">
@@ -179,7 +182,7 @@
     <script async defer src="../js/buttons.js"></script>
 
     <!-- Funcionamiento de la tabla de Niveles Salariales -->
-    <script src="../assets/js/modulos/gest-presupuesto/func-table_NivelesSalariales.js"></script> 
+    <script src="../assets/js/modulos/gest-presupuesto/func-table_NivelesSalariales-Hist.js"></script> 
 
     <!-- Modal de Editar Nivel Salarial-->
     <div class="modal fade" id="ModalNivelSalarial" tabindex="-1" aria-hidden="true">
@@ -193,33 +196,35 @@
             <div class="row">
               <div class="col mb-3">
                 <label for="tipoNlvSalarial" class="form-label">Tipo de Nivel Salarial</label>
-                <input type="text" id="tipoNlvSalarial" class="form-control" placeholder="Ej. I, II, III" maxlength="5" />
-                <div class="invalid-feedback">Solo se permiten letras (máximo 5 caracteres)</div>
+                <input type="text" id="tipoNlvSalarial" class="form-control" placeholder="Ej. I, II, III" />
               </div>
             </div>
             <div class="row">
               <div class="col mb-3">
                 <label for="salarioAsig" class="form-label">Salario Correspondiente</label>
-                <input type="text" id="salarioAsig" class="form-control" placeholder="Ej. 150.00" />
-                <div class="invalid-feedback">Solo se permiten números con máximo 2 decimales (máximo 10 caracteres)</div>
+                <input type="number" id="salarioAsig" class="form-control" placeholder="Ej. 150.00" step="0.01" min="0" />
               </div>
             </div>
             <div class="row">
               <div class="col mb-3">
                 <label for="OnapreAsig" class="form-label">Seleccionar cargo ONAPRE correspondiente</label>
-                <select id="OnapreAsig" class="form-select" required>
+                <select id="OnapreAsig" class="form-select">
                   <option value="">Seleccione</option>
                   <!-- Las opciones se llenarán dinámicamente -->
                 </select>
-                <div class="invalid-feedback">Debe seleccionar un cargo ONAPRE</div>
               </div>
+            </div>
+            <!-- Fecha de Modificación -->
+            <div class="mb-3">
+              <label for="fechamodificacion" class="form-label">Fecha de Modificación</label>
+              <input type="date" class="form-control" id="fechamodificacion" name="fechamodificacion" required />
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               Cerrar
             </button>
-            <button type="button" class="btn btn-primary" id="confirmChangesBtn">Confirmar Cambios</button>
+            <button type="button" class="btn btn-primary">Confirmar Cambios</button>
           </div>
         </div>
       </div>

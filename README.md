@@ -52,7 +52,7 @@ Sistema web para automatizar procesos en los departamentos de la **Contraloría 
         │   ├── assets/              # CSS, JS, imágenes
         ├── modulos/                 # Módulos del sistema
         │   ├── BienesMuebles/       # Módulo de Bienes
-        │   ├── DirecciónRRHH/       # Módulo de RRHH
+        │   ├── DireccionRRHH/       # Módulo de RRHH
         │   │   ├── PHP/api/         # Endpoints (usuarios, exportaciones, etc.)
         │   │   ├── html/            # Vistas del módulo
         ├── vendor/                  # Dependencias de Composer
@@ -66,13 +66,13 @@ Sistema web para automatizar procesos en los departamentos de la **Contraloría 
 
 3. Librerías:
 
-       . SweetAlert2 (alertas).
+       - SweetAlert2 (alertas).
 
-       . Select2 (inputs dinámicos).
+       - Select2 (inputs dinámicos).
 
-       . PHP-JWT (autenticación).
+       - PHP-JWT (autenticación).
 
-       . PHPSpreadsheet (exportación XLS).
+       - PHPSpreadsheet (exportación XLS).
 ---
 
 ## ⚠️ Consideraciones críticas
@@ -90,14 +90,15 @@ Sistema web para automatizar procesos en los departamentos de la **Contraloría 
         Crear una carpeta independiente en modulos/ siguiendo la estructura existente.
 ---
 
-🚀 Despliegue
-Entorno local:
+## 🚀 Despliegue
 
-Usar XAMPP para desarrollo y pruebas.
+1. **Entorno local**:
 
-Producción:
+        Usar XAMPP para desarrollo y pruebas.
 
-Coordinar con el Jefe de Área Técnica para actualizaciones.
+2. **Producción**:
+
+        Coordinar con el Jefe de Área Técnica para actualizaciones.
 
 ---
 
@@ -107,7 +108,7 @@ Coordinar con el Jefe de Área Técnica para actualizaciones.
 
         Desarrollador del Módulo de Recursos Humanos: Eduards Zambrano (Github: @EdZambrano21)
 
-        Desarrollador del Módulo de Bienes: Jose Omaña (Github: @hoseall)
+        Desarrollador del Módulo de Bienes: Jose Omaña (Github: @hoseaal)
 
 2. **Acceso y permisos**: 
 

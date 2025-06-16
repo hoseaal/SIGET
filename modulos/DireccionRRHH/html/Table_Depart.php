@@ -1,4 +1,8 @@
 <?php
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Cache-Control: post-check=0, pre-check=0", false);
+  header("Pragma: no-cache"); 
+  
   require_once '../PHP/api/validar-jwt.php';
 
   if (!isset($decoded) || !isset($decoded->data->tipo)) {
@@ -14,6 +18,24 @@
       header('Location: auth-login-basic.php');
       exit;
   }
+
+  if (empty($_COOKIE['token'])) {
+      header("Location: /SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?nocache=".time());
+      exit;
+  }
+
+  // Script anti-retroceso
+  echo '<script>
+      if (window.history && window.history.pushState) {
+          window.history.pushState(null, null, document.URL);
+          window.addEventListener("popstate", function() {
+              window.location.href = "/SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?force=" + Date.now();
+          });
+      }
+  </script>';
+
+  echo '<script>const LOGGED_USER_CI = "' . $decoded->data->id . '";</script>';
+  echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -88,23 +110,47 @@
           <div class="content-wrapper">
           <!-- Content -->
           <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Gestión de Presupuesto /</span>Histórico de Niveles Salariales</h4>
-            <div class="row">
-              <!-- Tabla de Niveles Salariales -->
+          <!-- Encabezado con botón alineado -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Gestión de Presupuesto /</span> Departamentos</h4>
+              <?php 
+              if (isset($decoded->data->tipo) && $decoded->data->tipo == '5') { 
+              ?>
+                  <button id="addNewDepartment" class="btn btn-primary">
+                      <i class="bx bx-plus"></i> Nuevo Departamento
+                  </button>
+              <?php } ?>
+          </div>
+
+          <div class="row">
+              <!-- Tabla de Departamentos -->
               <div class="col-md-12">
-                <div class="card mb-4">
-                  <h5 class="card-header">Tabla de Niveles Salariales (Histórico)</h5>
+                  <div class="card mb-4">
+                      <h5 class="card-header d-flex justify-content-between align-items-center">
+                          <span>Tabla de Departamentos</span>
+                          <div class="input-group input-group-merge" style="width: 280px;">
+                              <span class="input-group-text"><i class="bx bx-search"></i></span>
+                              <input 
+                                  type="text" 
+                                  class="form-control" 
+                                  id="departmentSearch" 
+                                  placeholder="Buscar departamento..." 
+                                  aria-label="Buscar departamento"
+                              >
+                          </div>
+                      </h5>
                   <div class="card-body">
-                    <!-- Tabla de Salarios -->
+                    <!-- Tabla de Departamentos -->
                     <div class="table-responsive text-nowrap fixed-height">
-                      <table class="table" id="salaryTable">
+                      <table class="table" id="departmentTable">
                         <thead>
                           <tr>
-                            <th>Nivel salarial</th>
-                            <th>Salario</th>
-                            <th>CARGO ONAPRE</th>
-                            <th>FECHA DE MODIFICACIÓN</th>
-                            <th>Acciones</th>
+                            <th>N°</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1' && $decoded->data->tipo != '2') { ?>
+                                <th>Acciones</th>
+                            <?php } ?>
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">
@@ -116,7 +162,7 @@
                     <!-- Paginación -->
                     <div class="demo-inline-spacing mt-4">
                       <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center" id="paginationSalary">
+                        <ul class="pagination justify-content-center" id="paginationDepartment">
                           <!-- La paginación se generará dinámicamente con JavaScript -->
                         </ul>
                       </nav>
@@ -163,49 +209,38 @@
     <script async defer src="../js/buttons.js"></script>
 
     <!-- Funcionamiento de la tabla de Niveles Salariales -->
-    <script src="../assets/js/modulos/gest-presupuesto/func-table_NivelesSalariales-Hist.js"></script> 
+    <script src="../assets/js/modulos/gest-presupuesto/func-table_depart.js"></script> 
 
-    <!-- Modal de Editar Nivel Salarial-->
-    <div class="modal fade" id="ModalNivelSalarial" tabindex="-1" aria-hidden="true">
+    <!-- Modal de Editar Departamento -->
+    <div class="modal fade" id="ModalDepartamento" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel1">Editar Nivel Salarial</h5>
+            <h5 class="modal-title" id="modalDepartmentTitle">Editar Departamento</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
+            <input type="hidden" id="departmentId">
             <div class="row">
               <div class="col mb-3">
-                <label for="tipoNlvSalarial" class="form-label">Tipo de Nivel Salarial</label>
-                <input type="text" id="tipoNlvSalarial" class="form-control" placeholder="Ej. I, II, III" />
+                <label for="departmentName" class="form-label">Nombre del Departamento</label>
+                <input type="text" id="departmentName" class="form-control" placeholder="Ej. Recursos Humanos" maxlength="255" />
+                <div class="invalid-feedback">El nombre es requerido (máximo 255 caracteres)</div>
               </div>
             </div>
             <div class="row">
               <div class="col mb-3">
-                <label for="salarioAsig" class="form-label">Salario Correspondiente</label>
-                <input type="number" id="salarioAsig" class="form-control" placeholder="Ej. 150.00" step="0.01" min="0" />
+                <label for="departmentDescription" class="form-label">Descripción</label>
+                <textarea id="departmentDescription" class="form-control" placeholder="Descripción del departamento" rows="3"></textarea>
+                <div class="invalid-feedback">La descripción no puede exceder los 1000 caracteres</div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col mb-3">
-                <label for="OnapreAsig" class="form-label">Seleccionar cargo ONAPRE correspondiente</label>
-                <select id="OnapreAsig" class="form-select">
-                  <option value="">Seleccione</option>
-                  <!-- Las opciones se llenarán dinámicamente -->
-                </select>
-              </div>
-            </div>
-            <!-- Fecha de Modificación -->
-            <div class="mb-3">
-              <label for="fechamodificacion" class="form-label">Fecha de Modificación</label>
-              <input type="date" class="form-control" id="fechamodificacion" name="fechamodificacion" required />
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               Cerrar
             </button>
-            <button type="button" class="btn btn-primary">Confirmar Cambios</button>
+            <button type="button" class="btn btn-primary" id="confirmDepartmentBtn">Guardar Cambios</button>
           </div>
         </div>
       </div>

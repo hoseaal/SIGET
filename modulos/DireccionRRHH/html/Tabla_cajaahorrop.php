@@ -1,4 +1,8 @@
 <?php
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Cache-Control: post-check=0, pre-check=0", false);
+  header("Pragma: no-cache"); 
+  
   require_once '../PHP/api/validar-jwt.php';
 
   if (!isset($decoded) || !isset($decoded->data->tipo)) {
@@ -6,8 +10,8 @@
       exit;
   }
 
-  // Lista de tipos de usuario permitidos 
-  $tiposPermitidos = ['1', '2', '3', '4', '5'];
+  // Lista de tipos de usuario permitidos
+  $tiposPermitidos = ['2', '3', '4', '5'];
 
   // Redirige al login
   if (!in_array($decoded->data->tipo, $tiposPermitidos)) {
@@ -15,8 +19,22 @@
       exit;
   }
 
+  if (empty($_COOKIE['token'])) {
+      header("Location: /SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?nocache=".time());
+      exit;
+  }
+
+  // Script anti-retroceso
+  echo '<script>
+      if (window.history && window.history.pushState) {
+          window.history.pushState(null, null, document.URL);
+          window.addEventListener("popstate", function() {
+              window.location.href = "/SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?force=" + Date.now();
+          });
+      }
+  </script>';
+
   echo '<script>const LOGGED_USER_CI = "' . $decoded->data->id . '";</script>';
-  echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -59,7 +77,18 @@
 
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
+
     <link rel="stylesheet" href="../assets/vendor/libs/apex-charts/apex-charts.css" />
+
+    <!-- jQuery (requerido por Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 CSS -->
+    <link href="../assets/css/select2.min.css" rel="stylesheet" />
+    <link href="../assets/css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+    <!-- Select2 JS -->
+    <script src="../assets/js/select2.min.js"></script>
 
     <!-- SweetAlert2 -->
     <link href="../assets/css/sweetalert2.min.css" rel="stylesheet">
@@ -70,6 +99,7 @@
 
     <!-- Helpers -->
     <script src="../assets/vendor/js/helpers.js"></script>
+
     <script src="../assets/js/config.js"></script>
   </head>
 
@@ -91,47 +121,40 @@
           <div class="content-wrapper">
           <!-- Content -->
           <div class="container-xxl flex-grow-1 container-p-y">
-          <!-- Encabezado con botón alineado -->
-          <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Gestión de Presupuesto /</span> Departamentos</h4>
-              <?php 
-              if (isset($decoded->data->tipo) && $decoded->data->tipo == '5') { 
-              ?>
-                  <button id="addNewDepartment" class="btn btn-primary">
-                      <i class="bx bx-plus"></i> Nuevo Departamento
-                  </button>
-              <?php } ?>
-          </div>
-
-          <div class="row">
-              <!-- Tabla de Departamentos -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">Gestión de Presupuesto /</span> Caja de Ahorro Patronal</h4>
+              <button id="agregarCajaAhorro" class="btn btn-primary">
+                <i class="bx bx-plus"></i> Agregar a Caja de Ahorro
+              </button>
+            </div>
+            <div class="row">
+              <!-- Tabla de Caja de Ahorro -->
               <div class="col-md-12">
-                  <div class="card mb-4">
-                      <h5 class="card-header d-flex justify-content-between align-items-center">
-                          <span>Tabla de Departamentos</span>
-                          <div class="input-group input-group-merge" style="width: 280px;">
-                              <span class="input-group-text"><i class="bx bx-search"></i></span>
-                              <input 
-                                  type="text" 
-                                  class="form-control" 
-                                  id="departmentSearch" 
-                                  placeholder="Buscar departamento..." 
-                                  aria-label="Buscar departamento"
-                              >
-                          </div>
-                      </h5>
+                <div class="card mb-4">
+                  <h5 class="card-header d-flex justify-content-between align-items-center">
+                    <span>Trabajadores en Caja de Ahorro:</span>
+                    <div class="input-group input-group-merge" style="width: 280px;">
+                      <span class="input-group-text"><i class="bx bx-search"></i></span>
+                      <input 
+                        type="text" 
+                        class="form-control" 
+                        id="cajaAhorroSearch" 
+                        placeholder="Buscar trabajador..." 
+                        aria-label="Buscar trabajador"
+                      >
+                    </div>
+                  </h5>
                   <div class="card-body">
-                    <!-- Tabla de Departamentos -->
+                    <!-- Tabla de Caja de ahorro -->
                     <div class="table-responsive text-nowrap fixed-height">
-                      <table class="table" id="departmentTable">
+                      <table class="table" id="cajaAhorroTable">
                         <thead>
                           <tr>
-                            <th>N°</th>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1' && $decoded->data->tipo != '2') { ?>
-                                <th>Acciones</th>
-                            <?php } ?>
+                            <th>N-</th>
+                            <th>Cédula</th>
+                            <th>Nombre del Trabajador</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">
@@ -143,7 +166,7 @@
                     <!-- Paginación -->
                     <div class="demo-inline-spacing mt-4">
                       <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center" id="paginationDepartment">
+                        <ul class="pagination justify-content-center" id="paginationCajaAhorro">
                           <!-- La paginación se generará dinámicamente con JavaScript -->
                         </ul>
                       </nav>
@@ -175,7 +198,6 @@
 
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
-    <script src="../assets/vendor/libs/jquery/jquery.js"></script>
     <script src="../assets/vendor/libs/popper/popper.js"></script>
     <script src="../assets/vendor/js/bootstrap.js"></script>
     <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
@@ -190,30 +212,32 @@
     <script async defer src="../js/buttons.js"></script>
 
     <!-- Funcionamiento de la tabla de Niveles Salariales -->
-    <script src="../assets/js/modulos/gest-presupuesto/func-table_depart.js"></script> 
+    <script src="../assets/js/modulos/gest-presupuesto/func-table_cajaahorrop.js"></script> 
 
-    <!-- Modal de Editar Departamento -->
-    <div class="modal fade" id="ModalDepartamento" tabindex="-1" aria-hidden="true">
+    <!-- Modal de Editar Caja de Ahorro Patronal -->
+    <div class="modal fade" id="ModalCajaAhorro" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="modalDepartmentTitle">Editar Departamento</h5>
+            <h5 class="modal-title" id="exampleModalLabel1">Editar Trabajador en Caja de Ahorro</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
-            <input type="hidden" id="departmentId">
             <div class="row">
               <div class="col mb-3">
-                <label for="departmentName" class="form-label">Nombre del Departamento</label>
-                <input type="text" id="departmentName" class="form-control" placeholder="Ej. Recursos Humanos" maxlength="255" />
-                <div class="invalid-feedback">El nombre es requerido (máximo 255 caracteres)</div>
+                <label for="trabajadorSelect" class="form-label">Trabajador Seleccionado</label>
+                <select id="trabajadorSelect" class="form-select" disabled>
+                  <option value="">Seleccione un trabajador</option>
+                  <!-- Las opciones se llenarán dinámicamente -->
+                </select>
               </div>
             </div>
             <div class="row">
               <div class="col mb-3">
-                <label for="departmentDescription" class="form-label">Descripción</label>
-                <textarea id="departmentDescription" class="form-control" placeholder="Descripción del departamento" rows="3"></textarea>
-                <div class="invalid-feedback">La descripción no puede exceder los 1000 caracteres</div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="estadoCajaAhorro">
+                  <label class="form-check-label" for="estadoCajaAhorro">Estado Activo</label>
+                </div>
               </div>
             </div>
           </div>
@@ -221,7 +245,44 @@
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               Cerrar
             </button>
-            <button type="button" class="btn btn-primary" id="confirmDepartmentBtn">Guardar Cambios</button>
+            <button type="button" class="btn btn-primary">Confirmar Cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para Agregar a Caja de Ahorro -->
+    <div class="modal fade" id="modalAgregarCajaAhorro" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Agregar Trabajador a Caja de Ahorro</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col mb-3">
+                <label for="nuevoTrabajadorSelect" class="form-label">Seleccionar Trabajador</label>
+                <select id="nuevoTrabajadorSelect" class="form-select select2-trabajadores">
+                  <option value=""></option> <!-- Select2 necesita un option vacío -->
+                  <!-- Las opciones se llenarán dinámicamente -->
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="nuevoEstadoCajaAhorro" checked>
+                  <label class="form-check-label" for="nuevoEstadoCajaAhorro">Estado Activo</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-primary" id="confirmarAgregarBtn">Agregar</button>
           </div>
         </div>
       </div>

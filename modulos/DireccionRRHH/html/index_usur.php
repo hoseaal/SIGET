@@ -1,4 +1,8 @@
 <?php
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Cache-Control: post-check=0, pre-check=0", false);
+  header("Pragma: no-cache"); 
+
   require_once '../conexion/conexion.php';
   require_once '../PHP/api/validar-jwt.php';
 
@@ -7,6 +11,21 @@
       header('Location: auth-login-basic.php');
       exit;
   }
+
+  if (empty($_COOKIE['token'])) {
+      header("Location: /SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?nocache=".time());
+      exit;
+  }
+
+  // Script anti-retroceso
+  echo '<script>
+      if (window.history && window.history.pushState) {
+          window.history.pushState(null, null, document.URL);
+          window.addEventListener("popstate", function() {
+              window.location.href = "/SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?force=" + Date.now();
+          });
+      }
+  </script>';
 
   echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
