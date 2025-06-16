@@ -1,17 +1,41 @@
 <?php
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Cache-Control: post-check=0, pre-check=0", false);
+  header("Pragma: no-cache"); 
+  
   require_once '../PHP/api/validar-jwt.php';
 
-  // Verificar si el token es válido y está presente
   if (!isset($decoded) || !isset($decoded->data->tipo)) {
       header('Location: auth-login-basic.php');
       exit;
   }
 
-  // Verificar si el tipo de usuario
-  if ($decoded->data->tipo != '5') {
+  // Lista de tipos de usuario permitidos
+  $tiposPermitidos = ['2', '3', '4', '5'];
+
+  // Redirige al login
+  if (!in_array($decoded->data->tipo, $tiposPermitidos)) {
       header('Location: auth-login-basic.php');
       exit;
   }
+
+  if (empty($_COOKIE['token'])) {
+      header("Location: /SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?nocache=".time());
+      exit;
+  }
+
+  // Script anti-retroceso
+  echo '<script>
+      if (window.history && window.history.pushState) {
+          window.history.pushState(null, null, document.URL);
+          window.addEventListener("popstate", function() {
+              window.location.href = "/SIGET/modulos/DireccionRRHH/html/auth-login-basic.php?force=" + Date.now();
+          });
+      }
+  </script>';
+
+  echo '<script>const LOGGED_USER_CI = "' . $decoded->data->id . '";</script>';
+  echo '<script>const LOGGED_USER_TYPE = "' . $decoded->data->tipo . '";</script>';
 ?>
 
 <!DOCTYPE html>
@@ -86,24 +110,24 @@
           <div class="content-wrapper">
           <!-- Content -->
           <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Privilegios /</span> Modificaciones</h4>
+            <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Gestión de Presupuesto /</span> Deducciones</h4>
             <div class="row">
-              <!-- Tabla de Modificaciones -->
+              <!-- Tabla de Deducciones -->
               <div class="col-md-12">
                 <div class="card mb-4">
-                  <h5 class="card-header">Tabla de Modificaciones</h5>
+                  <h5 class="card-header">Tabla de Deducciones</h5>
                   <div class="card-body">
                     <!-- Tabla -->
                     <div class="table-responsive text-nowrap">
-                      <table class="table" id="modificationsTable">
+                      <table class="table" id="workersTable">
                         <thead>
                           <tr>
-                            <th>N°</th>
-                            <th>Afectada</th>
-                            <th>Operación</th>
-                            <th>Usuario</th>
-                            <th>Fecha y Hora</th>
-                            <!-- Se eliminó la columna Acciones -->
+                            <th>Deducciones</th>
+                            <th>Descripción</th>
+                            <th>Porcentaje</th>
+                            <?php if (isset($decoded->data->tipo) && $decoded->data->tipo != '1' && $decoded->data->tipo != '2') { ?>
+                                <th>Acciones</th>
+                            <?php } ?>
                           </tr>
                         </thead>
                         <tbody class="table-border-bottom-0">
@@ -115,7 +139,7 @@
                     <!-- Paginación -->
                     <div class="demo-inline-spacing mt-4">
                       <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center" id="modificationsPagination">
+                        <ul class="pagination justify-content-center" id="pagination">
                           <!-- La paginación se generará dinámicamente con JavaScript -->
                         </ul>
                       </nav>
@@ -161,8 +185,49 @@
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="../js/buttons.js"></script>
 
-    <!-- Funcionamiento de la tabla de Modificaciones -->
-    <script src="../assets/js/modulos/gest-presupuesto/func-table_mod.js"></script>
+    <!-- Funcionamiento de la tabla de Deducciones -->
+    <script src="../assets/js/modulos/gest-presupuesto/func-table_deduc.js"></script>
+
+    <!-- Modal de Editar Deducciones -->
+    <div class="modal fade" id="ModalDeducciones" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel1">Editar Deducción</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="deductionId">
+            <div class="row">
+              <div class="col mb-3">
+                <label for="tipoDeduccion" class="form-label">Nombre de la Deducción</label>
+                <input type="text" id="tipoDeduccion" class="form-control" placeholder="Ej. Seguro del Empleado" disabled required />
+                <div class="invalid-feedback">Por favor ingrese un nombre válido</div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col mb-3">
+                <label for="porcentajeDeduccion" class="form-label">Porcentaje de Deducción</label>
+                <input type="text" id="porcentajeDeduccion" class="form-control" 
+                      placeholder="Ej. 4.00" 
+                      pattern="^\d{1,7}(\.\d{1,2})?$"
+                      maxlength="10"
+                      required />
+                <div class="invalid-feedback">
+                  Por favor ingrese un porcentaje válido (máximo 2 decimales, sin caracteres especiales)
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+              Cerrar
+            </button>
+            <button type="button" class="btn btn-primary" id="confirmEditDeduction">Confirmar Cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </body>
 </html>
