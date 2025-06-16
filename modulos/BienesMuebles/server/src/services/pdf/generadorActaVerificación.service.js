@@ -1,3 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-async-promise-executor */
+/* eslint-disable camelcase */
+
 import PDFDocument from 'pdfkit'
 import fs from 'fs'
 import path from 'path'
@@ -70,7 +74,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       ] = await Promise.all([
         fetchApiData(`/api/bienes?dep=${dep_ide}&inc=1`, accessToken),
         fetchApiData(`/api/prestamos/almacen?dep_origen_id=${dep_ide}`, accessToken),
-        fetchApiData(`/api/prestamos/normales?dep_origen_ide=${dep_ide}`, accessToken),
+        fetchApiData(`/api/prestamos/normales?dep_origen_id=${dep_ide}`, accessToken),
         fetchApiData(`/api/prestamos/normales?dep_destino_id=${dep_ide}`, accessToken)
       ])
 
@@ -103,7 +107,8 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       const countMalEstado = bienesMalEstado.length
       const countPrestadosAOtro = bienesPrestadosAOtro.length
       const countPrestadosDeOtro = bienesPrestadosDeOtro.length
-      const countEnServicio = totalBienesGeneral - countFaltantes - countPrestadosAOtro
+      // MODIFICACIÓN IMPORTANTE: Los bienes en mal estado no se consideran en servicio
+      const countEnServicio = totalBienesGeneral - countFaltantes - countPrestadosAOtro - countMalEstado
 
       // 3. INICIAR LA CREACIÓN DEL PDF
       const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true })
@@ -123,7 +128,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         console.warn(`Logo no encontrado en ${logoPath}. Saltando logo.`)
       }
 
-      doc.font('Helvetica-Bold').fontSize(12).text('DIVISION DE COMPRAS; BIENES E INVENTARIOS', { align: 'center' })
+      doc.font('Helvetica-Bold').fontSize(12).text('DIVISION DE COMPRAS, BIENES E INVENTARIOS', { align: 'center' })
       doc.moveDown(2)
 
       // --- DIBUJAR TÍTULO ---
@@ -136,12 +141,17 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       const fechaCorta = '15/06/2025'
 
       doc.font('Helvetica').fontSize(12)
-      const parrafo = `En San Cristóbal a los ${fechaLarga} reunidos en el ${departamento_nombre || 'N/A'} los Ciudadanos: ${datosPost.director_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.director_cedula || 'N/A'} (${datosPost.director_cargo || 'N/A'}) y Lcda. ${datosPost.analista_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.analista_cedula || 'N/A'} (Analista de Bienes e Inventarios I), para dejar constancia de la verificación por percepción directa del inventario físico al ${fechaCorta}, fecha del reporte BM1 bienes adscritos a la Unidad antes mencionada, los cuales ascienden a un total de ${totalBienesGeneral} bienes, según la relación de bienes muebles formulario BM-1.`
+      const parrafo = `En San Cristóbal a los ${fechaLarga} reunidos en el ${departamento_nombre || 'N/A'} los Ciudadanos: ${datosPost.director_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.director_cedula || 'N/A'} (${datosPost.director_cargo || 'N/A'}) y Lcda. ${datosPost.analista_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.analista_cedula || 'N/A'} (Analista de Bienes e Inventarios I), para dejar constancia de la verificación por percepción directa del inventario físico al ${fechaCorta}, fecha del reporte BM1 bienes adscritos a la Unidad antes mencionada, los cuales ascienden a un total de (${totalBienesGeneral}) bienes, según la relación de bienes muebles formulario BM-1.`
       doc.text(parrafo, { align: 'justify' })
       doc.moveDown(2)
 
       // --- DIBUJAR TABLA DE RESUMEN ---
-      const ideEnServicio = todosLosBienes.filter(b => b.est_ide !== 3 && !bienesPrestadosAOtro.some(p => p.bim_ide === b.bim_ide)).map(b => b.bim_ide).join(', ')
+      // MODIFICACIÓN: Los bienes en mal estado no se incluyen en los bienes en servicio
+      const bienesEnServicio = todosLosBienes.filter(b => b.est_ide !== 3 &&
+        !bienesPrestadosAOtro.some(p => p.bim_ide === b.bim_ide) &&
+        !bienesMalEstado.some(m => m.bim_ide === b.bim_ide))
+      const ideEnServicio = bienesEnServicio.map(b => b.bim_ide).join(', ')
+
       const tableData = [
         { label: 'Bienes en Servicio en la dirección:', total: countEnServicio, obs: ideEnServicio },
         { label: 'Bienes Faltantes:', total: countFaltantes, obs: bienesFaltantes.map(b => b.bim_ide).join(', ') },
@@ -149,28 +159,106 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         { label: 'Bienes en Préstamo a otras direcciones:', total: countPrestadosAOtro, obs: bienesPrestadosAOtro.map(b => b.bim_ide).join(', ') },
         { label: 'Bienes en préstamo de otras direcciones a esta dirección:', total: countPrestadosDeOtro, obs: bienesPrestadosDeOtro.map(b => b.bim_ide).join(', ') }
       ]
-      drawTable(doc, tableData)
+      drawTable(doc, tableData, totalBienesGeneral)
       doc.moveDown(2)
 
       // --- SECCIONES DE DETALLES ---
-      doc.font('Helvetica-Bold').fontSize(12).text('OBSERVACION: Los siguientes bienes muebles presentan:', { align: 'left' })
+      // MODIFICACIÓN: El texto de observación ahora va alineado completamente a la izquierda
+      // --- SECCIONES DE DETALLES ---
+      doc.x = doc.page.margins.left
+      doc.font('Helvetica-Bold').fontSize(12).text('OBSERVACION:', {
+        align: 'left',
+        width: doc.page.width - doc.page.margins.left - doc.page.margins.right
+      })
       doc.moveDown()
 
+      // 1. BIENES PRESTADOS DE OTRAS DIRECCIONES A ESTA (individualmente)
       const drawSection = (title, items, formatter) => {
         if (items && items.length > 0) {
-          doc.font('Helvetica-Bold').fontSize(11).text(title, { underline: false })
+          doc.font('Helvetica-Bold').fontSize(11).text(title, {
+            align: 'left',
+            x: doc.page.margins.left
+          })
           doc.moveDown(0.5)
           doc.font('Helvetica').fontSize(10)
-          items.forEach(item => doc.text(formatter(item), { indent: 15, paragraphGap: 4 }))
+          items.forEach(item => doc.text(formatter(item), {
+            indent: 15,
+            paragraphGap: 4,
+            align: 'left',
+            x: doc.page.margins.left
+          }))
           doc.moveDown()
         }
       }
 
-      drawSection('OBSERVACION: Los siguientes bienes se prestan a:', bienesPrestadosAOtro, b => `EL BIEN N° ${b.bim_ide} ${b.bim_des}. SE DIO EN CALIDAD DE PRÉSTAMO A LA ${b.departamento_destino_nombre} SEGÚN TRANSFERENCIA DEL DÍA ${formatFullDate(b.pre_fec)}.`)
-      drawSection('BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A PISO 3 PARA SU RESGUARDO:', bienesMalEstado, b => `${b.bim_ide}: ${b.bim_des}`)
-      drawSection(`BIENES EN PRÉSTAMO PARA LA ${departamento_nombre || 'N/A'}:`, bienesPrestadosDeOtro, b => `SEGÚN OFICIO ${b.pre_ndo} DE FECHA ${new Date(b.pre_fec).toLocaleDateString('es-VE', { timeZone: 'UTC' })}: ${b.bim_ide}: ${b.bim_des}`)
-      drawSection(`BIENES QUE SE ENCUENTRAN SIN ETIQUETA EN ${departamento_nombre || 'N/A'}:`, bienesSinEtiqueta, b => `${b.bim_ide}: ${b.bim_des}`)
-      drawSection('REPORTE DE BIENES FALTANTES:', bienesFaltantes, b => `${b.bim_ide}: ${b.bim_des}`)
+      // Bienes recibidos en préstamo de otras direcciones (mostrar individualmente)
+      drawSection(
+        'Los siguientes bienes se prestan:',
+        bienesPrestadosDeOtro,
+        b => `EL BIEN Nº${b.bim_ide}: ${b.bim_des} SE DIO EN CALIDAD DE PRÉSTAMO A ${b.departamento_origen_nombre} SEGÚN TRANSFERENCIA DE OFICIO ${b.pre_ndo} EN FECHA ${new Date(b.pre_fec).toLocaleDateString('es-VE', { timeZone: 'UTC' })}`
+      )
+
+      // 2. BIENES EN MAL ESTADO (mantenemos igual)
+      drawSection(
+        'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A PISO 3 PARA SU RESGUARDO:',
+        bienesMalEstado,
+        b => `${b.bim_ide}: ${b.bim_des}`
+      )
+
+      // 3. BIENES PRESTADOS A OTRAS DIRECCIONES (agrupados por oficio)
+      if (bienesPrestadosAOtro.length > 0) {
+        // Agrupar por oficio y fecha
+        const prestamosAgrupados = {}
+        bienesPrestadosAOtro.forEach(b => {
+          const key = `${b.pre_ndo}_${b.pre_fec}`
+          if (!prestamosAgrupados[key]) {
+            prestamosAgrupados[key] = {
+              ndo: b.pre_ndo,
+              fecha: new Date(b.pre_fec).toLocaleDateString('es-VE', { timeZone: 'UTC' }),
+              destino: b.departamento_destino_nombre,
+              bienes: []
+            }
+          }
+          prestamosAgrupados[key].bienes.push(b)
+        })
+
+        // Mostrar cada grupo
+        Object.values(prestamosAgrupados).forEach(grupo => {
+          doc.font('Helvetica-Bold').fontSize(11)
+            .text(`BIENES EN PRÉSTAMO PARA LA ${grupo.destino} SEGÚN OFICIO ${grupo.ndo} DE FECHA ${grupo.fecha}:`, {
+              align: 'left',
+              x: doc.page.margins.left
+            })
+
+          doc.moveDown(0.5)
+          doc.font('Helvetica').fontSize(10)
+
+          grupo.bienes.forEach(b => {
+            doc.text(`${b.bim_ide}: ${b.bim_des}`, {
+              indent: 15,
+              paragraphGap: 4,
+              align: 'left',
+              x: doc.page.margins.left
+            })
+          })
+
+          doc.moveDown()
+        })
+      }
+
+      // 4. BIENES SIN ETIQUETA (mantenemos igual)
+      drawSection(
+  `BIENES QUE SE ENCUENTRAN SIN ETIQUETA EN ${departamento_nombre || 'N/A'}:`,
+  bienesSinEtiqueta,
+  b => `${b.bim_ide}: ${b.bim_des}`
+      )
+
+      // 5. BIENES FALTANTES (mantenemos igual)
+      drawSection(
+        'REPORTE DE BIENES FALTANTES:',
+        bienesFaltantes,
+        b => `${b.bim_ide}: ${b.bim_des}`
+      )
 
       // --- BLOQUES DE FIRMAS ---
       // Se calcula una posición base para las firmas, pero si el contenido es muy largo, se asegura de que no quede fuera de la página.
@@ -207,7 +295,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
 /**
  * Función auxiliar para dibujar una tabla en pdfkit.
  */
-function drawTable (doc, data) {
+function drawTable (doc, data, totalBienesGeneral) {
   const startY = doc.y
   const startX = doc.page.margins.left
   const tableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
@@ -217,6 +305,9 @@ function drawTable (doc, data) {
 
   const headers = ['Estatus del Bien Mueble', 'Total', 'Observaciones (Códigos)']
   let currentY = startY
+
+  // MODIFICACIÓN: Dibujar línea superior de la tabla
+  doc.moveTo(startX, startY).lineTo(startX + tableWidth, startY).stroke()
 
   // Dibuja cabecera
   doc.font('Helvetica-Bold').fontSize(10)
@@ -245,7 +336,7 @@ function drawTable (doc, data) {
 
     doc.y = rowY + rowHeight
     doc.moveTo(startX, doc.y).lineTo(startX + tableWidth, doc.y).stroke()
-    totalBienesSum += row.total
+    totalBienesSum = totalBienesGeneral
   })
 
   // Fila de Total

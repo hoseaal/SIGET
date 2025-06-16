@@ -145,42 +145,31 @@ export class PrestamoModel {
             'bim_des', tm.bim_des,
             'dpr_est', tdd.dpr_est,
             'con_ide', tamb.con_ide,
-            'con_con', tamb.con_con -- Descripción de la condición
+            'con_con', tamb.con_con
         )) AS bienes_detalles
       FROM ttrpre tp
-      LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
-      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
-      LEFT JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
-      LEFT JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
-      LEFT JOIN tmacon AS tamb ON tm.con_ide = tamb.con_ide
+      INNER JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      INNER JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
+      INNER JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
+      INNER JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
+      INNER JOIN tmacon AS tamb ON tm.con_ide = tamb.con_ide
+      WHERE tp.pre_est = 1
+        AND tp.dep_ide = ?
+        AND tamb.con_ide = ?
     `
-    const whereClauses = []
-    const params = []
 
-    // Inclusión CLAVE para bienes en almacén:
-    // Que el préstamo esté activo
-    whereClauses.push('tp.pre_est = 1')
-    // Que el destino del préstamo sea el Almacén
-    whereClauses.push('tp.dep_ide = ?')
-    params.push(DEP_ALMACEN_ID)
-    // Que la condición física del bien sea Mal Estado
-    whereClauses.push('tamb.con_ide = ?')
-    params.push(CON_MAL_ESTADO_ID)
+    const params = [DEP_ALMACEN_ID, CON_MAL_ESTADO_ID]
 
-    // Filtros opcionales
     if (filters.pre_ndo) {
-      whereClauses.push('tp.pre_ndo LIKE ?')
+      query += ' AND tp.pre_ndo LIKE ?'
       params.push(`%${filters.pre_ndo}%`)
     }
-    if (filters.dep_origen_id) { // Filtro por el nuevo campo dep_origen_ide en ttrpre
-      whereClauses.push('tp.dep_origen_ide = ?')
+    if (filters.dep_origen_id) {
+      query += ' AND tp.dep_origen_ide = ?'
       params.push(filters.dep_origen_id)
     }
 
-    if (whereClauses.length > 0) {
-      query += ' WHERE ' + whereClauses.join(' AND ')
-    }
-
+    query += ' GROUP BY tp.pre_ide'
     query += ' ORDER BY tp.pre_fec DESC, tp.pre_ndo ASC, tm.bim_cod ASC'
 
     const [rows] = await pool.query(query, params)

@@ -4,6 +4,7 @@ import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
 import { EstadoSelect, EstadoDeUsoSelect} from '../layouts/selectInfinito';
+import ModalActaVerificacion  from '../Modales/modalActaVerificacion'
 import { FixedSizeList as List } from 'react-window';
 
 export const Bm1 = () => {
@@ -17,14 +18,15 @@ export const Bm1 = () => {
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
 
-     const [showBM1Modal, setShowBM1Modal] = useState(false);
+     const [showVeriModal, setShowVeriModal] = useState(false);
 
-  const handleOpenModal = () => setShowBM1Modal(true);
+  const handleOpenModal = () => setShowVeriModal(true);
+
    const handleCloseModal = () => {
-    console.log("Cerrando modal...", showBM1Modal);
-    setShowBM1Modal(false);
-
+    console.log("Cerrando modal...", showVeriModal);
+    setShowVeriModal(false);
   };
+
     const [search, setSearch] = useState();
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
@@ -221,6 +223,11 @@ export const Bm1 = () => {
                     <i className="bx bx-file me-1"></i> Generar Formulario de BM1 
                 </button>
             </div>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <button id="exportToExcel" className="btn btn-primary" onClick={handleOpenModal}>
+                        <i className="bx bx-file me-1"></i> Generar Acta de verificacion
+                    </button>
+            </div>
             <div className="card">
                 <h5 className="card-header">Relación de Bienes Actuales</h5>
                 <div className="card-body">
@@ -345,6 +352,11 @@ export const Bm1 = () => {
                 handleClose={() => setShowUpdateModal(false)}
                 BienId={editingItem?.bim_ide} 
                 onSuccess={handleSuccess} />
+
+                <ModalActaVerificacion
+                    show={showVeriModal}
+                    handleClose={handleCloseModal}
+                />
             </div>
 
 
