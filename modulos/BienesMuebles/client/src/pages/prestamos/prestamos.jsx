@@ -147,9 +147,10 @@ export const Prestamos = () => {
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4 className="py-3 mb-4"><span className="text-muted fw-light">Gestión de Movimientos /</span> Préstamos Normales</h4>
+                <h4 className="py-3 mb-4"><span className="text-muted fw-light">Gestión de Movimientos /</span> Préstamos</h4>
                 <Button variant="primary" onClick={() => setShowCreateModal(true)}>
                     Registrar Nuevo Préstamo
+                    <i className="bx bx-plus-circle ms-1"></i>
                 </Button>
             </div>
 
@@ -171,7 +172,7 @@ export const Prestamos = () => {
                         </Button>
                         {searchQueryOficio && (
                             <Button type="button" variant="outline-secondary" onClick={handleClearSearch}>
-                                Limpiar Búsqueda
+                                Limpiar
                             </Button>
                         )}
 

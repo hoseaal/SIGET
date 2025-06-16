@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
-import { EstadoSelect} from '../layouts/selectInfinito';
+import { EstadoSelect, EstadoDeUsoSelect} from '../layouts/selectInfinito';
 import { FixedSizeList as List } from 'react-window';
 
 export const Bm1 = () => {
@@ -11,6 +11,7 @@ export const Bm1 = () => {
     const [data, setData] = useState([]);
     const [meta, setMeta] = useState({});
     const [unidadAdmin, setUnidadAdmin] = useState([]);
+    const [condicion, setCondicion] = useState([]);
 
     const [editingItem, setEditingItem] = useState(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -29,6 +30,7 @@ export const Bm1 = () => {
     const [page, setPage] = useState(1);
     const [filtros, setFiltros] = useState({
         estado: null,
+        condicion: null
     });
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
 
@@ -48,6 +50,7 @@ export const Bm1 = () => {
             } else {
                 url = `/api/bienes?inc=1&page=${page}&limit=${limit}`;
                 if (filtros.estado) url += `&estado=${filtros.estado}`;
+                if (filtros.condicion) url += `&con=${filtros.condicion}`;
             }
             
             const response = await fetch(url);
@@ -63,13 +66,13 @@ export const Bm1 = () => {
     };
     
     loadData();
-}, [page, filtros.estado, searchQuery, refreshKey]);
+}, [page, filtros.estado, filtros.condicion, searchQuery, refreshKey]);
 
     useEffect(() => {
         const fetchAllData = async () => {
-            const unidadAdminRes = await fetch('/api/departamentos');
-            const unidadAdminData = await unidadAdminRes.json();
-            setUnidadAdmin(unidadAdminData || []);
+            const condicionRes = await fetch('/api/condiciones-fisicas');
+            const condicionData = await condicionRes.json();
+            setCondicion(condicionData || []);
         };
         fetchAllData();
     }, []);
@@ -144,6 +147,14 @@ export const Bm1 = () => {
             console.log("estado seleccionado:", estadoId);
         };
 
+        const handleCondicionChange = (condicionId) => {
+            setFiltros(prev => ({ ...prev, condicion: condicionId }));
+            setPage(1);
+            
+            // Aquí puedes agregar lógica adicional cuando cambia el estado
+            console.log("condición seleccionada:", condicionId);
+        };
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -207,7 +218,7 @@ export const Bm1 = () => {
                     <i className="bx bx-file me-1"></i> SUDEBIM carga de bienes muebles
                 </button>
                 <button id="exportToExcel" className="btn btn-primary" onClick={handleDownloadBM1}>
-                    <i className="bx bx-file me-1"></i> Generar BM1 
+                    <i className="bx bx-file me-1"></i> Generar Formulario de BM1 
                 </button>
             </div>
             <div className="card">
@@ -251,6 +262,12 @@ export const Bm1 = () => {
                                 tipoBien={Estados}
                                 value={filtros.estado}
                                 onChange={handleEstadoChange}
+                            />
+
+                            <EstadoDeUsoSelect
+                                tipoBien={condicion}
+                                value={filtros.condicion}
+                                onChange={handleCondicionChange}
                             />
                         </form>
                         <div className="table-responsive text-nowrap">

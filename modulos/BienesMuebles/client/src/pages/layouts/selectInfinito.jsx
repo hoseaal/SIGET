@@ -117,13 +117,13 @@ const InfiniteSelect = ({ options, value, onChange, direction = 'right', onToggl
 };
 
 // Componente para el filtro de tipo
-const CondicionFisicaSelect = ({ tipoBien, value, onChange }) => {
+const EstadoDeUsoSelect = ({ tipoBien, value, onChange }) => {
   // Preparar opciones
   const options = [
-    { value: null, label: 'Tipos de Bien' },
+    { value: null, label: 'Condicion fisica' },
     ...tipoBien.map(item => ({
-      value: item.tip_ide,
-      label: item.tip_tip
+      value: item.con_ide,
+      label: item.con_con
     }))
   ];
 
@@ -132,7 +132,7 @@ const CondicionFisicaSelect = ({ tipoBien, value, onChange }) => {
       options={options}
       value={value}
       onChange={onChange}
-      placeholder="Tipos de Bien"
+      placeholder="Condición física"
     />
   );
 };
@@ -159,4 +159,4 @@ const EstadoSelect = ({ tipoBien, value, onChange, onToggle }) => {
   );
 };
 
-export {EstadoSelect};
+export {EstadoSelect, EstadoDeUsoSelect};

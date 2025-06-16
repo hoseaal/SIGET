@@ -50,7 +50,7 @@
                     {
                         "text": "Bienes en Almacen",
                         "available": true,
-                        "link": "/BienesAlmacen"
+                        "link": "/Almacen"
                     },
                     {
                         "text": "Préstamos",
