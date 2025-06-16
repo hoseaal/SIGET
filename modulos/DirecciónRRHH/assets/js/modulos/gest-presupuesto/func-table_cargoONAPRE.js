@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Configurar event listeners solo si el usuario tiene permisos
         if (LOGGED_USER_TYPE !== '1') {
-            // Agregar event listeners para los botones de editar
+            // event listeners para los botones de editar
             document.querySelectorAll('.editar-cargo-btn').forEach(boton => {
                 boton.addEventListener('click', function() {
                     const idCargo = this.getAttribute('data-id');
@@ -187,14 +187,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
 
-            // Agregar event listeners para los botones de eliminar 
+            // event listeners para los botones de eliminar 
             if (LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
                 document.querySelectorAll('.eliminar-cargo-btn').forEach(boton => {
                     // Limpiar eventos existentes primero
                     const nuevoBoton = boton.cloneNode(true);
                     boton.parentNode.replaceChild(nuevoBoton, boton);
                     
-                    // Agregar nuevo listener
+                    // nuevo listener
                     nuevoBoton.addEventListener('click', function() {
                         const idCargo = this.getAttribute('data-id');
                         const nombreCargo = this.getAttribute('data-name');
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
             item.classList.remove('disabled');
         });
         
-        // Agregar clase active al item correspondiente
+        // clase active al item correspondiente
         itemsPagina.forEach(item => {
             const enlacePagina = item.querySelector('.page-link:not(.tf-icon)');
             if (enlacePagina && enlacePagina.textContent === paginaActualONAPRE.toString()) {
@@ -636,7 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar la tabla ONAPRE con animación suave
     async function actualizarTablaONAPRESuavemente() {
-        // Agregar clase de transición a la tabla
+        // clase de transición a la tabla
         const tabla = document.getElementById('onapreTable');
         tabla.classList.add('table-updating');
         

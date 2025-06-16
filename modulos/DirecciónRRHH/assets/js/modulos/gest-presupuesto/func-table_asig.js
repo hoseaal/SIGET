@@ -162,9 +162,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <a class="dropdown-item edit-assignment-btn" href="javascript:void(0);" data-id="${asignacion.pri_ide}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
                                 </a>
-                                <a class="dropdown-item delete-assignment-btn" href="javascript:void(0);" data-id="${asignacion.pri_ide}" data-name="${asignacion.pri_raz}">
-                                    <i class="bx bx-trash me-1"></i> Eliminar
-                                </a>
                             </div>
                         </div>
                     </td>
@@ -195,93 +192,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert('No se pudieron cargar los datos de la asignación');
                     }
                 });
-            });
-        }
-
-        // Agregar event listeners para los botones de eliminar (solo tipo 4)
-        if (LOGGED_USER_TYPE === '5') {
-            document.querySelectorAll('.delete-assignment-btn').forEach(boton => {
-                boton.addEventListener('click', function() {
-                    const pri_ide = this.getAttribute('data-id');
-                    const nombreAsignacion = this.getAttribute('data-name');
-                    mostrarConfirmacionEliminacion(pri_ide, nombreAsignacion);
-                });
-            });
-        }
-    }
-
-    // Función para mostrar confirmación de eliminación
-    function mostrarConfirmacionEliminacion(pri_ide, nombreAsignacion) {
-        smallSwal.fire({
-            title: '¿Eliminar asignación?',
-            html: `¿Seguro de eliminar la asignación <strong>${nombreAsignacion}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (resultado) => {
-            if (resultado.isConfirmed) {
-                // Mostrar loader durante la eliminación
-                smallSwal.fire({
-                    title: 'Eliminando asignación',
-                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 100%; height: 100%;"></div></div>',
-                    showConfirmButton: false,
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    didOpen: () => {
-                        smallSwal.showLoading();
-                    }
-                });
-                
-                await eliminarAsignacion(pri_ide);
-            }
-        });
-    }
-
-    // Función para eliminar una asignación
-    async function eliminarAsignacion(pri_ide) {
-        try {
-            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_asig.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ pri_ide: pri_ide })
-            });
-            
-            const resultado = await respuesta.json();
-            
-            if (!respuesta.ok) {
-                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
-            }
-            
-            if (resultado.success) {
-                smallSwal.close();
-                
-                // Mostrar mensaje de éxito
-                smallSwal.fire({
-                    icon: 'success',
-                    title: '¡Eliminado!',
-                    text: resultado.message || 'Asignación eliminada correctamente',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(async () => {
-                    // Recargar la tabla
-                    await mostrarAsignaciones(paginaActual);
-                });
-            } else {
-                throw new Error(resultado.message || 'Error al eliminar la asignación');
-            }
-        } catch (error) {
-            console.error('Error al eliminar:', error);
-            smallSwal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al eliminar: ' + error.message,
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'Entendido'
             });
         }
     }
@@ -371,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
             item.classList.remove('active');
         });
         
-        // Agregar clase active al item correspondiente
+        // clase active al item correspondiente
         itemsPagina.forEach(item => {
             const enlacePagina = item.querySelector('.page-link');
             if (enlacePagina && enlacePagina.textContent === paginaActual.toString()) {
@@ -560,7 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const tabla = document.getElementById('assignmentsTable');
         const paginacion = document.getElementById('paginationAssignments');
         
-        // Agregar clase de transición
+        // clase de transición
         tabla.classList.add('table-updating');
         paginacion.classList.add('pagination-updating');
         

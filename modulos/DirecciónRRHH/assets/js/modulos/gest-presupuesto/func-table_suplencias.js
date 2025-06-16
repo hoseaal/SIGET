@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para configurar los event listeners
     function configurarEventos() {
-        // Agregar event listeners para los botones de editar
+        // event listeners para los botones de editar
         document.querySelectorAll('.edit-supplement-btn').forEach(boton => {
             boton.addEventListener('click', async function() {
                 const sup_ide = this.getAttribute('data-sup_ide');
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Agregar event listeners para los botones de eliminar
+        // event listeners para los botones de eliminar
         document.querySelectorAll('.delete-supplement-btn').forEach(boton => {
             boton.addEventListener('click', function() {
                 const sup_ide = this.getAttribute('data-sup_ide');
@@ -760,7 +760,7 @@ document.addEventListener('DOMContentLoaded', function() {
             feedbackExistente.remove();
         }
         
-        // Agregar clase de error al input
+        //clase de error al input
         elemento.classList.add('is-invalid');
         
         // Crear elemento de feedback
@@ -849,7 +849,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar la tabla con animación suave
     async function actualizarTablaSuplenciasSuavemente() {
-        // Agregar clase de transición a la tabla
+        // clase de transición a la tabla
         const tabla = document.getElementById('supplementTable');
         tabla.classList.add('table-updating');
         

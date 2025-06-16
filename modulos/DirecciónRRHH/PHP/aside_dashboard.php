@@ -66,7 +66,7 @@
                 <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2' || $GLOBALS['decoded']->data->tipo == '1'): ?>
                 <li class="menu-item">
                     <a href="Table_Nomina.php" class="menu-link">
-                        <div data-i18n="Basic">Tabla Trabajadores</div>
+                        <div data-i18n="Basic">Tabla de Trabajadores</div>
                     </a>
                 </li>
                 <?php endif; ?>
@@ -74,7 +74,7 @@
                 <?php if ($GLOBALS['decoded']->data->tipo == '5'): ?>
                 <li class="menu-item">
                     <a href="Table_User.php" class="menu-link">
-                        <div data-i18n="Basic">Tabla Usuarios</div>
+                        <div data-i18n="Basic">Tabla de Usuarios</div>
                     </a>
                 </li>
                 <?php endif; ?>

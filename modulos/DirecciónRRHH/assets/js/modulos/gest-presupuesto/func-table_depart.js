@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('departmentName').value = datosDepartamento.dep_nom || '';
         document.getElementById('departmentDescription').value = datosDepartamento.dep_des || '';
         
-        // Agregar event listeners para validación en tiempo real
+        // event listeners para validación en tiempo real
         document.getElementById('departmentName').addEventListener('input', function() {
             validarInputNombre(this);
         });

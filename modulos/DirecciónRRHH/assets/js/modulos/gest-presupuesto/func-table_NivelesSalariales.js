@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                 `;
             } 
-            // Tipos "3" y "4" - 4 columnas con todas las acciones
+            // Tipos "4" y "5"
             else {
                 fila.innerHTML = `
                     <td>${salario.nvl_ran}</td>
@@ -208,9 +208,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="dropdown-menu">
                                 <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salario.nvl_ide}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
-                                </a>
-                                <a class="dropdown-item delete-salary-btn" href="javascript:void(0);" data-nvl_ide="${salario.nvl_ide}" data-nvl_ran="${salario.nvl_ran}" data-ona_car="${salario.ona_car || 'Sin cargo asignado'}">
-                                    <i class="bx bx-trash me-1"></i> Eliminar
                                 </a>
                             </div>
                         </div>
@@ -302,126 +299,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para configurar los event listeners
     function configurarEventos() {
-        if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
-            document.querySelectorAll('.edit-salary-btn').forEach(boton => {
-                boton.addEventListener('click', async function() {
-                    const nvl_ide = this.getAttribute('data-nvl_ide');
-                    try {
-                        const respuesta = await fetch(`../PHP/api/gest-presupuesto/detalles_salarios.php?nvl_ide=${nvl_ide}`);
-                        const datos = await respuesta.json();
-                        
-                        if (datos.success) {
-                            abrirModalEdicion(datos.salary);
-                        } else {
-                            alert('No se pudieron cargar los datos del nivel salarial');
-                        }
-                    } catch (error) {
-                        console.error('Error al cargar detalles:', error);
-                        alert('Error al cargar los detalles del nivel salarial');
-                    }
-                });
-            });
-        }
-
-        // Agregar event listeners para los botones de eliminar
-        if (LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
-            document.querySelectorAll('.delete-salary-btn').forEach(boton => {
-                boton.addEventListener('click', function() {
-                    const nvl_ide = this.getAttribute('data-nvl_ide');
-                    const nvl_ran = this.getAttribute('data-nvl_ran');
-                    const ona_car = this.getAttribute('data-ona_car');
-                    mostrarConfirmacionEliminacion(nvl_ide, nvl_ran, ona_car);
-                });
-            });
-        }
-    }
-
-    // Función para mostrar confirmación de eliminación
-    function mostrarConfirmacionEliminacion(nvl_ide, nvl_ran, ona_car) {
-        smallSwal.fire({
-            title: '¿Eliminar nivel salarial?',
-            html: `¿Seguro de eliminar el nivel <strong>${nvl_ran}</strong> del cargo <strong>${ona_car}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (resultado) => {
-            if (resultado.isConfirmed) {
-                // Mostrar loader durante la eliminación
-                smallSwal.fire({
-                    title: 'Eliminando registro',
-                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 100%; height: 100%;"></div></div>',
-                    showConfirmButton: false,
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    didOpen: () => {
-                        smallSwal.showLoading();
-                    }
-                });
-                
-                await eliminarSalario(nvl_ide);
-            }
-        });
-    }
-
-    // Función para eliminar un nivel salarial
-    async function eliminarSalario(nvl_ide) {
-        try {
-            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_salarios.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ nvl_ide: nvl_ide })
-            });
-            
-            const resultado = await respuesta.json();
-            
-            if (!respuesta.ok) {
-                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
-            }
-            
-            if (resultado.success) {
-                // Cerrar cualquier alerta abierta
-                smallSwal.close();
-                
-                // Verificar si debemos cambiar de página
-                if (paginaActual > 1 && (totalSalarios - 1) <= ((paginaActual - 1) * filasPorPagina)) {
-                    paginaActual--;
-                }
-                
-                // Mostrar mensaje de éxito
-                smallSwal.fire({
-                    icon: 'success',
-                    title: '¡Eliminado!',
-                    text: resultado.message || 'Nivel salarial eliminado correctamente',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(async () => {
-                    // Recargar la tabla
-                    if (buscando) {
-                        todosSalarios = await obtenerTodosSalarios();
-                        const filtrados = filtrarSalariosLocalmente(todosSalarios, terminoBusquedaActual);
-                        mostrarSalarios(1, filtrados);
+        // Configurar solo los botones de edición para todos los tipos de usuario permitidos
+        document.querySelectorAll('.edit-salary-btn').forEach(boton => {
+            boton.addEventListener('click', async function() {
+                const nvl_ide = this.getAttribute('data-nvl_ide');
+                try {
+                    const respuesta = await fetch(`../PHP/api/gest-presupuesto/detalles_salarios.php?nvl_ide=${nvl_ide}`);
+                    const datos = await respuesta.json();
+                    
+                    if (datos.success) {
+                        abrirModalEdicion(datos.salary);
                     } else {
-                        await mostrarSalarios(paginaActual);
+                        alert('No se pudieron cargar los datos del nivel salarial');
                     }
-                });
-            } else {
-                throw new Error(resultado.message || 'Error al eliminar el nivel salarial');
-            }
-        } catch (error) {
-            console.error('Error al eliminar:', error);
-            smallSwal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al eliminar: ' + error.message,
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'Entendido'
+                } catch (error) {
+                    console.error('Error al cargar detalles:', error);
+                    alert('Error al cargar los detalles del nivel salarial');
+                }
             });
-        }
+        });
     }
 
     // Función para configurar la paginación
@@ -554,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectOnapre.value = datosSalario.ona_ide;
         }
 
-        // Agregar event listeners para validación en tiempo real
+        // event listeners para validación en tiempo real
         document.getElementById('tipoNlvSalarial').addEventListener('input', function() {
             validarInputTipoNivel(this);
         });

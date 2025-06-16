@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
 
-            // Agregar event listeners para los botones de eliminar 
+            // event listeners para los botones de eliminar 
             if (LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
                 document.querySelectorAll('.delete-position-btn').forEach(boton => {
                     boton.addEventListener('click', function() {
@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
             item.classList.remove('disabled');
         });
         
-        // Agregar clase active al item correspondiente
+        // clase active al item correspondiente
         itemsPagina.forEach(item => {
             const enlacePagina = item.querySelector('.page-link:not(.tf-icon)');
             if (enlacePagina && enlacePagina.textContent === paginaActual.toString()) {
@@ -606,7 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar la tabla con animación suave
     async function actualizarTablaSuavemente() {
-        // Agregar clase de transición a la tabla
+        // clase de transición a la tabla
         const tabla = document.getElementById('cetTable');
         tabla.classList.add('table-updating');
         
