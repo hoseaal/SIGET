@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para configurar los event listeners
     function configurarEventos() {
-        // Agregar event listeners para los botones de editar
+        // event listeners para los botones de editar
         document.querySelectorAll('.edit-worker-btn').forEach(boton => {
             boton.addEventListener('click', async function() {
                 const cedula = this.getAttribute('data-cedula');
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Agregar event listeners para los botones de eliminar
+        // event listeners para los botones de eliminar
         document.querySelectorAll('.delete-worker-btn').forEach(boton => {
             boton.addEventListener('click', function() {
                 const cedula = this.getAttribute('data-cedula');
@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar la tabla con animación suave
     async function actualizarTablaSuavemente() {
-        // Agregar clase de transición a la tabla
+        // clase de transición a la tabla
         const tabla = document.getElementById('workersTable');
         tabla.classList.add('table-updating');
         

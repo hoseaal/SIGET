@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                 `;
             } 
-            // Tipos "3" y "4" - 5 columnas con todas las acciones
+            // Tipos "4" y "5"
             else {
                 fila.innerHTML = `
                     <td>${numeroFila}</td>
@@ -161,11 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="dropdown-menu">
                                 <a class="dropdown-item edit-deduction-btn" href="javascript:void(0);" data-id="${deduccion.ded_ide}">
                                     <i class="bx bx-edit-alt me-1"></i> Editar
-                                </a>
-                                <a class="dropdown-item delete-deduction-btn" href="javascript:void(0);" 
-                                data-id="${deduccion.ded_ide}" 
-                                data-name="${deduccion.ded_raz}">
-                                    <i class="bx bx-trash me-1"></i> Eliminar
                                 </a>
                             </div>
                         </div>
@@ -186,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Agregar event listeners para los botones de editar
+        // event listeners para los botones de editar
         if (LOGGED_USER_TYPE === '3' || LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
             document.querySelectorAll('.edit-deduction-btn').forEach(boton => {
                 boton.addEventListener('click', async function() {
@@ -198,94 +193,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert('No se pudieron cargar los datos de la deducción');
                     }
                 });
-            });
-        }
-
-        // Agregar event listeners para los botones de eliminar
-        if (LOGGED_USER_TYPE === '4' || LOGGED_USER_TYPE === '5') {
-            document.querySelectorAll('.delete-deduction-btn').forEach(boton => {
-                boton.addEventListener('click', function() {
-                    const dedId = this.getAttribute('data-id');
-                    const nombreDeduccion = this.getAttribute('data-name');
-                    mostrarConfirmacionEliminacion(dedId, nombreDeduccion);
-                });
-            });
-        }
-    }
-
-    // Función para mostrar confirmación de eliminación
-    function mostrarConfirmacionEliminacion(dedId, nombreDeduccion) {
-        smallSwal.fire({
-            title: '¿Eliminar deducción?',
-            html: `¿Seguro de eliminar la deducción <strong>${nombreDeduccion}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (resultado) => {
-            if (resultado.isConfirmed) {
-                // Mostrar loader durante la eliminación
-                smallSwal.fire({
-                    title: 'Eliminando deducción',
-                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 100%; height: 100%;"></div></div>',
-                    showConfirmButton: false,
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    didOpen: () => {
-                        smallSwal.showLoading();
-                    }
-                });
-                
-                await eliminarDeduccion(dedId);
-            }
-        });
-    }
-
-    // Función para eliminar una deducción
-    async function eliminarDeduccion(dedId) {
-        try {
-            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_deduc.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ ded_id: dedId })
-            });
-            
-            const resultado = await respuesta.json();
-            
-            if (!respuesta.ok) {
-                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
-            }
-            
-            if (resultado.success) {
-                // Cerrar cualquier alerta abierta
-                smallSwal.close();
-                
-                // Mostrar mensaje de éxito
-                smallSwal.fire({
-                    icon: 'success',
-                    title: '¡Eliminada!',
-                    text: resultado.message || 'Deducción eliminada correctamente',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(async () => {
-                    // Recargar la tabla
-                    await mostrarDeducciones(paginaActual);
-                });
-            } else {
-                throw new Error(resultado.message || 'Error al eliminar la deducción');
-            }
-        } catch (error) {
-            console.error('Error al eliminar:', error);
-            smallSwal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al eliminar: ' + error.message,
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'Entendido'
             });
         }
     }
@@ -375,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
             item.classList.remove('active');
         });
         
-        // Agregar clase active al item correspondiente
+        // clase active al item correspondiente
         itemsPagina.forEach(item => {
             const enlacePagina = item.querySelector('.page-link');
             if (enlacePagina && enlacePagina.textContent === paginaActual.toString()) {
@@ -553,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar la tabla con animación suave
     async function actualizarTablaSuavemente() {
-        // Agregar clase de transición a la tabla
+        // clase de transición a la tabla
         const tabla = document.getElementById('workersTable');
         tabla.classList.add('table-updating');
         

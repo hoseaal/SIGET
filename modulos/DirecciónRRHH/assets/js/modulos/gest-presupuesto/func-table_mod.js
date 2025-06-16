@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             fila.innerHTML = `
                 <td>${numeroFila}</td>
-                <td><strong>${modificacion.bit_tabla} (${modificacion.display_affected_id || 'N/A'})</strong></td>
+                <td><strong>${modificacion.bit_tabla}${(modificacion.source_table === 'bit_usu' || modificacion.source_table === 'bit_nom') ? ` (${modificacion.display_affected_id || 'N/A'})` : ''}</strong></td>
                 <td>${operacionTraducida}</td>
                 <td>${modificacion.bit_usuario_responsable}</td>
                 <td>${fechaFormateada}</td>
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
             item.classList.remove('active');
         });
         
-        // Agregar clase active al item correspondiente
+        // clase active al item correspondiente
         itemsPagina.forEach(item => {
             const enlacePagina = item.querySelector('.page-link');
             if (enlacePagina && enlacePagina.textContent === paginaActual.toString()) {

@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para configurar los event listeners
     function configurarEventos() {
-        // Agregar event listeners para los botones de editar
+        // event listeners para los botones de editar
         document.querySelectorAll('.edit-user-btn').forEach(boton => {
             boton.addEventListener('click', async function() {
                 const idUsuario = this.getAttribute('data-userid');
@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Agregar event listeners para los botones de eliminar
+        // event listeners para los botones de eliminar
         document.querySelectorAll('.delete-user-btn').forEach(boton => {
             boton.addEventListener('click', function() {
                 const idUsuario = this.getAttribute('data-userid');
@@ -836,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar la tabla de usuarios con animación suave
     async function actualizarTablaUsuariosSuavemente() {
-        // Agregar clase de transición a la tabla
+        // clase de transición a la tabla
         const tabla = document.getElementById('usersTable');
         tabla.classList.add('table-updating');
         

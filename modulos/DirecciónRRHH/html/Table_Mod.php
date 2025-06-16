@@ -98,7 +98,7 @@
                       <table class="table" id="modificationsTable">
                         <thead>
                           <tr>
-                            <th>#</th>
+                            <th>N°</th>
                             <th>Afectada</th>
                             <th>Operación</th>
                             <th>Usuario</th>

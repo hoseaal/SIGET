@@ -13,9 +13,6 @@
     // Calcular offset
     $offset = ($page - 1) * $perPage;
 
-    // Array para almacenar todas las modificaciones
-    $allModifications = [];
-
     // Tablas de bitácora a consultar con sus columnas específicas
     $bitacoraTables = [
         'bit_usu' => 'bit_usu_ide',
@@ -30,22 +27,47 @@
     ];
 
     try {
-        // Consultar cada tabla de bitácora y combinar resultados
+        // Paso 1: Obtener el conteo total de registros (para todas las tablas)
+        $totalCount = 0;
         foreach ($bitacoraTables as $table => $idColumn) {
-            // Consulta base para cada tabla de bitácora
+            $countQuery = "SELECT COUNT(*) as total FROM {$table}";
+            $stmt = $pdo->query($countQuery);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $totalCount += $result['total'];
+        }
+        
+        // Paso 2: Obtener solo los IDs de los registros que corresponden a la página actual
+        $unionParts = [];
+        foreach ($bitacoraTables as $table => $idColumn) {
+            $unionParts[] = "SELECT '{$table}' as source_table, bit_id, bit_fecha FROM {$table}";
+        }
+        
+        $unionQuery = implode(" UNION ALL ", $unionParts);
+        $orderedQuery = "SELECT source_table, bit_id FROM ($unionQuery) AS combined ORDER BY bit_fecha DESC LIMIT {$offset}, {$perPage}";
+        
+        $stmt = $pdo->query($orderedQuery);
+        $paginatedRecords = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Paso 3: Obtener los detalles completos solo para los registros paginados
+        $allModifications = [];
+        foreach ($paginatedRecords as $record) {
+            $table = $record['source_table'];
+            $idColumn = $bitacoraTables[$table];
+            $bitId = $record['bit_id'];
+            
             $query = "SELECT 
                     '{$table}' as source_table,
                     b.bit_id,
                     CASE 
                         WHEN b.bit_tabla = 'tescep' THEN 'Caja de Ahorro'
-                        WHEN b.bit_tabla = 'tescet' THEN 'Gestión de cargos CET'
+                        WHEN b.bit_tabla = 'tescet' THEN 'Cargos CET'
                         WHEN b.bit_tabla = 'tesded' THEN 'Deducciones'
-                        WHEN b.bit_tabla = 'tmanom' THEN 'Gestión de Nómina'
-                        WHEN b.bit_tabla = 'tesnvl' THEN 'Gestión de Niveles Salariales'
-                        WHEN b.bit_tabla = 'tesona' THEN 'Gestión de cargos ONAPRE'
+                        WHEN b.bit_tabla = 'tmanom' THEN 'Tabla de Trabajadores'
+                        WHEN b.bit_tabla = 'tesnvl' THEN 'Niveles Salariales'
+                        WHEN b.bit_tabla = 'tesona' THEN 'Cargos ONAPRE'
                         WHEN b.bit_tabla = 'tespri' THEN 'Asignaciones'
-                        WHEN b.bit_tabla = 'tessup' THEN 'Gestión de Suplencias'
-                        WHEN b.bit_tabla = 'tesusu' THEN 'Gestión de Usuarios'
+                        WHEN b.bit_tabla = 'tessup' THEN 'Suplencias de los Trabajadores'
+                        WHEN b.bit_tabla = 'tesusu' THEN 'Tabla de Usuarios'
                         ELSE b.bit_tabla
                     END as bit_tabla,
                     b.bit_operacion,
@@ -65,28 +87,15 @@
                 FROM {$table} b
                 LEFT JOIN tesusu u ON b.bit_usuario_responsable = u.nom_ced
                 LEFT JOIN tesusu usu ON b.bit_tabla = 'tesusu' AND b.{$idColumn} = usu.usu_ide
-                ORDER BY b.bit_fecha DESC
-                LIMIT {$offset}, {$perPage}";
+                WHERE b.bit_id = :bit_id";
             
-            $stmt = $pdo->query($query);
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            // Agregar resultados al array combinado
-            $allModifications = array_merge($allModifications, $results);
-        }
-        
-        // Ordenar todas las modificaciones por fecha (más reciente primero)
-        usort($allModifications, function($a, $b) {
-            return strtotime($b['bit_fecha']) - strtotime($a['bit_fecha']);
-        });
-        
-        // Obtener el conteo total de registros (para todas las tablas)
-        $totalCount = 0;
-        foreach ($bitacoraTables as $table => $idColumn) {
-            $countQuery = "SELECT COUNT(*) as total FROM {$table}";
-            $stmt = $pdo->query($countQuery);
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([':bit_id' => $bitId]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $totalCount += $result['total'];
+            
+            if ($result) {
+                $allModifications[] = $result;
+            }
         }
         
         // Calcular el total de páginas

@@ -133,9 +133,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             <a class="dropdown-item edit-salary-btn" href="javascript:void(0);" data-nvl_ide="${salario.nvl_ide}">
                                 <i class="bx bx-edit-alt me-1"></i> Editar
                             </a>
-                            <a class="dropdown-item delete-salary-btn" href="javascript:void(0);" data-nvl_ide="${salario.nvl_ide}" data-nvl_ran="${salario.nvl_ran}" data-ona_car="${salario.ona_car || 'Sin cargo asignado'}">
-                                <i class="bx bx-trash me-1"></i> Eliminar
-                            </a>
                         </div>
                     </div>
                 </td>
@@ -162,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para configurar los event listeners
     function configurarEventos() {
-        // Agregar event listeners para los botones de editar
+        // event listeners para los botones de editar
         document.querySelectorAll('.edit-salary-btn').forEach(boton => {
             boton.addEventListener('click', async function() {
                 const nvl_ide = this.getAttribute('data-nvl_ide');
@@ -181,98 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-
-        // Agregar event listeners para los botones de eliminar
-        document.querySelectorAll('.delete-salary-btn').forEach(boton => {
-            boton.addEventListener('click', function() {
-                const nvl_ide = this.getAttribute('data-nvl_ide');
-                const nvl_ran = this.getAttribute('data-nvl_ran');
-                const ona_car = this.getAttribute('data-ona_car');
-                mostrarConfirmacionEliminacion(nvl_ide, nvl_ran, ona_car);
-            });
-        });
-    }
-
-    // Función para mostrar confirmación de eliminación
-    function mostrarConfirmacionEliminacion(nvl_ide, nvl_ran, ona_car) {
-        smallSwal.fire({
-            title: '¿Eliminar registro histórico?',
-            html: `¿Seguro de eliminar el registro histórico del nivel <strong>${nvl_ran}</strong> para el cargo <strong>${ona_car}</strong>?<br><br><span class="text-danger">¡Esta acción no se puede deshacer!</span>`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then(async (resultado) => {
-            if (resultado.isConfirmed) {
-                // Mostrar loader durante la eliminación
-                smallSwal.fire({
-                    title: 'Eliminando registro histórico',
-                    html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 100%; height: 100%;"></div></div>',
-                    showConfirmButton: false,
-                    allowOutsideClick: false,
-                    allowEscapeKey: false,
-                    didOpen: () => {
-                        smallSwal.showLoading();
-                    }
-                });
-                
-                await eliminarSalario(nvl_ide);
-            }
-        });
-    }
-
-    // Función para eliminar un nivel salarial
-    async function eliminarSalario(nvl_ide) {
-        try {
-            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_salarios-hist.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ nvl_ide: nvl_ide })
-            });
-            
-            const resultado = await respuesta.json();
-            
-            if (!respuesta.ok) {
-                throw new Error(resultado.message || `Error HTTP: ${respuesta.status}`);
-            }
-            
-            if (resultado.success) {
-                // Cerrar cualquier alerta abierta
-                smallSwal.close();
-                
-                // Verificar si debemos cambiar de página
-                if (paginaActual > 1 && (totalSalarios - 1) <= ((paginaActual - 1) * filasPorPagina)) {
-                    paginaActual--;
-                }
-                
-                // Mostrar mensaje de éxito
-                smallSwal.fire({
-                    icon: 'success',
-                    title: '¡Eliminado!',
-                    text: resultado.message || 'Registro histórico eliminado correctamente',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(async () => {
-                    // Recargar la tabla
-                    await mostrarSalarios(paginaActual);
-                });
-            } else {
-                throw new Error(resultado.message || 'Error al eliminar el registro histórico');
-            }
-        } catch (error) {
-            console.error('Error al eliminar:', error);
-            smallSwal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al eliminar: ' + error.message,
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'Entendido'
-            });
-        }
     }
 
     // Función para configurar la paginación

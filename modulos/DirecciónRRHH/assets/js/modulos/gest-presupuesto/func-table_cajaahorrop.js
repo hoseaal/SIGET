@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para configurar los event listeners
     function configurarEventListeners() {
-        // Agregar event listeners para los botones de editar
+        // event listeners para los botones de editar
         document.querySelectorAll('.editar-trabajador-btn').forEach(boton => {
             boton.addEventListener('click', async function() {
                 const cep_ide = this.getAttribute('data-cep_ide');
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Agregar event listeners para los botones de eliminar
+        // event listeners para los botones de eliminar
         document.querySelectorAll('.eliminar-trabajador-btn').forEach(boton => {
             boton.addEventListener('click', function() {
                 const cep_ide = this.getAttribute('data-cep_ide');
@@ -801,7 +801,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar la tabla con animación suave
     async function actualizarTablaSuavementeCaja() {
-        // Agregar clase de transición a la tabla
+        // clase de transición a la tabla
         const tabla = document.getElementById('cajaAhorroTable');
         tabla.classList.add('table-updating');
         
