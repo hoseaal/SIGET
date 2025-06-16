@@ -63,10 +63,20 @@ export class PrestamoModel {
         tp.pre_ndo,
         tp.pre_est,
         td_destino.dep_nom AS departamento_destino_nombre,
-        td_origen.dep_nom AS departamento_origen_nombre
+        td_origen.dep_nom AS departamento_origen_nombre,
+        GROUP_CONCAT(JSON_OBJECT(
+            'bim_ide', tdd.bim_ide,
+            'bim_des', tm.bim_des,
+            'dpr_est', tdd.dpr_est,
+            'con_ide', tm.con_ide,
+            'con_con', tc.con_con -- Descripción de la condición
+        )) AS bienes_detalles
       FROM ttrpre tp
       LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
       LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
+      LEFT JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
+      LEFT JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
+      LEFT JOIN tmacon AS tc ON tm.con_ide = tc.con_ide
     `
     const whereClauses = []
     const params = []
@@ -107,6 +117,7 @@ export class PrestamoModel {
       query += ' WHERE ' + whereClauses.join(' AND ')
     }
 
+    query += ' GROUP BY tp.pre_ide'
     query += ' ORDER BY tp.pre_fec DESC, tp.pre_ndo ASC'
 
     const [rows] = await pool.query(query, params)
@@ -129,15 +140,19 @@ export class PrestamoModel {
         tp.pre_est,
         td_destino.dep_nom AS departamento_destino_nombre,
         td_origen.dep_nom AS departamento_origen_nombre,
-        tdd.bim_ide,
-        tmab.bim_des,
-        tmab.bim_cod,
-        tmab.con_ide
+        GROUP_CONCAT(JSON_OBJECT(
+            'bim_ide', tdd.bim_ide,
+            'bim_des', tm.bim_des,
+            'dpr_est', tdd.dpr_est,
+            'con_ide', tamb.con_ide,
+            'con_con', tamb.con_con -- Descripción de la condición
+        )) AS bienes_detalles
       FROM ttrpre tp
-      JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
-      JOIN tmab_m tmab ON tdd.bim_ide = tmab.bim_ide
       LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
       LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
+      LEFT JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
+      LEFT JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
+      LEFT JOIN tmacon AS tamb ON tm.con_ide = tamb.con_ide
     `
     const whereClauses = []
     const params = []
@@ -149,7 +164,7 @@ export class PrestamoModel {
     whereClauses.push('tp.dep_ide = ?')
     params.push(DEP_ALMACEN_ID)
     // Que la condición física del bien sea Mal Estado
-    whereClauses.push('tmab.con_ide = ?')
+    whereClauses.push('tamb.con_ide = ?')
     params.push(CON_MAL_ESTADO_ID)
 
     // Filtros opcionales
@@ -166,7 +181,7 @@ export class PrestamoModel {
       query += ' WHERE ' + whereClauses.join(' AND ')
     }
 
-    query += ' ORDER BY tp.pre_fec DESC, tp.pre_ndo ASC, tmab.bim_cod ASC'
+    query += ' ORDER BY tp.pre_fec DESC, tp.pre_ndo ASC, tm.bim_cod ASC'
 
     const [rows] = await pool.query(query, params)
     return rows
