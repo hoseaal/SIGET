@@ -148,12 +148,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const fila = document.createElement('tr');
                 if (i === 0) {
                     fila.innerHTML = `
-                        <td colspan="5" class="text-center empty-row">
+                        <td colspan="6" class="text-center empty-row">
                             ${estaFiltrado ? 'No se encontraron coincidencias' : 'No se encontraron registros'}
                         </td>
                     `;
                 } else {
-                    fila.innerHTML = '<td colspan="5" class="empty-row">&nbsp;</td>';
+                    fila.innerHTML = '<td colspan="6" class="empty-row">&nbsp;</td>';
                 }
                 cuerpoTabla.appendChild(fila);
             }
@@ -169,32 +169,33 @@ document.addEventListener('DOMContentLoaded', function() {
             const numeroItem = (pagina - 1) * filasPorPagina + indice + 1;
             
             fila.innerHTML = `
-                <td>${numeroItem}</td>
-                <td>${trabajador.nom_ced}</td>
-                <td>${trabajador.nom_nom || 'N/A'} ${trabajador.nom_ape || ''}</td>
-                <td>
-                    <span class="badge ${trabajador.cep_activa ? 'bg-label-primary' : 'bg-label-secondary'}">
-                        ${trabajador.cep_activa ? 'Activo' : 'Inactivo'}
-                    </span>
-                </td>
-                <td>
-                    <div class="dropdown">
-                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                            <i class="bx bx-dots-vertical-rounded"></i>
-                        </button>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item editar-trabajador-btn" href="javascript:void(0);" data-cep_ide="${trabajador.cep_ide}">
-                                <i class="bx bx-edit-alt me-1"></i> Editar
-                            </a>
-                            <a class="dropdown-item eliminar-trabajador-btn" href="javascript:void(0);" 
-                            data-cep_ide="${trabajador.cep_ide}" 
-                            data-nom_ced="${trabajador.nom_ced}" 
-                            data-nombre="${trabajador.nom_nom || 'N/A'} ${trabajador.nom_ape || ''}">
-                                <i class="bx bx-trash me-1"></i> Eliminar
-                            </a>
-                        </div>
-                    </div>
-                </td>
+            <td>${numeroItem}</td>
+            <td>${trabajador.nom_ced}</td>
+            <td>${trabajador.nom_nom || 'N/A'}</td>
+            <td>${trabajador.nom_ape || 'N/A'}</td>
+            <td>
+                <span class="badge ${trabajador.cep_activa ? 'bg-label-primary' : 'bg-label-secondary'}">
+                ${trabajador.cep_activa ? 'Activo' : 'Inactivo'}
+                </span>
+            </td>
+            <td>
+                <div class="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                    <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item editar-trabajador-btn" href="javascript:void(0);" data-cep_ide="${trabajador.cep_ide}">
+                    <i class="bx bx-edit-alt me-1"></i> Editar
+                    </a>
+                    <a class="dropdown-item eliminar-trabajador-btn" href="javascript:void(0);" 
+                    data-cep_ide="${trabajador.cep_ide}" 
+                    data-nom_ced="${trabajador.nom_ced}" 
+                    data-nombre="${trabajador.nom_nom || 'N/A'} ${trabajador.nom_ape || ''}">
+                    <i class="bx bx-trash me-1"></i> Eliminar
+                    </a>
+                </div>
+                </div>
+            </td>
             `;
             cuerpoTabla.appendChild(fila);
         });
@@ -220,11 +221,36 @@ document.addEventListener('DOMContentLoaded', function() {
     function configurarBusqueda() {
         const inputBusqueda = document.getElementById('cajaAhorroSearch');
         let temporizadorBusqueda;
+
+        // Función para validar la longitud del texto de búsqueda
+        function validarLongitudBusqueda(input) {
+            if (input.value.length > 150) {
+                // Cortar el texto a 150 caracteres
+                input.value = input.value.substring(0, 150);
+                
+                // Mostrar advertencia solo si el usuario sigue escribiendo
+                if (input === document.activeElement) {
+                    smallSwal.fire({
+                        icon: 'warning',
+                        title: 'Límite de caracteres',
+                        text: 'El texto de búsqueda no puede exceder los 150 caracteres',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Entendido',
+                        timer: 2000
+                    });
+                }
+                return false;
+            }
+            return true;
+        }
         
         // Cargar todos los registros al iniciar para búsquedas
         obtenerTodosTrabajadores();
         
         inputBusqueda.addEventListener('input', function() {
+            // Validar longitud máxima primero
+            validarLongitudBusqueda(this);
+
             clearTimeout(temporizadorBusqueda);
             
             const terminoBusqueda = this.value.trim();
@@ -274,6 +300,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 paginaActual = 1;
                 mostrarTrabajadores(paginaActual);
                 elementoPaginacion.style.display = '';
+            }
+        });
+
+        // Prevenir pegado de texto que exceda el límite
+        inputBusqueda.addEventListener('paste', function(e) {
+            const textoPegado = (e.clipboardData || window.clipboardData).getData('text');
+            if (textoPegado.length > 150) {
+                e.preventDefault();
+                smallSwal.fire({
+                    icon: 'warning',
+                    title: 'Límite de caracteres',
+                    text: 'El texto pegado excede el límite de 150 caracteres',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido',
+                    timer: 2000
+                });
             }
         });
     }
