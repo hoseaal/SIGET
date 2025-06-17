@@ -19,6 +19,21 @@ export class BienMuebleModel {
       params.push(filters.inc)
     }
 
+    if (filters.dep) {
+      whereClauses.push('b.dep_ide = ?')
+      params.push(filters.dep)
+    }
+
+    if (filters.con) {
+      whereClauses.push('b.con_ide = ?')
+      params.push(filters.con)
+    }
+
+    if (filters.esu) {
+      whereClauses.push('b.esu_ide = ?')
+      params.push(filters.esu)
+    }
+
     // Añadir más filtros según necesidad...
 
     if (whereClauses.length > 0) {

@@ -2,7 +2,13 @@ import { BienMuebleService } from '../services/bienMueble.service.js'
 
 export const obtenerBienes = async (req, res) => {
   try {
-    const filters = req.query
+    const filters = {
+      estado: req.query.estado,
+      inc: req.query.inc,
+      dep: req.query.dep,
+      con: req.query.con,
+      esu: req.query.esu
+    }
     const bienes = await BienMuebleService.obtenerTodos(filters)
     res.json(bienes)
   } catch (error) {

@@ -179,6 +179,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
     // Determinar si el botón de devolución individual debe estar deshabilitado
     const isDevolverIndividualDisabled = isSubmitting || bienesActivosPrestamo.length === 0 || !bienIndividualSeleccionado || prestamoDetalle?.pre_est === 0;
 
+    console.log(prestamoDetalle)
 
     return (
         <Modal show={show} onHide={handleClose} size="lg" centered>

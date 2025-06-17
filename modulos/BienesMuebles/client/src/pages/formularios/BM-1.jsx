@@ -57,7 +57,7 @@ export const Bm1 = () => {
             
             const response = await fetch(url);
             const result = await response.json();
-            
+            console.log(result)
             setData(Array.isArray(result.data) ? result.data : result);
             
             setMeta(result.meta || {});
@@ -209,7 +209,6 @@ export const Bm1 = () => {
   setLoading(false);
 }
   };
-
 
     return (
         <>

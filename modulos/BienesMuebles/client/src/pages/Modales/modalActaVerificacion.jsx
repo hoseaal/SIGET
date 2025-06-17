@@ -8,7 +8,7 @@ import Alert from 'react-bootstrap/Alert';
 function ModalActaVerificacion({ show, handleClose }) {
   const [departamentos, setDepartamentos] = useState([]);
   const [selectedDepId, setSelectedDepId] = useState('');
-  const [selectedDepName, setSelectedDepName] = useState(''); // New state for department name
+  const [selectedDepName, setSelectedDepName] = useState('');
 
   const [directorNombre, setDirectorNombre] = useState('');
   const [directorCedula, setDirectorCedula] = useState('');
@@ -17,7 +17,8 @@ function ModalActaVerificacion({ show, handleClose }) {
   const [analistaCedula, setAnalistaCedula] = useState('');
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false); // Separated loading state for PDF
+  const [isGeneratingExcel, setIsGeneratingExcel] = useState(false); // New loading state for Excel
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -26,7 +27,7 @@ function ModalActaVerificacion({ show, handleClose }) {
       setError('');
       setDepartamentos([]);
       setSelectedDepId('');
-      setSelectedDepName(''); // Reset department name
+      setSelectedDepName('');
       setDirectorNombre('');
       setDirectorCedula('');
       setDirectorCargo('');
@@ -54,20 +55,19 @@ function ModalActaVerificacion({ show, handleClose }) {
     }
   }, [show]);
 
-  // Function to handle PDF generation and download
-  const handleGenerateActaVerificacion = async () => {
+  // Function to handle PDF generation and download (EXISTING LOGIC)
+  const handleGeneratePdf = async () => {
     if (!selectedDepId) {
       setError('Por favor, seleccione un departamento para generar el acta de verificación.');
       return;
     }
-
     if (!directorNombre || !directorCedula || !directorCargo || !analistaNombre || !analistaCedula) {
-      setError('Por favor, complete todos los campos de director y analista.');
+      setError('Por favor, complete todos los campos de director y analista para el PDF.');
       return;
     }
 
-    setIsGenerating(true);
-    setError(''); // Clear previous errors
+    setIsGeneratingPdf(true); // Use PDF specific loading state
+    setError('');
 
     try {
       const dataToSend = {
@@ -80,13 +80,14 @@ function ModalActaVerificacion({ show, handleClose }) {
         analista_cedula: analistaCedula,
       };
 
-      const response = await fetch('/api/pdf/acta-verificacion', {
+      // Assuming your PDF route is still '/api/pdf/acta-verificacion'
+      const response = await fetch('/api/pdf/acta-verificacion', { // THIS IS YOUR PDF ENDPOINT
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(dataToSend),
-        credentials: 'include' // Include cookies for credentials
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -106,22 +107,91 @@ function ModalActaVerificacion({ show, handleClose }) {
       link.remove();
       window.URL.revokeObjectURL(downloadUrl);
 
-      handleClose();
+      // No handleClose() here, as PDF is now separate from Excel
 
     } catch (err) {
-      console.error('Error al generar el Acta de Verificación:', err);
+      console.error('Error al generar el Acta de Verificación PDF:', err);
       setError(err.message);
     } finally {
-      setIsGenerating(false);
+      setIsGeneratingPdf(false);
     }
   };
+
+  // --- NEW FUNCTION TO HANDLE EXCEL GENERATION AND DOWNLOAD ---
+  const handleGenerateExcel = async () => {
+    if (!selectedDepId) {
+      setError('Por favor, seleccione un departamento para generar el Excel del acta de verificación.');
+      return;
+    }
+    if (!directorNombre || !directorCedula || !directorCargo || !analistaNombre || !analistaCedula) {
+      setError('Por favor, complete todos los campos de director y analista para el Excel.');
+      return;
+    }
+
+    setIsGeneratingExcel(true); // Use Excel specific loading state
+    setError('');
+
+    try {
+      // Prepare query parameters for the GET request
+      const queryParams = new URLSearchParams({
+        dep_ide: selectedDepId,
+        departamento_nombre: selectedDepName
+      }).toString();
+
+      // Use the new Excel endpoint
+      const response = await fetch(`/api/excel/acta-verificacion?${queryParams}`, { // NEW EXCEL ENDPOINT
+        method: 'GET', // Changed to GET as per your route
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text(); // Get raw text for better error message
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.message || errorData.error || `Error del servidor: ${response.status}`);
+        } catch {
+          throw new Error(`Error del servidor: ${response.status} - ${errorText || response.statusText}`);
+        }
+      }
+
+      const blob = await response.blob(); // Expecting a blob (Excel file)
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `Acta_Verificacion_Excel_${selectedDepName.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename\*?=['"]?(?:UTF-8''|[^;]+)?filename=['"]?([^"']+)/i);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = decodeURIComponent(filenameMatch[1].replace(/%../g, decodeURIComponent));
+        }
+      }
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      // No handleClose() here, as PDF is now separate from Excel
+
+    } catch (err) {
+      console.error('Error al generar el Acta de Verificación Excel:', err);
+      setError(err.message);
+    } finally {
+      setIsGeneratingExcel(false);
+    }
+  };
+
 
   const handleDepartmentChange = (e) => {
     const selectedId = e.target.value;
     setSelectedDepId(selectedId);
-    setError(''); // Clear error on change
+    setError('');
 
-    const selectedDep = departamentos.find(dep => dep.dep_ide === selectedId);
+    const selectedDep = departamentos.find(dep => dep.dep_ide === Number(selectedId));
     if (selectedDep) {
       setSelectedDepName(selectedDep.dep_nom);
     } else {
@@ -129,6 +199,8 @@ function ModalActaVerificacion({ show, handleClose }) {
     }
   };
 
+  // Determine if any generation is in progress for disabling fields
+  const isAnyGenerating = isGeneratingPdf || isGeneratingExcel;
 
   return (
     <Modal show={show} onHide={handleClose} centered>
@@ -153,7 +225,7 @@ function ModalActaVerificacion({ show, handleClose }) {
                 aria-label="Selector de departamento"
                 value={selectedDepId}
                 onChange={handleDepartmentChange}
-                disabled={isGenerating}
+                disabled={isAnyGenerating}
               >
                 <option value="">-- Por favor elija un departamento --</option>
                 {departamentos.map((dep) => (
@@ -166,65 +238,29 @@ function ModalActaVerificacion({ show, handleClose }) {
 
             <hr />
             <h5 className="mb-3">Datos del Director</h5>
-
             <Form.Group controlId="directorNombre" className="mb-3">
               <Form.Label>Nombre del Director</Form.Label>
-              <Form.Control
-                type="text"
-                value={directorNombre}
-                onChange={(e) => setDirectorNombre(e.target.value)}
-                disabled={isGenerating}
-                placeholder="Ej. Lcda. Maria Rodriguez"
-              />
+              <Form.Control type="text" value={directorNombre} onChange={(e) => setDirectorNombre(e.target.value)} disabled={isAnyGenerating} placeholder="Ej. Lcda. Maria Rodriguez" />
             </Form.Group>
-
             <Form.Group controlId="directorCedula" className="mb-3">
               <Form.Label>Cédula del Director</Form.Label>
-              <Form.Control
-                type="text"
-                value={directorCedula}
-                onChange={(e) => setDirectorCedula(e.target.value)}
-                disabled={isGenerating}
-                placeholder="Ej. V-11.111.111"
-              />
+              <Form.Control type="text" value={directorCedula} onChange={(e) => setDirectorCedula(e.target.value)} disabled={isAnyGenerating} placeholder="Ej. V-11.111.111" />
             </Form.Group>
-
             <Form.Group controlId="directorCargo" className="mb-3">
               <Form.Label>Cargo del Director</Form.Label>
-              <Form.Control
-                type="text"
-                value={directorCargo}
-                onChange={(e) => setDirectorCargo(e.target.value)}
-                disabled={isGenerating}
-                placeholder="Ej. Directora de Despacho de Contralor"
-              />
+              <Form.Control type="text" value={directorCargo} onChange={(e) => setDirectorCargo(e.target.value)} disabled={isAnyGenerating} placeholder="Ej. Directora de Despacho de Contralor" />
             </Form.Group>
 
             <hr />
             <h5 className="mb-3">Datos del Analista</h5>
-
             <Form.Group controlId="analistaNombre" className="mb-3">
               <Form.Label>Nombre del Analista</Form.Label>
-              <Form.Control
-                type="text"
-                value={analistaNombre}
-                onChange={(e) => setAnalistaNombre(e.target.value)}
-                disabled={isGenerating}
-                placeholder="Ej. Ana Pérez"
-              />
+              <Form.Control type="text" value={analistaNombre} onChange={(e) => setAnalistaNombre(e.target.value)} disabled={isAnyGenerating} placeholder="Ej. Ana Pérez" />
             </Form.Group>
-
             <Form.Group controlId="analistaCedula" className="mb-3">
               <Form.Label>Cédula del Analista</Form.Label>
-              <Form.Control
-                type="text"
-                value={analistaCedula}
-                onChange={(e) => setAnalistaCedula(e.target.value)}
-                disabled={isGenerating}
-                placeholder="Ej. V-11.111.111"
-              />
+              <Form.Control type="text" value={analistaCedula} onChange={(e) => setAnalistaCedula(e.target.value)} disabled={isAnyGenerating} placeholder="Ej. V-11.111.111" />
             </Form.Group>
-
           </Form>
         )}
 
@@ -236,27 +272,37 @@ function ModalActaVerificacion({ show, handleClose }) {
 
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} disabled={isGenerating}>
+        <Button variant="secondary" onClick={handleClose} disabled={isAnyGenerating}>
           Cerrar
         </Button>
         <Button
           variant="primary"
-          onClick={handleGenerateActaVerificacion}
-          disabled={!selectedDepId || isGenerating || isLoading || !directorNombre || !directorCedula || !directorCargo || !analistaNombre || !analistaCedula}
+          onClick={handleGeneratePdf} // Call PDF generation
+          disabled={!selectedDepId || isAnyGenerating || isLoading || !directorNombre || !directorCedula || !directorCargo || !analistaNombre || !analistaCedula}
         >
-          {isGenerating ? (
+          {isGeneratingPdf ? (
             <>
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-              />
-              <span className="ms-2">Generando...</span>
+              <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+              <span className="ms-2">Generando PDF...</span>
             </>
           ) : (
-            'Generar Acta'
+            'Generar PDF Acta'
+          )}
+        </Button>
+        {/* --- NEW BUTTON FOR EXCEL GENERATION --- */}
+        <Button
+          variant="success" // Use a different variant for visual distinction
+          onClick={handleGenerateExcel} // Call Excel generation
+          disabled={!selectedDepId || isAnyGenerating || isLoading || !directorNombre || !directorCedula || !directorCargo || !analistaNombre || !analistaCedula}
+          className="ms-2" // Add some margin
+        >
+          {isGeneratingExcel ? (
+            <>
+              <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+              <span className="ms-2">Generando Excel...</span>
+            </>
+          ) : (
+            'Generar Excel'
           )}
         </Button>
       </Modal.Footer>
