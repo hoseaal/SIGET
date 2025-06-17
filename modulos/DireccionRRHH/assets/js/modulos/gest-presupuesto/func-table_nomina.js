@@ -271,10 +271,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const entradaBusqueda = document.getElementById('workersSearch');
         let temporizadorBusqueda;
         
+        // Función para validar la longitud del texto de búsqueda
+        function validarLongitudBusqueda(input) {
+            if (input.value.length > 150) {
+                // Cortar el texto a 150 caracteres
+                input.value = input.value.substring(0, 150);
+                
+                // Mostrar advertencia solo si el usuario sigue escribiendo
+                if (input === document.activeElement) {
+                    smallSwal.fire({
+                        icon: 'warning',
+                        title: 'Límite de caracteres',
+                        text: 'El texto de búsqueda no puede exceder los 150 caracteres',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Entendido',
+                        timer: 2000
+                    });
+                }
+                return false;
+            }
+            return true;
+        }
+        
         // Cargar todos los registros al iniciar para búsquedas
         obtenerTodosTrabajadores();
         
         entradaBusqueda.addEventListener('input', function() {
+            // Validar longitud máxima primero
+            validarLongitudBusqueda(this);
+            
             clearTimeout(temporizadorBusqueda);
             
             const terminoBusqueda = this.value.trim();
@@ -324,6 +349,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 paginaActual = 1;
                 mostrarTrabajadores(paginaActual);
                 elementoPaginacion.style.display = '';
+            }
+        });
+        
+        // Prevenir pegado de texto que exceda el límite
+        entradaBusqueda.addEventListener('paste', function(e) {
+            const textoPegado = (e.clipboardData || window.clipboardData).getData('text');
+            if (textoPegado.length > 150) {
+                e.preventDefault();
+                smallSwal.fire({
+                    icon: 'warning',
+                    title: 'Límite de caracteres',
+                    text: 'El texto pegado excede el límite de 150 caracteres',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido',
+                    timer: 2000
+                });
             }
         });
     }

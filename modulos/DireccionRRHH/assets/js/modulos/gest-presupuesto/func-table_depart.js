@@ -157,13 +157,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Llenar con datos reales
-        departamentos.forEach(departamento => {
+        departamentos.forEach((departamento, index) => {
             const fila = document.createElement('tr');
+            const numeroFila = (paginaActual - 1) * filasPorPagina + index + 1;
             
             // Columnas básicas
             if (LOGGED_USER_TYPE === '1' || LOGGED_USER_TYPE === '2') {
                 fila.innerHTML = `
-                    <td>${departamento.dep_ide}</td>
+                    <td>${numeroFila}</td>
                     <td>${departamento.dep_nom}</td>
                     <td>${departamento.dep_des || 'Sin descripción'}</td>
                 `;
@@ -171,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Con acciones de edición
             else if (LOGGED_USER_TYPE === '3') {
                 fila.innerHTML = `
-                    <td>${departamento.dep_ide}</td>
+                    <td>${numeroFila}</td>
                     <td>${departamento.dep_nom}</td>
                     <td>${departamento.dep_des || 'Sin descripción'}</td>
                     <td>
@@ -191,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Con todas las acciones (editar y eliminar)
             else {
                 fila.innerHTML = `
-                    <td>${departamento.dep_ide}</td>
+                    <td>${numeroFila}</td>
                     <td>${departamento.dep_nom}</td>
                     <td>${departamento.dep_des || 'Sin descripción'}</td>
                     <td>
@@ -237,10 +238,38 @@ document.addEventListener('DOMContentLoaded', function() {
         const entradaBusqueda = document.getElementById('departmentSearch');
         let temporizadorBusqueda;
         
-        // Cargar todos los registros al iniciar para búsquedas
-        obtenerTodosDepartamentos();
+        // Función para validar caracteres en el buscador
+        function validarBusqueda(input) {
+            // Limitar a 150 caracteres
+            if (input.value.length > 150) {
+                input.value = input.value.substring(0, 150);
+                smallSwal.fire({
+                    icon: 'warning',
+                    title: 'Límite de caracteres',
+                    text: 'El texto de búsqueda no puede exceder los 150 caracteres',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido',
+                    timer: 2000
+                });
+                return false;
+            }
+
+            // Expresión regular que permite letras, números, espacios y acentos
+            const regex = /^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s"]*$/;
+            const valor = input.value;
+            
+            if (!regex.test(valor)) {
+                // Eliminar caracteres no permitidos
+                input.value = valor.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s"]/g, '');
+                return false;
+            }
+            return true;
+        }
         
+        // Evento para validar caracteres y realizar búsqueda
         entradaBusqueda.addEventListener('input', function() {
+            validarBusqueda(this);
+            
             clearTimeout(temporizadorBusqueda);
             
             const terminoBusqueda = this.value.trim();
@@ -292,6 +321,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 elementoPaginacion.style.display = '';
             }
         });
+        
+        // Cargar todos los registros al iniciar para búsquedas
+        obtenerTodosDepartamentos();
     }
 
     // Función para configurar los event listeners
@@ -542,6 +574,20 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('departmentId').value = '';
         }
 
+        // event listeners para validación de caracteres
+        const nombreInput = document.getElementById('departmentName');
+        const descripcionInput = document.getElementById('departmentDescription');
+        
+        nombreInput.addEventListener('input', function() {
+            validarCaracteresNombre(this);
+            validarInputNombre(this); // Validación existente de longitud
+        });
+        
+        descripcionInput.addEventListener('input', function() {
+            validarCaracteresDescripcion(this);
+            validarInputDescripcion(this); // Validación existente de longitud
+        });
+
         // Llenar los campos con los datos del departamento
         document.getElementById('departmentName').value = datosDepartamento.dep_nom || '';
         document.getElementById('departmentDescription').value = datosDepartamento.dep_des || '';
@@ -692,6 +738,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const descripcionValida = validarInputDescripcion(document.getElementById('departmentDescription'));
         
         return nombreValido && descripcionValida;
+    }
+
+    function validarCaracteresNombre(input) {
+        // Expresión regular que permite letras, espacios y acentos
+        const regex = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]*$/;
+        const valor = input.value;
+        
+        if (!regex.test(valor)) {
+            // Eliminar caracteres no permitidos
+            input.value = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+            return false;
+        }
+        return true;
+    }
+
+    function validarCaracteresDescripcion(textarea) {
+        // Expresión regular más permisiva pero aún evitando caracteres especiales problemáticos
+        const regex = /^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s.,;:()\-]*$/;
+        const valor = textarea.value;
+        
+        if (!regex.test(valor)) {
+            // Eliminar caracteres no permitidos
+            textarea.value = valor.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s.,;:()\-]/g, '');
+            return false;
+        }
+        return true;
     }
 
     // Función para limpiar todas las validaciones del modal
