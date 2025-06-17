@@ -22,7 +22,7 @@ class ExcelService {
     worksheet.mergeCells('B1:G7')
     const headerCell = worksheet.getCell('C1') // Accedemos a la celda fusionada
     headerCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
-    headerCell.font = { name: 'Arial', size: 12}
+    headerCell.font = { name: 'Arial', size: 12 }
 
     // Construir el texto del encabezado principal
     const today = new Date()
@@ -63,10 +63,12 @@ class ExcelService {
     const classificationCell = worksheet.getCell('A8')
     classificationCell.value = 'Clasificacion (codigo)'
     classificationCell.alignment = { horizontal: 'left', vertical: 'middle' }
-    classificationCell.font = { name: 'Arial', size: 12}
+    classificationCell.font = { name: 'Arial', size: 12 }
     classificationCell.border = {
-      top: { style: 'thin' }, left: { style: 'thin' },
-      bottom: { style: 'thin' }, right: { style: 'thin' }
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
     }
     // Color gris solo para esta celda
     classificationCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3D3D3' } } // Gris claro
@@ -100,8 +102,10 @@ class ExcelService {
       cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3D3D3' } } // Color gris
       cell.border = {
-        top: { style: 'thin' }, left: { style: 'thin' },
-        bottom: { style: 'thin' }, right: { style: 'thin' }
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
       }
     })
 
@@ -127,8 +131,10 @@ class ExcelService {
         row.eachCell((cell, colNumber) => {
           cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
           cell.border = {
-            top: { style: 'thin' }, left: { style: 'thin' },
-            bottom: { style: 'thin' }, right: { style: 'thin' }
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
           }
           // Formatear la columna 'Valor' como moneda
           if (colNumber === columnDefinitions.findIndex(col => col.key === 'bim_val') + 1) {
