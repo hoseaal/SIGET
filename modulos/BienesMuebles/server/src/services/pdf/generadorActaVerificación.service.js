@@ -80,7 +80,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       const todosLosBienes = bienesData || []
       const bienesFaltantes = todosLosBienes.filter(b => b.est_ide === 3)
       const bienesSinEtiqueta = todosLosBienes.filter(b => b.est_ide === 1)
-      const bienesMalEstadoEnDepartamento = bienesMalEstadoEnDepartamentoData?.data || []
+      const bienesMalEstadoEnDepartamento = bienesMalEstadoEnDepartamentoData || []
 
       const extraerBienesPrestamo = (data) => (data || []).map(p => {
         try {
@@ -159,7 +159,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         {
           label: 'Bienes en Servicio en la dirección:',
           total: countEnServicio,
-          obs: bienesEnServicio.map(b => b.bim_ide).join(', ')
+          obs: ''
         },
         {
           label: 'Bienes Faltantes:',
@@ -341,7 +341,7 @@ function drawTable (doc, data, totalBienesTabla) {
   doc.font('Helvetica').fontSize(9)
   data.forEach(row => {
     const rowY = doc.y + 5
-    const obsText = row.obs || 'N/A'
+    const obsText = row.obs || ' '
     const labelHeight = doc.heightOfString(row.label, { width: col1Width - 10 })
     const obsHeight = doc.heightOfString(obsText, { width: col3Width - 10 })
     const rowHeight = Math.max(labelHeight, obsHeight) + 10

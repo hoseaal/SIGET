@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import ExcelJS from 'exceljs'
 import path from 'path'
 import fs from 'fs'
@@ -71,7 +72,6 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1`, accessToken),
       fetchApiData(`/api/prestamos/normales?dep_destino_id=${dep_ide}`, accessToken)
     ])
-    console.log(prestamosNormalesData)
     if (!bienesAllData && !prestamosNormalesData) {
       throw new Error('No se pudo obtener datos de bienes ni de préstamos para el departamento.')
     }
@@ -79,7 +79,6 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     // Process fetched data
     const allBienes = Object.values(bienesAllData || {}) // Convert object to array
     const prestamoBienes = extraerBienesPrestamo(prestamosNormalesData)
-    console.log(prestamoBienes)
     // Create a set of bim_ide from prestamos for quick lookup
     const prestamoBimIds = new Set(prestamoBienes.map(b => b.bim_ide))
 
@@ -142,7 +141,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     }
 
     // --- Main Header Text ---
-    worksheet.mergeCells('C1:B7') // Fusión de celdas como lo pediste
+    worksheet.mergeCells('C1:E8') // Fusión de celdas como lo pediste
     const headerCell = worksheet.getCell('C1') // Accedemos a la celda fusionada (B1 es el inicio de la fusión)
     headerCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
     headerCell.font = { name: 'Arial', size: 12 }
@@ -177,7 +176,10 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     worksheet.getRow(columnHeaderRowNumber).eachCell((cell) => {
       cell.font = { bold: true, size: 10, name: 'Arial' }
       cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } } // Light grey background
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } }
+      if (cell === 'DESCRIPCION') {
+        cell.width = 12
+      } // Light grey background
       cell.border = {
         top: { style: 'thin' },
         left: { style: 'thin' },

@@ -11,10 +11,10 @@
         ]
     },
     {
-        "header": "Formularios",
+        "header": "Gestion de Bienes",
         "items": [
             {
-                "text": "Bienes Muebles",
+                "text": "Formularios de Bienes Muebles",
                 "icon": "bx bx-cabinet",
                 "available": true,  
                 "link": "",
@@ -58,6 +58,12 @@
                         "link": "/Prestamos"
                     }
                 ]
+            },
+            {
+                "text": "Reportes",
+                "icon": "bx bx-spreadsheet",
+                "available": true,  
+                "link": "/Reportes"
             }
         ]
     },
