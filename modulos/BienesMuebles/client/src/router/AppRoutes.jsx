@@ -11,6 +11,9 @@ import { MaintenancePage } from "../pages/misc/MaintenancePage";
 
 import { Bm2 } from "../pages/formularios/BM-2";
 import { Bm1 } from "../pages/formularios/BM-1";
+import { Bm3 } from "../pages/formularios/BM-3";
+
+import { Reportes } from "../pages/formularios/reportes"
 
 import { Prestamos } from "../pages/prestamos/prestamos";
 import { Almacen } from "../pages/prestamos/almacen.jsx"
@@ -86,6 +89,18 @@ const AppRoutes = () => {
             <Route path="/BM/BM-1" element={
                 <ProtectedRoute>
                     <Bm1 />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/BM/BM-3" element={
+                <ProtectedRoute>
+                    <Bm3 />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes" element={
+                <ProtectedRoute>
+                    <Reportes />
                 </ProtectedRoute>
             } />
 

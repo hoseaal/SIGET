@@ -21,7 +21,7 @@ router.get('/count-dep/:id', authenticate, contarBienesPorDepartamento)
 router.get('/:id', authenticate, obtenerBien)
 router.post('/', authenticate, crearBien)
 router.put('/:id', authenticate, actualizarBien)
-router.post('/:id/desincorporar', authenticate, desincorporarBien)
+router.put('/:id/desincorporar', authenticate, desincorporarBien)
 router.post('/buscar', authenticate, buscarAvanzado)
 
 export default router
