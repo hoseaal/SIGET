@@ -90,9 +90,19 @@ export class BienMuebleModel {
     return result.affectedRows > 0
   }
 
-  static async delete (id) {
+  static async desincorporar (id, { bim_inc, com_ide, bim_fed }) {
+    if (!id || com_ide === undefined || !bim_fed) {
+      throw new Error('Faltan datos requeridos para la desincorporación.');
+    }
     const [result] = await pool.query(
-      'DELETE FROM tmab_m WHERE bim_ide = ?',
+      `UPDATE tmab_m
+      SET
+        bim_inc = ?,
+        com_ide = ?,
+        bim_fed = ?
+      WHERE
+        bim_ide = ?;
+    `,
       [id]
     )
     return result.affectedRows > 0
