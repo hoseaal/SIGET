@@ -9,9 +9,19 @@ import ModalActaInc from '../Modales/modalActaInc';
 import ModalRepBm2 from '../Modales/modalRepBm2';
 import ModalInsert from '../Modales/modalInsert';
 import Spinner from 'react-bootstrap/Spinner'; 
+import ModalDesincorporarBien from '../Modales/modalDesincorporarBien'
 
 export const Bm2 = () => {
     const [refreshKey, setRefreshKey] = useState();
+    const [showModalDes, setShowModalDes] = useState(false);
+
+     const handleOpenDesModal = (id) => {
+        setShowModalDes(true);
+    };
+
+    const handleCloseDesModal = () => {
+        setShowModalDes(false);
+    };
 
     //Modal insertar Marca
     const [showInsertMarca, setShowInsertMarca] = useState(false);
@@ -87,6 +97,7 @@ export const Bm2 = () => {
         bim_val: '',
         bim_moneda: '',
         bim_color: '',
+        bim_ser: '',
         bim_cod: '',
         bim_obs: null,
         bim_sede: 'PRINCIPAL',
@@ -281,6 +292,7 @@ export const Bm2 = () => {
             bim_val: '',
             bim_moneda: '',
             bim_color: '',
+            bim_ser: '',
             bim_cod: '',
             bim_obs: null,
             bim_sede: 'PRINCIPAL',
@@ -312,6 +324,7 @@ const handleSubmit = async (e) => {
         bim_val: formData.bim_val,
         bim_moneda: formData.bim_moneda,
         bim_color: formData.bim_color,
+        bim_ser: formData.bim_ser,
         bim_cod: formData.bim_cod,
         bim_sede: 'PRINCIPAL',
         est_ide: 4,
@@ -563,6 +576,20 @@ const handleSubmit = async (e) => {
                                         </div>
                                     </div>
                                     <div className="row mb-3">
+                                        <label className="col-sm-2 col-form-label" htmlFor="basic-default-phone">Serial del Bien</label>
+                                        <div className="col-sm-10">
+                                            <input
+                                                type="text"
+                                                id="basic-default-phone"
+                                                className="form-control phone-mask"
+                                                placeholder="Ej: 123456"
+                                                name="bim_ser"
+                                                value={formData.bim_ser}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="row mb-3">
                                         <label className="col-sm-2 col-form-label" htmlFor="basic-default-phone">Código SUDEBIN</label>
                                         <div className="col-sm-10">
                                             <input
@@ -766,18 +793,20 @@ const handleSubmit = async (e) => {
                             </div>
                         ) : (
                             <div className="card-body">
-                                <form>
                                     {/* Aquí iría el formulario para Desincorporación */}
                                     <div className="row justify-content-end">
                                         
-                                        <Button type='primary'> <i className="bx bx-export me-1"></i>Generar acta de Desincorporación de Bien</Button>
-                                    </div>
-                                </form>
+                                        <Button type='primary' onClick={handleOpenDesModal}> <i className="bx bx-export me-1"></i>Generar acta de Desincorporación de Bien</Button>
+                                    </div>   
                             </div>
                         )}
                     </div>
                 </div>
             </div>
+            <ModalDesincorporarBien 
+                show={showModalDes}
+                handleClose={handleCloseDesModal}
+            />
         </>
     );
 }
