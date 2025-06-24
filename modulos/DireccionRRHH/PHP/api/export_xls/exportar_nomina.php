@@ -7,6 +7,9 @@
     use PhpOffice\PhpSpreadsheet\Spreadsheet;
     use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
     use PhpOffice\PhpSpreadsheet\Shared\Date;
+    
+    // Incluir TCPDF para generación de PDFs
+    require_once '../../../../../vendor/tecnickcom/tcpdf/tcpdf.php';
 
     require '../../../conexion/conexion.php';
 
@@ -217,6 +220,218 @@
         3 => 0.06,   2 => 0.04,   1 => 0.02
     ];
 
+    // Función para generar el reporte PDF individual de un empleado
+    function generarPDFEmpleado($data, $calculos, $mes_proximo_mes, $ano_proximo_mes, $quincena) {
+        // Crear nuevo documento PDF
+        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+        
+        // Configurar documento
+        $pdf->SetCreator('Sistema de Nómina');
+        $pdf->SetAuthor('Contraloría');
+        $pdf->SetTitle('Comprobante de Pago - ' . $data['nombre'] . ' ' . $data['apellido']);
+        $pdf->SetMargins(10, 10, 10);
+        $pdf->SetAutoPageBreak(TRUE, 15); // Margen inferior de 15mm para el pie
+        
+        // Configurar pie de página
+        $pdf->setFooterMargin(10);
+        $pdf->SetFooterMargin(10);
+        $pdf->setFooterFont(Array('helvetica', 'I', 8));
+        
+        // Agregar página
+        $pdf->AddPage();
+        
+        // Configurar fuente
+        $pdf->SetFont('helvetica', '', 10);
+        
+        // Encabezado
+        $pdf->SetFont('helvetica', 'B', 12);
+        $pdf->Cell(0, 5, 'COMPROBANTE DE PAGO', 0, 1, 'C');
+        $pdf->SetFont('helvetica', '', 10);
+        
+        $meses = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+        ];
+        
+        $quincena_texto = ($quincena == 1) ? 'Primera Quincena' : 'Segunda Quincena';
+        $periodo = $quincena_texto . ' de ' . $meses[$mes_proximo_mes] . ' ' . $ano_proximo_mes;
+        
+        $pdf->Cell(0, 5, 'Periodo: ' . $periodo, 0, 1);
+        $pdf->Cell(0, 5, 'Empleado: ' . $data['nombre'] . ' ' . $data['apellido'], 0, 1);
+        $pdf->Cell(0, 5, 'Cédula: ' . $data['cedula'], 0, 1);
+        $pdf->Cell(0, 5, 'Cargo: ' . $data['cargo_cet'], 0, 1);
+        
+        $pdf->Ln(5);
+        
+        // Tabla de asignaciones
+        $pdf->SetFont('helvetica', 'B', 10);
+        $pdf->Cell(0, 5, 'ASIGNACIONES', 0, 1);
+        $pdf->SetFont('helvetica', '', 9);
+        
+        $header = array('Concepto', 'Monto');
+        $widths = array(120, 50);
+        
+        // Cabecera de tabla
+        $pdf->SetFillColor(225, 225, 225);
+        for($i = 0; $i < count($header); $i++) {
+            $pdf->Cell($widths[$i], 6, $header[$i], 1, 0, 'C', 1);
+        }
+        $pdf->Ln();
+        
+        // Filas de asignaciones
+        $pdf->Cell($widths[0], 6, 'Salario Base Quincenal', 1, 0);
+        $pdf->Cell($widths[1], 6, number_format($calculos['sueldo_quincenal'], 2, ',', '.'), 1, 1, 'R');
+        
+        if ($calculos['antiguedad_quincenal'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Antigüedad Quincenal', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['antiguedad_quincenal'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['profesionalizacion'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Profesionalización Quincenal', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['profesionalizacion'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['prima_jerarquia'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Prima por Jerarquía', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['prima_jerarquia'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['prima_transporte'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Prima de Transporte', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['prima_transporte'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['prima_reconocimiento'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Prima de Reconocimiento', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['prima_reconocimiento'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['prima_hogares'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Prima de Hogares', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['prima_hogares'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['complemento_alimentacion'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Complemento de Alimentación', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['complemento_alimentacion'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['prima_hijos'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Prima por Hijos', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['prima_hijos'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        // Diferencias por suplencia (si aplica)
+        if (is_numeric($calculos['diferencia_sueldo']) && $calculos['diferencia_sueldo'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Diferencia de Sueldo Básico', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['diferencia_sueldo'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if (is_numeric($calculos['diferencia_antiguedad']) && $calculos['diferencia_antiguedad'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Diferencia de Antigüedad', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['diferencia_antiguedad'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if (is_numeric($calculos['diferencia_profesionalizacion']) && $calculos['diferencia_profesionalizacion'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Diferencia de Profesionalización', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['diferencia_profesionalizacion'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if (is_numeric($calculos['diferencia_jerarquia']) && $calculos['diferencia_jerarquia'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Diferencia de Jerarquía', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['diferencia_jerarquia'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        // Total asignaciones
+        $pdf->SetFont('helvetica', 'B', 9);
+        $pdf->Cell($widths[0], 6, 'TOTAL ASIGNACIONES', 1, 0);
+        $pdf->Cell($widths[1], 6, number_format($calculos['total_asignaciones'], 2, ',', '.'), 1, 1, 'R');
+        
+        $pdf->Ln(5);
+        
+        // Tabla de deducciones
+        $pdf->SetFont('helvetica', 'B', 10);
+        $pdf->Cell(0, 5, 'DEDUCCIONES', 0, 1);
+        $pdf->SetFont('helvetica', '', 9);
+        
+        // Cabecera de tabla
+        $pdf->SetFillColor(225, 225, 225);
+        for($i = 0; $i < count($header); $i++) {
+            $pdf->Cell($widths[$i], 6, $header[$i], 1, 0, 'C', 1);
+        }
+        $pdf->Ln();
+        
+        // Filas de deducciones
+        if ($calculos['seguro_empleado'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Seguro Social Obligatorio (SSO)', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['seguro_empleado'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['rpe_empleado'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Régimen Prestacional de Empleo (RPE)', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['rpe_empleado'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['faov_empleado'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Fondo de Ahorro Obligatorio para la Vivienda (FAOV)', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['faov_empleado'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if ($calculos['fejp'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Fondo de Empleados y Jubilaciones del Personal (FEJP)', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['fejp'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        if (is_numeric($calculos['caja_ahorro']) && $calculos['caja_ahorro'] > 0) {
+            $pdf->Cell($widths[0], 6, 'Caja de Ahorro', 1, 0);
+            $pdf->Cell($widths[1], 6, number_format($calculos['caja_ahorro'], 2, ',', '.'), 1, 1, 'R');
+        }
+        
+        // Total deducciones
+        $pdf->SetFont('helvetica', 'B', 9);
+        $pdf->Cell($widths[0], 6, 'TOTAL DEDUCCIONES', 1, 0);
+        $pdf->Cell($widths[1], 6, number_format($calculos['total_deducciones'], 2, ',', '.'), 1, 1, 'R');
+        
+        $pdf->Ln(5);
+        
+        // Resumen final
+        $pdf->SetFont('helvetica', 'B', 10);
+        $pdf->Cell(0, 5, 'RESUMEN FINAL', 0, 1);
+        
+        $pdf->SetFont('helvetica', '', 9);
+        $pdf->Cell(100, 6, 'Total Asignaciones:', 0, 0);
+        $pdf->Cell(0, 6, number_format($calculos['total_asignaciones'], 2, ',', '.'), 0, 1, 'R');
+        
+        $pdf->Cell(100, 6, 'Total Deducciones:', 0, 0);
+        $pdf->Cell(0, 6, number_format($calculos['total_deducciones'], 2, ',', '.'), 0, 1, 'R');
+        
+        $pdf->SetFont('helvetica', 'B', 10);
+        $pdf->Cell(100, 6, 'Salario Neto Pagado:', 0, 0);
+        $pdf->Cell(0, 6, number_format($calculos['salario_neto'], 2, ',', '.'), 0, 1, 'R');
+        
+        // Configurar el pie de página
+        $pdf->SetFooterMargin(10);
+        $pdf->setFooterFont(Array('helvetica', 'I', 8));
+        
+        // Función Footer personalizada
+        $pdf->Footer = function() use ($pdf) {
+            $pdf->SetY(-10);
+            $pdf->SetFont('helvetica', 'I', 8);
+            $pdf->Cell(0, 5, 'Generado el ' . date('d/m/Y H:i:s'), 0, 0, 'C');
+        };
+        
+        // Guardar en un archivo temporal
+        $temp_file = tempnam(sys_get_temp_dir(), 'pdf');
+        $pdf->Output($temp_file, 'F');
+        
+        return [
+            'nombre' => 'Comprobante_' . $data['cedula'] . '_' . $meses[$mes_proximo_mes] . '_Q' . $quincena . '.pdf',
+            'ruta' => $temp_file
+        ];
+    }
+
     // Función para generar el reporte de una quincena
     function generarReporte($resultados, $antiguedades, $suplencias, $cajas_ahorro, $escala_antiguedad, $escala_reconocimiento, $cantidad_lunes, $quincena, $mes_proximo_mes, $ano_proximo_mes, $porcentajes) {
         $spreadsheet = new Spreadsheet();
@@ -284,6 +499,7 @@
         $row = 2;
         $contador = 1;
         $fecha_actual = new DateTime();
+        $datos_empleados = array();
         
         foreach ($resultados as $data) {
             $sueldo_quincenal = round($data['salario_base'] / 2, 2);
@@ -543,6 +759,39 @@
             $sheet->setCellValue('AG' . $row, $fejp);
             $sheet->setCellValue('AH' . $row, $caja_ahorro);
             
+            // Almacenar datos para el PDF
+            $datos_empleados[] = [
+                'data' => $data,
+                'calculos' => [
+                    'sueldo_quincenal' => $sueldo_quincenal,
+                    'antiguedad_quincenal' => $antiguedad_quincenal,
+                    'profesionalizacion' => $profesionalizacion,
+                    'prima_jerarquia' => $data['prima_jerarquia'],
+                    'prima_transporte' => $prima_transporte,
+                    'prima_reconocimiento' => $prima_reconocimiento,
+                    'prima_hogares' => $prima_hogares,
+                    'complemento_alimentacion' => $complemento_alimentacion,
+                    'prima_hijos' => $prima_hijos,
+                    'diferencia_sueldo' => is_numeric($diferencia_sueldo) ? $diferencia_sueldo : 0,
+                    'diferencia_antiguedad' => is_numeric($diferencia_antiguedad) ? $diferencia_antiguedad : 0,
+                    'diferencia_profesionalizacion' => is_numeric($diferencia_profesionalizacion) ? $diferencia_profesionalizacion : 0,
+                    'diferencia_jerarquia' => is_numeric($diferencia_jerarquia) ? $diferencia_jerarquia : 0,
+                    'total_asignaciones' => $total_asignaciones,
+                    'total_deducciones' => $total_deducciones,
+                    'salario_neto' => $salario_neto,
+                    'asignacion_mensual' => $asignacion_mensual,
+                    'semanal_ivss' => $semanal_ivss,
+                    'seguro_empleado' => $seguro_empleado,
+                    'seguro_patronal' => $seguro_patronal,
+                    'rpe_empleado' => $rpe_empleado,
+                    'rpe_patronal' => $rpe_patronal,
+                    'faov_empleado' => $faov_empleado,
+                    'faov_patronal' => $faov_patronal,
+                    'fejp' => $fejp,
+                    'caja_ahorro' => is_numeric($caja_ahorro) ? $caja_ahorro : 0
+                ]
+            ];
+            
             $row++;
             $contador++;
         }
@@ -620,7 +869,8 @@
         
         return [
             'nombre' => $nombre_archivo,
-            'ruta' => $temp_file
+            'ruta' => $temp_file,
+            'datos_empleados' => $datos_empleados
         ];
     }
 
@@ -645,14 +895,34 @@
                                       $escala_antiguedad, $escala_reconocimiento, 
                                       $cantidad_lunes_segunda, 2, $mes_proximo_mes, $ano_proximo_mes, $porcentajes);
 
-    // Crear un archivo ZIP que contendrá ambos reportes
+    // Crear un archivo ZIP que contendrá ambos reportes Excel y los PDFs
     $zip = new ZipArchive();
     $zip_filename = 'Reportes_Quincenales_' . $meses[$mes_proximo_mes] . '_' . (new DateTime())->format('d-m-Y') . '.zip';
     $temp_zip = tempnam(sys_get_temp_dir(), 'zip');
     
     if ($zip->open($temp_zip, ZipArchive::CREATE) === TRUE) {
+        // Agregar archivos Excel
         $zip->addFile($reporte_primera['ruta'], $reporte_primera['nombre']);
         $zip->addFile($reporte_segunda['ruta'], $reporte_segunda['nombre']);
+        
+        // Crear directorio para PDFs de primera quincena
+        $zip->addEmptyDir('Comprobantes_Primera_Quincena');
+        
+        // Generar y agregar PDFs de primera quincena
+        foreach ($reporte_primera['datos_empleados'] as $empleado) {
+            $pdf = generarPDFEmpleado($empleado['data'], $empleado['calculos'], $mes_proximo_mes, $ano_proximo_mes, 1);
+            $zip->addFile($pdf['ruta'], 'Comprobantes_Primera_Quincena/' . $pdf['nombre']);
+        }
+        
+        // Crear directorio para PDFs de segunda quincena
+        $zip->addEmptyDir('Comprobantes_Segunda_Quincena');
+        
+        // Generar y agregar PDFs de segunda quincena
+        foreach ($reporte_segunda['datos_empleados'] as $empleado) {
+            $pdf = generarPDFEmpleado($empleado['data'], $empleado['calculos'], $mes_proximo_mes, $ano_proximo_mes, 2);
+            $zip->addFile($pdf['ruta'], 'Comprobantes_Segunda_Quincena/' . $pdf['nombre']);
+        }
+        
         $zip->close();
         
         // Configurar headers para descargar el ZIP
@@ -665,6 +935,9 @@
         unlink($temp_zip);
         unlink($reporte_primera['ruta']);
         unlink($reporte_segunda['ruta']);
+        
+        // Los PDFs se eliminarán después de que el script termine de ejecutarse
+        // ya que están en el directorio temporal
     } else {
         echo 'Error al crear el archivo ZIP';
     }
