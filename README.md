@@ -74,7 +74,7 @@ Sistema web para automatizar procesos en los departamentos de la **Contraloría 
 
        - PHPSpreadsheet (exportación XLS).
   
-       - Tcpdf (exporación PDF). 
+       - Tcpdf (exportación PDF). 
 ---
 
 ## ⚠️ Consideraciones críticas
