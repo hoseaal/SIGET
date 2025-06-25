@@ -710,6 +710,14 @@ ALTER TABLE ttrpre
 ADD COLUMN dep_origen_ide INT NOT NULL COMMENT 'Departamento de origen de los bienes en este prestamo',
 ADD CONSTRAINT fk_ttrpre_dep_origen FOREIGN KEY (dep_origen_ide) REFERENCES tesdep(dep_ide);
 
+CREATE TABLE rep_mensual (
+    id INT PRIMARY KEY AUTO_INCREMENT COMMENT "Identificador único del registro.",
+    anio INT NOT NULL COMMENT "El año al que corresponde el registro de cierre",
+    mes INT NOT NULL COMMENT " El mes al que corresponde el registro de cierre",
+    valor_existencia_anterior DECIMAL(18, 2) NOT NULL COMMENT "Aquí se guardará la suma total de los valores de los bienes que estaban activos al final del mes anterior",
+    fecha_cierre DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "La fecha y hora en que se realizó el cierre del mes",
+    UNIQUE (anio, mes) -- Asegura que solo haya una entrada por mes
+);
 /* VOLCADO DE LA BASE DE DATOS */
 
 -- TABLA TESCET

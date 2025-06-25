@@ -18,6 +18,7 @@ const foreignKeyEndpoints = {
 
 // Campos editables
 const editableFields = {
+    'dep_ide': 'Departamento Original',
     'bim_des': 'Descripción',
     'bim_ndo': 'Número de Documento',
     'bim_val': 'Valor',

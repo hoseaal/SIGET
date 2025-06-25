@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import pool from '../utils/database.js'
 
 export class BienMuebleModel {
@@ -34,7 +35,25 @@ export class BienMuebleModel {
       params.push(filters.esu)
     }
 
-    // Añadir más filtros según necesidad...
+    // Filtros para bim_fec (fecha de incorporación)
+    if (filters.fechaIncorporacionDesde) {
+      whereClauses.push('b.bim_fec >= ?')
+      params.push(filters.fechaIncorporacionDesde)
+    }
+    if (filters.fechaIncorporacionHasta) {
+      whereClauses.push('b.bim_fec <= ?')
+      params.push(filters.fechaIncorporacionHasta)
+    }
+
+    // Filtros para bim_fed (fecha de desincorporación)
+    if (filters.fechaDesincorporacionDesde) {
+      whereClauses.push('b.bim_fed >= ?')
+      params.push(filters.fechaDesincorporacionDesde)
+    }
+    if (filters.fechaDesincorporacionHasta) {
+      whereClauses.push('b.bim_fed <= ?')
+      params.push(filters.fechaDesincorporacionHasta)
+    }
 
     if (whereClauses.length > 0) {
       query += ' WHERE ' + whereClauses.join(' AND ')
@@ -92,7 +111,7 @@ export class BienMuebleModel {
 
   static async desincorporar (id, { bim_inc, com_ide, bim_fed }) {
     if (!id || com_ide === undefined || !bim_fed) {
-      throw new Error('Faltan datos requeridos para la desincorporación.');
+      throw new Error('Faltan datos requeridos para la desincorporación.')
     }
     const [result] = await pool.query(
       `UPDATE tmab_m

@@ -4,8 +4,8 @@ import fs from 'fs'
 import { generarActaIncorporacion } from './actaIncorporacion.js'
 import { generarActaCET } from './actaCET.js'
 import { generarReporteBM2 } from './repBM2.js'
-// --- 1. IMPORTAR EL NUEVO SERVICIO ---
 import { generarActaVerificacionService } from './generadorActaVerificación.service.js'
+import { generarActaDesincorporacion } from './actaDesincorporacion.js'
 
 export class PdfService {
   // --- 2. MODIFICAR LA FIRMA PARA ACEPTAR EL TOKEN ---
@@ -24,6 +24,9 @@ export class PdfService {
       case 'acta-verificacion':
         pdfPath = await generarActaVerificacionService(datos, accessToken)
         break
+      case 'acta-desincorporacion':
+        pdfPath = await generarActaDesincorporacion(datos)
+        break
       default:
         throw new Error('Tipo de documento no soportado')
     }
@@ -40,8 +43,8 @@ export class PdfService {
       'acta-incorporacion': `acta_incorporacion_${datos.numeroActa || 'generada'}`,
       'acta-cet': `acta_cet_${datos.numeroActa || 'generada'}`,
       'reporte-bm2': `reporte_BM2_${datos.numeroReporte || 'generado'}`,
-      // --- 4. AÑADIR REGLA PARA EL NOMBRE DEL ARCHIVO ---
-      'acta-verificacion': `acta_verificacion_dep_${datos.dep_ide || 'generada'}`
+      'acta-verificacion': `acta_verificacion_dep_${datos.dep_ide || 'generada'}`,
+      'acta-desincorporacion': `acta_desincorporacion_${datos.numeroActa || 'generada'}_bien_${datos.codigoBien || 'N_A'}`
     }
     return `${prefixes[tipo] || 'documento'}.pdf`
   }

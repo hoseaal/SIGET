@@ -4,3 +4,4 @@ vendor/firebase/php-jwt/
 modulos/BienesMuebles/server/node_modules/
 /vendor/composer
 /vendor
+/modulos/BienesMuebles/server/.env
