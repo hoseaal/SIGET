@@ -1,11 +1,14 @@
 import getGreetingMessage from '../utils/greetingHandler';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dropdown, Nav, Navbar as BSNavbar, Image } from 'react-bootstrap';
+import { Dropdown, Nav, Navbar as BSNavbar, Image, Toast, ToastContainer } from 'react-bootstrap';
 import { BsMenuApp, BsPerson, BsGear, BsCreditCard, BsPower } from 'react-icons/bs';
 
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVariant, setToastVariant] = useState('success');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,6 +36,12 @@ const Navbar = () => {
     fetchUserData();
   }, []);
 
+  const showNotification = (message, variant) => {
+    setToastMessage(message);
+    setToastVariant(variant);
+    setShowToast(true);
+  };
+
   const handleLogout = async () => {
     try {
       const res = await fetch('/api/auth/logout', {
@@ -43,11 +52,13 @@ const Navbar = () => {
       if (!res.ok) throw new Error('Error al cerrar sesión');
 
       const data = await res.json();
-      alert(data.message || 'Sesión cerrada');
-      navigate('/Login', { replace: true });
+      showNotification(data.message || 'Sesión cerrada correctamente.', 'success');
+      setTimeout(() => {
+        navigate('/Login', { replace: true });
+      }, 2000);
 
     } catch (error) {
-      alert('Error al cerrar sesión');
+      showNotification('Error al cerrar sesión.', 'danger');
       console.error('Logout error:', error);
     }
   };
@@ -61,6 +72,7 @@ const Navbar = () => {
   ];
 
   return (
+    <>
     <BSNavbar expand="xl" className="layout-navbar container-xxl navbar-detached bg-navbar-theme">
       <div className="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
         <a aria-label='toggle for sidebar' className="nav-item nav-link px-0 me-xl-4" href="#">
@@ -134,6 +146,18 @@ const Navbar = () => {
         </Nav>
       </div>
     </BSNavbar>
+
+    <ToastContainer position="top-center" className="p-3" style={{ zIndex: 9999, position: 'fixed', right: 0, top: 0 }} >
+        <Toast onClose={() => setShowToast(false)} show={showToast} delay={3000} autohide bg={toastVariant}>
+          <Toast.Header>
+            <strong className="me-auto">{toastVariant === 'success' ? 'Éxito' : 'Error'}</strong>
+          </Toast.Header>
+          <Toast.Body className={toastVariant === 'light' ? 'text-dark' : 'text-white'}>
+            {toastMessage}
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
+      </>
   );
 }
 

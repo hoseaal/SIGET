@@ -14,15 +14,15 @@ function ModalRepBm2({ show, handleClose }) {
     const [nombreJefe, setNombreJefe] = useState('');
     const [enviando, setEnviando] = useState(false);
     const [mensaje, setMensaje] = useState('');
-    const [mesSeleccionado, setMesSeleccionado] = useState('');
+    const [mesSeleccionado, setMesSeleccionado] = useState(''); // Valor inicial vacío para el select
     const [datos, setDatos] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-     const truncateText = (text, maxLength = 10) => {
+    const truncateText = (text, maxLength = 10) => {
         if (!text) return 'N/A';
         if (text.length <= maxLength) return text;
-        
+
         return (
             <span title={text}>
                 {`${text.substring(0, maxLength)}...`}
@@ -30,36 +30,55 @@ function ModalRepBm2({ show, handleClose }) {
         );
     };
 
-    const añoActual = new Date().getFullYear();
+    const añoActual = new Date().getFullYear(); // El año siempre será el actual
+
+    // useEffect para cargar los datos del mes actual al abrir el modal, si es la primera vez
+    // y si no se ha seleccionado un mes previamente.
+    useEffect(() => {
+        if (show && mesSeleccionado === '') {
+            const currentMonthIndex = new Date().getMonth();
+            setMesSeleccionado(currentMonthIndex.toString()); // Convertir a string para el valor del select
+            obtenerDatos(currentMonthIndex);
+        }
+    }, [show]); // Dependencia del `show` del modal
 
     const obtenerDatos = async (mesIndex) => {
         setLoading(true);
+        setError(''); // Limpiamos errores previos
+
+        // Calculamos el primer día y el último día del mes y año seleccionados
+        const primerDiaMes = new Date(añoActual, mesIndex, 1);
+        const ultimoDiaMes = new Date(añoActual, mesIndex + 1, 0); // El día 0 del siguiente mes es el último día del mes actual
+
+        // Formateamos las fechas a 'YYYY-MM-DD' para enviarlas a la API
+        const formatDate = (date) => date.toISOString().split('T')[0];
+        const fechaIncorporacionDesde = formatDate(primerDiaMes);
+        const fechaIncorporacionHasta = formatDate(ultimoDiaMes);
+        const fechaDesincorporacionDesde = formatDate(primerDiaMes);
+        const fechaDesincorporacionHasta = formatDate(ultimoDiaMes);
+
         try {
             const resultados = [];
 
-            // Consulta de incorporados
-            const resIncorporados = await fetch('/api/bienes?inc=1');
-            const { data: incorporados } = await resIncorporados.json(); // <-- Aquí el cambio
-            resultados.push(...incorporados?.filter(item => {
-                const fecha = new Date(item.bim_fec);
-                return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
-            }).map(item => ({
+            // Consulta de incorporados, aplicando los filtros de fecha directamente en la API
+            const resIncorporados = await fetch(`/api/bienes/all?inc=1&fechaIncDesde=${fechaIncorporacionDesde}&fechaIncHasta=${fechaIncorporacionHasta}`);
+            if (!resIncorporados.ok) throw new Error('Error al obtener bienes incorporados');
+            const incorporados  = await resIncorporados.json();
+            resultados.push(...incorporados?.map(item => ({
                 ...item,
                 bim_val: parseFloat(item.bim_val)
-            })));
+            })) || []);
 
-            // Consulta de desincorporados
-            const resDesincorporados = await fetch('/api/bienes?inc=0');
-            const { data: desincorporados } = await resDesincorporados.json(); // <-- Aquí el cambio
-            resultados.push(...desincorporados.filter(item => {
-                const fecha = new Date(item.bim_fed);
-                return fecha.getMonth() === mesIndex && fecha.getFullYear() === añoActual;
-            }).map(item => ({
+            // Consulta de desincorporados, aplicando los filtros de fecha directamente en la API
+            const resDesincorporados = await fetch(`/api/bienes/all?inc=0&fechaDesDesde=${fechaDesincorporacionDesde}&fechaDesHasta=${fechaDesincorporacionHasta}`);
+            if (!resDesincorporados.ok) throw new Error('Error al obtener bienes desincorporados');
+            const desincorporados = await resDesincorporados.json();
+            resultados.push(...desincorporados?.map(item => ({
                 ...item,
                 bim_val: parseFloat(item.bim_val)
-            })));
+            })) || []);
 
-            // Enriquecer con jerarquía grupo/subgrupo
+            // Enriquecer con jerarquía grupo/subgrupo (asumiendo que tus APIs de categorías devuelven los nombres)
             const datosConJerarquia = await Promise.all(resultados.map(async (item) => {
                 let grupo = '', subgrupo = '';
 
@@ -72,12 +91,15 @@ function ModalRepBm2({ show, handleClose }) {
                     // 2. Buscar cat_ide desde tessca usando sca_ide
                     const resSubgrupo = await fetch(`/api/subcategorias/${sca_ide}`);
                     const subgrupoData = await resSubgrupo.json();
-                    const cat_ide = subgrupoData.cat_ide;
+                    
+                    // Asumimos que subgrupoData y catEspecifica tienen los nombres
+                    subgrupo = subgrupoData.sca_ide || 'N/A';
+                    grupo = subgrupoData.cat_ide || 'N/A'; 
 
-                    subgrupo = sca_ide;
-                    grupo = cat_ide;
                 } catch (err) {
-                    console.error('Error jerarquía:', err);
+                    console.error('Error al obtener jerarquía de categorías:', err);
+                    grupo = 'Desconocido';
+                    subgrupo = 'Desconocido';
                 }
 
                 return {
@@ -89,10 +111,9 @@ function ModalRepBm2({ show, handleClose }) {
             }));
 
             setDatos(datosConJerarquia);
-            setError('');
         } catch (err) {
             console.error(err);
-            setError('Error al obtener datos');
+            setError('Error al obtener datos: ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -100,8 +121,12 @@ function ModalRepBm2({ show, handleClose }) {
 
     const handleChange = (e) => {
         const mesIndex = parseInt(e.target.value);
-        setMesSeleccionado(mesIndex);
-        obtenerDatos(mesIndex);
+        setMesSeleccionado(e.target.value); // Almacenar el valor del select (string)
+        if (e.target.value !== '') { // Solo si se selecciona un mes válido
+            obtenerDatos(mesIndex);
+        } else {
+            setDatos([]); // Limpiar datos si no hay mes seleccionado
+        }
     };
 
     const enviarPDF = async () => {
@@ -115,6 +140,8 @@ function ModalRepBm2({ show, handleClose }) {
                 body: JSON.stringify({
                     datos,
                     nombreJefe,
+                    mesSeleccionado: meses[parseInt(mesSeleccionado)], // Enviar el nombre del mes
+                    añoActual: añoActual
                 }),
             });
 
@@ -126,14 +153,13 @@ function ModalRepBm2({ show, handleClose }) {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `reporte_BM2.pdf`);
+            link.setAttribute('download', `reporte_BM2_${meses[parseInt(mesSeleccionado)]}_${añoActual}.pdf`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            // Limpiar el objeto URL para liberar memoria
-            window.URL.revokeObjectURL(url);
-            
+
+            window.URL.revokeObjectURL(url); // Limpiar el objeto URL para liberar memoria
+
             setMensaje('PDF generado exitosamente.');
         } catch (error) {
             console.error('Error al generar PDF:', error);
@@ -142,6 +168,7 @@ function ModalRepBm2({ show, handleClose }) {
             setEnviando(false);
         }
     };
+
     return (
         <Modal show={show} onHide={handleClose} size="xl">
             <Modal.Header closeButton>
@@ -161,9 +188,9 @@ function ModalRepBm2({ show, handleClose }) {
                 {error && <Alert type="danger">{error}</Alert>}
                 {loading && <p>Cargando datos...</p>}
 
-                {!loading && datos.length > 0 && (
+                {!loading && datos.length > 0 && mesSeleccionado !== '' && ( // Mostrar tabla solo si hay datos y un mes seleccionado
                     <>
-                        <p><strong>PERIODO DE LA CUENTA:</strong> {meses[mesSeleccionado]?.toUpperCase()} {añoActual}</p>
+                        <p><strong>PERIODO DE LA CUENTA:</strong> {meses[parseInt(mesSeleccionado)]?.toUpperCase()} {añoActual}</p>
                         <Table bordered hover size="sm" responsive>
                             <thead>
                                 <tr>
@@ -186,8 +213,8 @@ function ModalRepBm2({ show, handleClose }) {
                                         <td>01</td>
                                         <td>{item.bim_ide}</td>
                                         <td>{truncateText(item.bim_des)}</td>
-                                        <td>{item.bim_inc === 1 ? item.bim_val : ''}</td>
-                                        <td>{item.bim_inc === 0 ? item.bim_val : ''}</td>
+                                        <td>{item.bim_inc === 1 ? item.bim_val?.toFixed(2) : ''}</td>
+                                        <td>{item.bim_inc === 0 ? item.bim_val?.toFixed(2) : ''}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -210,20 +237,24 @@ function ModalRepBm2({ show, handleClose }) {
                         })()}
                     </>
                 )}
+                {!loading && datos.length === 0 && mesSeleccionado !== '' && (
+                    <Alert type="info">No se encontraron bienes para el mes seleccionado.</Alert>
+                )}
+
 
                 <Form.Group className="mt-3">
-          <Form.Label>Nombre del Jefe de la Unidad de Trabajo</Form.Label>
-          <Form.Control
-            type="text"
-            value={nombreJefe}
-            onChange={e => setNombreJefe(e.target.value)}
-          />
-        </Form.Group> 
+                    <Form.Label>Nombre del Jefe de la Unidad de Trabajo</Form.Label>
+                    <Form.Control
+                        type="text"
+                        value={nombreJefe}
+                        onChange={e => setNombreJefe(e.target.value)}
+                    />
+                </Form.Group>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>Cerrar</Button>
-                <Button variant="primary" onClick={enviarPDF} disabled={enviando}>
-                {enviando ? 'Generando...' : 'Generar PDF'}
+                <Button variant="primary" onClick={enviarPDF} disabled={enviando || datos.length === 0 || mesSeleccionado === ''}>
+                    {enviando ? 'Generando...' : 'Generar PDF'}
                 </Button>
             </Modal.Footer>
             {mensaje && <p className="text-center mt-2">{mensaje}</p>}

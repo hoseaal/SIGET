@@ -1,0 +1,225 @@
+import PDFDocument from 'pdfkit'
+import fs from 'fs'
+import path from 'path'
+
+// --- HELPER FUNCTIONS (re-used for consistency) ---
+
+// Function to convert numbers to words (for the year)
+function numberToWords (num) {
+  const units = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve']
+  const teens = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve']
+  const tens = ['', 'diez', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa']
+  const hundreds = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos']
+
+  if (num === 0) return 'cero'
+
+  function convertLessThanOneThousand (n) {
+    if (n < 10) return units[n]
+    if (n < 20) return teens[n - 10]
+    if (n < 100) {
+      const ten = tens[Math.floor(n / 10)]
+      const unit = units[n % 10]
+      return ten + (unit ? ' y ' + unit : '')
+    }
+    if (n === 100) return 'cien'
+    const hundred = hundreds[Math.floor(n / 100)]
+    const rest = convertLessThanOneThousand(n % 100)
+    return hundred + (rest ? ' ' + rest : '')
+  }
+
+  if (num < 1000) return convertLessThanOneThousand(num)
+  const thousands = Math.floor(num / 1000)
+  const remainder = num % 1000
+
+  let result = ''
+  if (thousands === 1) {
+    result += 'mil'
+  } else {
+    result += units[thousands] + ' mil'
+  }
+
+  if (remainder > 0) {
+    result += ' ' + convertLessThanOneThousand(remainder)
+  }
+
+  return result.trim()
+}
+
+function formatCurrentDateTime () {
+  const now = new Date()
+  const day = now.getDate()
+  const monthNames = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ]
+  const month = monthNames[now.getMonth()]
+  const year = now.getFullYear()
+  const yearInWords = numberToWords(year)
+
+  let hours = now.getHours()
+  const minutes = now.getMinutes()
+  const ampm = hours >= 12 ? 'p.m.' : 'a.m.'
+  hours = hours % 12
+  hours = hours || 12 // the hour '0' should be '12'
+  const strMinutes = minutes < 10 ? '0' + minutes : minutes
+
+  return {
+    day,
+    month,
+    yearInWords,
+    time: `${hours}:${strMinutes} ${ampm}`
+  }
+}
+
+function toUpperCase (str) {
+  return str ? String(str).toUpperCase() : 'N/A'
+}
+
+function limpiarTexto (texto) {
+  if (!texto) return ''
+  return String(texto).replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * Formats a date string (YYYY-MM-DD or Date object) into DD/MM/YYYY.
+ * @param {string|Date} dateInput
+ * @returns {string}
+ */
+function formatDateToDDMMYYYY (dateInput) {
+  let date
+  if (typeof dateInput === 'string') {
+    date = new Date(dateInput)
+  } else if (dateInput instanceof Date) {
+    date = dateInput
+  } else {
+    return 'N/A'
+  }
+
+  if (isNaN(date.getTime())) { // Check for invalid date
+    return 'N/A'
+  }
+
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are 0-indexed
+  const year = date.getFullYear()
+  return `${day}/${month}/${year}`
+}
+
+// --- PDF GENERATION SERVICE ---
+
+export const generarActaDesincorporacion = (datos) => {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true })
+
+    const tempDir = path.join(process.cwd(), 'temp')
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true })
+    }
+    const outputPath = path.join(tempDir, `acta_desincorporacion_${Date.now()}.pdf`)
+
+    const stream = fs.createWriteStream(outputPath)
+    doc.pipe(stream)
+
+    // Current date and time for the document's introductory paragraph
+    const { day, month, yearInWords, time } = formatCurrentDateTime()
+
+    // Data received from POST (with fallbacks and formatting)
+    const numeroActa = datos.numeroActa || 'xxx-201X'
+    const nombreDirectorAdmin = toUpperCase(datos.nombreDirectorAdmin)
+    const ciDirectorAdmin = datos.ciDirectorAdmin || 'N/A'
+    const nombreDirectorAsignacion = toUpperCase(datos.nombreDirectorAsignacion) // This seems to be the "Director(a) o Jefe de Oficina"
+    const ciDirectorAsignacion = datos.ciDirectorAsignacion || 'N/A'
+    const unidadAdministrativa = toUpperCase(datos.unidadAdministrativa) // New variable for this acta
+    const nombreJefeCompras = toUpperCase(datos.nombreJefeCompras)
+    const ciJefeCompras = datos.ciJefeCompras || 'N/A'
+    const nombreAnalistaBienes = toUpperCase(datos.nombreAnalistaBienes)
+    const ciAnalistaBienes = datos.ciAnalistaBienes || 'N/A'
+
+    // Bien details for desincorporation
+    const codigoBien = datos.codigoBien || 'N/A'
+    const descripcionBien = limpiarTexto(datos.descripcionBien)
+    const valorBien = datos.valorBien ? parseFloat(datos.valorBien).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00' // Formatear a moneda
+
+    // Details for the "En consecuencia" paragraph
+    const numeroActaDesincorporacion = datos.numeroActaDesincorporacion || 'N/A'
+    const fechaActaDesincorporacion = formatDateToDDMMYYYY(datos.fechaActaDesincorporacion) // Assuming 'YYYY-MM-DD' or Date object
+    const nombreDirectorFinanzas = toUpperCase(datos.nombreDirectorFinanzas)
+    const nombreProcurador = toUpperCase(datos.nombreProcurador)
+    const nombreFuncionarioElabora = toUpperCase(datos.nombreFuncionarioElabora)
+
+    // --- DIBUJAR ENCABEZADO ---
+    const logoPath = path.join(process.cwd(), 'public', 'img', 'logo-contraloria-home1.png')
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, doc.page.margins.left, doc.page.margins.top, { width: 70 })
+    } else {
+      console.warn(`Logo no encontrado en ${logoPath}. Saltando logo.`)
+    }
+
+    doc.moveDown(2)
+
+    // --- TITULO DEL ACTA ---
+    doc.font('Helvetica-Bold').fontSize(14).text('ACTA DE DESINCORPORACIÓN DEL BIEN MUEBLE', { align: 'center' })
+    doc.fontSize(12).text(`No. ${numeroActa}`, { align: 'center' })
+    doc.moveDown(2)
+
+    // --- CUERPO DEL ACTA ---
+    doc.font('Helvetica').fontSize(12)
+    doc.x = doc.page.margins.left
+
+    const introText = `En la ciudad de San Cristóbal a los ${day} días del mes de ${month} del año ${yearInWords} siendo las ${time} reunidos en la sede de la Contraloría del Estado Táchira, Municipio San Cristóbal, Parroquia La Concordia, en la Dirección de Administración, los abajo firmantes: ${nombreDirectorAdmin} titular de la cédula de identidad No. V.${ciDirectorAdmin} Director(a) de Administración; ${nombreDirectorAsignacion} titular de la Cédula de Identidad No. V.${ciDirectorAsignacion} Director(a) de ${unidadAdministrativa}, ${nombreJefeCompras} titular de la Cédula de Identidad No. V.${ciJefeCompras} Jefe de la División de Compras, Bienes e Inventarios, ${nombreAnalistaBienes} titular de la cédula de identidad N° V.${ciAnalistaBienes} Analista de Bienes e Inventarios IV, para dejar constancia por medio de la presente acta de la `
+
+    doc.text(introText, { align: 'justify', continued: true })
+    doc.font('Helvetica-Bold').text('DESINCORPORACIÓN ', { continued: true })
+    doc.font('Helvetica').text(` del bien que se detalla a continuación: Código. ${codigoBien}, ${descripcionBien}, Bs. ${valorBien}. `)
+    doc.moveDown(0.5)
+
+    const consequenceText = `En consecuencia, se da cumplimiento de la desincorporación del bien antes descrito del inventario de la Contraloría del Estado Táchira, según el acta de desincorporación N° ${numeroActaDesincorporacion}, de fecha ${fechaActaDesincorporacion}, suscrita por los ciudadanos ${nombreDirectorFinanzas}, Director de Finanzas de la Gobernación del Estado Táchira y ${nombreProcurador}, Procurador General del Estado Táchira, en representación de la Gobernación del Estado Táchira.`
+    doc.text(consequenceText, { align: 'justify' })
+    doc.moveDown(0.5)
+
+    doc.text('En fe de lo expuesto, se elaboran tres ejemplares a un solo tenor y un mismo efecto y en conformidad firman:')
+    doc.moveDown(3)
+
+    // --- FIRMAS EN DOS COLUMNAS CON DOS FILAS CADA UNA ---
+    const signatureLineHeight = 20
+    const signatureTextGap = 5
+    const textToTextGap = 15
+    const rowGap = 50
+
+    const col1X = doc.page.margins.left
+    const col2X = doc.page.width / 2
+    const colWidth = (doc.page.width / 2) - doc.page.margins.right - 10
+
+    let currentSignatureY = doc.y
+
+    const drawSignatureBlock = (name, title, startX, width, yPos) => {
+      doc.font('Helvetica').fontSize(10)
+      doc.moveTo(startX + 10, yPos).lineTo(startX + width - 10, yPos).stroke()
+      doc.text(name, startX, yPos + signatureTextGap, { width, align: 'center' })
+      doc.text(title, startX, yPos + signatureTextGap + textToTextGap, { width, align: 'center' })
+    }
+
+    // Row 1: Director(a) de Administración & Director(a) ó Jefe de Oficina
+    drawSignatureBlock(nombreDirectorAdmin, 'Director(a) de Administración', col1X, colWidth, currentSignatureY)
+    drawSignatureBlock(nombreDirectorAsignacion, `Director(a) de ${unidadAdministrativa}`, col2X, colWidth, currentSignatureY)
+
+    currentSignatureY += rowGap + (signatureLineHeight + signatureTextGap + textToTextGap)
+
+    // Row 2: Jefe División de Compras, Bienes e Inventarios & Analista de Bienes e Inventarios IV
+    drawSignatureBlock(nombreJefeCompras, 'Jefe División de Compras, Bienes e Inventarios', col1X, colWidth, currentSignatureY)
+    drawSignatureBlock(nombreAnalistaBienes, 'Analista de Bienes e Inventarios IV', col2X, colWidth, currentSignatureY)
+
+    doc.y = currentSignatureY + rowGap
+
+    // --- INICIALES DEL FUNCIONARIO QUE ELABORA EL ACTA (RIGHT ALIGNED) ---
+    doc.moveDown(2)
+    doc.x = doc.page.margins.left // Reset X to left before setting right alignment
+    doc.font('Helvetica').fontSize(10).text(`Iniciales del funcionario que elabora el Acta: ${nombreFuncionarioElabora.split(' ').map(n => n.charAt(0)).join('')}`, { align: 'left' })
+
+    // --- FINALIZAR DOCUMENTO ---
+    doc.end()
+
+    stream.on('finish', () => resolve(outputPath))
+    stream.on('error', (err) => reject(err))
+  })
+}

@@ -15,14 +15,6 @@ export const Bm2 = () => {
     const [refreshKey, setRefreshKey] = useState();
     const [showModalDes, setShowModalDes] = useState(false);
 
-     const handleOpenDesModal = (id) => {
-        setShowModalDes(true);
-    };
-
-    const handleCloseDesModal = () => {
-        setShowModalDes(false);
-    };
-
     //Modal insertar Marca
     const [showInsertMarca, setShowInsertMarca] = useState(false);
     const [columnsMarca, setColumnsMarca] = useState(false);
@@ -195,7 +187,7 @@ export const Bm2 = () => {
         };
 
         fetchAllData();
-    }, [showInsertMarca]);
+    }, [showInsertMarca, showInsertMod]);
 
     // Efecto para cargar mod_ides cuando se selecciona una mar_ide
     useEffect(() => {
@@ -370,7 +362,7 @@ const handleSubmit = async (e) => {
                 console.log('El bien no existe aún, se puede insertar');
             }
 
-        // ✅ Enviar nuevo bien (POST /api/bienes)
+        //  Enviar nuevo bien (POST /api/bienes)
         const resInsert = await fetch('/api/bienes', {
             method: 'POST',
             headers: {
@@ -416,11 +408,11 @@ const handleSubmit = async (e) => {
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-2</h4>
-                <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowActInc(true)}>
-                    <i className="bx bx-file me-1"></i> Generar acta de Incorporación de Bien
+                <button id="exportToExcel" className="btn btn-dark shadow-sm" onClick={() =>setShowActInc(true)}>
+                    <i className="bx bxs-file-pdf me-2"></i> Generar acta de Incorporación de Bien
                 </button>
-                <button id="exportToExcel" className="btn btn-primary" onClick={() =>setShowRepBm2(true)}>
-                    <i className="bx bx-file me-1"></i> Generar Relacion de Movimiento de BM2
+                <button id="exportToExcel" className="btn btn-dark shadow-sm" onClick={() =>setShowRepBm2(true)}>
+                    <i className="bx bxs-file-pdf me-2"></i> Generar Relacion de Movimiento de BM2
                 </button>
                 <ModalRepBm2
                     show= {showRepBm2}
@@ -793,20 +785,19 @@ const handleSubmit = async (e) => {
                             </div>
                         ) : (
                             <div className="card-body">
-                                    {/* Aquí iría el formulario para Desincorporación */}
                                     <div className="row justify-content-end">
-                                        
-                                        <Button type='primary' onClick={handleOpenDesModal}> <i className="bx bx-export me-1"></i>Generar acta de Desincorporación de Bien</Button>
-                                    </div>   
+                                        <button type='primary' onClick={() =>setShowModalDes(true)}  className="btn btn-primary"> <i className="bx bx-export me-1"></i>Generar acta de Desincorporación de Bien</button>
+                                    </div>  
+                                    <ModalDesincorporarBien 
+                                        show={showModalDes}
+                                        handleClose={() => setShowModalDes(false)}
+                                    /> 
                             </div>
                         )}
                     </div>
                 </div>
             </div>
-            <ModalDesincorporarBien 
-                show={showModalDes}
-                handleClose={handleCloseDesModal}
-            />
+            
         </>
     );
 }

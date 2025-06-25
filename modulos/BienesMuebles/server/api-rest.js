@@ -15,6 +15,7 @@ import conceptoMovimientoRouter from './src/routes/conceptoMovimiento.routes.js'
 import condicionFisicaRouter from './src/routes/condicionFisica.routes.js'
 import prestamoRouter from './src/routes/prestamo.routes.js'
 import metaRouter from './src/routes/meta.routes.js'
+import reporteBM4Routes from './src/routes/reporte.routes.js'
 import pdfRouter from './src/routes/pdf.routes.js'
 import excelRoutes from './src/routes/excel.routes.js'
 import cors from 'cors'
@@ -56,6 +57,8 @@ app.use('/api/formas-adquisicion', formaAdquisicionRouter)
 app.use('/api/estados-uso', estadoUsoRouter)
 app.use('/api/condiciones-fisicas', condicionFisicaRouter)
 app.use('/api/conceptos-movimiento', conceptoMovimientoRouter)
+
+app.use('/api/reporteBM4', reporteBM4Routes)
 
 app.use('/api/bienes', bienMuebleRouter)
 

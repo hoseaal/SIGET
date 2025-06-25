@@ -151,8 +151,8 @@ useEffect(() => {
             
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Bienes Muebles/</span> BM-3</h4>
-                <button id="exportToExcel" className="btn btn-primary" onClick={handleDownloadBM3}>
-                    <i className="bx bx-file me-1"></i> Generar Formulario de BM3
+                <button id="exportToExcel" className="btn btn-dark shadow-sm" onClick={handleDownloadBM3}>
+                    <i className="bx bxs-file me-2"></i> Generar Formulario de BM3
                 </button>
             </div>
             <div className="card">
