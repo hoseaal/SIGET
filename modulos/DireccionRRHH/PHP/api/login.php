@@ -79,9 +79,9 @@
         setcookie('token', $jwt, [
             'expires' => $payload['exp'],
             'path' => '/',
-            'secure' => true,
+            'secure' => False,
             'httponly' => true,
-            'samesite' => 'Strict'
+            'samesite' => 'Lax'
         ]);
 
         echo json_encode([
