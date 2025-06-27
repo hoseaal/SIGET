@@ -2,16 +2,24 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import ModalActaVerificacion from '../Modales/modalActaVerificacion'; // Asegúrate de que esta ruta sea correcta
 import { Container, Row, Col, Card, Button } from 'react-bootstrap'; // Importa los componentes de React-Bootstrap
+import ModalGenerarEtiquetas from '../Modales/modalGenerarEtiquetas';
 
 export const Reportes = () => {
     const [showVeriModal, setShowVeriModal] = useState(false);
-    
+    const [showEtiquetasModal, setShowEtiquetasModal] = useState(false);
+
+    const handleOpenEtiquetasModal = () => setShowEtiquetasModal(true);
+
+    const handleCloseEtiquetasModal = () => setShowEtiquetasModal(false);
+
     const handleOpenModal = () => setShowVeriModal(true);
     
     const handleCloseModal = () => {
         console.log("Cerrando modal...", showVeriModal);
         setShowVeriModal(false);
     };
+
+
 
     return (
         <Container fluid className="py-3"> {/* Contenedor fluido para ocupar todo el ancho */}
@@ -56,7 +64,7 @@ export const Reportes = () => {
                                         variant="secondary" 
                                         size="lg" 
                                         // Aquí puedes añadir la función onClick para generar etiquetas
-                                        onClick={() => console.log('Generar Etiquetas PDF')} // Ejemplo de acción
+                                        onClick={handleOpenEtiquetasModal}
                                         className="w-100 mt-auto"
                                     >
                                         <i className="bx bxs-purchase-tag-alt me-2"></i> Generar Etiquetas
@@ -72,6 +80,11 @@ export const Reportes = () => {
             <ModalActaVerificacion
                 show={showVeriModal}
                 handleClose={handleCloseModal}
+            />
+
+            <ModalGenerarEtiquetas
+                show={showEtiquetasModal}
+                handleClose={handleCloseEtiquetasModal}
             />
         </Container>
     );

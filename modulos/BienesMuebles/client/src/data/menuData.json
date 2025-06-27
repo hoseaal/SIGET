@@ -69,11 +69,6 @@
                         "text": "Reportes de Bienes",
                         "available": true,
                         "link": "/Reportes"
-                    },
-                    {
-                        "text": "Carga de Archivos",
-                        "available": true,
-                        "link": "/Carga"
                     }
                 ]
             }

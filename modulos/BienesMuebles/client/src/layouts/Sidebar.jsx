@@ -8,10 +8,8 @@ const Sidebar = () => {
     return (
         <aside id="layout-menu" className="layout-menu menu-vertical menu bg-menu-theme">
             <div className="app-brand demo">
-                <Link aria-label='Navigate to sneat homepage' to="/" className="app-brand-link">
-                    <span className="app-brand-logo demo">
-                        <img src="/assets/img/sneat.svg" alt="sneat-logo" aria-label='Sneat logo image' />
-                    </span>
+                <Link aria-label='Navigate to sneat homepage' to="/Dashboard" className="app-brand-link">
+                    <img src="../../../assets/img/logo-contraloria-home2.png" alt="sneat-logo" style={{ width: '20px', height: 'auto' }}/>
                     <span className="app-brand-text demo menu-text fw-bold ms-2">SIGET</span>
                 </Link>
 

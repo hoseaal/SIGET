@@ -186,6 +186,69 @@ export class BienMuebleModel {
     }
   }
 
+  static async getTotalCount ({ filters = {} }) {
+    // Construcción de cláusulas WHERE dinámicas
+    const whereClauses = []
+    const queryParams = []
+
+    // Filtros (los mismos que en tu ejemplo original)
+    if (filters.estado) {
+      whereClauses.push('b.est_ide = ?')
+      queryParams.push(filters.estado)
+    }
+
+    if (filters.inc) {
+      whereClauses.push('b.bim_inc = ?')
+      queryParams.push(filters.inc)
+    }
+
+    if (filters.dep) {
+      whereClauses.push('b.dep_ide = ?')
+      queryParams.push(filters.dep)
+    }
+
+    if (filters.con) {
+      whereClauses.push('b.con_ide = ?')
+      queryParams.push(filters.con)
+    }
+
+    if (filters.esu) {
+      whereClauses.push('b.esu_ide = ?')
+      queryParams.push(filters.esu)
+    }
+
+    if (filters.fechaIncorporacionDesde) {
+      whereClauses.push('b.bim_fec >= ?')
+      queryParams.push(filters.fechaIncorporacionDesde)
+    }
+    if (filters.fechaIncorporacionHasta) {
+      whereClauses.push('b.bim_fec <= ?')
+      queryParams.push(filters.fechaIncorporacionHasta)
+    }
+
+    // Filtros para bim_fed (fecha de desincorporación)
+    if (filters.fechaDesincorporacionDesde) {
+      whereClauses.push('b.bim_fed >= ?')
+      queryParams.push(filters.fechaDesincorporacionDesde)
+    }
+    if (filters.fechaDesincorporacionHasta) {
+      whereClauses.push('b.bim_fed <= ?')
+      queryParams.push(filters.fechaDesincorporacionHasta)
+    }
+
+    // Construcción de la consulta COUNT
+    let countQuery = 'SELECT COUNT(*) as total FROM tmab_m b'
+
+    // Agregar WHERE si hay filtros
+    if (whereClauses.length > 0) {
+      countQuery += ' WHERE ' + whereClauses.join(' AND ')
+    }
+
+    // Ejecutar consulta y devolver solo el total
+    const [[{ total }]] = await pool.query(countQuery, queryParams)
+    return { total }
+  }
+
   static async getByCode (codigo) {
     const [rows] = await pool.query(
       'SELECT * FROM tmab_m WHERE bim_cod = ?',
