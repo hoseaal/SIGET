@@ -30,19 +30,10 @@ export class ReporteBM4Model {
      */
   static async calcularExistenciaFinalMesAnterior (anioAnterior, mesAnterior) {
     try {
-      const lastDayOfPrevMonth = new Date(anioAnterior, mesAnterior, 0)
-      const formattedLastDay = `${lastDayOfPrevMonth.getFullYear()}-${(lastDayOfPrevMonth.getMonth() + 1).toString().padStart(2, '0')}-${lastDayOfPrevMonth.getDate().toString().padStart(2, '0')}`
-
       const [rows] = await pool.query(
                 `SELECT IFNULL(SUM(bim_val), 0) AS existencia_total
                  FROM tmab_m
-                 WHERE bim_fec <= ?
-                   AND (
-                         bim_inc = 1
-                         OR
-                         (bim_inc = 0 AND bim_fed > ?)
-                       );`,
-                [formattedLastDay, formattedLastDay]
+                 WHERE bim_inc = 1;`
       )
 
       const existenciaCalculada = parseFloat(rows[0].existencia_total)

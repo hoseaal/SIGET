@@ -97,6 +97,39 @@ export const obtenerBienesPagina = async (req, res) => {
   }
 }
 
+// controllers/bienMueble.controller.js
+
+export const contarBienes = async (req, res) => {
+  try {
+    // Extraer filtros de los query parameters
+    const filters = {
+      estado: req.query.estado,
+      inc: req.query.inc,
+      dep: req.query.dep,
+      con: req.query.con,
+      esu: req.query.esu,
+      fechaIncorporacionDesde: req.query.fechaIncDesde,
+      fechaIncorporacionHasta: req.query.fechaIncHasta,
+      fechaDesincorporacionDesde: req.query.fechaDesDesde,
+      fechaDesincorporacionHasta: req.query.fechaDesHasta
+    }
+
+    // Eliminar propiedades undefined
+    Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key])
+
+    const result = await BienMuebleService.contarRegistros({ filters })
+
+    res.json({
+      meta: result.meta
+    })
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
+      details: error.details || null
+    })
+  }
+}
+
 export const buscarAvanzado = async (req, res) => {
   try {
     const bienes = await BienMuebleService.buscarAvanzado(req.body)

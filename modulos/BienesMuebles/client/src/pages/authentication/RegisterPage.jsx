@@ -15,45 +15,45 @@ export const RegisterPage = () => {
         usu_usu: '',
         nombre: '',
         ape: '',
-        tipoUsuario: '',
-        modulo: ''
+        usu_tip: '',
+        usu_mod: ''
     });
 
     const tipo = [
                 {
                     "usu_tip": 0,
-                    "tipo": "Solo vistas"
-                },
-                {
-                    "usu_tip": 1,
-                    "tipo": "Temporal"
+                    "tipo": "Visualizador"
                 },
                 {
                     "usu_tip": 2,
-                    "tipo": "Trabajador"
+                    "tipo": "Temporal"
                 },
                 {
                     "usu_tip": 3,
-                    "tipo": "Jefe de area"
+                    "tipo": "Trabajador"
                 },
                 {
                     "usu_tip": 4,
+                    "tipo": "Jefe de area"
+                },
+                {
+                    "usu_tip": 5,
                     "tipo": "Administrador"
                 }
             ];
 
             const modulos = [
                 {
-                    "usu_mod": 0,
-                    "mod": "Todos"
-                },
-                {
                     "usu_mod": 1,
-                    "mod": "RRHH"
+                    "mod": "Acceso Global"
                 },
                 {
                     "usu_mod": 2,
-                    "mod": "Bienes Muebles"
+                    "mod": "Modulo de Recursos Humanos"
+                },
+                {
+                    "usu_mod": 3,
+                    "mod": "MOdulo deBienes Muebles"
                 }
             ];
 
@@ -177,13 +177,13 @@ export const RegisterPage = () => {
                                             <Form.Group >
                                                 <Form.Select 
                                                 className="form-control"
-                                                    name='tipoUsuario'
-                                                    value={formData.tipoUsuario}
+                                                    name='usu_tip'
+                                                    value={formData.usu_tip}
                                                     onChange={handleChange}
                                                 >
                                                     <option value="">Seleccedone una opcedón</option>
                                                 {tipo.map((item) => (
-                                                    <option key={item.tip_usu} value={item.tip_usu}>
+                                                    <option key={item.usu_tip} value={item.usu_tip}>
                                                         {item.tipo}
                                                     </option>
                                                 ))}
@@ -202,8 +202,8 @@ export const RegisterPage = () => {
                                             <Form.Group >
                                                 <Form.Select 
                                                 className="form-control"
-                                                    name='modulo'
-                                                    value={formData.modulo}
+                                                    name='usu_mod'
+                                                    value={formData.usu_mod}
                                                     onChange={handleChange}
                                                 >
                                                     <option value="">Seleccedone una opcedón</option>

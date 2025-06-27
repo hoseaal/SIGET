@@ -64,11 +64,11 @@ const Navbar = () => {
   };
 
   const tipo = [
-    { "usu_tip": 0, "tipo": "Solo vistas" },
-    { "usu_tip": 1, "tipo": "Temporal" },
-    { "usu_tip": 2, "tipo": "Trabajador" },
-    { "usu_tip": 3, "tipo": "Jefe de área" },
-    { "usu_tip": 4, "tipo": "Administrador" }
+    { "usu_tip": 1, "tipo": "Visualizador" },
+    { "usu_tip": 2, "tipo": "Temporal" },
+    { "usu_tip": 3, "tipo": "Trabajador" },
+    { "usu_tip": 4, "tipo": "Jefe de área" },
+    { "usu_tip": 5, "tipo": "Administrador" }
   ];
 
   return (
@@ -87,7 +87,7 @@ const Navbar = () => {
             <Dropdown.Toggle as={Nav.Link} className="dropdown-toggle hide-arrow">
               <div className="avatar avatar-online">
                 <Image 
-                  src="../assets/img/avatars/1.png" 
+                  src="../assets/img/avatars/1.jpg" 
                   className="w-px-40 h-auto rounded-circle" 
                   alt="avatar-image" 
                   aria-label='Avatar Image'
@@ -101,7 +101,7 @@ const Navbar = () => {
                   <div className="flex-shrink-0 me-3">
                     <div className="avatar avatar-online">
                       <Image 
-                        src="../assets/img/avatars/1.png" 
+                        src="../assets/img/avatars/1.jpg" 
                         className="w-px-40 h-auto rounded-circle" 
                         alt="avatar-image" 
                         aria-label='Avatar Image'
@@ -121,20 +121,6 @@ const Navbar = () => {
                 <BsPerson className="bx me-2" />
                 <span className="align-middle">My Profile</span>
               </Dropdown.Item>
-              
-              <Dropdown.Item href="#">
-                <BsGear className="bx me-2" />
-                <span className="align-middle">Settings</span>
-              </Dropdown.Item>
-              
-              <Dropdown.Item href="#">
-                <span className="d-flex align-items-center align-middle">
-                  <BsCreditCard className="flex-shrink-0 bx me-2" />
-                  <span className="flex-grow-1 align-middle ms-1">Billing</span>
-                  <span className="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
-                </span>
-              </Dropdown.Item>
-              
               <Dropdown.Divider />
               
               <Dropdown.Item onClick={handleLogout}>

@@ -1,696 +1,519 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { Card, Row, Col, Button } from "react-bootstrap";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
-export const DashboardPage = () => {
-  const [userData, setUserData] = useState(null);
+// --- Funciones de Ayuda ---
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const res = await fetch('/api/auth/verify-auth', {
-          method: 'GET',
-          credentials: 'include'
-        });
+/**
+ * Obtiene datos de la API. Maneja credenciales y errores básicos.
+ * @param {string} url - El endpoint de la API.
+ * @param {string} accessToken - El token de acceso para autorización.
+ * @returns {Promise<any>} - Los datos de la respuesta en JSON.
+ */
+const fetchApiData = async (url, accessToken) => {
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+        'Content-Type': 'application/json',
+      },
+    });
 
-        if (!res.ok) throw new Error('No autorizado');
-
-        const data = await res.json();
-
-        if (data.success) {
-          setUserData(data.user);
-        }
-      } catch (error) {
-        console.error('Error obteniendo datos de usuario:', error);
-        // Si querés redirigir si no hay sesión activa, podrías usar navigate acá
+    if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error('No autorizado. Por favor, inicie sesión nuevamente.');
       }
-    };
+      const errorData = await res.json();
+      throw new Error(`Error en la API (${res.status}): ${errorData.message || res.statusText}`);
+    }
 
-    fetchUserData();
-  }, []);
-
-  if (!userData) {
-    return <div>Cargando datos de usuario...</div>;
+    return await res.json();
+  } catch (error) {
+    console.error(`Error al obtener datos de ${url}:`, error);
+    throw error;
   }
+};
+
+/**
+ * Obtiene las fechas de inicio y fin del mes actual.
+ * @returns {{startDate: string, endDate: string}} - Objeto con fechas formateadas.
+ */
+const getCurrentMonthDates = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const startDate = new Date(year, month, 1);
+  const endDate = new Date(year, month + 1, 0);
+  const formatDate = (date) => date.toISOString().split('T')[0];
+  return {
+    startDate: formatDate(startDate),
+    endDate: formatDate(endDate),
+  };
+};
+
+// --- Componente de Gráfico de Torta (Aislado) ---
+const CriticalGoodsPieChart = ({ data }) => {
+  const COLORS = data.map(item => item.color);
 
   return (
-        <>
-            <div className="row">
-                <div className="col-lg-8 mb-4 order-0">
-                    <div className="card">
-                        <div className="d-flex align-items-end row">
-                            <div className="col-sm-7">
-                                <div className="card-body">
-                                    <h5 className="card-title text-primary">
-                                        Congratulations {userData?.usu_nom + ' ' + userData?.usu_ape} 🎉
-                                    </h5>
-                                    <p className="mb-4">
-                                        You have done <span className="fw-medium">72%</span> more
-                                        sales today. Check your new badge in your profile.
-                                    </p>
+    <ResponsiveContainer width="100%" height={250}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          innerRadius={60}
+          outerRadius={80}
+          fill="#8884d8"
+          paddingAngle={5}
+          dataKey="value"
+          labelLine={false}
+          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip formatter={(value, name) => [`${value.toLocaleString('es-VE')} bienes`, name]} />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+};
 
-                                    <a aria-label="view badges"
-                                        href="#"
-                                        className="btn btn-sm btn-outline-primary"
-                                    >
-                                        View Badges
-                                    </a>
-                                </div>
-                            </div>
-                            <div className="col-sm-5 text-center text-sm-left">
-                                <div className="card-body pb-0 px-0 px-md-4">
-                                    <img aria-label='dsahboard icon image'
-                                        src="/assets/img/illustrations/man-with-laptop-light.png"
-                                        height="140"
-                                        alt="View Badge User"
-                                        data-app-dark-img="illustrations/man-with-laptop-dark.png"
-                                        data-app-light-img="illustrations/man-with-laptop-light.png"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-lg-4 col-md-4 order-1">
-                    <div className="row">
-                        <div className="col-lg-6 col-md-12 col-6 mb-4">
-                            <div className="card">
-                                <div className="card-body">
-                                    <div className="card-title d-flex align-items-start justify-content-between">
-                                        <div className="avatar flex-shrink-0">
-                                            <img aria-label='dsahboard icon image'
-                                                src="/assets/img/icons/unicons/chart-success.png"
-                                                alt="chart success"
-                                                className="rounded"
-                                            />
-                                        </div>
-                                        <div className="dropdown">
-                                            <button aria-label='Click me'
-                                                className="btn p-0"
-                                                type="button"
-                                                id="cardOpt3"
-                                                data-bs-toggle="dropdown"
-                                                aria-haspopup="true"
-                                                aria-expanded="false"
-                                            >
-                                                <i className="bx bx-dots-vertical-rounded"></i>
-                                            </button>
-                                            <div
-                                                className="dropdown-menu dropdown-menu-end"
-                                                aria-labelledby="cardOpt3"
-                                            >
-                                                <a aria-label="view more" className="dropdown-item" href="#">
-                                                    View More
-                                                </a>
-                                                <a aria-label="delete" className="dropdown-item" href="#">
-                                                    Delete
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span className="fw-medium d-block mb-1">Profit</span>
-                                    <h3 className="card-title mb-2">$12,628</h3>
-                                    <small className="text-success fw-medium">
-                                        <i className="bx bx-up-arrow-alt"></i> +72.80%
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-lg-6 col-md-12 col-6 mb-4">
-                            <div className="card">
-                                <div className="card-body">
-                                    <div className="card-title d-flex align-items-start justify-content-between">
-                                        <div className="avatar flex-shrink-0">
-                                            <img aria-label='dsahboard icon image'
-                                                src="/assets/img/icons/unicons/wallet-info.png"
-                                                alt="Credit Card"
-                                                className="rounded"
-                                            />
-                                        </div>
-                                        <div className="dropdown">
-                                            <button aria-label='Click me'
-                                                className="btn p-0"
-                                                type="button"
-                                                id="cardOpt6"
-                                                data-bs-toggle="dropdown"
-                                                aria-haspopup="true"
-                                                aria-expanded="false"
-                                            >
-                                                <i className="bx bx-dots-vertical-rounded"></i>
-                                            </button>
-                                            <div
-                                                className="dropdown-menu dropdown-menu-end"
-                                                aria-labelledby="cardOpt6"
-                                            >
-                                                <a aria-label="view more" className="dropdown-item" href="#">
-                                                    View More
-                                                </a>
-                                                <a aria-label="delete" className="dropdown-item" href="#">
-                                                    View More
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span>Sales</span>
-                                    <h3 className="card-title text-nowrap mb-1">$4,679</h3>
-                                    <small className="text-success fw-medium">
-                                        <i className="bx bx-up-arrow-alt"></i> +28.42%
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-12 col-lg-8 order-2 order-md-3 order-lg-2 mb-4">
-                    <div className="card">
-                        <div className="row row-bordered g-0">
-                            <div className="col-md-8">
-                                <h5 className="card-header m-0 me-2 pb-3">Total Revenue</h5>
-                                <div id="totalRevenueChart" className="px-2"></div>
-                            </div>
-                            <div className="col-md-4">
-                                <div className="card-body">
-                                    <div className="text-center">
-                                        <div className="dropdown">
-                                            <button aria-label='Years selection 2022'
-                                                className="btn btn-sm btn-outline-primary dropdown-toggle"
-                                                type="button"
-                                                id="growthReportId"
-                                                data-bs-toggle="dropdown"
-                                                aria-haspopup="true"
-                                                aria-expanded="false"
-                                            >
-                                                2022
-                                            </button>
-                                            <div
-                                                className="dropdown-menu dropdown-menu-end"
-                                                aria-labelledby="growthReportId"
-                                            >
-                                                <a aria-label="dropdown item 2021" className="dropdown-item" href="#">
-                                                    2021
-                                                </a>
-                                                <a aria-label="dropdown item 2020" className="dropdown-item" href="#">
-                                                    2020
-                                                </a>
-                                                <a aria-label="dropdown item 2019" className="dropdown-item" href="#">
-                                                    2019
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="growthChart"></div>
-                                <div className="text-center fw-medium pt-3 mb-2">
-                                    62% Company Growth
-                                </div>
+// --- Componente de Gráfico de Barras (Aislado) ---
+const DepartmentBarChart = ({ data }) => {
+  return (
+    <ResponsiveContainer width="100%" height={450}>
+      <BarChart
+        data={data}
+        margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" angle={-45} textAnchor="end" height={180} interval={0} />
+        <YAxis allowDecimals={false} />
+        <Tooltip formatter={(value) => value.toLocaleString('es-VE')} />
+        <Legend />
+        <Bar dataKey="count" fill="#82ca9d" name="Cantidad de Bienes" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+};
 
-                                <div className="d-flex px-xxl-4 px-lg-2 p-4 gap-xxl-3 gap-lg-1 gap-3 justify-content-between">
-                                    <div className="d-flex">
-                                        <div className="me-2">
-                                            <span className="badge bg-label-primary p-2">
-                                                <i className="bx bx-dollar text-primary"></i>
-                                            </span>
-                                        </div>
-                                        <div className="d-flex flex-column">
-                                            <small>2022</small>
-                                            <h6 className="mb-0">$32.5k</h6>
-                                        </div>
-                                    </div>
-                                    <div className="d-flex">
-                                        <div className="me-2">
-                                            <span className="badge bg-label-info p-2">
-                                                <i className="bx bx-wallet text-info"></i>
-                                            </span>
-                                        </div>
-                                        <div className="d-flex flex-column">
-                                            <small>2021</small>
-                                            <h6 className="mb-0">$41.2k</h6>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-12 col-md-8 col-lg-4 order-3 order-md-2">
-                    <div className="row">
-                        <div className="col-6 mb-4">
-                            <div className="card">
-                                <div className="card-body">
-                                    <div className="card-title d-flex align-items-start justify-content-between">
-                                        <div className="avatar flex-shrink-0">
-                                            <img aria-label='dsahboard icon image'
-                                                src="/assets/img/icons/unicons/paypal.png"
-                                                alt="Credit Card"
-                                                className="rounded"
-                                            />
-                                        </div>
-                                        <div className="dropdown">
-                                            <button aria-label='Click me'
-                                                className="btn p-0"
-                                                type="button"
-                                                id="cardOpt4"
-                                                data-bs-toggle="dropdown"
-                                                aria-haspopup="true"
-                                                aria-expanded="false"
-                                            >
-                                                <i className="bx bx-dots-vertical-rounded"></i>
-                                            </button>
-                                            <div
-                                                className="dropdown-menu dropdown-menu-end"
-                                                aria-labelledby="cardOpt4"
-                                            >
-                                                <a aria-label="view more" className="dropdown-item" href="#">
-                                                    View More
-                                                </a>
-                                                <a aria-label="delete" className="dropdown-item" href="#">
-                                                    View More
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span className="d-block mb-1">Payments</span>
-                                    <h3 className="card-title text-nowrap mb-2">$2,456</h3>
-                                    <small className="text-danger fw-medium">
-                                        <i className="bx bx-down-arrow-alt"></i> -14.82%
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-6 mb-4">
-                            <div className="card">
-                                <div className="card-body">
-                                    <div className="card-title d-flex align-items-start justify-content-between">
-                                        <div className="avatar flex-shrink-0">
-                                            <img aria-label='dsahboard icon image'
-                                                src="/assets/img/icons/unicons/cc-primary.png"
-                                                alt="Credit Card"
-                                                className="rounded"
-                                            />
-                                        </div>
-                                        <div className="dropdown">
-                                            <button aria-label='Click me'
-                                                className="btn p-0"
-                                                type="button"
-                                                id="cardOpt1"
-                                                data-bs-toggle="dropdown"
-                                                aria-haspopup="true"
-                                                aria-expanded="false"
-                                            >
-                                                <i className="bx bx-dots-vertical-rounded"></i>
-                                            </button>
-                                            <div className="dropdown-menu" aria-labelledby="cardOpt1">
-                                                <a aria-label="view more" className="dropdown-item" href="#">
-                                                    View More
-                                                </a>
-                                                <a aria-label="delete" className="dropdown-item" href="#">
-                                                    View More
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span className="fw-medium d-block mb-1">Transactions</span>
-                                    <h3 className="card-title mb-2">$14,857</h3>
-                                    <small className="text-success fw-medium">
-                                        <i className="bx bx-up-arrow-alt"></i> +28.14%
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="col-12 mb-4">
-                            <div className="card">
-                                <div className="card-body">
-                                    <div className="d-flex justify-content-between flex-sm-row flex-column gap-3">
-                                        <div className="d-flex flex-sm-column flex-row align-items-start justify-content-between">
-                                            <div className="card-title">
-                                                <h5 className="text-nowrap mb-2">Profile Report</h5>
-                                                <span className="badge bg-label-warning rounded-pill">
-                                                    Year 2021
-                                                </span>
-                                            </div>
-                                            <div className="mt-sm-auto">
-                                                <small className="text-success text-nowrap fw-medium">
-                                                    <i className="bx bx-chevron-up"></i> 68.2%
-                                                </small>
-                                                <h3 className="mb-0">$84,686k</h3>
-                                            </div>
-                                        </div>
-                                        <div id="profileReportChart"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="row">
-                <div className="col-md-6 col-lg-4 col-xl-4 order-0 mb-4">
-                    <div className="card h-100">
-                        <div className="card-header d-flex align-items-center justify-content-between pb-0">
-                            <div className="card-title mb-0">
-                                <h5 className="m-0 me-2">Order Statistics</h5>
-                                <small className="text-muted">42.82k Total Sales</small>
-                            </div>
-                            <div className="dropdown">
-                                <button aria-label='Click me'
-                                    className="btn p-0"
-                                    type="button"
-                                    id="orederStatistics"
-                                    data-bs-toggle="dropdown"
-                                    aria-haspopup="true"
-                                    aria-expanded="false"
-                                >
-                                    <i className="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div
-                                    className="dropdown-menu dropdown-menu-end"
-                                    aria-labelledby="orederStatistics"
-                                >
-                                    <a aria-label="select all " className="dropdown-item" href="#">
-                                        Select All
-                                    </a>
-                                    <a aria-label="refresh" className="dropdown-item" href="#">
-                                        Refresh
-                                    </a>
-                                    <a aria-label="share" className="dropdown-item" href="#">
-                                        Share
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="card-body">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <div className="d-flex flex-column align-items-center gap-1">
-                                    <h2 className="mb-2">8,258</h2>
-                                    <span>Total Orders</span>
-                                </div>
-                                <div id="orderStatisticsChart"></div>
-                            </div>
-                            <ul className="p-0 m-0">
-                                <li className="d-flex mb-4 pb-1">
-                                    <div className="avatar flex-shrink-0 me-3">
-                                        <span className="avatar-initial rounded bg-label-primary">
-                                            <i className="bx bx-mobile-alt"></i>
-                                        </span>
-                                    </div>
-                                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                        <div className="me-2">
-                                            <h6 className="mb-0">Electronic</h6>
-                                            <small className="text-muted">Mobile, Earbuds, TV</small>
-                                        </div>
-                                        <div className="user-progress">
-                                            <small className="fw-medium">82.5k</small>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li className="d-flex mb-4 pb-1">
-                                    <div className="avatar flex-shrink-0 me-3">
-                                        <span className="avatar-initial rounded bg-label-success">
-                                            <i className="bx bx-closet"></i>
-                                        </span>
-                                    </div>
-                                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                        <div className="me-2">
-                                            <h6 className="mb-0">Fashion</h6>
-                                            <small className="text-muted">
-                                                T-shirt, Jeans, Shoes
-                                            </small>
-                                        </div>
-                                        <div className="user-progress">
-                                            <small className="fw-medium">23.8k</small>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li className="d-flex mb-4 pb-1">
-                                    <div className="avatar flex-shrink-0 me-3">
-                                        <span className="avatar-initial rounded bg-label-info">
-                                            <i className="bx bx-home-alt"></i>
-                                        </span>
-                                    </div>
-                                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                        <div className="me-2">
-                                            <h6 className="mb-0">Decor</h6>
-                                            <small className="text-muted">Fine Art, Dining</small>
-                                        </div>
-                                        <div className="user-progress">
-                                            <small className="fw-medium">849k</small>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li className="d-flex">
-                                    <div className="avatar flex-shrink-0 me-3">
-                                        <span className="avatar-initial rounded bg-label-secondary">
-                                            <i className="bx bx-football"></i>
-                                        </span>
-                                    </div>
-                                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                        <div className="me-2">
-                                            <h6 className="mb-0">Sports</h6>
-                                            <small className="text-muted">
-                                                Football, Cricket Kit
-                                            </small>
-                                        </div>
-                                        <div className="user-progress">
-                                            <small className="fw-medium">99</small>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-6 col-lg-4 order-1 mb-4">
-                    <div className="card h-100">
-                        <div className="card-header">
-                            <ul className="nav nav-pills" role="tablist">
-                                <li className="nav-item" role="presentation">
-                                    <a
-                                        aria-label='Select Income Tab'
-                                        className="nav-link active"
-                                        id="navs-tabs-line-card-income-tab"
-                                        data-bs-toggle="tab"
-                                        href="#navs-tabs-line-card-income"
-                                        role="tab"
-                                        aria-controls="navs-tabs-line-card-income"
-                                        aria-selected="true"
-                                    >
-                                        Income
-                                    </a>
-                                </li>
-                                <li className="nav-item" role="presentation">
-                                    <a
-                                        aria-label='Select Expenses Tab'
-                                        className="nav-link"
-                                        id="navs-tabs-line-card-expenses-tab"
-                                        data-bs-toggle="tab"
-                                        href="#navs-tabs-line-card-expenses"
-                                        role="tab"
-                                        aria-controls="navs-tabs-line-card-expenses"
-                                        aria-selected="false"
-                                    >
-                                        Expenses
-                                    </a>
-                                </li>
-                                <li className="nav-item" role="presentation">
-                                    <a
-                                        aria-label='Select Profit Tab'
-                                        className="nav-link"
-                                        id="navs-tabs-line-card-profit-tab"
-                                        data-bs-toggle="tab"
-                                        href="#navs-tabs-line-card-profit"
-                                        role="tab"
-                                        aria-controls="navs-tabs-line-card-profit"
-                                        aria-selected="false"
-                                    >
-                                        Profit
-                                    </a>
-                                </li>
-                            </ul>
+// --- Componente Principal del Dashboard ---
+export const DashboardPage = () => {
+  // --- Estados del Componente ---
+  const [userData, setUserData] = useState(null);
+  const [totalValor, setTotalValor] = useState(0);
+  const [totalBienes, setTotalBienes] = useState(0);
+  const [incorporatedThisMonth, setIncorporatedThisMonth] = useState(0);
+  const [decommissionedThisMonth, setDecommissionedThisMonth] = useState(0);
+  const [missingBienes, setMissingBienes] = useState(0);
+  const [badConditionBienes, setBadConditionBienes] = useState(0);
+  const [noTagBienes, setNoTagBienes] = useState(0);
+  const [loanedBienes, setLoanedBienes] = useState(0);
+  const [departments, setDepartments] = useState([]);
+  const [bienesPorDepartamento, setBienesPorDepartamento] = useState([]);
+  const [quarterlyReportData, setQuarterlyReportData] = useState(null);
+  const [currentDepartmentIndex, setCurrentDepartmentIndex] = useState(0);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-                        </div>
-                        <div className="card-body px-0">
-                            <div className="tab-content p-0">
-                                <div
-                                    className="tab-pane fade show active"
-                                    id="navs-tabs-line-card-income"
-                                    role="tabpanel"
-                                    aria-labelledby="navs-tabs-line-card-income"
-                                >
-                                    <div className="d-flex p-4 pt-3">
-                                        <div className="avatar flex-shrink-0 me-3">
-                                            <img
-                                                aria-label='Dashboard Icon Image'
-                                                src="/assets/img/icons/unicons/wallet.png"
-                                                alt="User"
-                                            />
-                                        </div>
-                                        <div>
-                                            <small className="text-muted d-block">
-                                                Total Balance
-                                            </small>
-                                            <div className="d-flex align-items-center">
-                                                <h6 className="mb-0 me-1">$459.10</h6>
-                                                <small className="text-success fw-medium">
-                                                    <i className="bx bx-chevron-up"></i>
-                                                    42.9% Increase
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div id="incomeChart Jan Feb Mar Apr May Jun Jul" aria-label="Income Chart"></div>
-                                    <div className="d-flex justify-content-center pt-4 gap-2">
-                                        <div className="flex-shrink-0">
-                                            <div id="expensesOfWeek" aria-label="Expenses of the Week $65"></div>
-                                        </div>
-                                        <div>
-                                            <p className="mb-n1 mt-1">Expenses This Week</p>
-                                            <small className="text-muted">
-                                                $39 less than last week
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  const { startDate, endDate } = getCurrentMonthDates();
 
-                <div className="col-md-6 col-lg-4 order-2 mb-4">
-                    <div className="card h-100">
-                        <div className="card-header d-flex align-items-center justify-content-between">
-                            <h5 className="card-title m-0 me-2">Transactions</h5>
-                            <div className="dropdown">
-                                <button aria-label='Transactions'
-                                    className="btn p-0"
-                                    type="button"
-                                    id="transactionID"
-                                    data-bs-toggle="dropdown"
-                                    aria-haspopup="true"
-                                    aria-expanded="false"
-                                >
-                                    <i className="bx bx-dots-vertical-rounded"></i>
-                                </button>
-                                <div
-                                    className="dropdown-menu dropdown-menu-end"
-                                    aria-labelledby="transactionID"
-                                >
-                                    <a aria-label="dropdown item Last 28 Days" className="dropdown-item" href="#">
-                                        Last 28 Days
-                                    </a>
-                                    <a aria-label="dropdown item Last Month" className="dropdown-item" href="#">
-                                        Last Month
-                                    </a>
-                                    <a aria-label="dropdown item Last Year" className="dropdown-item" href="#">
-                                        Last Year
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="card-body">
-                            <ul className="p-0 m-0">
-                                <li className="d-flex mb-4 pb-1">
-                                    <div className="avatar flex-shrink-0 me-3">
-                                        <img aria-label='dsahboard icon image'
-                                            src="/assets/img/icons/unicons/paypal.png"
-                                            alt="User"
-                                            className="rounded"
-                                        />
-                                    </div>
-                                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                        <div className="me-2">
-                                            <small className="text-muted d-block mb-1">Paypal</small>
-                                            <h6 className="mb-0">Send money</h6>
-                                        </div>
-                                        <div className="user-progress d-flex align-items-center gap-1">
-                                            <h6 className="mb-0">+82.6</h6>
-                                            <span className="text-muted">USD</span>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li className="d-flex mb-4 pb-1">
-                                    <div className="avatar flex-shrink-0 me-3">
-                                        <img aria-label='dsahboard icon image'
-                                            src="/assets/img/icons/unicons/wallet.png"
-                                            alt="User"
-                                            className="rounded"
-                                        />
-                                    </div>
-                                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                        <div className="me-2">
-                                            <small className="text-muted d-block mb-1">Wallet</small>
-                                            <h6 className="mb-0">Mac'D</h6>
-                                        </div>
-                                        <div className="user-progress d-flex align-items-center gap-1">
-                                            <h6 className="mb-0">+270.69</h6>
-                                            <span className="text-muted">USD</span>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li className="d-flex mb-4 pb-1">
-                                    <div className="avatar flex-shrink-0 me-3">
-                                        <img aria-label='dsahboard icon image'
-                                            src="/assets/img/icons/unicons/chart.png"
-                                            alt="User"
-                                            className="rounded"
-                                        />
-                                    </div>
-                                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                        <div className="me-2">
-                                            <small className="text-muted d-block mb-1">
-                                                Transfer
-                                            </small>
-                                            <h6 className="mb-0">Refund</h6>
-                                        </div>
-                                        <div className="user-progress d-flex align-items-center gap-1">
-                                            <h6 className="mb-0">+637.91</h6>
-                                            <span className="text-muted">USD</span>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li className="d-flex mb-4 pb-1">
-                                    <div className="avatar flex-shrink-0 me-3">
-                                        <img aria-label='dsahboard icon image'
-                                            src="/assets/img/icons/unicons/cc-success.png"
-                                            alt="User"
-                                            className="rounded"
-                                        />
-                                    </div>
-                                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                        <div className="me-2">
-                                            <small className="text-muted d-block mb-1">
-                                                Credit Card
-                                            </small>
-                                            <h6 className="mb-0">Ordered Food</h6>
-                                        </div>
-                                        <div className="user-progress d-flex align-items-center gap-1">
-                                            <h6 className="mb-0">-838.71</h6>
-                                            <span className="text-muted">USD</span>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li className="d-flex mb-4 pb-1">
-                                    <div className="avatar flex-shrink-0 me-3">
-                                        <img aria-label='dsahboard icon image'
-                                            src="/assets/img/icons/unicons/wallet.png"
-                                            alt="User"
-                                            className="rounded"
-                                        />
-                                    </div>
-                                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                        <div className="me-2">
-                                            <small className="text-muted d-block mb-1">Wallet</small>
-                                            <h6 className="mb-0">Starbucks</h6>
-                                        </div>
-                                        <div className="user-progress d-flex align-items-center gap-1">
-                                            <h6 className="mb-0">+203.33</h6>
-                                            <span className="text-muted">USD</span>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
+  const truncateText = (text, maxLength = 10) => {
+        if (!text) return 'N/A';
+        if (text.length <= maxLength) return text;
+
+        return (
+            <span title={text}>
+                {`${text.substring(0, maxLength)}...`}
+            </span>
+        );
+    };
+
+  // --- Efecto para Cargar Todos los Datos Iniciales ---
+  useEffect(() => {
+    const fetchAllDashboardData = async () => {
+      setError(null);
+      try {
+        const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+        if (!userRes.ok) throw new Error('No autorizado.');
+        const userDataResult = await userRes.json();
+        if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+        setUserData(userDataResult.user);
+        const accessToken = userDataResult.user?.accessToken;
+
+        const [
+          valorData, totalBienesData, incMesData, desMesData, faltantesData,
+          malEstadoData, sinEtiquetaData, prestamosData,
+        ] = await Promise.all([
+          fetchApiData('/api/reporteBM4/existencia-actual', accessToken),
+          fetchApiData('/api/bienes/count?inc=1', accessToken),
+          fetchApiData(`/api/bienes/count?fechaIncDesde=${startDate}&fechaIncHasta=${endDate}&inc=1`, accessToken),
+          fetchApiData(`/api/bienes/count?fechaDesDesde=${startDate}&fechaDesHasta=${endDate}&inc=0`, accessToken),
+          fetchApiData('/api/bienes/count?est=3&inc=1', accessToken),
+          fetchApiData('/api/bienes/count?con=4&inc=1', accessToken),
+          fetchApiData('/api/bienes/count?est=1&inc=1', accessToken),
+          fetchApiData('/api/prestamos/normales', accessToken),
+        ]);
+
+        setTotalValor(valorData.existenciaActualRealTime || 0);
+        setTotalBienes(totalBienesData.meta.total || 0);
+        setIncorporatedThisMonth(incMesData.meta.total || 0);
+        setDecommissionedThisMonth(desMesData.meta.total || 0);
+        setMissingBienes(faltantesData.meta.total || 0);
+        setBadConditionBienes(malEstadoData.meta.total || 0);
+        setNoTagBienes(sinEtiquetaData.meta.total || 0);
+        setLoanedBienes(prestamosData.length || 0);
+
+        const depts = await fetchApiData('/api/departamentos', accessToken);
+        setDepartments(depts);
+
+        const bienesCountPromises = depts.map(dept =>
+          fetchApiData(`/api/bienes/count?dep=${dept.dep_ide}&inc=1`, accessToken)
+        );
+        const bienesCountsResults = await Promise.all(bienesCountPromises);
+
+        const formattedBienesPorDepartamento = depts.map((dept, index) => ({
+          name: dept.dep_nom.substring(0, 30),
+          count: bienesCountsResults[index]?.meta?.total || 0,
+        }));
+        setBienesPorDepartamento(formattedBienesPorDepartamento);
+
+        if (depts.length > 0) {
+           // Lógica para el reporte trimestral inicial se moverá al callback
+        }
+
+      } catch (err) {
+        console.error('Error general al cargar el dashboard:', err);
+        setError('Error al cargar los datos del dashboard: ' + err.message);
+        setUserData(null);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+    fetchAllDashboardData();
+  }, [startDate, endDate]);
+
+  // --- Callback para Cargar el Reporte Trimestral ---
+  const fetchQuarterlyReport = useCallback(async () => {
+    if (departments.length === 0 || !userData || initialLoading) {
+      setQuarterlyReportData(null);
+      return;
+    }
+    setError(null);
+    try {
+      const accessToken = userData?.accessToken;
+      const currentDept = departments[currentDepartmentIndex];
+      const dep_ide = currentDept.dep_ide;
+
+      const [
+        bienesData, malEstadoAlmacenData, prestadosAOtroData,
+        prestadosDeOtroData, bienesMalEstadoEnDepartamentoData
+      ] = await Promise.all([
+        fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1`, accessToken),
+        fetchApiData(`/api/prestamos/almacen?dep_origen_id=${dep_ide}`, accessToken),
+        fetchApiData(`/api/prestamos/normales?dep_origen_id=${dep_ide}`, accessToken),
+        fetchApiData(`/api/prestamos/normales?dep_destino_id=${dep_ide}`, accessToken),
+        fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1&con=4`, accessToken)
+      ]);
+
+      setQuarterlyReportData({
+        departmentName: currentDept.dep_nom,
+        totalBienesActivos: bienesData.length,
+        bienesMalEstadoEnAlmacen: malEstadoAlmacenData.length,
+        prestadosAOtroDepartamento: prestadosAOtroData.length,
+        prestadosDeOtroDepartamento: prestadosDeOtroData.length,
+        bienesMalEstadoEnDepartamento: bienesMalEstadoEnDepartamentoData.length,
+      });
+
+    } catch (err) {
+      setError('Error al cargar el reporte trimestral: ' + err.message);
+    }
+  }, [departments, currentDepartmentIndex, userData, initialLoading]);
+
+  // --- Efecto para Disparar la Carga del Reporte Trimestral ---
+  useEffect(() => {
+    fetchQuarterlyReport();
+  }, [fetchQuarterlyReport]);
+
+  // --- Manejadores de Eventos ---
+  const handleNextDepartment = () => setCurrentDepartmentIndex(p => (p + 1) % departments.length);
+  const handlePrevDepartment = () => setCurrentDepartmentIndex(p => (p - 1 + departments.length) % departments.length);
+
+  // --- Preparación de Datos para Gráficos ---
+  const pieChartData = [
+    { name: 'Faltantes', value: missingBienes, color: '#FF6384' },
+    { name: 'Mal Estado', value: badConditionBienes, color: '#FF9F40' },
+    { name: 'Sin Etiqueta', value: noTagBienes, color: '#FFCD56' },
+    { name: 'Prestados', value: loanedBienes, color: '#4BC0C0' },
+  ].filter(item => item.value > 0);
+  
+  const userRole = userData?.rol_ide;
+
+  // --- Renderizado Condicional ---
+  if (initialLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+        <p className="ms-2">Cargando datos...</p>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-danger text-center m-4">
+        <h4>¡Error!</h4>
+        <p>{error}</p>
+        <hr />
+        <p className="mb-0">Por favor, intente recargar la página.</p>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="alert alert-warning text-center m-4">
+        No se pudo cargar la información del usuario.
+        <br />
+        <a href="/login" className="alert-link">Por favor, inicie sesión.</a>
+      </div>
+    );
+  }
+
+  // --- Renderizado del Componente ---
+  return (
+    <>
+      <div className="row">
+        {/* Tarjeta de Bienvenida */}
+        <Col lg={6} className="mb-4 order-0">
+          <Card>
+            <div className="d-flex align-items-end row">
+              <div className="col-sm-12">
+                <Card.Body>
+                  <h5 className="card-title text-primary">
+                    ¡Bienvenido {userData?.usu_nom || ''} {userData?.usu_ape || ''} 🎉!
+                  </h5>
+                  <p className="mb-4">
+                    Aquí tienes un resumen rápido del estado actual del inventario SIGET.
+                  </p>
+                </Card.Body>
+              </div>
+            </div>
+          </Card>
+        </Col>
+
+        {/* KPIs Generales */}
+        <Col lg={6} md={4} className="order-1">
+          <Row>
+            {/* Valor Total del Inventario */}
+            <Col lg={8} md={12} className="mb-4">
+              <Card>
+                <Card.Body>
+                  <span className="fw-medium d-block mb-1">Valor Total <i class='bx  bx-dollar'  ></i> </span>
+                  <h3 className="card-title mb-2">
+                    Bs. {totalValor.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h3>
+                  <small className="text-muted">Inventario Activo</small>
+                </Card.Body>
+              </Card>
+            </Col>
+            {/* Cantidad Total de Bienes */}
+            <Col lg={4} md={12} className="mb-4">
+              <Card>
+                <Card.Body>
+                  <span>Total Bienes</span>
+                  <h3 className="card-title text-nowrap mb-1">
+                    {totalBienes.toLocaleString('es-VE')}
+                  </h3>
+                  <small className="text-muted">Bienes Activos</small>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Col>
+      </div>
+
+      <div className="row">
+        {/* Movimientos del Mes */}
+        <Col md={6} lg={4} xl={4} className="order-0 mb-4">
+          <Card className="h-100">
+            <Card.Header className="d-flex align-items-center justify-content-between pb-0">
+              <div className="card-title mb-4">
+                <h5 className="m-0 me-8 ">Movimientos del Mes</h5>
+                <small className="text-muted">Cifras del mes actual</small>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              <ul className="p-0 m-0">
+                <li className="d-flex mb-4 pb-1 ">
+                  <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2 ">
+                    <div className="me-2 ">
+                      <h6 className="mb-0 text-success">Incorporados</h6>
+                      <small className="text-muted">Bienes nuevos</small>
+                    </div>
+                    <div className="user-progress">
+                      <small className="fw-medium text-success">{incorporatedThisMonth.toLocaleString('es-VE')}</small>
+                    </div>
+                  </div>
+                </li>
+                <li className="d-flex mb-4 pb-1">
+                  <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                    <div className="me-2">
+                      <h6 className="mb-0 text-danger">Desincorporados</h6>
+                      <small className="text-muted">Bienes dados de baja</small>
+                    </div>
+                    <div className="user-progress">
+                      <small className="fw-medium text-danger">{decommissionedThisMonth.toLocaleString('es-VE')}</small>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Estado de Bienes Críticos (Gráfico de Torta) */}
+        <Col md={6} lg={8} className="order-1 mb-4">
+          <Card className="h-100">
+            <Card.Header>
+              <h5 className="card-title m-0 me-2">Estado de Bienes Críticos</h5>
+            </Card.Header>
+            <Card.Body className="px-0">
+              {pieChartData.length > 0 ? (
+                <CriticalGoodsPieChart data={pieChartData} />
+              ) : (
+                <p className="text-center text-muted p-3">No hay bienes en estado crítico.</p>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Bienes por Departamento (Gráfico de Barras) */}
+        <Col xs={12} className="order-2 mb-4">
+          <Card className="h-100">
+            <Card.Header>
+              <h5 className="card-title m-0 me-2">Bienes por Departamento</h5>
+            </Card.Header>
+            <Card.Body className="px-0">
+              {bienesPorDepartamento.length > 0 ? (
+                <DepartmentBarChart data={bienesPorDepartamento} />
+              ) : (
+                <p className="text-center text-muted p-3">No hay datos de bienes por departamento.</p>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </div>
+
+      {/* Reporte Trimestral por Departamento */}
+      <div className="row">
+        <Col xs={12} className="mb-4">
+          <Card className="h-100">
+            <Card.Header className="d-flex align-items-center justify-content-between">
+              <h5 className="card-title m-0 me-2">Reporte Trimestral por Departamento</h5>
+              <div className="d-flex">
+                <Button variant="outline-primary" onClick={handlePrevDepartment} disabled={departments.length <= 1}>
+                  &#8592; Anterior
+                </Button>
+                <Button variant="outline-primary" onClick={handleNextDepartment} disabled={departments.length <= 1} className="ms-2">
+                  Siguiente &#8594;
+                </Button>
+              </div>
+            </Card.Header>
+            <Card.Body>
+  {departments.length > 0 && quarterlyReportData ? (
+    <div>
+      <h4 className="text-center mb-4">{quarterlyReportData.departmentName}</h4>
+      <Row className="g-2">
+        {/* --- Tarjeta: Total Bienes Activos --- */}
+        <Col md={6} lg={4} className="mb-2">
+          <Card className=" bg-primary-subtle h-100">
+            <Card.Body className="p-2">
+              <h6 className="card-title text-muted mb-1" style={{ fontSize: '0.85rem' }}>Total Bienes Pertenecientes a este dep.</h6>
+              <p className="card-text h5 fw-bold text-primary-emphasis mb-0">
+                {quarterlyReportData.totalBienesActivos.toLocaleString('es-VE')}
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* --- Tarjeta: Bienes en Mal Estado (Almacén) --- */}
+        <Col md={6} lg={4} className="mb-2">
+          <Card className=" bg-danger-subtle h-100">
+            <Card.Body className="p-2">
+              <h6 className="card-title text-muted mb-1" style={{ fontSize: '0.85rem' }}>B. en Mal Estado (Alm.)</h6>
+              <p className="card-text h5 fw-bold text-danger-emphasis mb-0">
+                {quarterlyReportData.bienesMalEstadoEnAlmacen.toLocaleString('es-VE')}
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* --- Tarjeta: Bienes Prestados A Otros --- */}
+        <Col md={6} lg={4} className="mb-2">
+          <Card className=" bg-warning-subtle h-100">
+            <Card.Body className="p-2">
+              <h6 className="card-title text-muted mb-1" style={{ fontSize: '0.85rem' }}>B. Prestados a Otros</h6>
+              <p className="card-text h5 fw-bold text-warning-emphasis mb-0">
+                {quarterlyReportData.prestadosAOtroDepartamento.toLocaleString('es-VE')}
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* --- Tarjeta: Bienes Prestados DE Otros --- */}
+        <Col md={6} lg={4} className="mb-2">
+          <Card className="bg-info-subtle h-100">
+            <Card.Body className="p-2">
+              <h6 className="card-title text-muted mb-1" style={{ fontSize: '0.85rem' }}>B. Prestados de Otros</h6>
+              <p className="card-text h5 fw-bold text-info-emphasis mb-0">
+                {quarterlyReportData.prestadosDeOtroDepartamento.toLocaleString('es-VE')}
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* --- Tarjeta: Bienes Mal Estado (En Dept.) --- */}
+        <Col md={6} lg={4} className="mb-2">
+          <Card className="bg-danger-subtle h-100">
+            <Card.Body className="p-2">
+              <h6 className="card-title text-muted mb-1" style={{ fontSize: '0.85rem' }}>B. Mal Estado (en Dept.)</h6>
+              <p className="card-text h5 fw-bold mb-0">
+                {quarterlyReportData.bienesMalEstadoEnDepartamento.toLocaleString('es-VE')}
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
+
+      </Row>
+    </div>
+  ) : (
+    <p className="text-center text-muted">No hay departamentos o datos para el reporte trimestral.</p>
+  )}
+</Card.Body>
+          </Card>
+        </Col>
+      </div>
+    </>
+  );
 };

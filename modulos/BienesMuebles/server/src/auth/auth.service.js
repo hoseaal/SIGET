@@ -15,7 +15,8 @@ export class AuthService {
     const hash = user.usu_con.replace(/^\$2y\$/, '$2a$')
     const isValid = await bcrypt.compare(password, hash)
     if (!isValid) throw new Error('Contraseña incorrecta')
-
+    const modulo = user.usu_mod
+    if (modulo === 2) throw new Error('No tienes acceso a este modulo del sistema SIGET')
     const token = jwt.sign(
       {
         usu_ide: user.usu_ide,

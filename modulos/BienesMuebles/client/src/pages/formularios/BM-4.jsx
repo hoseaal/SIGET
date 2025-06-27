@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ModalCerrarMes from '../Modales/modalCerrarMes'; // Asegúrate de la ruta correcta
+import  ModalGenerarReporteBM4 from '../Modales/modalRepBm4';
 
 export const Bm4 = () => {
     const [showModal, setShowModal] = useState(false);
@@ -10,6 +11,10 @@ export const Bm4 = () => {
     const [mesCerrado, setMesCerrado] = useState(false); // Mantener para el mensaje de la tarjeta
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    //modal para reporte
+
+    const [showModalBm4, setShowModalBm4] = useState(false)
 
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
@@ -28,6 +33,7 @@ export const Bm4 = () => {
     // Función para formatear valores a Bs. (ej. 1.234.567,89 Bs.)
     const formatCurrency = (value) => {
         if (value === null || isNaN(value)) return 'N/A';
+        if (value < 0) return value = 0.00;
         return new Intl.NumberFormat('es-VE', {
             style: 'currency',
             currency: 'VEF',
@@ -89,7 +95,9 @@ export const Bm4 = () => {
         fetchData();
     }, [fetchData]);
 
-    const existenciaCalculadaDelMes = (existenciaAnterior || 0) + (incorporacionesMesActual || 0) - (desincorporacionesMesActual || 0);
+    let existenciaCalculadaDelMes = (parseFloat(existenciaAnterior) || 0) + (parseFloat(incorporacionesMesActual)) - (parseFloat(desincorporacionesMesActual) || 0);
+    existenciaCalculadaDelMes = parseFloat(existenciaCalculadaDelMes.toFixed(2));
+    if (existenciaCalculadaDelMes < 0) {existenciaCalculadaDelMes = existenciaCalculadaDelMes * -1};
     const diferenciaCalculadaYReal = existenciaActualRealTime !== null ? Math.abs(existenciaActualRealTime - existenciaCalculadaDelMes) : 0;
     const umbralDiferencia = 0.01;
 
@@ -102,6 +110,12 @@ export const Bm4 = () => {
         alert("Función para generar el PDF en desarrollo.");
     };
 
+    let initialFinancialData = {
+        existenciaAnterior: existenciaAnterior,
+        existenciaFinal: existenciaActualRealTime,
+        incorporacionesMesActual: incorporacionesMesActual,
+        desincorporacionesMesActual: desincorporacionesMesActual
+    }
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -152,7 +166,7 @@ export const Bm4 = () => {
                                         </div>
                                         {!mesCerrado && (
                                             <small className="d-block mt-2 text-white-75">
-                                                * Este valor se consolidará al presionar "Consolidar Inventario Mensual".
+                                                Este valor se consolidará al presionar "Consolidar Inventario Mensual".
                                             </small>
                                         )}
                                     </div>
@@ -201,7 +215,7 @@ export const Bm4 = () => {
                                     <div className="card-body">
                                         <h5 className="card-title text-info mb-3">Análisis de Coherencia del Inventario</h5>
                                         <p className="card-text fs-5">
-                                            Existencia Teórica: `{formatCurrency(existenciaCalculadaDelMes)}`
+                                            Existencia Teórica: {formatCurrency(existenciaCalculadaDelMes)}
                                             <br/><small className="text-muted">(Existencia Anterior + Ingresos del Mes - Egresos del Mes)</small>
                                         </p>
                                         {diferenciaCalculadaYReal > umbralDiferencia && (
@@ -222,7 +236,7 @@ export const Bm4 = () => {
                             <div className="col-12 text-center mt-4">
                                 <button
                                     className="btn btn-dark btn-lg shadow-sm"
-                                    onClick={handleGeneratePdf}
+                                    onClick={() => setShowModalBm4(true)}
                                     disabled={loading}
                                 >
                                     <i className='bx bxs-file-pdf me-2'></i>
@@ -238,6 +252,12 @@ export const Bm4 = () => {
                 show={showModal}
                 handleClose={() => setShowModal(false)}
                 onSuccess={handleCloseMesSuccess}
+            />
+
+            <ModalGenerarReporteBM4
+                show={showModalBm4}
+                handleClose={() => setShowModalBm4(false)}
+                initialFinancialData= {initialFinancialData}
             />
         </>
     );

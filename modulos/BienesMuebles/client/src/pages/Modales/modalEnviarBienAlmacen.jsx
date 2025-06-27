@@ -48,7 +48,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
         try {
             const [depRes, bienesRes] = await Promise.all([
                 fetch('/api/departamentos', { credentials: 'include' }),
-                fetch('/api/bienes', { credentials: 'include' }),
+                fetch('/api/bienes/all?inc=1', { credentials: 'include' }),
             ]);
 
             if (!depRes.ok || !bienesRes.ok) {

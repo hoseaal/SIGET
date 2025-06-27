@@ -49,7 +49,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             const [depRes, condRes, bienesRes] = await Promise.all([
                 fetch('/api/departamentos', { credentials: 'include' }),
                 fetch('/api/condiciones-fisicas', { credentials: 'include' }),
-                fetch('/api/bienes', { credentials: 'include' }),
+                fetch('/api/bienes/all?inc=1', { credentials: 'include' }),
             ]);
 
             if (!depRes.ok || !condRes.ok || !bienesRes.ok) {
@@ -63,7 +63,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             setDepartamentos(depData || []);
             // Filtrar condición física 4 ("Mal estado en almacén")
             setCondicionesFisicas(condData.filter(cond => cond.con_ide !== CONDICION_FISICA_EXCLUIDA) || []);
-            setBienesDisponibles(bienesData.data || []);
+            setBienesDisponibles(bienesData || []);
             // No filtramos initialBienes aquí, se hace en el useEffect para dep_origen_ide
             setFilteredBienes([]); // Reset filteredBienes when modal opens
         } catch (error) {

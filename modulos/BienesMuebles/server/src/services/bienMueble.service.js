@@ -59,6 +59,23 @@ export class BienMuebleService {
     }
   }
 
+  static async contarRegistros ({ filters = {} } = {}) {
+    try {
+    // Obtener el conteo directamente del modelo
+      const { total } = await BienMuebleModel.getTotalCount({ filters })
+
+      return {
+        meta: {
+          total: Number(total),
+          filtersApplied: Object.keys(filters).length > 0 ? filters : null
+        }
+      }
+    } catch (error) {
+      console.error('Error en contarRegistros:', error)
+      throw new Error('Error al contar registros')
+    }
+  }
+
   static async buscarAvanzado (filters) {
     return await BienMuebleModel.getAll(filters)
   }
