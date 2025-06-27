@@ -73,6 +73,8 @@ Sistema web para automatizar procesos en los departamentos de la **Contraloría 
        - PHP-JWT (autenticación).
 
        - PHPSpreadsheet (exportación XLS).
+  
+       - Tcpdf (exportación PDF). 
 ---
 
 ## ⚠️ Consideraciones críticas
