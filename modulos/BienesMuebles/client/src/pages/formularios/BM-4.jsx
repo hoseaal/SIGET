@@ -3,6 +3,26 @@ import ModalCerrarMes from '../Modales/modalCerrarMes'; // Asegúrate de la ruta
 import  ModalGenerarReporteBM4 from '../Modales/modalRepBm4';
 
 export const Bm4 = () => {
+     const [userData, setUserData] = useState([]);
+            const [usuTipo, setUsuTipo] = useState(null);
+        
+            useEffect(() => {
+                const fetchUserData = async () => {
+                    try {
+                        const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                        if (!userRes.ok) throw new Error('No autorizado.');
+                        const userDataResult = await userRes.json();
+                        if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                        setUserData(userDataResult.user);
+                        setUsuTipo(userData.usu_tip);
+                    } catch (error) {
+                        console.error('Error fetching user data:', error);
+                    }
+                };
+        
+                fetchUserData();
+            },[]);
+    // Estados para manejar el modal y los datos del reporte
     const [showModal, setShowModal] = useState(false);
     const [existenciaAnterior, setExistenciaAnterior] = useState(null);
     const [existenciaActualRealTime, setExistenciaActualRealTime] = useState(null);
@@ -122,15 +142,16 @@ export const Bm4 = () => {
                 <h4 className="py-3 mb-4">
                     <span className="text-muted fw-light">Bienes Muebles /</span> Reporte BM-4
                 </h4>
-                <button
+                { usuTipo == '4' || usuTipo == '5' ? (
+                    <button
                     id="consolidarInventarioBtn"
                     className={`btn btn-outline-primary`}
                     onClick={() => setShowModal(true)}
                     disabled={loading}
-                >
+                    >
                     <i className='bx bx-wallet me-1'></i>
                     {mesCerrado ? 'Mes Consolidado' : 'Consolidar Inventario Mensual'}
-                </button>
+                </button>) : null}
             </div>
 
             <div className="card">

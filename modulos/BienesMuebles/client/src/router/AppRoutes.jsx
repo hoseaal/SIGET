@@ -15,6 +15,7 @@ import { Almacen } from "../pages/prestamos/almacen.jsx"
 
 import { Categorias } from "../pages/configuracion/categorias";
 import { ModelosyMarcas } from "../pages/configuracion/modelosymarcas"
+import { Bitacora } from "../pages/configuracion/bitacora.jsx";
 
 import { DashboardPage } from "../pages/DashboardPage";
 
@@ -41,6 +42,12 @@ const AppRoutes = () => {
             <Route path="/Configuracion/ModelosyMarcas" element={
                 <ProtectedRoute>
                     <ModelosyMarcas/>
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Configuracion/Bitacora" element={
+                <ProtectedRoute>
+                    <Bitacora />
                 </ProtectedRoute>
             } />
 

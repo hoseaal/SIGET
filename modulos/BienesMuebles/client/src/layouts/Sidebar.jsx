@@ -1,9 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import menuData from '../data/menuData.json'
+import menuData from '../data/menuData.json';
+import { menuPermissions } from '../data/dataPermissions';
 
 const Sidebar = () => {
+    const [userType, setUserType] = useState(null);
+    const [filteredMenuData, setFilteredMenuData] = useState([]);
 
+    const filterMenuByUserType = (menuData, userType) => {
+        return menuData.map(section => ({
+            ...section,
+            items: section.items.map(item => {
+                if (item.submenu) {
+                    return {
+                        ...item,
+                        submenu: item.submenu.filter(subitem => {
+                            const permissions = menuPermissions[subitem.link];
+                            return permissions && permissions.includes(parseInt(userType));
+                        }),
+                        available: item.submenu.some(subitem => {
+                            const permissions = menuPermissions[subitem.link];
+                            return permissions && permissions.includes(parseInt(userType));
+                        })
+                    };
+                }
+                
+                const permissions = menuPermissions[item.link];
+                return {
+                    ...item,
+                    available: permissions ? permissions.includes(parseInt(userType)) : false
+                };
+            }).filter(item => item.available || (item.submenu && item.submenu.length > 0))
+        })).filter(section => section.items.length > 0);
+    };
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                if (!userRes.ok) throw new Error('No autorizado.');
+                const userDataResult = await userRes.json();
+                if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                
+                const currentUserType = userDataResult.user.usu_tip;
+                setUserType(currentUserType);
+                setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     return (
         <aside id="layout-menu" className="layout-menu menu-vertical menu bg-menu-theme">
@@ -21,14 +69,16 @@ const Sidebar = () => {
             <div className="menu-inner-shadow"></div>
 
             <ul className="menu-inner py-1">
-                {menuData.map((section) => (
-                    <React.Fragment key={section.header}>
+                {filteredMenuData.map((section, sectionIndex) => (
+                    <React.Fragment key={`section-${sectionIndex}`}>
                         {section.header && (
                             <li className="menu-header small text-uppercase">
                                 <span className="menu-header-text">{section.header}</span>
                             </li>
                         )}
-                        {section.items.map(MenuItem)}
+                        {section.items.map((item, itemIndex) => (
+                            <MenuItem key={`item-${sectionIndex}-${itemIndex}`} item={item} />
+                        ))}
                     </React.Fragment>
                 ))}
             </ul>
@@ -36,27 +86,31 @@ const Sidebar = () => {
     );
 };
 
-const MenuItem = (item) => {
+const MenuItem = ({ item }) => {
     const location = useLocation();
     const isActive = location.pathname === item.link;
     const hasSubmenu = item.submenu && item.submenu.length > 0;
     const isSubmenuActive = hasSubmenu && item.submenu.some(subitem => location.pathname === subitem.link);
 
+    if (!item.available) return null;
+
     return (
         <li className={`menu-item ${isActive || isSubmenuActive ? 'active' : ''} ${hasSubmenu && isSubmenuActive ? 'open' : ''}`}>
             <NavLink
-                aria-label={`Navigate to ${item.text} ${!item.available ? 'Pro' : ''}`}
+                aria-label={`Navigate to ${item.text}`}
                 to={item.link}
                 className={`menu-link ${item.submenu ? 'menu-toggle' : ''}`}
                 target={item.link.includes('http') ? '_blank' : undefined}
             >
                 <i className={`menu-icon tf-icons ${item.icon}`}></i>
-                <div>{item.text}</div> {item.available === false && (
-                    <div className="badge bg-label-primary fs-tiny rounded-pill ms-auto">Pro</div>
-                )}
+                <div>{item.text}</div>
             </NavLink>
-            {item.submenu && (
-                <ul className="menu-sub">{item.submenu.map(MenuItem)}</ul>
+            {hasSubmenu && (
+                <ul className="menu-sub">
+                    {item.submenu.map((subItem, subIndex) => (
+                        <MenuItem key={`subitem-${subIndex}`} item={subItem} />
+                    ))}
+                </ul>
             )}
         </li>
     );

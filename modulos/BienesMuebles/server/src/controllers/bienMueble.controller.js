@@ -34,8 +34,9 @@ export const obtenerBien = async (req, res) => {
 }
 
 export const crearBien = async (req, res) => {
+  const userId = req.user.usu_ide
   try {
-    const nuevoBien = await BienMuebleService.crear(req.body)
+    const nuevoBien = await BienMuebleService.crear(req.body, userId)
     res.status(201).json(nuevoBien)
   } catch (error) {
     res.status(400).json({ error: error.message })
@@ -45,7 +46,8 @@ export const crearBien = async (req, res) => {
 export const actualizarBien = async (req, res) => {
   try {
     const { id } = req.params
-    const actualizado = await BienMuebleService.actualizar(id, req.body)
+    const userId = req.user.usu_ide
+    const actualizado = await BienMuebleService.actualizar(id, req.body, userId)
     res.json({ success: actualizado })
   } catch (error) {
     res.status(400).json({ error: error.message })
@@ -55,7 +57,8 @@ export const actualizarBien = async (req, res) => {
 export const desincorporarBien = async (req, res) => {
   try {
     const { id } = req.params
-    const result = await BienMuebleService.desincorporar(id, req.body)
+    const userId = req.user.usu_ide
+    const result = await BienMuebleService.desincorporar(id, req.body, userId)
     res.json({ success: result })
   } catch (error) {
     res.status(400).json({ error: error.message })
@@ -158,5 +161,27 @@ export const contarBienesPorDepartamento = async (req, res) => {
     res.json({ departamentoId: id, count })
   } catch (error) {
     res.status(500).json({ error: error.message })
+  }
+}
+
+export const obtenerBitacora = async (req, res) => {
+  try {
+    // Puedes añadir paginación y filtros si la bitácora se hace muy grande
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 20
+    const result = await BienMuebleService.obtenerBitacora({ page, limit })
+
+    res.json({
+      data: result.data,
+      meta: {
+        page: Number(page),
+        limit: Number(limit),
+        total: Number(result.total),
+        totalPages: Math.ceil(result.total / limit)
+      }
+    })
+  } catch (error) {
+    console.error('Error al obtener la bitácora:', error)
+    res.status(500).json({ error: error.message || 'Error interno del servidor al obtener la bitácora.' })
   }
 }

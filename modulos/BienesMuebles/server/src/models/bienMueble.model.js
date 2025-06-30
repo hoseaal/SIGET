@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable camelcase */
 import pool from '../utils/database.js'
 
@@ -87,44 +88,100 @@ export class BienMuebleModel {
     LEFT JOIN tescae ca ON b.cae_ide = ca.cae_ide
     LEFT JOIN tmacom co ON b.com_ide = co.com_ide
     LEFT JOIN tesdep d ON b.dep_ide = d.dep_ide
-    WHERE b.bim_ide = ?
+    WHERE b.bim_inc=1 AND b.bim_ide = ?
     `, [id])
     return rows[0] || null
   }
 
-  static async create (bienData) {
-    // eslint-disable-next-line no-unused-vars
-    const [result] = await pool.query(
-      'INSERT INTO tmab_m SET ?',
-      [bienData]
-    )
-    return this.getById(bienData.bim_ide)
+  static async create (bienData, userId) { // Add userId parameter
+    let connection
+    try {
+      connection = await pool.getConnection() // Get a connection
+      await connection.beginTransaction() // Start a transaction
+
+      // Set the session variable for audit log
+      await connection.query('SET @user_id_for_audit = ?', [userId])
+
+      const [result] = await connection.query(
+        'INSERT INTO tmab_m SET ?',
+        [bienData]
+      )
+      await connection.commit() // Commit the transaction
+      return this.getById(bienData.bim_ide) // Or return result.insertId if applicable
+    } catch (error) {
+      if (connection) {
+        await connection.rollback() // Rollback on error
+      }
+      console.error('Error in BienMuebleModel.create:', error)
+      throw error
+    } finally {
+      if (connection) {
+        connection.release() // Release the connection
+      }
+    }
   }
 
-  static async update (id, bienData) {
-    const [result] = await pool.query(
-      'UPDATE tmab_m SET ? WHERE bim_ide = ?',
-      [bienData, id]
-    )
-    return result.affectedRows > 0
+  static async update (id, bienData, userId) { // Add userId parameter
+    let connection
+    try {
+      connection = await pool.getConnection() // Get a connection
+      await connection.beginTransaction() // Start a transaction
+
+      // Set the session variable for audit log
+      await connection.query('SET @user_id_for_audit = ?', [userId])
+
+      const [result] = await connection.query(
+        'UPDATE tmab_m SET ? WHERE bim_ide = ?',
+        [bienData, id]
+      )
+      await connection.commit() // Commit the transaction
+      return result.affectedRows > 0
+    } catch (error) {
+      if (connection) {
+        await connection.rollback() // Rollback on error
+      }
+      console.error('Error in BienMuebleModel.update:', error)
+      throw error
+    } finally {
+      if (connection) {
+        connection.release() // Release the connection
+      }
+    }
   }
 
-  static async desincorporar (id, { bim_inc, com_ide, bim_fed }) {
+  static async desincorporar (id, { bim_inc, com_ide, bim_fed }, userId) {
     if (!id || com_ide === undefined || !bim_fed) {
       throw new Error('Faltan datos requeridos para la desincorporación.')
     }
-    const [result] = await pool.query(
-      `UPDATE tmab_m
-      SET
-        bim_inc = ?,
-        com_ide = ?,
-        bim_fed = ?
-      WHERE
-        bim_ide = ?;
-    `,
-      [id]
-    )
-    return result.affectedRows > 0
+    let connection
+    try {
+      connection = await pool.getConnection()
+      await connection.beginTransaction()
+      await connection.query('SET @user_id_for_audit = ?', [userId])
+      const [result] = await connection.query(
+        `UPDATE tmab_m
+        SET
+          bim_inc = ?,
+          com_ide = ?,
+          bim_fed = ?
+        WHERE
+          bim_ide = ?;
+      `,
+        [bim_inc, com_ide, bim_fed, id] // Corrected parameters for UPDATE
+      )
+      await connection.commit()
+      return result.affectedRows > 0
+    } catch (error) {
+      if (connection) {
+        await connection.rollback()
+      }
+      console.error('Error in BienMuebleModel.desincorporar (direct):', error)
+      throw error
+    } finally {
+      if (connection) {
+        connection.release()
+      }
+    }
   }
 
   static async getAllPaginated ({ page = 1, limit = 20, filters = {} }) {
@@ -277,5 +334,38 @@ export class BienMuebleModel {
       [departamentoId]
     )
     return rows[0].count
+  }
+
+  static async getBitacoraPaginated ({ page = 1, limit = 20 }) {
+    const offset = (page - 1) * limit
+
+    // Consulta para obtener los registros de la bitácora paginados
+    const [rows] = await pool.query(
+      `SELECT
+        bl.bit_id,
+        bl.usuario_id,
+        u.usu_nom AS nombre_usuario,
+        u.usu_ape AS apellido_usuario,
+        bl.fecha_hora,
+        bl.registro_id_afectado,
+        bl.tipo_cambio,
+        bl.datos_antiguos,
+        bl.datos_nuevos
+      FROM bitb_m bl
+      LEFT JOIN tesusu u ON bl.usuario_id = u.usu_ide
+      ORDER BY bl.fecha_hora DESC
+      LIMIT ? OFFSET ?`,
+      [limit, offset]
+    )
+
+    // Consulta para obtener el total de registros en la bitácora
+    const [[{ total }]] = await pool.query(
+      'SELECT COUNT(*) as total FROM bitb_m'
+    )
+
+    return {
+      data: rows,
+      total
+    }
   }
 }

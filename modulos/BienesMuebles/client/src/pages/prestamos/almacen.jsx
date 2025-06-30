@@ -35,6 +35,26 @@ export const Almacen = () => {
         setRefreshKey(prevKey => prevKey + 1); // Forzar la recarga de datos de la tabla principal si se hizo una devolución
     };
 
+const [userType, setUserType] = useState(null);
+    useEffect(() => {
+            const fetchUserData = async () => {
+                try {
+                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                    if (!userRes.ok) throw new Error('No autorizado.');
+                    const userDataResult = await userRes.json();
+                    if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                    
+                    const currentUserType = userDataResult.user.usu_tip;
+                    setUserType(currentUserType);
+                    setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            };
+    
+            fetchUserData();
+        }, []);
+
     // --- Cargar datos de préstamos en almacén ---
     useEffect(() => {
         const loadPrestamosEnAlmacen = async () => {
@@ -140,10 +160,11 @@ export const Almacen = () => {
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Gestión de Movimientos /</span> Bienes en Almacén</h4>
+                {userType !== 1 ? ( 
                 <Button variant="primary" onClick={() => setShowCreateModal(true)}>
                     Registrar Nuevo Bien en Almacén
                 <i className="bx bx-plus-circle ms-1"></i>
-                </Button>
+                </Button>) : null}
             </div>
 
             <div className="card">
@@ -186,22 +207,6 @@ export const Almacen = () => {
                             </Form.Control>
                         </Form.Group>
 
-                        {/* El filtro de Departamento Destino se elimina de esta vista */}
-                        {/* <Form.Group controlId="filtroDepDestino" className="flex-grow-1">
-                            <Form.Label className="visually-hidden">Departamento Destino</Form.Label>
-                            <Form.Control
-                                as="select"
-                                value={filtros.dep_destino_id}
-                                onChange={(e) => handleFiltroChange('dep_destino_id', e.target.value)}
-                            >
-                                <option value="">Departamento Destino</option>
-                                {departamentos.map(dep => (
-                                    (dep.dep_ide !== parseInt(filtros.dep_origen_id) && dep.dep_ide !== 11) && (
-                                        <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
-                                    )
-                                ))}
-                            </Form.Control>
-                        </Form.Group> */}
                         </div>
                     </Form>
                         
@@ -225,7 +230,7 @@ export const Almacen = () => {
                                         <th>Departamento Origen</th>
                                         {/* La columna de Departamento Destino se elimina */}
                                         <th>Estado</th>
-                                        <th>Acciones</th>
+                                        {userType !== 1 ? <th>Acciones</th> : null}
                                     </tr>
                                 </thead>
                                 <tbody className="table-border-bottom-0">
@@ -238,7 +243,8 @@ export const Almacen = () => {
                                                 <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
                                                 {/* Se asume que el destino es el almacén, por lo que no se muestra */}
                                                 <td>{getEstadoPrestamoBadge(prestamo.pre_est)}</td>
-                                                <td>
+                                                {userType !== 1 ? (
+                                                    <td>
                                                     <Dropdown>
                                                         <Dropdown.Toggle variant="secondary" id={`dropdown-${prestamo.pre_ide}`} className="nav-dropdown-dark-example">
                                                             <i className="bx bx-dots-vertical-rounded"></i>
@@ -250,7 +256,7 @@ export const Almacen = () => {
                                                             {/* Aquí NO se permite modificar ni borrar préstamos directamente, solo ver/devolver */}
                                                         </Dropdown.Menu>
                                                     </Dropdown>
-                                                </td>
+                                                </td>) : null}
                                             </tr>
                                         ))
                                     ) : (

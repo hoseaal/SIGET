@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import config from '../utils/config.js'
+import 'dotenv/config'
 import { cache } from '../utils/cache.js'
 
 export const authenticate = (req, res, next) => {
@@ -13,7 +13,7 @@ export const authenticate = (req, res, next) => {
   }
 
   try {
-    const data = jwt.verify(token, config.SECRET_KEY)
+    const data = jwt.verify(token, process.env.SECRET_KEY)
     req.user = data
 
     // Verificar caché (opcional)

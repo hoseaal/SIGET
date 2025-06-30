@@ -12,6 +12,25 @@ import Spinner from 'react-bootstrap/Spinner';
 import ModalDesincorporarBien from '../Modales/modalDesincorporarBien'
 
 export const Bm2 = () => {
+        const [usuTipo, setUsuTipo] = useState(null);
+    
+        useEffect(() => {
+                const fetchUserData = async () => {
+                    try {
+                        const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                        if (!userRes.ok) throw new Error('No autorizado.');
+                        const userDataResult = await userRes.json();
+                        if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                        const currentUserType = userDataResult.user.usu_tip;
+                        setUsuTipo(currentUserType);
+                    } catch (error) {
+                        console.error('Error fetching user data:', error);
+                    }
+                };
+        
+                fetchUserData();
+            },[]);
+
     const [refreshKey, setRefreshKey] = useState();
     const [showModalDes, setShowModalDes] = useState(false);
 
@@ -424,12 +443,13 @@ const handleSubmit = async (e) => {
                     <div className="card mb-4">
                         <div className="card-header d-flex align-items-center justify-content-between">
                             <h5 className="mb-0">Relación de Movimiento de Bienes Muebles</h5>
-                            <Form.Group className="mb-3">
+                            {usuTipo == '4' || usuTipo == '5' ? (
+                                <Form.Group className="mb-3">
                                 <Form.Select onChange={handleRelacionChange} value={relacion.toString()}>
                                     <option value="true">Incorporación</option>
                                     <option value="false">Desincorporación</option>
                                 </Form.Select>
-                            </Form.Group>
+                            </Form.Group>) : null}
                         </div>
                         {relacion ? (
                             <div className="card-body">
