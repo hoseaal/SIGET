@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import config from '../utils/config.js'
+import 'dotenv/config'
 import { UserModel } from '../models/user.model.js'
 import { Validaciones } from '../utils/validations.js'
 import bcrypt from 'bcrypt'
@@ -24,7 +24,7 @@ export class AuthService {
         usu_ape: user.usu_ape,
         usu_tip: user.usu_tip
       },
-      config.SECRET_KEY,
+      process.env.SECRET_KEY,
       { expiresIn: '6h' }
     )
 

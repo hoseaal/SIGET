@@ -125,6 +125,11 @@
                         "text": "Usuarios",
                         "available": true,
                         "link": "/Configuracion/Usuarios"
+                    },
+                    {
+                        "text": "Bitácora de Cambios",
+                        "available": true,
+                        "link": "/Configuracion/Bitacora"
                     }
                 ]
             }

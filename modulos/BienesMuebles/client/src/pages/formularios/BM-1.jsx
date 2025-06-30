@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
-import { EstadoSelect, EstadoDeUsoSelect} from '../layouts/selectInfinito';
+import { EstadoSelect, EstadoDeUsoSelect, DepartamentoSelect} from '../layouts/selectInfinito';
 
 import { FixedSizeList as List } from 'react-window';
 
@@ -18,17 +18,39 @@ export const Bm1 = () => {
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
 
-     
+    const [userData, setUserData] = useState([]);
+    const [usuTipo, setUsuTipo] = useState(null);
 
-    const [search, setSearch] = useState();
+     const [search, setSearch] = useState();
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
     const [filtros, setFiltros] = useState({
         estado: null,
-        condicion: null
+        condicion: null,
+        departamento: null
     });
-    const [mensajeMostrado, setMensajeMostrado] = useState(false);
 
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                if (!userRes.ok) throw new Error('No autorizado.');
+                const userDataResult = await userRes.json();
+                if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                const currentUserType = userDataResult.user.usu_tip;
+                setUsuTipo(currentUserType);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+
+        fetchUserData();
+    },[]);
+
+    console.log("Tipo de usuario:", usuTipo);
+
+   
     const handleSuccess = () => {
             setRefreshKey(prev => prev + 1); // Fuerza recarga
         };
@@ -46,11 +68,11 @@ export const Bm1 = () => {
                 url = `/api/bienes?inc=1&page=${page}&limit=${limit}`;
                 if (filtros.estado) url += `&estado=${filtros.estado}`;
                 if (filtros.condicion) url += `&con=${filtros.condicion}`;
+                if (filtros.departamento) url += `&dep=${filtros.departamento}`;
             }
             
             const response = await fetch(url);
             const result = await response.json();
-            console.log(result)
             setData(Array.isArray(result.data) ? result.data : result);
             
             setMeta(result.meta || {});
@@ -61,7 +83,7 @@ export const Bm1 = () => {
     };
     
     loadData();
-}, [page, filtros.estado, filtros.condicion, searchQuery, refreshKey]);
+}, [page, filtros.estado, filtros.condicion, filtros.departamento, searchQuery, refreshKey]);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -273,6 +295,12 @@ export const Bm1 = () => {
                                 value={filtros.condicion}
                                 onChange={handleCondicionChange}
                             />
+
+                            <DepartamentoSelect
+                                tipoBien={unidadAdmin}
+                                value={filtros.departamento}
+                                onChange={(depId) => setFiltros(prev => ({ ...prev, departamento: depId }))}
+                            />
                         </form>
                         <div className="table-responsive text-nowrap">
                         <table className="table table-bordered table-striped">
@@ -282,14 +310,14 @@ export const Bm1 = () => {
                                     <th>Descripción</th>
                                     <th>Observación</th>
                                     <th>Estado</th>
-                                    <th>Acciones</th>
+                                    {usuTipo != '1' ? <th>Acciones</th> : null}
                                 </tr>
                             </thead>
                             <tbody className="table-border-bottom-0">
                                 {Object.entries(datosPorDepartamento).map(([depId, bienes]) => (
                                     <React.Fragment key={depId}>
                                         <tr className="bg-light">
-                                            <td colSpan="6">
+                                            <td colSpan={usuTipo != '1' ? 5 : 4}>
                                                 <strong>Departamento {depId}: {departamentosMap[depId] || `Departamento ${depId}`}</strong>
                                             </td>
                                         </tr>
@@ -299,7 +327,8 @@ export const Bm1 = () => {
                                                 <td>{truncateText(item.bim_des)}</td>
                                                 <td>{truncateText(item.bim_obs)}</td>
                                                 <td>{getEstadoBadge(item.est_ide)}</td>
-                                                <td>
+                                                {usuTipo != '1' ? (
+                                                    <td>
                                                     <Dropdown>
                                                         <Dropdown.Toggle variant="secondary" id={`dropdown-${depId}-${index}`} className="nav-dropdown-dark-example">
                                                             <i className="bx bx-dots-vertical-rounded"></i>
@@ -313,7 +342,7 @@ export const Bm1 = () => {
                                                             </Dropdown.Item>
                                                         </Dropdown.Menu>
                                                     </Dropdown>
-                                                </td>
+                                                </td>) : null}
                                             </tr>
                                         ))}
                                     </React.Fragment>

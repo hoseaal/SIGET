@@ -718,6 +718,17 @@ CREATE TABLE rep_mensual (
     fecha_cierre DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "La fecha y hora en que se realizó el cierre del mes",
     UNIQUE (anio, mes) -- Asegura que solo haya una entrada por mes
 );
+
+CREATE TABLE `bitb_m` (
+    `bit_id` INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador único del registro de bitácora',
+    `usuario_id` INT DEFAULT NULL COMMENT 'ID del usuario que realizó la acción',
+    `fecha_hora` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Marca de tiempo del cambio',
+    `registro_id_afectado` VARCHAR(10) NOT NULL COMMENT 'ID del registro afectado en la tabla original (bim_ide)',
+    `tipo_cambio` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación (INSERT, UPDATE, DELETE)',
+    `datos_antiguos` JSON COMMENT 'Estado del registro antes del cambio (en formato JSON)',
+    `datos_nuevos` JSON COMMENT 'Estado del registro después del cambio (en formato JSON)'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Bitácora de cambios para bienes muebles';
+
 /* VOLCADO DE LA BASE DE DATOS */
 
 -- TABLA TESCET
@@ -2249,6 +2260,172 @@ INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
     END//
 
     DELIMITER ;
+
+/* TRIGGER PARA TABLA TMAB_M */
+DELIMITER $$
+
+-- 1. Trigger para INSERT: 'despues_insertar_bienes'
+-- Se ejecuta DESPUÉS de insertar un nuevo bien en tmab_m
+CREATE TRIGGER `despues_insertar_bienes`
+AFTER INSERT ON `tmab_m`
+FOR EACH ROW
+BEGIN
+    INSERT INTO `bitb_m` (
+        `usuario_id`,
+        `fecha_hora`,
+        `registro_id_afectado`,
+        `tipo_cambio`,
+        `datos_antiguos`,
+        `datos_nuevos`
+    )
+    VALUES (
+        @user_id_for_audit,             -- El ID de usuario establecido por tu aplicación
+        NOW(),                          -- La fecha y hora actual
+        NEW.bim_ide,                    -- El ID del nuevo bien insertado
+        'INSERTO',                       -- Tipo de cambio
+        NULL,                           -- No hay datos antiguos para una inserción
+        JSON_OBJECT(                    -- Todos los datos del nuevo registro en JSON
+            'bim_ide', NEW.bim_ide,
+            'bim_des', NEW.bim_des,
+            'bim_fec', NEW.bim_fec,
+            'bim_ndo', NEW.bim_ndo,
+            'bim_val', NEW.bim_val,
+            'bim_moneda', NEW.bim_moneda,
+            'bim_color', NEW.bim_color,
+            'bim_ser', NEW.bim_ser,
+            'bim_cod', NEW.bim_cod,
+            'bim_obs', NEW.bim_obs,
+            'bim_sede', NEW.bim_sede,
+            'est_ide', NEW.est_ide,
+            'foa_ide', NEW.foa_ide,
+            'con_ide', NEW.con_ide,
+            'esu_ide', NEW.esu_ide,
+            'mod_ide', NEW.mod_ide,
+            'cae_ide', NEW.cae_ide,
+            'bim_inc', NEW.bim_inc,
+            'bim_fed', NEW.bim_fed,
+            'com_ide', NEW.com_ide, 
+            'dep_ide', NEW.dep_ide 
+        )
+    );
+END$$
+
+-- 2. Trigger para UPDATE: 'despues_actualizar_bienes'
+-- Se ejecuta DESPUÉS de actualizar un bien en tmab_m
+CREATE TRIGGER `despues_actualizar_bienes`
+AFTER UPDATE ON `tmab_m`
+FOR EACH ROW
+BEGIN
+    INSERT INTO `bitb_m` (
+        `usuario_id`,
+        `fecha_hora`,
+        `registro_id_afectado`,
+        `tipo_cambio`,
+        `datos_antiguos`,
+        `datos_nuevos`
+    )
+    VALUES (
+        @user_id_for_audit,             -- El ID de usuario
+        NOW(),                          -- La fecha y hora actual
+        NEW.bim_ide,                    -- El ID del bien actualizado (puede ser OLD.bim_ide también)
+        'ACTUALIZO',                       -- Tipo de cambio
+        JSON_OBJECT(                    -- Todos los datos del registro ANTES de la actualización en JSON
+            'bim_ide', OLD.bim_ide,
+            'bim_des', OLD.bim_des,
+            'bim_fec', OLD.bim_fec,
+            'bim_ndo', OLD.bim_ndo,
+            'bim_val', OLD.bim_val,
+            'bim_moneda', OLD.bim_moneda,
+            'bim_color', OLD.bim_color,
+            'bim_ser', OLD.bim_ser,
+            'bim_cod', OLD.bim_cod,
+            'bim_obs', OLD.bim_obs,
+            'bim_sede', OLD.bim_sede,
+            'est_ide', OLD.est_ide,
+            'foa_ide', OLD.foa_ide,
+            'con_ide', OLD.con_ide,
+            'esu_ide', OLD.esu_ide,
+            'mod_ide', OLD.mod_ide,
+            'cae_ide', OLD.cae_ide,
+            'bim_inc', OLD.bim_inc,
+            'bim_fed', OLD.bim_fed,
+            'com_ide', OLD.com_ide,
+            'dep_ide', OLD.dep_ide
+        ),
+        JSON_OBJECT(                    -- Todos los datos del registro DESPUÉS de la actualización en JSON
+            'bim_ide', NEW.bim_ide,
+            'bim_des', NEW.bim_des,
+            'bim_fec', NEW.bim_fec,
+            'bim_ndo', NEW.bim_ndo,
+            'bim_val', NEW.bim_val,
+            'bim_moneda', NEW.bim_moneda,
+            'bim_color', NEW.bim_color,
+            'bim_ser', NEW.bim_ser,
+            'bim_cod', NEW.bim_cod,
+            'bim_obs', NEW.bim_obs,
+            'bim_sede', NEW.bim_sede,
+            'est_ide', NEW.est_ide,
+            'foa_ide', NEW.foa_ide,
+            'con_ide', NEW.con_ide,
+            'esu_ide', NEW.esu_ide,
+            'mod_ide', NEW.mod_ide,
+            'cae_ide', NEW.cae_ide,
+            'bim_inc', NEW.bim_inc,
+            'bim_fed', NEW.bim_fed,
+            'com_ide', NEW.com_ide,
+            'dep_ide', NEW.dep_ide
+        )
+    );
+END$$
+
+-- 3. Trigger para DELETE: 'despues_borrar_bienes'
+-- Se ejecuta ANTES de eliminar un bien en tmab_m para poder capturar los datos de OLD
+CREATE TRIGGER `despues_borrar_bienes`
+BEFORE DELETE ON `tmab_m`
+FOR EACH ROW
+BEGIN
+    INSERT INTO `bitb_m` (
+        `usuario_id`,
+        `fecha_hora`,
+        `registro_id_afectado`,
+        `tipo_cambio`,
+        `datos_antiguos`,
+        `datos_nuevos`
+    )
+    VALUES (
+        @user_id_for_audit,             -- El ID de usuario
+        NOW(),                          -- La fecha y hora actual
+        OLD.bim_ide,                    -- El ID del bien a borrar
+        'ELIMINO',                       -- Tipo de cambio
+        JSON_OBJECT(                    -- Todos los datos del registro ANTES de ser eliminado en JSON
+            'bim_ide', OLD.bim_ide,
+            'bim_des', OLD.bim_des,
+            'bim_fec', OLD.bim_fec,
+            'bim_ndo', OLD.bim_ndo,
+            'bim_val', OLD.bim_val,
+            'bim_moneda', OLD.bim_moneda,
+            'bim_color', OLD.bim_color,
+            'bim_ser', OLD.bim_ser,
+            'bim_cod', OLD.bim_cod,
+            'bim_obs', OLD.bim_obs,
+            'bim_sede', OLD.bim_sede,
+            'est_ide', OLD.est_ide,
+            'foa_ide', OLD.foa_ide,
+            'con_ide', OLD.con_ide,
+            'esu_ide', OLD.esu_ide,
+            'mod_ide', OLD.mod_ide,
+            'cae_ide', OLD.cae_ide,
+            'bim_inc', OLD.bim_inc,
+            'bim_fed', OLD.bim_fed,
+            'com_ide', OLD.com_ide,
+            'dep_ide', OLD.dep_ide
+        ),
+        NULL                            -- No hay datos nuevos para una eliminación
+    );
+END$$
+
+-- Volver a establecer el delimitador por defecto
+DELIMITER ;;
 
 /* FIN DE DISPARADORES DE LA BASE DE DATOS */
 

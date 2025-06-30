@@ -21,7 +21,7 @@ export const RegisterPage = () => {
 
     const tipo = [
                 {
-                    "usu_tip": 0,
+                    "usu_tip": 1,
                     "tipo": "Visualizador"
                 },
                 {
@@ -53,7 +53,7 @@ export const RegisterPage = () => {
                 },
                 {
                     "usu_mod": 3,
-                    "mod": "MOdulo deBienes Muebles"
+                    "mod": "Modulo de Bienes Muebles"
                 }
             ];
 
@@ -181,7 +181,7 @@ export const RegisterPage = () => {
                                                     value={formData.usu_tip}
                                                     onChange={handleChange}
                                                 >
-                                                    <option value="">Seleccedone una opcedón</option>
+                                                    <option value="">Seleccedone una opción</option>
                                                 {tipo.map((item) => (
                                                     <option key={item.usu_tip} value={item.usu_tip}>
                                                         {item.tipo}
@@ -206,7 +206,7 @@ export const RegisterPage = () => {
                                                     value={formData.usu_mod}
                                                     onChange={handleChange}
                                                 >
-                                                    <option value="">Seleccedone una opcedón</option>
+                                                    <option value="">Seleccedone una opción</option>
                                                     {modulos.map((item) => (
                                                     <option key={item.usu_mod} value={item.usu_mod}>
                                                         {item.mod}

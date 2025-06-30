@@ -133,6 +133,7 @@ export const DashboardPage = () => {
   const [currentDepartmentIndex, setCurrentDepartmentIndex] = useState(0);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [buenEstado, setBuenEstado] = useState([]);
 
   const { startDate, endDate } = getCurrentMonthDates();
 
@@ -161,16 +162,17 @@ export const DashboardPage = () => {
 
         const [
           valorData, totalBienesData, incMesData, desMesData, faltantesData,
-          malEstadoData, sinEtiquetaData, prestamosData,
+          malEstadoData, sinEtiquetaData, prestamosData, buenEstadoData
         ] = await Promise.all([
           fetchApiData('/api/reporteBM4/existencia-actual', accessToken),
           fetchApiData('/api/bienes/count?inc=1', accessToken),
           fetchApiData(`/api/bienes/count?fechaIncDesde=${startDate}&fechaIncHasta=${endDate}&inc=1`, accessToken),
           fetchApiData(`/api/bienes/count?fechaDesDesde=${startDate}&fechaDesHasta=${endDate}&inc=0`, accessToken),
-          fetchApiData('/api/bienes/count?est=3&inc=1', accessToken),
+          fetchApiData('/api/bienes/count?estado=3&inc=1', accessToken),
           fetchApiData('/api/bienes/count?con=4&inc=1', accessToken),
-          fetchApiData('/api/bienes/count?est=1&inc=1', accessToken),
+          fetchApiData('/api/bienes/count?estado=1&inc=1', accessToken),
           fetchApiData('/api/prestamos/normales', accessToken),
+          fetchApiData('/api/bienes/count?estado=4&inc=1', accessToken)
         ]);
 
         setTotalValor(valorData.existenciaActualRealTime || 0);
@@ -181,6 +183,7 @@ export const DashboardPage = () => {
         setBadConditionBienes(malEstadoData.meta.total || 0);
         setNoTagBienes(sinEtiquetaData.meta.total || 0);
         setLoanedBienes(prestamosData.length || 0);
+        setBuenEstado( totalBienes - missingBienes - badConditionBienes - noTagBienes - loanedBienes || 0);
 
         const depts = await fetchApiData('/api/departamentos', accessToken);
         setDepartments(depts);
@@ -259,12 +262,14 @@ export const DashboardPage = () => {
 
   // --- Preparación de Datos para Gráficos ---
   const pieChartData = [
+    { name: 'Condiciones Optimas', value: buenEstado, color: '#36A2EB' },
     { name: 'Faltantes', value: missingBienes, color: '#FF6384' },
     { name: 'Mal Estado', value: badConditionBienes, color: '#FF9F40' },
     { name: 'Sin Etiqueta', value: noTagBienes, color: '#FFCD56' },
     { name: 'Prestados', value: loanedBienes, color: '#4BC0C0' },
   ].filter(item => item.value > 0);
   
+  console.log('Datos del Gráfico de Torta:', pieChartData);
   const userRole = userData?.rol_ide;
 
   // --- Renderizado Condicional ---
@@ -430,7 +435,7 @@ export const DashboardPage = () => {
         <Col xs={12} className="mb-4">
           <Card className="h-100">
             <Card.Header className="d-flex align-items-center justify-content-between">
-              <h5 className="card-title m-0 me-2">Reporte Trimestral por Departamento</h5>
+              <h5 className="card-title m-0 me-2">Reporte de Bienes por Departamento</h5>
               <div className="d-flex">
                 <Button variant="outline-primary" onClick={handlePrevDepartment} disabled={departments.length <= 1}>
                   &#8592; Anterior

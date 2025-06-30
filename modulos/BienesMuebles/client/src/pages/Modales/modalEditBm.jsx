@@ -46,12 +46,13 @@ const columnAliasBim = {
     'con_ide': 'Condición Física',
     'esu_ide': 'Estado de Uso',
     'mar_ide': 'Marca',
+    'dep_ide': 'Departamento',
     'cae_ide': 'Categoría Específica',
     'bim_inc': 'Incorporado',
     'bim_fed': 'Fecha de Desincorporación',
     'com_ide': 'Concepto de Movimiento',
     'mod_ide': 'Modelo',
-    'dep_ide': 'Departamento Original' 
+    'bim_ser': 'Serial'
 };
 
 const estadosBien = [
@@ -231,8 +232,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
             'mar_ide': bienData?.marca,
             'mod_ide': bienData?.modelo,
             'cae_ide': bienData?.categoria_especifica,
-            'com_ide': bienData?.concepto,
-            // 'dep_ide' se manejará fuera de este renderFormField, directamente en el Modal.Title o en un lugar visible arriba
+            'com_ide': bienData?.concepto
         };
 
         if (fieldName === 'est_ide') {
@@ -397,10 +397,6 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                         
                         
                             {columns.map((column) => {
-                                // Evitar renderizar el campo 'dep_ide' en el formulario principal
-                                if (column.originalName === 'dep_ide') {
-                                    return null; 
-                                }
                                 return (
                                     <Col md={6} key={column.originalName}>
                                         <Form.Group className="mb-3">

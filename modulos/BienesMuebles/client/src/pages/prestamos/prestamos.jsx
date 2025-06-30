@@ -34,7 +34,25 @@ export const Prestamos = () => {
         setShowDetallesModal(false);
         setSelectedPrestamoId(null); // Limpiar el ID seleccionado al cerrar
     };
-
+const [userType, setUserType] = useState(null);
+    useEffect(() => {
+            const fetchUserData = async () => {
+                try {
+                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                    if (!userRes.ok) throw new Error('No autorizado.');
+                    const userDataResult = await userRes.json();
+                    if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                    
+                    const currentUserType = userDataResult.user.usu_tip;
+                    setUserType(currentUserType);
+                    setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            };
+    
+            fetchUserData();
+        }, []);
     // --- Cargar datos de préstamos normales activos ---
     useEffect(() => {
         const loadPrestamos = async () => {
@@ -148,10 +166,11 @@ export const Prestamos = () => {
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Gestión de Movimientos /</span> Préstamos</h4>
-                <Button variant="primary" onClick={() => setShowCreateModal(true)}>
-                    Registrar Nuevo Préstamo
-                    <i className="bx bx-plus-circle ms-1"></i>
-                </Button>
+                {userType !== 1 ? ( 
+                                <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+                                    Registrar Nuevo Prestamo
+                                <i className="bx bx-plus-circle ms-1"></i>
+                                </Button>) : null}
             </div>
 
             <div className="card">
@@ -233,7 +252,7 @@ export const Prestamos = () => {
                                         <th>Departamento Origen</th>
                                         <th>Departamento Destino</th>
                                         <th>Estado</th>
-                                        <th>Acciones</th>
+                                        {userType !== 1 ? <th>Acciones</th> : null}
                                     </tr>
                                 </thead>
                                 <tbody className="table-border-bottom-0">
@@ -246,22 +265,19 @@ export const Prestamos = () => {
                                                 <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
                                                 <td>{prestamo.departamento_destino_nombre || 'N/A'}</td> 
                                                 <td>{getEstadoPrestamoBadge(prestamo.pre_est)}</td>
-                                                <td>
+                                                {userType !== 1 ? (
+                                                    <td>
                                                     <Dropdown>
                                                         <Dropdown.Toggle variant="secondary" id={`dropdown-${prestamo.pre_ide}`} className="nav-dropdown-dark-example">
-                                                            <i className="bx bx-dots-vertical-rounded"></i>
+                                                             <i className="bx bx-dots-vertical-rounded"></i>
                                                         </Dropdown.Toggle>
                                                         <Dropdown.Menu>
                                                             <Dropdown.Item href="#" onClick={() => handleVerDetalles(prestamo.pre_ide)}>
-                                                                <i className="bx bx-info-circle me-1"></i> Ver Detalles
+                                                                 <i className="bx bx-info-circle me-1"></i> Ver Detalles y Devolver
                                                             </Dropdown.Item>
-                                                            {/* Aquí irían otras acciones como "Devolver Préstamo" si pre_est es 1 */}
-                                                            {/* <Dropdown.Item href="#">
-                                                                <i className="bx bx-undo me-1"></i> Devolver
-                                                            </Dropdown.Item> */}
                                                         </Dropdown.Menu>
                                                     </Dropdown>
-                                                </td>
+                                                </td>) : null}
                                             </tr>
                                         ))
                                     ) : (

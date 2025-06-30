@@ -159,4 +159,26 @@ const EstadoSelect = ({ tipoBien, value, onChange, onToggle }) => {
   );
 };
 
-export {EstadoSelect, EstadoDeUsoSelect};
+const DepartamentoSelect = ({ tipoBien, value, onChange, onToggle }) => {
+  // Preparar opciones
+  const options = [
+    { value: null, label: 'Departamento' },
+    ...tipoBien.map(item => ({
+      value: item.dep_ide,
+      label: item.dep_nom
+    }))
+  ];
+
+  return (
+    <InfiniteSelect
+      options={options}
+      value={value}
+      onChange={onChange}
+      placeholder="Departamentos"
+      direction= "left"
+      onToggle={onToggle}
+    />
+  );
+};
+
+export {EstadoSelect, EstadoDeUsoSelect, DepartamentoSelect};
