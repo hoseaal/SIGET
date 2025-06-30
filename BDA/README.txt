@@ -12,4 +12,6 @@ composer require phpoffice/phpspreadsheet
 
 composer require vlucas/phpdotenv
 
-4) ...
+4) Dependencia para el funcionamiento de exportaciones pdf
+
+composer require tecnickcom/tcpdf

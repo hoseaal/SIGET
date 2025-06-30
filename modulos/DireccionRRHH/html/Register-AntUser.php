@@ -359,6 +359,9 @@
         }
         
         function eliminarRango(idRango) {
+            const rangoDiv = document.getElementById(idRango);
+            const antId = rangoDiv.querySelector('input[id^="ant-ide"]')?.value;
+            
             smallSwal.fire({
                 title: '¿Eliminar rango?',
                 text: 'Esta acción no se puede deshacer',
@@ -370,9 +373,65 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const rango = document.getElementById(idRango);
-                    if (rango) {
-                        rango.remove();
+                    // Mostrar mensaje de procesamiento
+                    smallSwal.fire({
+                        title: 'Eliminando rango',
+                        html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+                        width: 350,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            smallSwal.showLoading();
+                        }
+                    });
+
+                    // Si tiene ID, es un registro existente que debemos eliminar de la BD
+                    if (antId) {
+                        fetch('../PHP/api/usuarios/eliminar_antiguedad.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                ant_ide: antId
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                // Eliminar el elemento del DOM después de eliminar en BD
+                                rangoDiv.remove();
+                                smallSwal.fire({
+                                    icon: 'success',
+                                    title: 'Rango eliminado',
+                                    text: 'El rango ha sido eliminado correctamente',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                            } else {
+                                smallSwal.fire({
+                                    icon: 'error',
+                                    title: 'Error al eliminar',
+                                    text: data.message || 'Ocurrió un error al eliminar el rango',
+                                    confirmButtonColor: '#3085d6',
+                                    confirmButtonText: 'Entendido'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            smallSwal.fire({
+                                icon: 'error',
+                                title: 'Error de conexión',
+                                text: 'Ocurrió un problema al conectar con el servidor',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Entendido'
+                            });
+                            console.error(error);
+                        });
+                    } else {
+                        // Si no tiene ID, solo eliminamos del DOM (es un rango nuevo no guardado)
+                        rangoDiv.remove();
                         smallSwal.fire({
                             icon: 'success',
                             title: 'Rango eliminado',

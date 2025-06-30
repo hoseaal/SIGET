@@ -152,7 +152,8 @@
                           <tr>
                             <th>N-</th>
                             <th>Cédula</th>
-                            <th>Nombre del Trabajador</th>
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                           </tr>

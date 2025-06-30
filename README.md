@@ -112,6 +112,8 @@ PORT=[puerto de node]
        - PHP-JWT (autenticación).
 
        - PHPSpreadsheet (exportación XLS).
+  
+       - Tcpdf (exportación PDF). 
 ---
 
 ## ⚠️ Consideraciones críticas
