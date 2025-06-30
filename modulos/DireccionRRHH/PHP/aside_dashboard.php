@@ -22,21 +22,13 @@
             </a>
         </li>
 
-        <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
+        <?php if ($GLOBALS['decoded']->data->tipo == '5'): ?>
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-user-circle"></i>
                 <div data-i18n="usuarios">Usuarios</div>
             </a>
             <ul class="menu-sub">
-                <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3'): ?>
-                <li class="menu-item">
-                    <a href="Register-NewUser.php" class="menu-link">
-                        <div data-i18n="Basic">Añadir Nuevo Trabajador</div>
-                    </a>
-                </li>
-                <?php endif; ?>
-                
                 <?php if ($GLOBALS['decoded']->data->tipo == '5'): ?>
                 <li class="menu-item">
                     <a href="auth-register-basic.php" class="menu-link">
@@ -44,11 +36,11 @@
                     </a>
                 </li>
                 <?php endif; ?>
-                
-                <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
+
+                <?php if ($GLOBALS['decoded']->data->tipo == '5'): ?>
                 <li class="menu-item">
-                    <a href="Register-AntUser.php" class="menu-link">
-                        <div data-i18n="Basic">Registro de Antigüedades</div>
+                    <a href="Table_User.php" class="menu-link">
+                        <div data-i18n="Basic">Tabla de Usuarios</div>
                     </a>
                 </li>
                 <?php endif; ?>
@@ -60,9 +52,16 @@
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-folder-open"></i>
-                <div data-i18n="salarios">Gestión de Presupuesto</div>
+                <div data-i18n="salarios">Gestión de Nómina</div>
             </a>
             <ul class="menu-sub">
+                <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3'): ?>
+                <li class="menu-item">
+                    <a href="Register-NewUser.php" class="menu-link">
+                        <div data-i18n="Basic">Añadir Nuevo Trabajador</div>
+                    </a>
+                </li>
+                <?php endif; ?>
                 <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2' || $GLOBALS['decoded']->data->tipo == '1'): ?>
                 <li class="menu-item">
                     <a href="Table_Nomina.php" class="menu-link">
@@ -70,11 +69,11 @@
                     </a>
                 </li>
                 <?php endif; ?>
-                
-                <?php if ($GLOBALS['decoded']->data->tipo == '5'): ?>
+
+                <?php if ($GLOBALS['decoded']->data->tipo == '5' || $GLOBALS['decoded']->data->tipo == '4' || $GLOBALS['decoded']->data->tipo == '3' || $GLOBALS['decoded']->data->tipo == '2'): ?>
                 <li class="menu-item">
-                    <a href="Table_User.php" class="menu-link">
-                        <div data-i18n="Basic">Tabla de Usuarios</div>
+                    <a href="Register-AntUser.php" class="menu-link">
+                        <div data-i18n="Basic">Registro de Antigüedades</div>
                     </a>
                 </li>
                 <?php endif; ?>
