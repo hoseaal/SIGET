@@ -2425,7 +2425,7 @@ BEGIN
 END$$
 
 -- Volver a establecer el delimitador por defecto
-DELIMITER ;;
+DELIMITER ;
 
 /* FIN DE DISPARADORES DE LA BASE DE DATOS */
 

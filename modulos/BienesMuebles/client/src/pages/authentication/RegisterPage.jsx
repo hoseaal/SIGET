@@ -100,7 +100,7 @@ export const RegisterPage = () => {
     return (
         <>
 
-        <h4 className="py-3 mb-4"><span className="text-muted fw-light">Configuracedon/</span> Nuevo Usuario</h4>
+        <h4 className="py-3 mb-4"><span className="text-muted fw-light">Configuración/</span> Nuevo Usuario</h4>
 
             <div className="row">
                  <div className="col-xxl">
