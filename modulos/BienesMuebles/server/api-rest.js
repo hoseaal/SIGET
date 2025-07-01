@@ -41,7 +41,6 @@ app.get('/', (req, res) => {
 })
 
 app.use(cors({
-  origin: 'http://localhost:5173', // donde corre Vite
   credentials: true // permite el uso de cookies
 }))
 
