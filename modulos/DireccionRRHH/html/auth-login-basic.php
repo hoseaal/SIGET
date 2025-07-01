@@ -181,7 +181,6 @@
         padding: '1rem',
         backdrop: `
           rgba(0,0,0,0.4)
-          url("/images/nyan-cat.gif")
           left top
           no-repeat
         `,
