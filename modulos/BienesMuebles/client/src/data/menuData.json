@@ -94,11 +94,6 @@
                         "link": "/Configuracion/ModelosyMarcas"
                     },
                     {
-                        "text": "Tipos",
-                        "available": true,
-                        "link": "/Configuracion/Tipos"
-                    },
-                    {
                         "text": "Estados de Uso",
                         "available": true,
                         "link": " "
