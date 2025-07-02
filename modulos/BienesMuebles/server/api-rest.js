@@ -42,7 +42,6 @@ app.get('/', (req, res) => {
 })
 
 app.use(cors({
-  origin: 'http://localhost:5173',
   credentials: true // permite el uso de cookies
 }))
 
