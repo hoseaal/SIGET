@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dropdown, Form, Button, Table, Pagination, Alert, Spinner } from 'react-bootstrap';
 import ModalEnviarBienAlmacen from '../Modales/modalEnviarBienAlmacen';
 import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo'; 
+import { hasPermission, ACTIONS } from '../data/permissions'
 
 export const Almacen = () => {
     const [data, setData] = useState([]);
@@ -230,7 +231,7 @@ const [userType, setUserType] = useState(null);
                                         <th>Departamento Origen</th>
                                         {/* La columna de Departamento Destino se elimina */}
                                         <th>Estado</th>
-                                        {userType !== 1 ? <th>Acciones</th> : null}
+                                        {hasPermission(userType, ACTIONS.JEFE_AREA) && (<th>Acciones</th>)}
                                     </tr>
                                 </thead>
                                 <tbody className="table-border-bottom-0">
@@ -243,7 +244,7 @@ const [userType, setUserType] = useState(null);
                                                 <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
                                                 {/* Se asume que el destino es el almacén, por lo que no se muestra */}
                                                 <td>{getEstadoPrestamoBadge(prestamo.pre_est)}</td>
-                                                {userType !== 1 ? (
+                                                {hasPermission(userType, ACTIONS.JEFE_AREA) && (
                                                     <td>
                                                     <Dropdown>
                                                         <Dropdown.Toggle variant="secondary" id={`dropdown-${prestamo.pre_ide}`} className="nav-dropdown-dark-example">
@@ -256,7 +257,7 @@ const [userType, setUserType] = useState(null);
                                                             {/* Aquí NO se permite modificar ni borrar préstamos directamente, solo ver/devolver */}
                                                         </Dropdown.Menu>
                                                     </Dropdown>
-                                                </td>) : null}
+                                                </td>) }
                                             </tr>
                                         ))
                                     ) : (

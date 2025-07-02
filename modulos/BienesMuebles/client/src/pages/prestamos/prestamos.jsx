@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dropdown, Form, Button, Table, Pagination } from 'react-bootstrap';
 import ModalRegistrarPrestamo from '../Modales/modalRegistrarPrestamo'; 
 import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo';
+import { hasPermission, ACTIONS } from '../data/permissions'
 
 export const Prestamos = () => {
     const [data, setData] = useState([]);
@@ -252,7 +253,7 @@ const [userType, setUserType] = useState(null);
                                         <th>Departamento Origen</th>
                                         <th>Departamento Destino</th>
                                         <th>Estado</th>
-                                        {userType !== 1 ? <th>Acciones</th> : null}
+                                        {hasPermission(userType, ACTIONS.VIEW_LOAN_DETAILS) && ( <th>Acciones</th>)}
                                     </tr>
                                 </thead>
                                 <tbody className="table-border-bottom-0">
@@ -265,7 +266,7 @@ const [userType, setUserType] = useState(null);
                                                 <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
                                                 <td>{prestamo.departamento_destino_nombre || 'N/A'}</td> 
                                                 <td>{getEstadoPrestamoBadge(prestamo.pre_est)}</td>
-                                                {userType !== 1 ? (
+                                                {hasPermission(userType, ACTIONS.VIEW_LOAN_DETAILS) && (
                                                     <td>
                                                     <Dropdown>
                                                         <Dropdown.Toggle variant="secondary" id={`dropdown-${prestamo.pre_ide}`} className="nav-dropdown-dark-example">
@@ -277,7 +278,7 @@ const [userType, setUserType] = useState(null);
                                                             </Dropdown.Item>
                                                         </Dropdown.Menu>
                                                     </Dropdown>
-                                                </td>) : null}
+                                                </td>)}
                                             </tr>
                                         ))
                                     ) : (

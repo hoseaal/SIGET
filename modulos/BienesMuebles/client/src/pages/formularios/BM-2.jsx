@@ -9,7 +9,8 @@ import ModalActaInc from '../Modales/modalActaInc';
 import ModalRepBm2 from '../Modales/modalRepBm2';
 import ModalInsert from '../Modales/modalInsert';
 import Spinner from 'react-bootstrap/Spinner'; 
-import ModalDesincorporarBien from '../Modales/modalDesincorporarBien'
+import ModalDesincorporarBien from '../Modales/modalDesincorporarBien';
+import { hasPermission, ACTIONS } from '../data/permissions';
 
 export const Bm2 = () => {
         const [usuTipo, setUsuTipo] = useState(null);
@@ -443,13 +444,13 @@ const handleSubmit = async (e) => {
                     <div className="card mb-4">
                         <div className="card-header d-flex align-items-center justify-content-between">
                             <h5 className="mb-0">Relación de Movimiento de Bienes Muebles</h5>
-                            {usuTipo == '4' || usuTipo == '5' ? (
+                            {hasPermission(userType, ACTIONS.JEFE_AREA) && (
                                 <Form.Group className="mb-3">
                                 <Form.Select onChange={handleRelacionChange} value={relacion.toString()}>
                                     <option value="true">Incorporación</option>
                                     <option value="false">Desincorporación</option>
                                 </Form.Select>
-                            </Form.Group>) : null}
+                            </Form.Group>)}
                         </div>
                         {relacion ? (
                             <div className="card-body">

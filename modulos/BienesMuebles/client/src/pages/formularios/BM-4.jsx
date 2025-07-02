@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ModalCerrarMes from '../Modales/modalCerrarMes'; // Asegúrate de la ruta correcta
 import  ModalGenerarReporteBM4 from '../Modales/modalRepBm4';
+import { hasPermission, ACTIONS } from '../data/permissions'
 
 export const Bm4 = () => {
      const [userData, setUserData] = useState([]);
@@ -142,7 +143,7 @@ export const Bm4 = () => {
                 <h4 className="py-3 mb-4">
                     <span className="text-muted fw-light">Bienes Muebles /</span> Reporte BM-4
                 </h4>
-                { usuTipo == '4' || usuTipo == '5' ? (
+                { hasPermission(userType, ACTIONS.JEFE_AREA) && (
                     <button
                     id="consolidarInventarioBtn"
                     className={`btn btn-outline-primary`}
@@ -151,7 +152,7 @@ export const Bm4 = () => {
                     >
                     <i className='bx bx-wallet me-1'></i>
                     {mesCerrado ? 'Mes Consolidado' : 'Consolidar Inventario Mensual'}
-                </button>) : null}
+                </button>)}
             </div>
 
             <div className="card">

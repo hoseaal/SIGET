@@ -4,6 +4,7 @@ import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
 import { EstadoSelect, EstadoDeUsoSelect, DepartamentoSelect} from '../layouts/selectInfinito';
+import { hasPermission, ACTIONS } from '../data/permissions';
 
 import { FixedSizeList as List } from 'react-window';
 
@@ -310,7 +311,7 @@ export const Bm1 = () => {
                                     <th>Descripción</th>
                                     <th>Observación</th>
                                     <th>Estado</th>
-                                    {usuTipo != '1' ? <th>Acciones</th> : null}
+                                    {hasPermission(userType, ACTIONS.VIEW_LOAN_DETAILS) && (<th>Acciones</th> )}
                                 </tr>
                             </thead>
                             <tbody className="table-border-bottom-0">
@@ -327,7 +328,7 @@ export const Bm1 = () => {
                                                 <td>{truncateText(item.bim_des)}</td>
                                                 <td>{truncateText(item.bim_obs)}</td>
                                                 <td>{getEstadoBadge(item.est_ide)}</td>
-                                                {usuTipo != '1' ? (
+                                                {hasPermission(userType, ACTIONS.VIEW_LOAN_DETAILS) && (
                                                     <td>
                                                     <Dropdown>
                                                         <Dropdown.Toggle variant="secondary" id={`dropdown-${depId}-${index}`} className="nav-dropdown-dark-example">
@@ -342,7 +343,7 @@ export const Bm1 = () => {
                                                             </Dropdown.Item>
                                                         </Dropdown.Menu>
                                                     </Dropdown>
-                                                </td>) : null}
+                                                </td>)}
                                             </tr>
                                         ))}
                                     </React.Fragment>

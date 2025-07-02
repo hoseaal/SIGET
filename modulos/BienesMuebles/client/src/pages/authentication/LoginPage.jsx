@@ -74,7 +74,7 @@ export const LoginPage = () => {
 
             <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>
                 <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Cedula de identidad</label>
+                    <label htmlFor="email" className="form-label">Nombre de usuario</label>
                     <input
                         type="text"
                         className="form-control"
@@ -82,15 +82,12 @@ export const LoginPage = () => {
                         value={formData.ci}
                         onChange={handleChange}
                         name="ci"
-                        placeholder="ej. 12345678"
+                        placeholder=""
                         autoFocus />
                 </div>
                 <div className="mb-3 form-password-toggle">
                     <div className="d-flex justify-content-between">
                         <label className="form-label" htmlFor="password">Contraseña</label>
-                        <Link aria-label="Go to Forgot Password Page" to="/auth/forgot-password">
-                            <small>Forgot Password?</small>
-                        </Link>
                     </div>
                     <div className="input-group input-group-merge">
                         <input

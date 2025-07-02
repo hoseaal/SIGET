@@ -37,6 +37,36 @@ export const menuPermissions = {
 
     // Gestión de Usuarios
     "/Configuracion/NuevoUsuario": [5],
-    "/Configuracion/Usuarios": [4, 5],
+    "/Configuracion/Usuarios": [5],
     "/Configuracion/Bitacora": [4, 5],
+};
+
+// src/data/permissions.js
+
+// Definimos constantes para las acciones para evitar errores de tipeo.
+export const ACTIONS = {
+    hasPermission(userType, ACTIONS.JEFE_AREA) && (: 'viewLoanDetails',
+    JEFE_AREA: 'jefeArea'
+};
+
+// Mapeamos cada acción a los tipos de usuario que tienen permiso.
+const permissions = {
+
+    [ACTIONS.VIEW_LOAN_DETAILS]: [2, 3, 4, 5], 
+
+    [ACTIONS.JEFE_AREA]: [4, 5]
+};
+
+/**
+ * Comprueba si un tipo de usuario tiene permiso para una acción específica.
+ * @param {number} userType - El tipo de usuario (ej: 1, 2, 3).
+ * @param {string} action - La acción a verificar (ej: ACTIONS.VIEW_LOAN_DETAILS).
+ * @returns {boolean} - Devuelve true si el usuario tiene permiso, de lo contrario false.
+ */
+export const hasPermission = (userType, action) => {
+    if (!userType || !action) {
+        return false;
+    }
+
+    return permissions[action]?.includes(userType) ?? false;
 };
