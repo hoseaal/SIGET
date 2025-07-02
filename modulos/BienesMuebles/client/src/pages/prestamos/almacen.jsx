@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dropdown, Form, Button, Table, Pagination, Alert, Spinner } from 'react-bootstrap';
 import ModalEnviarBienAlmacen from '../Modales/modalEnviarBienAlmacen';
 import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo'; 
-import { hasPermission, ACTIONS } from '../data/permissions'
+import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
 export const Almacen = () => {
     const [data, setData] = useState([]);

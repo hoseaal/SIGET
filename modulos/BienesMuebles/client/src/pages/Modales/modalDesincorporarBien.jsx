@@ -33,8 +33,6 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
     const [ciAnalistaBienes, setCiAnalistaBienes] = useState('');
     const [numeroActaDesincorporacion, setNumeroActaDesincorporacion] = useState(''); // Acta number for the desincorporation document
     const [fechaActaDesincorporacion, setFechaActaDesincorporacion] = useState(''); // Date string for desincorporation acta
-    const [nombreDirectorFinanzas, setNombreDirectorFinanzas] = useState('');
-    const [nombreProcurador, setNombreProcurador] = useState('');
     const [nombreFuncionarioElabora, setNombreFuncionarioElabora] = useState('');
 
     // Conceptos de Movimiento (existing state, will still be fetched)
@@ -94,8 +92,6 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
         setCiAnalistaBienes('');
         setNumeroActaDesincorporacion('');
         setFechaActaDesincorporacion('');
-        setNombreDirectorFinanzas('');
-        setNombreProcurador('');
         setNombreFuncionarioElabora('');
     };
 
@@ -171,8 +167,7 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
         const requiredPdfFields = [
             numeroActa, nombreDirectorAdmin, ciDirectorAdmin, nombreDirectorAsignacion,
             ciDirectorAsignacion, nombreJefeCompras, ciJefeCompras,
-            nombreAnalistaBienes, ciAnalistaBienes, nombreDirectorFinanzas, nombreProcurador,
-            nombreFuncionarioElabora
+            nombreAnalistaBienes, ciAnalistaBienes, nombreFuncionarioElabora
         ];
 
         if (!bienData || requiredPdfFields.some(field => !field)) {
@@ -201,8 +196,6 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
                 valorBien: bienData.bim_val,
                 numeroActaDesincorporacion: numeroActa,
                 fechaActaDesincorporacion: bimFed,
-                nombreDirectorFinanzas,
-                nombreProcurador,
                 nombreFuncionarioElabora
             };
 
@@ -252,7 +245,7 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
             </Modal.Header>
 
             <Modal.Body>
-                <Form>
+                <Form onSubmit={() => fetchBienData(codigoBienInput)}>
                     {!BienId && (
                         <Form.Group className="mb-3">
                             <Form.Label>Ingrese el código del bien a desincorporar</Form.Label>
@@ -406,26 +399,6 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
                                     type="text"
                                     value={ciAnalistaBienes}
                                     onChange={(e) => setCiAnalistaBienes(e.target.value)}
-                                    disabled={formEnviado || pdfLoading}
-                                />
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="nombreDirectorFinanzas">
-                                <Form.Label>Nombre Director(a) de Finanzas de la Gobernación</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={nombreDirectorFinanzas}
-                                    onChange={(e) => setNombreDirectorFinanzas(e.target.value)}
-                                    disabled={formEnviado || pdfLoading}
-                                />
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="nombreProcurador">
-                                <Form.Label>Nombre Procurador(a) General del Estado Táchira</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={nombreProcurador}
-                                    onChange={(e) => setNombreProcurador(e.target.value)}
                                     disabled={formEnviado || pdfLoading}
                                 />
                             </Form.Group>

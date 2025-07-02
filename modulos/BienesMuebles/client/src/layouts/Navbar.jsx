@@ -3,13 +3,20 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dropdown, Nav, Navbar as BSNavbar, Image, Toast, ToastContainer } from 'react-bootstrap';
 import { BsMenuApp, BsPerson, BsGear, BsCreditCard, BsPower } from 'react-icons/bs';
+import ModalContraseña from '../pages/Modales/modalContraseña'
 
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastVariant, setToastVariant] = useState('success');
+  const [showUserConModal, setShowUserConModal] = useState(false);
+
   const navigate = useNavigate();
+
+  const handleSuccess = () => {
+            setRefreshKey(prev => prev + 1); // Fuerza recarga
+        };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -117,9 +124,9 @@ const Navbar = () => {
               
               <Dropdown.Divider />
               
-              <Dropdown.Item href="#">
+              <Dropdown.Item  onClick={() => {setShowUserConModal(true)}}>
                 <BsPerson className="bx me-2" />
-                <span className="align-middle">My Profile</span>
+                <span className="align-middle">Cambiar Contraseña</span>
               </Dropdown.Item>
               <Dropdown.Divider />
               
@@ -131,6 +138,13 @@ const Navbar = () => {
           </Dropdown>
         </Nav>
       </div>
+      <ModalContraseña
+                    show={showUserConModal}
+                    handleClose={() => setShowUserConModal(false)}
+                    rowData={userData} 
+                    onSuccess={handleSuccess}
+                    idColumn='usu_ide'
+                />
     </BSNavbar>
 
     <ToastContainer position="top-center" className="p-3" style={{ zIndex: 9999, position: 'fixed', right: 0, top: 0 }} >
@@ -143,6 +157,7 @@ const Navbar = () => {
           </Toast.Body>
         </Toast>
       </ToastContainer>
+      
       </>
   );
 }

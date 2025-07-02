@@ -45,7 +45,7 @@ export const menuPermissions = {
 
 // Definimos constantes para las acciones para evitar errores de tipeo.
 export const ACTIONS = {
-    hasPermission(userType, ACTIONS.JEFE_AREA) && (: 'viewLoanDetails',
+    VIEW_LOAN_DETAILS: 'viewLoanDetails',
     JEFE_AREA: 'jefeArea'
 };
 

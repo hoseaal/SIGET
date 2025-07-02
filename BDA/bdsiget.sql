@@ -152,7 +152,8 @@ CREATE TABLE `tesusu` (
   `usu_ape` varchar(50) NOT NULL COMMENT 'Apellidos del usuario',
   `usu_tip` int(1) NOT NULL COMMENT 'Perfil o tipo de usuario',
   `usu_mod` int(2) NOT NULL COMMENT 'Módulos de acceso',
-  `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Cédula del empleado, usado en caso tal como referencia a empleado en tmanom'
+  `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Cédula del empleado, usado en caso tal como referencia a empleado en tmanom',
+  UNIQUE (`usu_usu`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

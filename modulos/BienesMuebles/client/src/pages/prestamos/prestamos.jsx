@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dropdown, Form, Button, Table, Pagination } from 'react-bootstrap';
 import ModalRegistrarPrestamo from '../Modales/modalRegistrarPrestamo'; 
 import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo';
-import { hasPermission, ACTIONS } from '../data/permissions'
+import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
 export const Prestamos = () => {
     const [data, setData] = useState([]);

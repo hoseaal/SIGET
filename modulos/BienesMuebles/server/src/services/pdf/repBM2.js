@@ -3,6 +3,73 @@ import PDFDocument from 'pdfkit'
 import fs from 'fs'
 import path from 'path'
 
+function numberToWords (num) {
+  const units = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve']
+  const teens = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve']
+  const tens = ['', 'diez', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa']
+  const hundreds = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos']
+
+  if (num === 0) return 'cero'
+
+  function convertLessThanOneThousand (n) {
+    if (n < 10) return units[n]
+    if (n < 20) return teens[n - 10]
+    if (n < 100) {
+      const ten = tens[Math.floor(n / 10)]
+      const unit = units[n % 10]
+      return ten + (unit ? ' y ' + unit : '')
+    }
+    if (n === 100) return 'cien'
+    const hundred = hundreds[Math.floor(n / 100)]
+    const rest = convertLessThanOneThousand(n % 100)
+    return hundred + (rest ? ' ' + rest : '')
+  }
+
+  if (num < 1000) return convertLessThanOneThousand(num)
+  const thousands = Math.floor(num / 1000)
+  const remainder = num % 1000
+
+  let result = ''
+  if (thousands === 1) {
+    result += 'mil'
+  } else {
+    result += units[thousands] + ' mil'
+  }
+
+  if (remainder > 0) {
+    result += ' ' + convertLessThanOneThousand(remainder)
+  }
+
+  return result.trim()
+}
+
+function formatCurrentDateTime () {
+  const now = new Date()
+  const day = now.getDate()
+  const monthNames = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ]
+  const month = monthNames[now.getMonth()]
+  const year = now.getFullYear()
+  const yearInWords = numberToWords(year)
+
+  let hours = now.getHours()
+  const minutes = now.getMinutes()
+  const ampm = hours >= 12 ? 'p.m.' : 'a.m.'
+  hours = hours % 12
+  hours = hours || 12 // the hour '0' should be '12'
+  const strMinutes = minutes < 10 ? '0' + minutes : minutes
+
+  return {
+    day,
+    month,
+    year, // Return numeric year as well
+    yearInWords,
+    time: `${hours}:${strMinutes} ${ampm}`
+  }
+}
+
 export const generarReporteBM2 = ({ datos, nombreJefe }) => {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
@@ -13,6 +80,8 @@ export const generarReporteBM2 = ({ datos, nombreJefe }) => {
     const outputPath = path.join(process.cwd(), 'temp', `reporte_BM2_${Date.now()}.pdf`)
     const stream = fs.createWriteStream(outputPath)
     doc.pipe(stream)
+
+     const { month, year } = formatCurrentDateTime()
 
     try {
       // --- Header Section ---
@@ -49,7 +118,7 @@ export const generarReporteBM2 = ({ datos, nombreJefe }) => {
       doc.text('11. DEPENDENCIA O UNIDAD PRIMARIA: Contraloría del Estado Táchira', textIndent, doc.y)
       doc.text('12. SERVICIO: Dirección de Administración', textIndent, doc.y)
       doc.text('13. UNIDAD DE TRABAJO O DEPENDENCIA: Contraloría del Estado Táchira', textIndent, doc.y)
-      doc.text('14. PERIODO DE LA CUENTA: (mes y año): SEPTIEMBRE 2023', textIndent, doc.y)
+      doc.text(`14. PERIODO DE LA CUENTADE: ${month.toUpperCase()} de ${year}`, textIndent, doc.y)
       doc.moveDown(1.5) // Add space before the table
 
       // --- Table Section ---

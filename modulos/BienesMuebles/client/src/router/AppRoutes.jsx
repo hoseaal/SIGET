@@ -19,6 +19,8 @@ import { Bitacora } from "../pages/configuracion/bitacora.jsx";
 
 import { DashboardPage } from "../pages/DashboardPage";
 
+import { Usuarios } from "../pages/configuracion/usuarios"
+
 const AppRoutes = () => {
     return (
         <Routes>
@@ -48,6 +50,12 @@ const AppRoutes = () => {
             <Route path="/Configuracion/Bitacora" element={
                 <ProtectedRoute>
                     <Bitacora />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Configuracion/Usuarios" element={
+                <ProtectedRoute>
+                    <Usuarios />
                 </ProtectedRoute>
             } />
 

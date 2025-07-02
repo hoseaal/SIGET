@@ -18,6 +18,7 @@ import metaRouter from './src/routes/meta.routes.js'
 import reporteBM4Routes from './src/routes/reporte.routes.js'
 import pdfRouter from './src/routes/pdf.routes.js'
 import excelRoutes from './src/routes/excel.routes.js'
+import userRoutes from './src/routes/user.routes.js'
 import cors from 'cors'
 import morgan from 'morgan'
 
@@ -41,6 +42,7 @@ app.get('/', (req, res) => {
 })
 
 app.use(cors({
+  origin: 'http://localhost:5173',
   credentials: true // permite el uso de cookies
 }))
 
@@ -68,6 +70,8 @@ app.use('/api/meta', metaRouter)
 app.use('/api/pdf', pdfRouter)
 
 app.use('/api/excel', excelRoutes)
+
+app.use('/api/user', userRoutes)
 
 const PORT = 5001
 app.listen(PORT, () => {

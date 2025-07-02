@@ -142,9 +142,7 @@ export const generarActaDesincorporacion = (datos) => {
 
     // Details for the "En consecuencia" paragraph
     const numeroActaDesincorporacion = datos.numeroActaDesincorporacion || 'N/A'
-    const fechaActaDesincorporacion = formatDateToDDMMYYYY(datos.fechaActaDesincorporacion) // Assuming 'YYYY-MM-DD' or Date object
-    const nombreDirectorFinanzas = toUpperCase(datos.nombreDirectorFinanzas)
-    const nombreProcurador = toUpperCase(datos.nombreProcurador)
+    const fechaActaDesincorporacion = formatDateToDDMMYYYY(datos.fechaActaDesincorporacion)
     const nombreFuncionarioElabora = toUpperCase(datos.nombreFuncionarioElabora)
 
     // --- DIBUJAR ENCABEZADO ---
@@ -173,12 +171,8 @@ export const generarActaDesincorporacion = (datos) => {
     doc.font('Helvetica').text(` del bien que se detalla a continuación: Código. ${codigoBien}, ${descripcionBien}, Bs. ${valorBien}. `)
     doc.moveDown(0.5)
 
-    const consequenceText = `En consecuencia, se da cumplimiento de la desincorporación del bien antes descrito del inventario de la Contraloría del Estado Táchira, según el acta de desincorporación N° ${numeroActaDesincorporacion}, de fecha ${fechaActaDesincorporacion}, suscrita por los ciudadanos ${nombreDirectorFinanzas}, Director de Finanzas de la Gobernación del Estado Táchira y ${nombreProcurador}, Procurador General del Estado Táchira, en representación de la Gobernación del Estado Táchira.`
-    doc.text(consequenceText, { align: 'justify' })
-    doc.moveDown(0.5)
-
     doc.text('En fe de lo expuesto, se elaboran tres ejemplares a un solo tenor y un mismo efecto y en conformidad firman:')
-    doc.moveDown(3)
+    doc.moveDown(10)
 
     // --- FIRMAS EN DOS COLUMNAS CON DOS FILAS CADA UNA ---
     const signatureLineHeight = 20
