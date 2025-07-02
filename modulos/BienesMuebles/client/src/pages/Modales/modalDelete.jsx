@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Alert from "../../components/atoms/Alert";
+
 
 function ModalDelete({ 
     show, 
@@ -23,7 +24,31 @@ const endpointMap = {
         tmamar: '/api/marcas',
         tesmod: '/api/modelos',
         tmab_m: '/api/bienes',
+        tesusu: '/api/user'
     };
+
+    const [userType, setUserType] = useState(null);
+    const [userData, setUserData] = useState(null);
+    useEffect(() => {
+            const fetchUserData = async () => {
+                try {
+                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                    if (!userRes.ok) throw new Error('No autorizado.');
+                    const userDataResult = await userRes.json();
+                    if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                    
+                    const currentUserType = userDataResult.user.usu_tip;
+                    setUserType(currentUserType);
+                    setUserData(userDataResult.user)
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            };
+    
+            fetchUserData();
+        }, []);
+        
+        console.log(userData?.usu_ide, rowId)
 
     const handleDelete = async () => {
         setMensajeMostrado(false);
@@ -31,6 +56,12 @@ const endpointMap = {
         setIsDeleting(true);
 
         try {
+            if (tableName === 'tesusu'){
+                if(userData?.usu_ide === rowId) {
+                throw new Error ('No Puedes Eliminarte a ti mismo')
+            }
+            }
+
             const response = await fetch(`${endpointMap[tableName]}/${rowId}`, {
                 method: 'DELETE'
             });
@@ -58,7 +89,7 @@ const endpointMap = {
                 setMensajeMostrado(false);
             }, 3000);
         }
-    };
+    }
 
     return (
         <Modal show={show} onHide={handleClose}>
@@ -66,25 +97,17 @@ const endpointMap = {
                 <Modal.Title>Eliminar registro de {tableName}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {mensajeMostrado && (
-                    <Alert 
-                        variant={errorMessage ? 'danger' : 'success'}
-                        message={errorMessage || '✓ Registro eliminado correctamente'}
-                    />
-                )}
-                
-                {!mensajeMostrado && (
-                    <>
-                        <p>¿Estás seguro de que deseas eliminar este registro?</p>
-                        <p><strong>ID:</strong> {rowId}</p>
-                    </>
-                )}
+                {mensajeMostrado &&
+                 <Alert type={errorMessage ? 'danger' : 'success'}>
+                            {errorMessage || '✓ Registro eliminado correctamente'}
+                    </Alert>
+                }
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose} disabled={isDeleting}>
                     Cancelar
                 </Button>
-                <Button 
+                <Button
                     variant="danger" 
                     onClick={handleDelete}
                     disabled={isDeleting}

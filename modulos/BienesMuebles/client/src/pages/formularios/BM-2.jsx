@@ -10,27 +10,28 @@ import ModalRepBm2 from '../Modales/modalRepBm2';
 import ModalInsert from '../Modales/modalInsert';
 import Spinner from 'react-bootstrap/Spinner'; 
 import ModalDesincorporarBien from '../Modales/modalDesincorporarBien';
-import { hasPermission, ACTIONS } from '../data/permissions';
+import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
 export const Bm2 = () => {
-        const [usuTipo, setUsuTipo] = useState(null);
+       const [userType, setUserType] = useState(null);
+    useEffect(() => {
+            const fetchUserData = async () => {
+                try {
+                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                    if (!userRes.ok) throw new Error('No autorizado.');
+                    const userDataResult = await userRes.json();
+                    if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                    
+                    const currentUserType = userDataResult.user.usu_tip;
+                    setUserType(currentUserType);
+                    setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            };
     
-        useEffect(() => {
-                const fetchUserData = async () => {
-                    try {
-                        const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
-                        if (!userRes.ok) throw new Error('No autorizado.');
-                        const userDataResult = await userRes.json();
-                        if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
-                        const currentUserType = userDataResult.user.usu_tip;
-                        setUsuTipo(currentUserType);
-                    } catch (error) {
-                        console.error('Error fetching user data:', error);
-                    }
-                };
-        
-                fetchUserData();
-            },[]);
+            fetchUserData();
+        }, []);
 
     const [refreshKey, setRefreshKey] = useState();
     const [showModalDes, setShowModalDes] = useState(false);

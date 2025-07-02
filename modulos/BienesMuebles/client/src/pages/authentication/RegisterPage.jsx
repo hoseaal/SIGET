@@ -89,13 +89,21 @@ export const RegisterPage = () => {
         } catch (error) {
             setFormEnviado(false); // Indicar que hubo un error
             setMensajeMostrado(true);
-            setErrorMessage(error.response?.data?.error || error.message)
-            
+
+            const errorMsg = error.response?.data?.error || error.message;
+
+            if (errorMsg.includes("Duplicate entry")) {
+                setErrorMessage("Este usuario ya existe");
+            } else {
+                setErrorMessage(errorMsg);
+            }
+
             setTimeout(() => {
                 setMensajeMostrado(false);
-              }, 3000);
+            }, 3000);
         }
-      };
+    
+}
 
     return (
         <>

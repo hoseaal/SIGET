@@ -40,6 +40,8 @@ export class AuthService {
   }
 
   static async register (userData) {
+    Validaciones.username(userData.usu_usu)
+    Validaciones.password(userData.password1)
     return await UserModel.create(userData)
   }
 }

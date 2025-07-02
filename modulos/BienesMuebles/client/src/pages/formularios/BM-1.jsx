@@ -4,7 +4,7 @@ import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
 import { EstadoSelect, EstadoDeUsoSelect, DepartamentoSelect} from '../layouts/selectInfinito';
-import { hasPermission, ACTIONS } from '../data/permissions';
+import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
 import { FixedSizeList as List } from 'react-window';
 
@@ -20,7 +20,6 @@ export const Bm1 = () => {
     const [refreshKey, setRefreshKey] = useState(0);
 
     const [userData, setUserData] = useState([]);
-    const [usuTipo, setUsuTipo] = useState(null);
 
      const [search, setSearch] = useState();
     const [searchQuery, setSearchQuery] = useState('');
@@ -32,24 +31,26 @@ export const Bm1 = () => {
     });
 
 
+   const [userType, setUserType] = useState(null);
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
-                if (!userRes.ok) throw new Error('No autorizado.');
-                const userDataResult = await userRes.json();
-                if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
-                const currentUserType = userDataResult.user.usu_tip;
-                setUsuTipo(currentUserType);
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-            }
-        };
+            const fetchUserData = async () => {
+                try {
+                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                    if (!userRes.ok) throw new Error('No autorizado.');
+                    const userDataResult = await userRes.json();
+                    if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                    
+                    const currentUserType = userDataResult.user.usu_tip;
+                    setUserType(currentUserType);
+                    setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            };
+    
+            fetchUserData();
+        }, []);
 
-        fetchUserData();
-    },[]);
-
-    console.log("Tipo de usuario:", usuTipo);
 
    
     const handleSuccess = () => {
@@ -318,7 +319,7 @@ export const Bm1 = () => {
                                 {Object.entries(datosPorDepartamento).map(([depId, bienes]) => (
                                     <React.Fragment key={depId}>
                                         <tr className="bg-light">
-                                            <td colSpan={usuTipo != '1' ? 5 : 4}>
+                                            <td colSpan={userType != '1' ? 5 : 4}>
                                                 <strong>Departamento {depId}: {departamentosMap[depId] || `Departamento ${depId}`}</strong>
                                             </td>
                                         </tr>

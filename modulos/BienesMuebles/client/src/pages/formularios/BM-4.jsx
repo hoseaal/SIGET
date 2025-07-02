@@ -1,28 +1,29 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ModalCerrarMes from '../Modales/modalCerrarMes'; // Asegúrate de la ruta correcta
+import ModalCerrarMes from '../Modales/modalCerrarMes'; 
 import  ModalGenerarReporteBM4 from '../Modales/modalRepBm4';
-import { hasPermission, ACTIONS } from '../data/permissions'
+import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
 export const Bm4 = () => {
      const [userData, setUserData] = useState([]);
-            const [usuTipo, setUsuTipo] = useState(null);
-        
-            useEffect(() => {
-                const fetchUserData = async () => {
-                    try {
-                        const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
-                        if (!userRes.ok) throw new Error('No autorizado.');
-                        const userDataResult = await userRes.json();
-                        if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
-                        setUserData(userDataResult.user);
-                        setUsuTipo(userData.usu_tip);
-                    } catch (error) {
-                        console.error('Error fetching user data:', error);
-                    }
-                };
-        
-                fetchUserData();
-            },[]);
+const [userType, setUserType] = useState(null);
+    useEffect(() => {
+            const fetchUserData = async () => {
+                try {
+                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                    if (!userRes.ok) throw new Error('No autorizado.');
+                    const userDataResult = await userRes.json();
+                    if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                    
+                    const currentUserType = userDataResult.user.usu_tip;
+                    setUserType(currentUserType);
+                    setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            };
+    
+            fetchUserData();
+        }, []);
     // Estados para manejar el modal y los datos del reporte
     const [showModal, setShowModal] = useState(false);
     const [existenciaAnterior, setExistenciaAnterior] = useState(null);

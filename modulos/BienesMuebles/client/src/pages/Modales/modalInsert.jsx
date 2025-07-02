@@ -77,7 +77,14 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
         } catch (error) {
             setFormEnviado(false);
             setMensajeMostrado(true);
-            setErrorMessage(error.message);
+             const errorMsg = error.response?.data?.error || error.message;
+
+            if (errorMsg.includes("Duplicate entry")) {
+                setErrorMessage("Esta Codigo ya Existe");
+            } else {
+                setErrorMessage(errorMsg);
+            }
+
             console.error('Error al insertar:', error);
             setTimeout(() => {
                 setMensajeMostrado(false);
