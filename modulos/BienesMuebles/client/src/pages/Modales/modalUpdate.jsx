@@ -18,7 +18,8 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
         tmamar: '/api/marcas',
         tesmod: '/api/modelos',
         tmab_m: '/api/bienes',
-        tesusu: '/api/user'
+        tesusu: '/api/user',
+        tmacom: '/api/conceptos-movimiento',
     };
 
     useEffect(() => {

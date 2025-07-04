@@ -17,3 +17,32 @@ export const obtenerConceptoMovimiento = async (req, res) => {
     res.status(404).json({ error: error.message })
   }
 }
+
+export const crearConceptoMovimiento = async (req, res) => {
+  try {
+    const nuevoConcepto = await ConceptoMovimientoService.crear(req.body)
+    res.status(201).json(nuevoConcepto)
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
+}
+
+export const actualizarConceptoMovimiento = async (req, res) => {
+  try {
+    const { id } = req.params
+    const actualizado = await ConceptoMovimientoService.actualizar(id, req.body)
+    res.json({ success: actualizado })
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
+}
+
+export const eliminarConceptoMovimiento = async (req, res) => {
+  try {
+    const { id } = req.params
+    const eliminado = await ConceptoMovimientoService.eliminar(id)
+    res.json({ success: eliminado })
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
+}

@@ -24,7 +24,8 @@ const endpointMap = {
         tmamar: '/api/marcas',
         tesmod: '/api/modelos',
         tmab_m: '/api/bienes',
-        tesusu: '/api/user'
+        tesusu: '/api/user',
+        tmacom: '/api/conceptos-movimiento',
     };
 
     const [userType, setUserType] = useState(null);
@@ -47,8 +48,6 @@ const endpointMap = {
     
             fetchUserData();
         }, []);
-        
-        console.log(userData?.usu_ide, rowId)
 
     const handleDelete = async () => {
         setMensajeMostrado(false);
@@ -80,8 +79,17 @@ const endpointMap = {
                 if (onSuccess) onSuccess(); // Recargar datos
             }, 1000);
         } catch (error) {
-            console.error('Error al eliminar:', error);
-            setErrorMessage(error.message || 'Error al eliminar el registro');
+            console.error('Error al eliminar:', error); // Mantenemos el error completo en la consola para depuración
+
+            let mensajeParaUsuario = 'Ocurrió un error inesperado al eliminar.'; // Mensaje por defecto
+
+            const esErrorDeForeignKey = error.message.includes('foreign key constraint fails') || error.message.includes('violates foreign key constraint');
+
+            if (esErrorDeForeignKey) {
+                mensajeParaUsuario = 'No se puede eliminar este registro porque está siendo utilizado en otras partes del sistema.';
+            }
+
+            setErrorMessage(mensajeParaUsuario);
             setMensajeMostrado(true);
             setIsDeleting(false);
 

@@ -486,19 +486,19 @@ ALTER TABLE `tmamar`
 -- Filtros para la tabla `tescae`
 --
 ALTER TABLE `tescae`
-  ADD CONSTRAINT `fk_tescae_tessca` FOREIGN KEY (`sca_ide`) REFERENCES `tessca` (`sca_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_tescae_tessca` FOREIGN KEY (`sca_ide`) REFERENCES `tessca` (`sca_ide`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `tesmod`
 --
 ALTER TABLE `tesmod`
-  ADD CONSTRAINT `fk_tesmod_tmamar` FOREIGN KEY (`mar_ide`) REFERENCES `tmamar` (`mar_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_tesmod_tmamar` FOREIGN KEY (`mar_ide`) REFERENCES `tmamar` (`mar_ide`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `tessca`
 --
 ALTER TABLE `tessca`
-  ADD CONSTRAINT `fk_tessca_tmacat` FOREIGN KEY (`cat_ide`) REFERENCES `tmacat` (`cat_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_tessca_tmacat` FOREIGN KEY (`cat_ide`) REFERENCES `tmacat` (`cat_ide`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Modificación para AI para la tabla `tesusu`
@@ -510,30 +510,30 @@ MODIFY `usu_ide` INT NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico del us
 -- Ajuste para la tabla `tesusu`
 --
 ALTER TABLE `tesusu`
-  ADD CONSTRAINT `fk_tesusu_roles` FOREIGN KEY (`usu_tip`) REFERENCES `testip` (`usu_tip`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_tesusu_roles` FOREIGN KEY (`usu_tip`) REFERENCES `testip` (`usu_tip`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Ajuste para la tabla `tesusu`
 --
 ALTER TABLE `tesusu`
-  ADD CONSTRAINT `fk_tesusu_accesos` FOREIGN KEY (`usu_mod`) REFERENCES `tesacc` (`usu_mod`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_tesusu_accesos` FOREIGN KEY (`usu_mod`) REFERENCES `tesacc` (`usu_mod`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `tesant`
 --
 ALTER TABLE `tesant`
-  ADD CONSTRAINT `fk_tesant_tmanom` FOREIGN KEY (`nom_ced`) REFERENCES `tmanom` (`nom_ced`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_tesant_tmanom` FOREIGN KEY (`nom_ced`) REFERENCES `tmanom` (`nom_ced`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `tmab_m`
 --
 ALTER TABLE `tmab_m`
-  ADD CONSTRAINT `fk_tmabm_tescae` FOREIGN KEY (`cae_ide`) REFERENCES `tescae` (`cae_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_tmabm_tesmod` FOREIGN KEY (`mod_ide`) REFERENCES `tesmod` (`mod_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_tmabm_tmacon` FOREIGN KEY (`con_ide`) REFERENCES `tmacon` (`con_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_tmabm_tmaest` FOREIGN KEY (`est_ide`) REFERENCES `tmaest` (`est_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_tmabm_tmaesu` FOREIGN KEY (`esu_ide`) REFERENCES `tmaesu` (`esu_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_tmabm_tmafoa` FOREIGN KEY (`foa_ide`) REFERENCES `tmafoa` (`foa_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_tmabm_tescae` FOREIGN KEY (`cae_ide`) REFERENCES `tescae` (`cae_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tesmod` FOREIGN KEY (`mod_ide`) REFERENCES `tesmod` (`mod_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tmacon` FOREIGN KEY (`con_ide`) REFERENCES `tmacon` (`con_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tmaest` FOREIGN KEY (`est_ide`) REFERENCES `tmaest` (`est_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tmaesu` FOREIGN KEY (`esu_ide`) REFERENCES `tmaesu` (`esu_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_tmabm_tmafoa` FOREIGN KEY (`foa_ide`) REFERENCES `tmafoa` (`foa_ide`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `tmanom`
@@ -560,7 +560,7 @@ CREATE TABLE `tmacom` (
 ALTER TABLE `tmacom`
   ADD PRIMARY KEY (`com_ide`);
 
-ALTER TABLE `tmab_m` ADD COLUMN `com_ide` int(11) COMMENT 'Referencia a concepto de movimiento en tmacom', ADD CONSTRAINT `fk_tmabm_tmacom` FOREIGN KEY (`com_ide`) REFERENCES `tmacom` (`com_ide`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `tmab_m` ADD COLUMN `com_ide` int(11) COMMENT 'Referencia a concepto de movimiento en tmacom', ADD CONSTRAINT `fk_tmabm_tmacom` FOREIGN KEY (`com_ide`) REFERENCES `tmacom` (`com_ide`) ON DELETE RESTRICT ON UPDATE CASCADE;
 COMMIT;
 
 CREATE TABLE `tessup` (
@@ -594,7 +594,7 @@ ALTER TABLE `tmab_m`
 ADD COLUMN `dep_ide` INT NULL COMMENT 'Departamento al que pertenece el bien',
 ADD CONSTRAINT `fk_bien_departamento` 
     FOREIGN KEY (`dep_ide`) REFERENCES `tesdep`(`dep_ide`)
-    ON DELETE SET NULL
+    ON DELETE RESTRICT
     ON UPDATE CASCADE;
 
 CREATE TABLE `bit_usu` (
@@ -725,7 +725,7 @@ CREATE TABLE `bitb_m` (
     `usuario_id` INT DEFAULT NULL COMMENT 'ID del usuario que realizó la acción',
     `fecha_hora` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Marca de tiempo del cambio',
     `registro_id_afectado` VARCHAR(10) NOT NULL COMMENT 'ID del registro afectado en la tabla original (bim_ide)',
-    `tipo_cambio` ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL COMMENT 'Tipo de operación (INSERT, UPDATE, DELETE)',
+    `tipo_cambio` ENUM('INSERTO', 'ACTUALIZO', 'ELIMINO') NOT NULL COMMENT 'Tipo de operación (INSERT, UPDATE, DELETE)',
     `datos_antiguos` JSON COMMENT 'Estado del registro antes del cambio (en formato JSON)',
     `datos_nuevos` JSON COMMENT 'Estado del registro después del cambio (en formato JSON)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Bitácora de cambios para bienes muebles';

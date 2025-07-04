@@ -18,6 +18,7 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
         tmamar: '/api/marcas',
         tesmod: '/api/modelos',
         tmab_m: '/api/bienes',
+        tmacom: '/api/conceptos-movimiento',
     };
 
     const handleChange = (e) => {
