@@ -31,9 +31,7 @@ export const menuPermissions = {
     // Configuración General
     "/Configuracion/Categorias": [3, 4, 5],
     "/Configuracion/ModelosyMarcas": [3, 4, 5],
-    "/Configuracion/Tipos": [3, 4, 5],
-    "/Configuracion/Estados de Uso": [3, 4, 5], 
-    "/Configuracion/Condiciones Fisicas": [3, 4, 5], 
+    "/Configuracion/ConceptoMovimiento": [3, 4, 5],
 
     // Gestión de Usuarios
     "/Configuracion/NuevoUsuario": [5],
