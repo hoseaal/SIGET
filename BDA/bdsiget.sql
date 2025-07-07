@@ -1386,6 +1386,1204 @@ INSERT INTO `tescae` (`cae_ide`, `cae_cae`, `sca_ide`) VALUES
 (293, 'Zanjadoras', 5),
 (294, 'Zorras', 5);
 
+INSERT INTO `tescae` (`cae_ide`, `cae_cae`, `sca_ide`) VALUES
+(295, 'Ajustadores de bombas de frenos', 6),
+(296, 'Alineadores', 6),
+(297, 'Aparatos para limpiar bujías', 6),
+(298, 'Aparatos para reparar frenos', 6),
+(299, 'Apretadores de tuercas', 6),
+(300, 'Bancos de pruebas', 6),
+(301, 'Cargadores de batería', 6),
+(302, 'Colocadores de anillos', 6),
+(303, 'Engrasadores', 6),
+(304, 'Equipos de engrase', 6),
+(305, 'Equipos para cambios de aceite', 6),
+(306, 'Equipos para entonar motores', 6),
+(307, 'Equipos para lavar radiadores', 6),
+(308, 'Equipos para prueba de mecanismos aviones', 6),
+(309, 'Equipos para reparar cauchos y tripas', 6),
+(310, 'Equipos para reparar parafangos', 6),
+(311, 'Esmeriladoras de válvulas', 6),
+(312, 'Estrados para sostener aviones durante su reparación', 6),
+(313, 'Extractores', 6),
+(314, 'Extractores de aceite', 6),
+(315, 'Gatos carretos', 6),
+(316, 'Gatos extensores', 6),
+(317, 'Gatos extractores', 6),
+(318, 'Herramientas de taller', 6),
+(319, 'Lavadoras de vehículos', 6),
+(320, 'Limpiadoras a vapor', 6),
+(321, 'Lubricadores (ver engrasadores)', 6),
+(322, 'Máquinas cambiadoras de cauchos', 6),
+(323, 'Máquinas de hacer estoperas', 6),
+(324, 'Máquinas descarbonizadoras de pistones', 6),
+(325, 'Máquinas lavadoras de carros', 6),
+(326, 'Máquinas para bandas de frenos', 6),
+(327, 'Máquinas para remendar zapatas de frenos', 6),
+(328, 'Máquinas de quitaruedas', 6),
+(329, 'Medidores de presión de aire', 6),
+(330, 'Pistolas de engrase', 6),
+(331, 'Pistolas para bombas de gasolina', 6),
+(332, 'Pistolas para gasoil', 6),
+(333, 'Probadores', 6),
+(334, 'Pulidoras de cilindros', 6),
+(335, 'Rectificadoras', 6),
+(336, 'Remachadoras de bandas de freno', 6),
+(337, 'Sincronizadores de distribuidores', 6),
+(338, 'Suministradores de grasas', 6),
+(339, 'Testers (ver probadores)', 6),
+(340, 'Valvulineras', 6),
+(341, 'Vulcanizadoras', 6);
+
+INSERT INTO `tescae` (`cae_ide`, `cae_cae`, `sca_ide`) VALUES
+(342, 'Aparatos para digestión de proteínas', 7),
+(343, 'Arados', 7),
+(344, 'Artesas', 7),
+(345, 'Arreos y atalajes', 7),
+(346, 'Asperjadoras', 7),
+(347, 'Aventadores para el beneficio del café', 7),
+(348, 'Azadas', 7),
+(349, 'Azadones', 7),
+(350, 'Bombas', 7),
+(351, 'Carretas', 7),
+(352, 'Centrífugas', 7),
+(353, 'Cintas de agrimensores', 7),
+(354, 'Clasificadoras para granos', 7),
+(355, 'Conejeras metálicas', 7),
+(356, 'Cortadoras', 7),
+(357, 'Cosechadoras', 7),
+(358, 'Criadoras avícolas', 7),
+(359, 'Cultivadoras', 7),
+(360, 'Desarraigadoras de tocones', 7),
+(361, 'Desfibradoras', 7),
+(362, 'Desgranadoras', 7),
+(363, 'Desmontadoras de café', 7),
+(364, 'Desterronadoras', 7),
+(365, 'Digestores para análisis de caña', 7),
+(366, 'Distribuidoras de abonos', 7),
+(367, 'Esmasculadoras', 7),
+(368, 'Enfriadoras eléctricas de leche', 7),
+(369, 'Equipos para análisis de suelos', 7),
+(370, 'Escardillas', 7),
+(371, 'Escarificadoras', 7),
+(372, 'Espolvoreadoras (máquina)', 7),
+(373, 'Estercoleras', 7),
+(374, 'Exprimidoras de lana', 7),
+(375, 'Extirpadoras', 7),
+(376, 'Fertilizadoras', 7),
+(377, 'Fumigadoras', 7),
+(378, 'Germinadoras', 7),
+(379, 'Gradas', 7),
+(380, 'Incubadoras', 7),
+(381, 'Jaulas', 7),
+(382, 'Lavadoras de café', 7),
+(383, 'Máquinas extractoras de grasa', 7),
+(384, 'Máquinas homogeneizadoras', 7),
+(385, 'Máquinas para cortar epitelios', 7),
+(386, 'Máquinas para cortar forrajes', 7),
+(387, 'Máquinas para matar bachacos', 7),
+(388, 'Máquinas perforadoras agrícolas', 7),
+(389, 'Máquinas secadoras para granos', 7),
+(390, 'Molinos', 7),
+(391, 'Motocultores (ver cultivadoras)', 7),
+(392, 'Ordeñadoras mecánicas', 7),
+(393, 'Ovoscopios', 7),
+(394, 'Pailas', 7),
+(395, 'Palomares (móviles)', 7),
+(396, 'Picadoras (máquinas)', 7),
+(397, 'Podadoras (máquinas)', 7),
+(398, 'Pulidoras de granos', 7),
+(399, 'Pulverizadores', 7),
+(400, 'Rastrillos y rastras aradoras', 7),
+(401, 'Rociadoras', 7),
+(402, 'Rodillos agrícolas', 7),
+(403, 'Rolos', 7),
+(404, 'Secadoras', 7),
+(405, 'Segadoras', 7),
+(406, 'Segadoras de grama', 7),
+(407, 'Sembradoras', 7),
+(408, 'Silos (móviles)', 7),
+(409, 'Sillas de montar', 7),
+(410, 'Tanques y depósitos', 7),
+(411, 'Tractores agrícolas', 7),
+(412, 'Trallas agrícolas', 7),
+(413, 'Trapiches', 7),
+(414, 'Trilladoras', 7),
+(415, 'Trozeros', 7),
+(416, 'Ventiladores de granos', 7),
+(417, 'Zanjadoras agrícolas', 7);
+
+INSERT INTO `tescae` (`cae_ide`, `cae_cae`, `sca_ide`) VALUES
+(418, 'Maquinarias y equipos de artes gráficas y reproducción', 8),
+(419, 'Biseladoras-encuadernadoras', 8),
+(420, 'Cajas de madera para guarniciones', 8),
+(421, 'Cisnadoras-perforadoras', 8),
+(422, 'Cizallas de mano', 8),
+(423, 'Coleros eléctricos', 8),
+(424, 'Cortadoras de clisés', 8),
+(425, 'Cortadoras índice', 8),
+(426, 'Cosedoras (máquinas)', 8),
+(427, 'Chivaletes', 8),
+(428, 'Decnígrafos paragón', 8),
+(429, 'Dobladoras', 8),
+(430, 'Editoras portátiles', 8),
+(431, 'Empaquetadoras', 8),
+(432, 'Engrapadoras tipográficas', 8),
+(433, 'Equipos de dibujo', 8),
+(434, 'Equipos de fotograbado', 8),
+(435, 'Equipos de zincograbado', 8),
+(436, 'Equipos litográficos', 8),
+(437, 'Foliadoras-numeradoras', 8),
+(438, 'Fotograbadoras', 8),
+(439, 'Fresadoras', 8),
+(440, 'Fuentes de tipos', 8),
+(441, 'Fundidoras de plomo', 8),
+(442, 'Grabadoras eléctricas tipo-gráficas', 8),
+(443, 'Graneadoras para planchas litográficas', 8),
+(444, 'Guillotinas para panel', 8),
+(445, 'Hornillos', 8),
+(446, 'Impresoras de fotografía', 8),
+(447, 'Invertidoras de imagen', 8),
+(448, 'Lámparas de arco', 8),
+(449, 'Lavadoras de planchas', 8),
+(450, 'Linotipos', 8),
+(451, 'Máquinas biseladoras', 8),
+(452, 'Máquinas cortadoras interlíneas', 8),
+(453, 'Máquinas de proceso a gelatina', 8),
+(454, 'Máquina cosedoras', 8),
+(455, 'Máquinas de proceso a offset', 8),
+(456, 'Máquinas encuadernadoras', 8),
+(457, 'Máquinas heliográficas', 8),
+(458, 'Máquinas intertipe automáticas', 8),
+(459, 'Máquinas para adolar', 8),
+(460, 'Máquinas para bordear planos', 8),
+(461, 'Máquinas para dorar a fuego', 8),
+(462, 'Máquinas para empastar libros', 8),
+(463, 'Máquinas para fabricar sobres', 8),
+(464, 'Máquinas para formar cajas', 8),
+(465, 'Máquinas para fundiciones', 8),
+(466, 'Máquinas para hacer sellos', 8),
+(467, 'Máquinas para pegar sobres', 8),
+(468, 'Máquinas para trazar círculos y óvulos', 8),
+(469, 'Máquinas realizadoras de imprenta', 8),
+(470, 'Máquinas secadoras automáticas', 8),
+(471, 'Monotipos', 8),
+(472, 'Perforadoras para tipografía', 8),
+(473, 'Prensas impresoras (otras)', 8),
+(474, 'Prensas litográficas', 8),
+(475, 'Prensas para ponchar', 8),
+(476, 'Prensas para tipografía', 8),
+(477, 'Prensas planas', 8),
+(478, 'Rayadoras', 8),
+(479, 'Ribeteadoras', 8),
+(480, 'Rotativas', 8),
+(481, 'Sacapuntas', 8),
+(482, 'Sierras-cepilladoras', 8),
+(483, 'Sifones para lavar impresos', 8),
+(484, 'Tituladoras', 8),
+(485, 'Torneadoras', 8),
+(486, 'Troqueladoras', 8);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (487, 'Maquinarias y equipos industriales', 9);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (488, 'Maquinarias y equipos de taller', 9);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (489, 'Calderas', 10);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (490, 'Generadores', 10);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (491, 'Motores', 10);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (492, 'Turbinas', 10);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (493, 'Maquinarias y equipos de riego', 11);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (494, 'Maquinarias y equipos de acueductos', 11);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (495, 'Equipos de almacén', 12);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (496, 'Amplificadores', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (497, 'Analizadoras', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (498, 'Antenas fácilmente desmontables', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (499, 'Centrales telefónicas manuales (ver conmutadores telefónicos)', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (500, 'Concentradores', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (501, 'Conmutadores telefónicos', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (502, 'Conmutadores telegráficos', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (503, 'Equipos de control remoto', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (504, 'Equipos de sloran', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (505, 'Equipos de luces de señales para torres de antena', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (506, 'Equipos de radar', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (507, 'Equipos de radiocomunicación portátiles', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (508, 'Equipos de comunicación interna (intercomunicadores)', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (509, 'Generadores de señales', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (510, 'Jacks panels', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (511, 'Manipuladores', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (512, 'Mesas para teleimpresoras', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (513, 'Micrófonos', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (514, 'Multicanales para telefonía', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (515, 'Multicanales para telegrafía', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (516, 'Pilas húmedas o de gravedad', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (517, 'Plantas eléctricas', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (518, 'Probadores de tubos electrónicos', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (519, 'Racks', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (520, 'Radioreceptores (ver receptores radioeléctricos)', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (521, 'Radiotransmisores (ver transmisores radioeléctricos)', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (522, 'Receptores radioeléctricos', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (523, 'Rectificadores', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (524, 'Teléfonos', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (525, 'Teleimpresoras', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (526, 'Teletipos', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (527, 'Transmisores radioeléctricos', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (528, 'Trazadores de señales', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (529, 'Voltímetros', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (530, 'Balizas', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (531, 'Boyas', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (532, 'Faros', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (533, 'Semáforos', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (534, 'Equipos de control de tráfico aéreo', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (535, 'Equipos de correo', 13);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (536, 'Otros equipos de comunicaciones y señalamiento', 13);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (537, 'Balizas', 14);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (538, 'Boyas', 14);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (539, 'Faros', 14);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (540, 'Semáforos', 14);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (541, 'Equipos de control de tráfico aéreo', 15);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (542, 'Equipos de correo', 16);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (543, 'Otros equipos de comunicaciones y señalamiento', 17);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (544, 'Agitadores de pipetas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (545, 'Agitadores serológicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (546, 'Analizadores de cido-alcalinidad de la sangre', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (547, 'Anteojos para prueba de vidrios ópticos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (548, 'Antroscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (549, 'Anuscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (550, 'Aparatos de anestesia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (551, 'Aparatos de diatermia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (552, 'Aparatos de galvanización y electroterapia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (553, 'Aparatos de hidroterapia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (554, 'Aparatos de luz ultravioleta', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (555, 'Aparatos de metabolismo basal', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (556, 'Aparatos de presión venosa', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (557, 'Aparatos de radioterapia profunda', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (558, 'Aparatos de rayos x', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (559, 'Aparatos de rayos x portátiles', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (560, 'Aparatos gastro-evacuadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (561, 'Aparatos imperatori', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (562, 'Aparatos para inductotermia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (563, 'Aparatos para electrocoagulación', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (564, 'Aparatos para electroforesis', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (565, 'Aparatos para eter ombrédame', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (566, 'Aparatos para lavados uterales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (567, 'Aparatos para lavar y entalcar guantes', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (568, 'Aparatos para succión de cataratas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (569, 'Aplicadores metalicos para otorrino', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (570, 'Aplicadores para irradiación', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (571, 'Atomizadores para otorrino', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (572, 'Audímetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (573, 'Autoclaves', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (574, 'Baos de vapor', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (575, 'Baos serológicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (576, 'Barrenas para cirugía', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (577, 'Básculas de clínicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (578, 'Berbiquíes para ortopedia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (579, 'Bisturíes', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (580, 'Blefaro separadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (581, 'Blesfarostatos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (582, 'Bocks (envase)', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (583, 'Botiquines de primeros auxilios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (584, 'Caballos mecánicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (585, 'Calculadores de ackermann', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (586, 'Cámaras cuentaglóbulos de Neubauer', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (587, 'Cámaras de oxígeno (tiendas)', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (588, 'Cámaras retinales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (589, 'Camas clínicas de hospital', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (590, 'Camillas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (591, 'Caminaderas de resistencias', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (592, 'Campanas para irrigación', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (593, 'Campímetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (594, 'Cánulas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (595, 'Carretillas para oxígeno', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (596, 'Carros para curaciones', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (597, 'Cafalómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (598, 'Centrífugas clínicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (599, 'Cinceles para huesos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (600, 'Citoscopias', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (601, 'Citotomos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (602, 'Cizallas para yesos y vendas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (603, 'Clamps abdominales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (604, 'Cleoides', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (605, 'Coaguladores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (606, 'Colposcopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (607, 'Cofres termo para transportar sangre', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (608, 'Colorímetros visuales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (609, 'Contadores de colonias de bacterias', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (610, 'Cortadores para ligaduras', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (611, 'Cortadores para película de rayos x', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (612, 'Craneografos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (613, 'Cronógrafos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (614, 'Cronómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (615, 'Cuchillos para parafina', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (616, 'Cuchillos para síntesis del tímpano', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (617, 'Cuchillos para yeso', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (618, 'Curetas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (619, 'Delantales de plomo para rayos x', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (620, 'Diafanoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (621, 'Dilatadores lagrimales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (622, 'Dilatadores uterales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (623, 'Dinamómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (624, 'Dispensadores de alcohol', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (625, 'Dispensadores múltiples de botones', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (626, 'Electrocardiógrafos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (627, 'Embriotomos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (628, 'Endoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (629, 'Equipos de disección', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (630, 'Equipos de oftalmoscopia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (631, 'Equipos de otorrinolaringología', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (632, 'Equipos para anestesia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (633, 'Equipos para cirugía menor', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (634, 'Equipos para determinación de la urea', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (635, 'Equipos para electrocirugía', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (636, 'Equipos para intubación de la laringe', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (637, 'Equipos para la determinación del azúcar en la sangre', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (638, 'Equipos para la determinación del colesterol en la sangre', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (639, 'Equipo para operaciones de labios leporino', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (640, 'Equipo para operaciones del seno frontal', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (641, 'Equipo para oxígeno', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (642, 'Equipo para primeros auxilios traumatológicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (643, 'Equipos para terapia con aerosol', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (644, 'Equipos para transfusión', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (645, 'Escalpelos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (646, 'Esofagoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (647, 'Espéculos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (648, 'Espejos frontales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (649, 'Espejos laringeos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (650, 'Espirómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (651, 'Esterilizadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (652, 'Esterilizadores para colchones', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (653, 'Esterilizadoras ultravioleta', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (654, 'Estetoscopios (fomendoscopio)', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (655, 'Estuches para diagnóstico', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (656, 'Exoftalmeómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (657, 'Faringoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (658, 'Férulas articulares', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (659, 'Fluoroscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (660, 'Fomenteras eléctricas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (661, 'Forceps', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (662, 'Fumigadoras', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (663, 'Foroptero', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (664, 'Gabinetes para botiquines', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (665, 'Gabinete para instrumental', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (666, 'Galvanocauterios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (667, 'Gastrofotores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (668, 'Gineoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (669, 'Ginógrafos de weissman', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (670, 'Goniómetros para antropometría', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (671, 'Guantes de plomo para rayos x', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (672, 'Hematímetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (673, 'Hemoglobímetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (674, 'Hervidoras', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (675, 'Histerómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (676, 'Hornos crematorios para basura', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (677, 'Hyfrecatores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (678, 'Incubadoras', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (679, 'Infantómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (680, 'Inhaladores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (681, 'Insufladores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (682, 'Juegos de bujías ginecológicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (683, 'Juegos de diapasones', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (684, 'Juegos de dilatadores rectales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (685, 'Juegos de espéculos para nariz', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (686, 'Juegos de lancetas para oídos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (687, 'Keratómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (688, 'Lámparas de hendiduras con microscopio corneal', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (689, 'Lámparas de rayos infrarrojos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (690, 'Lámparas frontales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (691, 'Lámparas para operaciones', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (692, 'Laringoscopios en estuches', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (693, 'Lavadoras para hematocritos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (694, 'Lentes ópticos para pruebas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (695, 'Lentes rubí para lámparas de hendiduras', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (696, 'Localizadores de granger', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (697, 'Lupas para disección', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (698, 'Maletines para médicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (699, 'Mamadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (700, 'Mamómetros lumbares', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (701, 'Martillos de reflejos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (702, 'Máscaras de anestesia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (703, 'Máscara de oxígeno', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (704, 'Meatotomos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (705, 'Mesas ginecológicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (706, 'Mesas hidráulicas para terapia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (707, 'Mesas para cirugía', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (708, 'Mesas para examen clínico', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (709, 'Mesas para partos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (710, 'Microtomos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (711, 'Nasofaringoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (712, 'Nasolaringoscopio', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (713, 'Negatoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (714, 'Neumotoraces', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (715, 'Numeradores para rayos x', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (716, 'Oftalmodinamómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (717, 'Oftalmoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (718, 'Optotipos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (719, 'Ortho-rateres', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (720, 'Oscilómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (721, 'Otoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (722, 'Pantalla de hess', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (723, 'Pantostatos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (724, 'Pagadoras de películas para rayos x', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (725, 'Pelvímetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (726, 'Perforadoras de huesos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (727, 'Peritoneoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (728, 'Pinzas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (729, 'Podogramas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (730, 'Porta-algodones', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (731, 'Proyectores para medir la agudeza visual', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (732, 'Pulmones de acero', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (733, 'Queratómetro', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (734, 'Rectoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (735, 'Refractómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (736, 'Regatoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (737, 'Remadores hidráulicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (738, 'Resucitadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (739, 'Retinoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (740, 'Retractores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (741, 'Renoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (742, 'Riñones artificiales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (743, 'Ruginas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (744, 'Secadores para láminas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (745, 'Seguetas quirúrgicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (746, 'Separadores de yeso', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (747, 'Sierras eléctricas para cráneo', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (748, 'Sigmoidoscopios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (749, 'Sillas para examen de otorrinolaringología', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (750, 'Sillas para inválidos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (751, 'Sillas para oftalmología', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (752, 'Sillas para ortóptica', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (753, 'Sillas para radiólogos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (754, 'Soportes para hematocritos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (755, 'Soportes para sueros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (756, 'Succionadores eléctricos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (757, 'Tensiómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (758, 'Teñidores serologicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (759, 'Termocauterios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (760, 'Tijeras quirúrgicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (761, 'Tonómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (762, 'Torniquetes ortopédicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (763, 'Trépanos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (764, 'Trocares', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (765, 'Trocalleys de ruedas para camillas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (766, 'Unidades de refracción', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (767, 'Ultratermos de onda corta', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (768, 'Unidad iluminada para friend', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (769, 'Urodensímetros (urómetro)', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (770, 'Valvas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (771, 'Valvulotomos de dubost', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (772, 'Vaporizadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (773, 'Vasiótribos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (774, 'Ventiladores de jefferson', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (775, 'Vertómetros', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (776, 'Vibradores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (777, 'Vitrinas para instrumentos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (778, 'Wings-test', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (779, 'Abrebocas metálicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (780, 'Algodoneras', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (781, 'Alveolotomos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (782, 'Almalgamadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (783, 'Ángulos de odontología', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (784, 'Aparatos dentales de rayos x', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (785, 'Aparatos para anestesia', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (786, 'Aplicadores metálicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (787, 'Atomizadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (788, 'Automatomos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (789, 'Asas de ferroníquel', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (790, 'Bajalenguas metálicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (791, 'Balanzas de precisión', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (792, 'Biseladores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (793, 'Bisturíes', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (794, 'Bruñidores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (795, 'Cánulas para irrigación senos maxilares', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (796, 'Centrífugas para fundición', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (797, 'Cinceles para huesos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (798, 'Cleoides', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (799, 'Contra-ángulos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (800, 'Cortadores de gancho para sutura', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (801, 'Cortafríos odontológicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (802, 'Crisoles', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (803, 'Cubetas metálicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (804, 'Cuchillos lovel', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (805, 'Curetas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (806, 'Chassises', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (807, 'Discoides', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (808, 'Elevadores odontológicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (809, 'Empacadores de amalgama', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (810, 'Ensanchadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (811, 'Escupideras de pie', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (812, 'Escupideras de pedestal', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (813, 'Estuches con tensiómetros y fonendoscopio', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (814, 'Escavadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (815, 'Exploradores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (816, 'Ganchos para revelar películas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (817, 'Grapas para tela de caucho', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (818, 'Hachas odontológicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (819, 'Instrumentos para piorrea', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (820, 'Instrumentos para porcelana', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (821, 'Juegos de separadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (822, 'Lámparas de alcohol', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (823, 'Lámparas de seguridad', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (824, 'Lámparas para orificación', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (825, 'Limas odontológicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (826, 'Localizadores para radiografías', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (827, 'Lupas odontológicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (828, 'Mangos para espejos bucales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (829, 'Máquinas dentales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (830, 'Mangos para bisturíes', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (831, 'Marginadores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (832, 'Martillos automáticos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (833, 'Martillos quirúrgicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (834, 'Muebles dentales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (835, 'Obturadores par conductos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (836, 'Ovoides', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (837, 'Periostómos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (838, 'Picos para puntas de raíces', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (839, 'Pinzas odontológicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (840, 'Porta amalgamas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (841, 'Port -bandas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (842, 'Porta-gasas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (843, 'Porta-matriz', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (844, 'Recipientes para desperdicios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (845, 'Retractores de colgajos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (846, 'Seguetas quirúrgicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (847, 'Sillones dentales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (848, 'Sondas bucales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (849, 'Sopletes dentales', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (850, 'Talladores', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (851, 'Tanques para lavado de películas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (852, 'Tanques para revelador', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (853, 'Tazas de cristal para medicamentos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (854, 'Tijeras odontológicas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (855, 'Tiranervios', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (856, 'Ternos eléctricos adontotécnicos', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (857, 'Trépanos de ritter de pedestal', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (858, 'Unidades completas para odontología', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (859, 'Ventiladores para sacar películas', 18);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (860, 'Vitametros (pulpómetros)', 18);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (861, 'Otros equipos médicos-quirúrgicos dentales y veterinarios', 19);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (862, 'Agitadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (863, 'Alambiques', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (864, 'Alcalímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (865, 'Alcoholmetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (866, 'Altímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (867, 'Altoparlantes', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (868, 'Amperímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (869, 'Ampliadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (870, 'Analizadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (871, 'Anemógrafos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (872, 'Anemómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (873, 'Aneroides (ver barómetros)', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (874, 'Aparatos de explotación geográfica de terrenos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (875, 'Aparatos de reducción kjeldahl', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (876, 'Aparatos de reducción catalítica', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (877, 'Aparatos para colorear', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (878, 'Aparatos para destilar agua', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (879, 'Aparatos para electrólisis', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (880, 'Aparatos para interpretación de vistas aéreas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (881, 'Aparatos para la indeterminación del peso molecular', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (882, 'Aparatos para pruebas de sedimentación', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (883, 'Arcos voltaicos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (884, 'Areómetros (ver densímetros)', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (885, 'Autoclaves', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (886, 'Balanzas de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (887, 'Bancos ópticos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (888, 'Baños de maría (no de uso clínico)', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (889, 'Baños para impregnación de parafinas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (890, 'Barómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (891, 'Binóculos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (892, 'Biofotocolorímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (893, 'Bombas de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (894, 'Brújulas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (895, 'Caleidoscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (896, 'Calorímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (897, 'Cámaras microfotográficas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (898, 'Cámaras de recuento', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (899, 'Cámaras lúcidas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (900, 'Cámaras fotográficas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (901, 'Catetómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (902, 'Carretes de ruhmkorff', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (903, 'Centrifugadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (904, 'Centrífugas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (905, 'Círculos meridianos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (906, 'Clicimetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (907, 'Colorímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (908, 'Condensadores de campo oscuro para microscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (909, 'Contadores de rayos ionizados', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (910, 'Contadores geiger', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (911, 'Convertidores microfotográficos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (912, 'Copiadores fotográficos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (913, 'Cronómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (914, 'Cubetas esmaltadas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (915, 'Cuentahílos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (916, 'Densímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (917, 'Desecadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (918, 'Deshumecedores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (919, 'Destiladores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (920, 'Detectores de minas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (921, 'Determinadores del carbono', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (922, 'Dializadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (923, 'Dicroscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (924, 'Digestorios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (925, 'Dinamómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (926, 'Dispensadores de placas de vidrio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (927, 'Eclímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (928, 'Editoras para películas fotográficas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (929, 'Electroanalizadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (930, 'Electrodos de platino', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (931, 'Electróforos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (932, 'Electrografos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (933, 'Electroimanes', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (934, 'Electrómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (935, 'Electrópodos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (936, 'Electroscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (937, 'Eliminadores de batería', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (938, 'Empacadoras de píldoras', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (939, 'Emulsificadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (940, 'Equipos de micro-combustión', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (941, 'Equipos de telemetración', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (942, 'Equipos de tratamiento al calor para metales', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (943, 'Equipos fotoeléctricos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (944, 'Escleroscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (945, 'Escurridores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (946, 'Esferómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (947, 'Espectrofotómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (948, 'Espectroscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (949, 'Estereómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (950, 'Estereoscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (951, 'Estroboscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (952, 'Estuches para accesorios fotográficos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (953, 'Estufas de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (954, 'Eudiómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (955, 'Evaporímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (956, 'Extractores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (957, 'Filmadoras', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (958, 'Filtros de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (959, 'Flash fotográficos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (960, 'Flexómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (961, 'Fluoroscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (962, 'Fluxómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (963, 'Fotómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (964, 'Gabinetes de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (965, 'Gabinetes de fermentación', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (966, 'Galvanómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (967, 'Gavetas para láminas microscópicas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (968, 'Generadores de señales', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (969, 'Giroscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (970, 'Goniómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (971, 'Grafómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (972, 'Gramurios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (973, 'Gravitómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (974, 'Guarada-láminas (ver laminotecas)', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (975, 'Heliografos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (976, 'Hemisferios de magdeburgo', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (977, 'Hidrogenadores catalíticos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (978, 'Higrómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (979, 'Higroscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (980, 'Hipsómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (981, 'Hornillos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (982, 'Hornos de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (983, 'Hornos prensa al vaco', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (984, 'Incubadoras de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (985, 'Indicadores del punto de fusión', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (986, 'Inductores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (987, 'Juegos de lentes en estuche', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (988, 'Juegos de pesas de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (989, 'Laboratorios químicos de campo (portátiles)', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (990, 'Laminotecas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (991, 'Lámparas infrarrojas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (992, 'Lámparas para microscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (993, 'Lámparas ultravioletas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (994, 'Largavistas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (995, 'Lavadoras de pipetas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (996, 'Lijadoras metalográficas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (997, 'Lupas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (998, 'Magnetómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (999, 'Magnetos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1000, 'Máquinas neumáticas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1001, 'Máquinas para supositorios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1002, 'Marcadores de películas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1003, 'Mecheros bunsen', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1004, 'Megáfonos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1005, 'Medidores de ácidos (ph)', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1006, 'Medidores de fluido', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1007, 'Mesas de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1008, 'Mezcladoras (laboratorio)', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1009, 'Microfilmadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1010, 'Microscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1011, 'Micrótomos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1012, 'Miras', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1013, 'Moldes para pruebas de compactación de suelos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1014, 'Moldes para supositorios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1015, 'Molinos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1016, 'Multímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1017, 'Morteros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1018, 'Muflas (ver hornos de laboratorio)', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1019, 'Neveras de laboratorio', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1020, 'Niveles', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1021, 'Niveles de anteojo (amney)', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1022, 'Objetivos microscópicos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1023, 'Octantes', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1024, 'Oculares', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1025, 'Ohmímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1026, 'Oscilógrafos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1027, 'Oscilómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1028, 'Osciloscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1029, 'Penetrómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1030, 'Perforadores de corchos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1031, 'Periscopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1032, 'Permeámetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1033, 'Pesahilos de precisión', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1034, 'Pipeteadores automáticos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1035, 'Pipeteros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1036, 'Pirómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1037, 'Planchetas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1038, 'Planímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1039, 'Pluviómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1040, 'Podómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1041, 'Polarímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1042, 'Polarizadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1043, 'Porta-láminas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1044, 'Potenciómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1045, 'Prensas metalográficas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1046, 'Probadores de humedad', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1047, 'Probadores de consistencia de concreto', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1048, 'Probadores de ductibilidad', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1049, 'Probadores del punto de flash', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1050, 'Probadores de resistencias', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1051, 'Probadores de tubos electrónicos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1052, 'Puentes de wheatstone', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1053, 'Pulidoras metalográficas', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1054, 'Radiadores acústicos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1055, 'Radiadores de calor', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1056, 'Refractómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1057, 'Registradores fotoeléctricos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1058, 'Registradores minifn', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1059, 'Reglas de cálculo', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1060, 'Reguladores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1061, 'Reóstatos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1062, 'Sacarímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1063, 'Scintilómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1064, 'Secadores eléctricos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1065, 'Serpentines', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1066, 'Sextantes', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1067, 'Sismógrafos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1068, 'Sitómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1069, 'Sonómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1070, 'Soportes', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1071, 'Taquímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1072, 'Telémetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1073, 'Telescopios', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1074, 'Tensiómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1075, 'Teodolitos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1076, 'Termógrafos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1077, 'Termómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1078, 'Termostatos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1079, 'Torsiómetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1080, 'Tránsitos', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1081, 'Transportadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1082, 'Trazadores de señales', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1083, 'Trípodes', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1084, 'Trituradores -pulverizadores', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1085, 'Turbidmetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1086, 'Velocímetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1087, 'Vescocimetros', 20);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1088, 'Voltímetros', 20);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1089, 'Billares', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1090, 'Carteleras', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1091, 'Cátedras', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1092, 'Colecciones de animales disecados para la enseñanza', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1093, 'Colecciones de preparaciones microscópicas en estuche', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1094, 'Colecciones de minerales para la enseñanza', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1095, 'Cuadros murales', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1096, 'Discos educativos', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1097, 'Episcopios', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1098, 'Equipos instructivos', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1099, 'Equipos para deportes', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1100, 'Equipos para gimnasia y parques recreativos', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1101, 'Esferas celestes', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1102, 'Esferas terrestres', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1103, 'Herbarios', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1104, 'Juegos de sólidos geométricos', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1105, 'Juegos recreativos', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1106, 'Mapas murales', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1107, 'Máquinas disparadoras de skeet', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1108, 'Modelos didácticos', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1109, 'Pantallas de proyección', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1110, 'Películas educativas', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1111, 'Pizarrones', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1112, 'Proyectores de películas', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1113, 'Pupitres', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1114, 'Radio-receptores', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1115, 'Sillas pupitre', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1116, 'Televisores', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1117, 'Tocadiscos', 21);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1118, 'Video grabador', 21);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1119, 'Cuadros', 22);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1120, 'Esculturas', 22);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1121, 'Estatuas', 22);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1122, 'Libros', 23);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1123, 'Revistas', 23);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1124, 'Altares', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1125, 'Aras', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1126, 'Atriles litúrgicos', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1127, 'Cálices', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1128, 'Campanas', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1129, 'Candelabros', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1130, 'Candeleros', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1131, 'Casullas', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1132, 'Confesionarios', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1133, 'Copas', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1134, 'Copones', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1135, 'Crismeros', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1136, 'Crucifijos', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1137, 'Cuadros religiosos', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1138, 'Cubre-copones', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1139, 'Custodias', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1140, 'Estatuas religiosas', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1141, 'Evangelios', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1142, 'Hostiarios', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1143, 'Incensarios', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1144, 'Ornamentos religiosos', 24);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1145, 'Vinajeras', 24);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1146, 'Acordeones', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1147, 'Armonios', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1148, 'Arpas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1149, 'Atriles', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1150, 'Bandola', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1151, 'Banjos', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1152, 'Baterías', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1153, 'Bugles', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1154, 'Bustos (excepto los situados en plazas públicas)', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1155, 'Celestes', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1156, 'Clarinetes', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1157, 'Clarines', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1158, 'Contrabajos', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1159, 'Cornetas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1160, 'Cornetines', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1161, 'Cornos ingleses', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1162, 'Cuadros artísticos', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1163, 'Discos musicales', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1164, 'Estatuas (excepto las situadas en plazas públicas)', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1165, 'Flautas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1166, 'Flautines', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1167, 'Guitarras', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1168, 'Joyas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1169, 'Laúdes', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1170, 'Liras', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1171, 'Mandolas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1172, 'Mandolinas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1173, 'Metrónomos', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1174, 'Objetos ornamentales', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1175, 'Oboes', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1176, 'Órganos', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1177, 'Pianos', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1178, 'Platillos', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1179, 'Tambores', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1180, 'Timbales', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1181, 'Triángulos', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1182, 'Trombones', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1183, 'Trompas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1184, 'Trompetas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1185, 'Tubas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1186, 'Redoblantes', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1187, 'Saxofones', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1188, 'Violas', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1189, 'Violines', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1190, 'Violoncelos', 25);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1191, 'Xilófonos', 25);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1192, 'Otros equipos científicos religiosos de enseñanza y recreación', 26);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1193, 'Escopetas', 27);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1194, 'Fusiles', 27);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1195, 'Pistolas', 27);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1196, 'Revólveres', 27);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1197, 'Sub-ametrelladoras', 27);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1198, 'Otros equipos para la defensa y seguridad pública', 28);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1199, 'Acondicionadores de aire', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1200, 'Alfombras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1201, 'Anaqueles (ver estantes)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1202, 'Archivadores de gavetas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1203, 'Archivadores de puertas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1204, 'Aspiradoras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1205, 'Balanzas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1206, 'Bancos (asientos)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1207, 'Bancos (mesas)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1208, 'Banderas nacionales', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1209, 'Bibliotecas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1210, 'Borradores eléctricos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1211, 'Burros (ver caballetes)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1212, 'Caballetes', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1213, 'Cafeteras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1214, 'Cajas fuertes', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1215, 'Cajas registradoras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1216, 'Calculadoras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1217, 'Carteleras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1218, 'Carteleras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1219, 'Ceniceros de pie', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1220, 'Cestas para botar papeles', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1221, 'Cestas para escritorios', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1222, 'Circuladores de aire', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1223, 'Compases', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1224, 'Comptómetros', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1225, 'Cortinas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1226, 'Cortineros', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1227, 'Curvígrafos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1228, 'Dictáfonos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1229, 'Díngrafos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1230, 'Dispensadores de cinta engomada', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1231, 'Enfriadores de agua', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1232, 'Engrapadoras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1233, 'Escalímetros', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1234, 'Escaparates', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1235, 'Escritorios', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1236, 'Escuadras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1237, 'Escudos nacionales', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1238, 'Espaciadores para máquinas de escribir', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1239, 'Estantes', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1240, 'Estenógrafos (máquinas)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1241, 'Estuches de matemáticas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1242, 'Estuches de plantillas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1243, 'Ficheros (tarjeteros)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1244, 'Fotocopiadoras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1245, 'Gabinetes', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1246, 'Guillotinas para papel manuales', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1247, 'Grabadores de sonido', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1248, 'Impresoras de rótulos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1249, 'Juegos de instrumentos para dibujo', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1250, 'Juegos de muebles para recibo', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1251, 'Kardex', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1252, 'Lámparas móviles', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1253, 'Litografías montadas en marcos (ver cuadros)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1254, 'Lockers (ver escaparates)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1255, 'Maletines', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1256, 'Mapas montados en marcos (ver cuadros)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1257, 'Mapotecas (ver planotecas)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1258, 'Máquinas de contabilidad', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1259, 'Máquinas de escribir', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1260, 'Máquinas eléctricas y electrónicas de contabilidad', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1261, 'Máquinas foliadoras (ver numeradoras)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1262, 'Máquinas franqueadoras de correspondencia', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1263, 'Mesas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1264, 'Microfilmadoras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1265, 'Mimeógrafos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1266, 'Multígrafos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1267, 'Neveras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1268, 'Normógrafos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1269, 'Numeradoras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1270, 'Organigramas montados (ver cuadros)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1271, 'Pantógrafos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1272, 'Percheros', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1273, 'Perforadoras para mas de 2 ojetes', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1274, 'Pesa-cartas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1275, 'Pizarrones', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1276, 'Planímetros', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1277, 'Planotecas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1278, 'Plantillas de dibujo', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1279, 'Poltronas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1280, 'Porta-copias', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1281, 'Prensas para copias', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1282, 'Protectoras de cheques', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1283, 'Proyectores para dibujo', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1284, 'Reglas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1285, 'Relojes', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1286, 'Relojes de control', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1287, 'Relojes fechadores', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1288, 'Roperos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1289, 'Saca-puntas', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1290, 'Sellos-prensa metálicos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1291, 'Sillas para escritorios', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1292, 'Sofás', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1293, 'Soportes para sellos', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1294, 'Sumadoras', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1295, 'Tableros (ni pizarrones ni carteleras)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1296, 'Taburetes', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1297, 'Teléfonos (internos)', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1298, 'Transportadores', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1299, 'Televisores', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1300, 'Ventiladores', 1);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1301, 'Vitrinas', 1);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1302, 'Adaptador de bienes múltiples', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1303, 'Cadena de impresora intercambiable', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1304, 'Discos', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1305, 'Lectora óptica', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1306, 'Lectora de tarjeta', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1307, 'Lectora de cintas de papel', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1308, 'Microcomputador', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1309, 'Modulador y desmodulador (modem)', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1310, 'Perforadora de tarjeta', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1311, 'Perforadora de cinta de papel', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1312, 'Terminal con teclado', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1313, 'Unidad central de proceso (CPU)', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1314, 'Unidad de control de líneas remotas', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1315, 'Unidad de control local de terminales', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1316, 'Unidad de control remoto de terminales', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1317, 'Unidad de control de cinta', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1318, 'Unidad de control de impresora', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1319, 'Unidad de cinta magnética', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1320, 'Unidad de acceso directo (discos)', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1321, 'Unidad de diskettes', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1322, 'Unidad impresora', 2);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1323, 'Visores de microfichas', 2);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1324, 'Acondicionadores de aire', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1325, 'Acuarios', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1326, 'Alfombras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1327, 'Anaqueles (ver estantes)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1328, 'Aparadores', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1329, 'Aparatos desmanchadores para lavanderas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1330, 'Armarios (ver escaparates)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1331, 'Atomizadores', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1332, 'Azafates', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1333, 'Balanzas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1334, 'Bancas y banquetas (ver bancos)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1335, 'Bancos (asientos)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1336, 'Bancos (mesas)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1337, 'Banderas nacionales', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1338, 'Bañeras móviles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1339, 'Bares', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1340, 'Barqueos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1341, 'Bases para alfombras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1342, 'Batidoras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1343, 'Bibelots (ver objetos decorativos)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1344, 'Biombos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1345, 'Botiquines', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1346, 'Butacas (ver poltronas)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1347, 'Burros (ver caballetes)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1348, 'Caballetes', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1349, 'Cafeteras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1350, 'Calderos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1351, 'Calentadores', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1352, 'Camas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1353, 'Canapés (ver sofás)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1354, 'Cantaras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1355, 'Carros de comida', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1356, 'Cocinas móviles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1357, 'Cocinillas portátiles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1358, 'Cofres', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1359, 'Cómodas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1360, 'Congeladoras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1361, 'Conservadoras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1362, 'Consolas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1363, 'Cortadoras de césped', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1364, 'Cortinas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1365, 'Cortineros', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1366, 'Cunas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1367, 'Chiffonieres (ver cómodas)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1368, 'Chinchorros', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1369, 'Divanes (ver sofás)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1370, 'Enfriadores de agua', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1371, 'Equipos para desperdicios', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1372, 'Escabeles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1373, 'Escaparates', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1374, 'Escudos nacionales', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1375, 'Estantes', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1376, 'Espejos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1377, 'Estufas móviles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1378, 'Exprimidoras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1379, 'Exprimidoras de lavandera', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1380, 'Filtros de agua', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1381, 'Floreros', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1382, 'Freidores', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1383, 'Gabinetes', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1384, 'Gaveteros (ver cómodas)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1385, 'Grecas para el café', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1386, 'Hamacas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1387, 'Jardineras móviles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1388, 'Jarrones', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1389, 'Juegos de cristal', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1390, 'Juegos de dormitorio', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1391, 'Juegos de muebles de comedor', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1392, 'Juegos de muebles de recibo', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1393, 'Juegos de pesas para balanzas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1394, 'Juego de porcelana', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1395, 'Lámparas móviles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1396, 'Lavabos móviles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1397, 'Lavacopas y vasos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1398, 'Lavadoras de ropa', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1399, 'Lavaplatos móviles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1400, 'Licuadoras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1401, 'Máquinas ayudante de cocina', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1402, 'Máquinas amasadoras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1403, 'Máquinas de afeitar', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1404, 'Máquinas de almidonar', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1405, 'Máquinas de coser', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1406, 'Máquinas de planchar', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1407, 'Máquinas para cortar carne', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1408, 'Máquinas para cortar jamón', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1409, 'Máquinas para fabricar cubos de hielo', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1410, 'Máquinas para hacer helados', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1411, 'Máquinas para lavar alfombras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1412, 'Máquinas ralladoras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1413, 'Máquinas secadoras de ropa', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1414, 'Marcadoras de ropa', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1415, 'Marmitas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1416, 'Materos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1417, 'Macedores', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1418, 'Mesas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1419, 'Mesones', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1420, 'Molinos para carne', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1421, 'Molinos para granos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1422, 'Mostradores', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1423, 'Neveras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1424, 'Neveras-mostrador', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1425, 'Objetos decorativos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1426, 'Ollas grandes', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1427, 'Paravanes (ver biombos)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1428, 'Parrillas móviles', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1429, 'Peinadoras (ver tocadores)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1430, 'Peladoras de papas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1431, 'Percheros', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1432, 'Persianas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1433, 'Planchas eléctricas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1434, 'Platones', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1435, 'Poltronas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1436, 'Pulidoras de pisos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1437, 'Purificadores de agua', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1438, 'Radio-receptores', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1439, 'Rebanadas de fiambres', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1440, 'Recipientes', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1441, 'Repisas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1442, 'Revisteros', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1443, 'Roperos', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1444, 'Sartenes', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1445, 'Secadores de ropa', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1446, 'Sillas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1447, 'Sillones (ver poltronas)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1448, 'Sillones de barbera', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1449, 'Sofás', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1450, 'Taburetes', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1451, 'Tapetes (ver alfombras)', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1452, 'Tarimas', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1453, 'Televisores', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1454, 'Tiendas de campaña', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1455, 'Tinajeros', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1456, 'Tocadores', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1457, 'Tostadoras', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1458, 'Vajillas de lujo', 3);
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1459, 'Video grabadores', 3);
+
+INSERT INTO tescae (cae_ide, cae_cae, sca_ide) VALUES (1460, 'Otras maquinas muebles y demás equipos de oficina y alojamiento', 4);
+
+
+
 -- TABLA TMAESU
 
 INSERT INTO `tmaesu` (`esu_ide`, `esu_esu`) VALUES
@@ -1398,7 +2596,7 @@ INSERT INTO `tmaesu` (`esu_ide`, `esu_esu`) VALUES
 (7, 'PERMISO'),
 (8, 'AUTORIZACIÓN');
 
--- TABLA TMACOM
+-- TABLA TMACON
 
 INSERT INTO `tmacon` (`con_ide`, `con_con`) VALUES
 (1, 'ÓPTIMO'),
@@ -1445,7 +2643,40 @@ INSERT INTO `tesant` (`ant_ide`, `ant_ani`, `ant_anf`, `nom_ced`) VALUES ('4', '
 
 INSERT INTO `tmaest`(`est_ide`, `est_est`) VALUES ('4','Operativo'), ('1', 'Sin etiqueta'), ('2', 'Inoperativo'), ('3', 'Faltante');
 
-INSERT INTO `tmacom`(`com_ide`, `com_com`) VALUES ('1','COMPRA');
+INSERT INTO tmacom (com_ide, com_com) VALUES (1, 'Inventario inicial');
+INSERT INTO tmacom (com_ide, com_com) VALUES (2, 'Incorporación por traspaso');
+INSERT INTO tmacom (com_ide, com_com) VALUES (3, 'Compras');
+INSERT INTO tmacom (com_ide, com_com) VALUES (4, 'Construcción de inmuebles');
+INSERT INTO tmacom (com_ide, com_com) VALUES (5, 'Adiciones y mejoras');
+INSERT INTO tmacom (com_ide, com_com) VALUES (6, 'Producción de elementos (muebles)');
+INSERT INTO tmacom (com_ide, com_com) VALUES (7, 'Suministro de bienes de otras entidades');
+INSERT INTO tmacom (com_ide, com_com) VALUES (8, 'Devolución de bienes suministrados a contratistas');
+INSERT INTO tmacom (com_ide, com_com) VALUES (9, 'Nacimiento de semovientes');
+INSERT INTO tmacom (com_ide, com_com) VALUES (10, 'Reconstrucción de equipos');
+INSERT INTO tmacom (com_ide, com_com) VALUES (11, 'Incorporación por donación');
+INSERT INTO tmacom (com_ide, com_com) VALUES (12, 'Incorporación por permuta');
+INSERT INTO tmacom (com_ide, com_com) VALUES (13, 'Adscripción de bienes');
+INSERT INTO tmacom (com_ide, com_com) VALUES (14, 'Omisión de inventario');
+INSERT INTO tmacom (com_ide, com_com) VALUES (15, 'Incorporación por cambio de sub-agrupación');
+INSERT INTO tmacom (com_ide, com_com) VALUES (16, 'Corrección de desincorporaciones');
+INSERT INTO tmacom (com_ide, com_com) VALUES (17, 'Incorporaciones por otros conceptos');
+INSERT INTO tmacom (com_ide, com_com) VALUES (18, 'Incorporación de muebles procedentes de los almacenes');
+INSERT INTO tmacom (com_ide, com_com) VALUES (19, 'Desincorporación por traspaso');
+INSERT INTO tmacom (com_ide, com_com) VALUES (20, 'Ventas');
+INSERT INTO tmacom (com_ide, com_com) VALUES (21, 'Suministro de bienes a contratistas');
+INSERT INTO tmacom (com_ide, com_com) VALUES (22, 'Suministro de bienes a otras entidades');
+INSERT INTO tmacom (com_ide, com_com) VALUES (23, 'Desarme');
+INSERT INTO tmacom (com_ide, com_com) VALUES (24, 'Inservibilidad');
+INSERT INTO tmacom (com_ide, com_com) VALUES (25, 'Deterioro');
+INSERT INTO tmacom (com_ide, com_com) VALUES (26, 'Demolición');
+INSERT INTO tmacom (com_ide, com_com) VALUES (27, 'Muerte por semovientes');
+INSERT INTO tmacom (com_ide, com_com) VALUES (28, 'Faltantes por investigar');
+INSERT INTO tmacom (com_ide, com_com) VALUES (29, 'Desincorporación por Permuta');
+INSERT INTO tmacom (com_ide, com_com) VALUES (30, 'Desincorporación por Donación');
+INSERT INTO tmacom (com_ide, com_com) VALUES (31, 'Desincorporación por adscripción');
+INSERT INTO tmacom (com_ide, com_com) VALUES (32, 'Desincorporación por cambio de Sub-agrupación');
+INSERT INTO tmacom (com_ide, com_com) VALUES (33, 'Corrección de Incorporaciones');
+INSERT INTO tmacom (com_ide, com_com) VALUES (34, 'Desincorporaciones por otros conceptos');
 
 -- FUTUROS VOLCADOS EN LA BASE DE DATOS
 
