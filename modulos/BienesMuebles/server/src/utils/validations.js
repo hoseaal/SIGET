@@ -6,7 +6,7 @@ export class Validaciones {
 
   static password (password) {
     if (typeof password !== 'string') throw new Error('Contraseña inválida')
-    if (password.length < 3) throw new Error('Contraseña muy corta')
+    if (password.length < 4) throw new Error('Contraseña muy corta')
   }
 
   static validarBienMueble (datos) {

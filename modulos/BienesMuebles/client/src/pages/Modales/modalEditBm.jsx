@@ -172,6 +172,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+
     };
 
     const handleSubmit = async (e) => {
@@ -194,7 +195,9 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 return;
             }
 
-            console.log("Datos modificados a enviar:", changedFields);
+            if (prestamoInfo !== null && bienData.con_ide === 4 && changedFields.con_ide !== 4) {
+                throw new Error('No se puede cambiar la condición física del bien mientras esté prestado.');
+            }
 
             const response = await fetch(`/api/bienes/${BienId}`, {
                 method: 'PUT',
@@ -219,7 +222,6 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
         }
     };
 
-    console.log(prestamoInfo)
 
     const renderFormField = (column) => {
         const fieldName = column.originalName;

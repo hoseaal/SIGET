@@ -94,9 +94,9 @@
                         "link": "/Configuracion/ModelosyMarcas"
                     },
                     {
-                        "text": "Estados de Uso",
+                        "text": "Conceptos de Movimiento",
                         "available": true,
-                        "link": " "
+                        "link": "/Configuracion/ConceptoMovimiento"
                     },
                     {
                         "text": "Condicines Fisicas",

@@ -137,6 +137,14 @@ export const Bm2 = () => {
             ...prev,
             [name]: value
         }));
+
+        if (name === "bim_ide") {
+        // Filtra el valor para permitir solo dígitos (números del 0 al 9)
+        const filteredValue = value.replace(/[^0-9]/g, ''); 
+        setFormData({ ...formData, [name]: filteredValue });
+    } else {
+        setFormData({ ...formData, [name]: value });
+    }
     };
 
     //tablas Foraneas
@@ -524,8 +532,10 @@ const handleSubmit = async (e) => {
                                                     className="form-control"
                                                     placeholder="xxxx"
                                                     name="bim_fec"
-                                                    value={formData.bim_fec}
+                                                    value={formData.bim_fec || new Date().toISOString().split('T')[0]}
                                                     onChange={handleChange}
+                                                    min="1961-01-01"
+                                                    max={new Date().toISOString().split('T')[0]}
                                                 />
                                             </div>
                                         </div>
@@ -550,7 +560,8 @@ const handleSubmit = async (e) => {
                                         <label className="col-sm-2 col-form-label" htmlFor="basic-default-phone">Valor Monetario</label>
                                         <div className="col-sm-10">
                                             <input
-                                                type="text"
+                                                type="number"
+                                                step="0.01"
                                                 id="basic-default-phone"
                                                 className="form-control phone-mask"
                                                 placeholder="0.00"

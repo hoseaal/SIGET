@@ -86,6 +86,7 @@ function formatCurrencyBs (value) {
 }
 
 export const generarReporteBM4 = (datos) => {
+  console.log(datos)
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true })
 
@@ -115,9 +116,7 @@ export const generarReporteBM4 = (datos) => {
       const currentY = doc.y
 
       // Convertir el valor a string y asegurar 2 decimales
-      const formattedValue = (value !== undefined && value !== null)
-        ? parseFloat(value).toFixed(2)
-        : '0.00' // Valor por defecto si es nulo/indefinido
+      const formattedValue = (value !== undefined && value !== null) ? String(value) : '0,00'
 
       // Calcular anchos de la etiqueta y el valor formateado
       const labelWidth = doc.widthOfString(label)

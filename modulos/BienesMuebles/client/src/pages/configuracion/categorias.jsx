@@ -157,11 +157,6 @@ export const Categorias = () => {
   loadCatEsData();
 }, [searchQuery3, page3]);
 
-  console.log('Categorías:', data);
-  console.log('Subcategorías:', data2);
-  console.log('Categorías específicas:', data3);
-  console.log(idColumn2, idColumn3);
-
   return (
         <div>
             <h4 className="py-3 mb-4"><span className="text-muted fw-light">Configuración General /</span> Categorias</h4>

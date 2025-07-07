@@ -172,7 +172,7 @@ export const DashboardPage = () => {
           fetchApiData('/api/bienes/count?con=4&inc=1', accessToken),
           fetchApiData('/api/bienes/count?estado=1&inc=1', accessToken),
           fetchApiData('/api/prestamos/normales', accessToken),
-          fetchApiData('/api/bienes/count?estado=4&inc=1', accessToken)
+          fetchApiData('/api/bienes/count?estado=4&con=1&inc=1', accessToken)
         ]);
 
         setTotalValor(valorData.existenciaActualRealTime || 0);
@@ -183,8 +183,8 @@ export const DashboardPage = () => {
         setBadConditionBienes(malEstadoData.meta.total || 0);
         setNoTagBienes(sinEtiquetaData.meta.total || 0);
         setLoanedBienes(prestamosData.length || 0);
-        setBuenEstado( totalBienes - missingBienes - badConditionBienes - noTagBienes - loanedBienes || 0);
-
+        setBuenEstado(buenEstadoData.meta.total -  loanedBienes || 0);
+        console.log(buenEstado);
         const depts = await fetchApiData('/api/departamentos', accessToken);
         setDepartments(depts);
 

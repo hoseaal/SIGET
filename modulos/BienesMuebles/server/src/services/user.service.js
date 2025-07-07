@@ -1,4 +1,5 @@
 import { UserModel } from '../models/user.model.js'
+import { Validaciones } from '../utils/validations.js'
 
 export class UserService {
   static async obtenerTodos () {
@@ -15,10 +16,10 @@ export class UserService {
     // Primero, verificamos si el usuario existe
     const existe = await UserModel.getById(id)
     if (!existe) throw new Error('Usuario no encontrado para actualizar')
-    
+
     // Validaciones básicas
     if (!datos.usu_nom || !datos.usu_ape || !datos.usu_tip) {
-        throw new Error('Nombre, apellido y tipo de usuario son requeridos.')
+      throw new Error('Nombre, apellido y tipo de usuario son requeridos.')
     }
 
     return await UserModel.update(id, datos)
@@ -30,7 +31,7 @@ export class UserService {
 
     const existe = await UserModel.getById(id)
     if (!existe) throw new Error('Usuario no encontrado para cambiar contraseña')
-
+    Validaciones.password(password)
     return await UserModel.updatePassword(id, password)
   }
 
