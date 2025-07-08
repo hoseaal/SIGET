@@ -415,7 +415,6 @@ const handleSubmit = async (e) => {
         limpiarFormulario();
         await new Promise(resolve => setTimeout(resolve, 3000));
 
-        setIsSaving(false);
         setShowActInc(true);
         setTimeout(() => setMensajeMostrado(false), 3000);
 
@@ -426,10 +425,11 @@ const handleSubmit = async (e) => {
         setErrorMessage(error.message || 'Error desconocido');
         setTimeout(() => setMensajeMostrado(false), 3000);
         setFormData(prev => ({
-            ...prev,
-            bim_ide: ''
+            ...prev
         }));
         setLastInsertedBienId(null);
+    }finally {
+        setIsSaving(false);
     }
 };
 

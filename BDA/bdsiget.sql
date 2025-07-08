@@ -554,7 +554,7 @@ ALTER TABLE `tesnvl_historico`
 
 CREATE TABLE `tmacom` (
   `com_ide` int(11) NOT NULL COMMENT 'Identificador de concepto de movimiento',
-  `com_com` varchar(50) NOT NULL COMMENT 'Descripción de concepto de movimiento'
+  `com_com` varchar(60) NOT NULL COMMENT 'Descripción de concepto de movimiento'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 ALTER TABLE `tmacom`
