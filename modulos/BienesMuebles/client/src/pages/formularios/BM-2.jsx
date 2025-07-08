@@ -138,14 +138,26 @@ export const Bm2 = () => {
             [name]: value
         }));
 
-        if (name === "bim_ide") {
-        // Filtra el valor para permitir solo dígitos (números del 0 al 9)
-        const filteredValue = value.replace(/[^0-9]/g, ''); 
-        setFormData({ ...formData, [name]: filteredValue });
+         if (name === "bim_ide") {
+        // 1. Filtra para permitir solo dígitos
+        const filteredValue = value.replace(/[^0-9]/g, '');
+
+        // 2. Limita la longitud a un máximo de 5 caracteres
+        const truncatedValue = filteredValue.slice(0, 5);
+
+        // 3. Actualiza el estado con el valor filtrado y truncado
+        setFormData(prev => ({
+            ...prev,
+            [name]: truncatedValue
+        }));
     } else {
-        setFormData({ ...formData, [name]: value });
+        // Para otros campos, actualiza directamente el valor
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     }
-    };
+};
 
     //tablas Foraneas
     const [unidadAdmin, setUnidadAdmin] = useState([]);

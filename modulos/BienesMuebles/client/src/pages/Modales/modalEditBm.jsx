@@ -28,6 +28,8 @@ const editableFields = {
     'est_ide': 'Estado del Bien',
     'con_ide': 'Condición Física',
     'esu_ide': 'Estado de Uso',
+    'mod_ide': 'Modelo',
+    'foa_ide': 'Forma de Adquisición',
 };
 
 const columnAliasBim = {
@@ -230,9 +232,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
 
         // Mapeo de campos a sus respectivas propiedades en BienData
         const fieldDisplayMap = {
-            'foa_ide': bienData?.forma_adquisicion,
             'mar_ide': bienData?.marca,
-            'mod_ide': bienData?.modelo,
             'cae_ide': bienData?.categoria_especifica,
             'com_ide': bienData?.concepto
         };
