@@ -341,6 +341,7 @@ Para cualquier consulta, soporte técnico o solicitud de acceso/permisos, contac
 
 ## Diagrama de Conexión del Sistema 
 
+```
 +------------------+
 |      USUARIO     |
 +--------+---------+
@@ -379,3 +380,4 @@ Para cualquier consulta, soporte técnico o solicitud de acceso/permisos, contac
                         |    Base de Datos   |
                         |   (MySQL 8+)       |
                         +--------------------+
+```
