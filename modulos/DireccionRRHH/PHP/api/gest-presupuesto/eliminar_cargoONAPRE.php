@@ -29,20 +29,41 @@
             throw new Exception('El cargo ONAPRE no existe');
         }
         
-        // Eliminar el cargo
-        $stmt = $pdo->prepare("DELETE FROM tesona WHERE ona_ide = :positionId");
-        $stmt->bindParam(':positionId', $positionId);
-        $stmt->execute();
+        // Verificar si hay trabajadores con este cargo en tmanom
+        $stmtCheckWorkers = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM tmanom 
+            WHERE ona_ide = :positionId 
+        ");
+        $stmtCheckWorkers->bindParam(':positionId', $positionId);
+        $stmtCheckWorkers->execute();
         
-        $response = [
-            'success' => true,
-            'message' => 'Cargo ONAPRE eliminado correctamente'
-        ];
+        $activeWorkersCount = $stmtCheckWorkers->fetchColumn();
+        
+        if ($activeWorkersCount > 0) {
+            $response = [
+                'success' => false,
+                'message' => "No puede eliminar un cargo, el cual contiene trabajadores en activo; por favor, reasigne los $activeWorkersCount trabajadores(as).",
+                'has_active_workers' => true
+            ];
+        } else {
+            // Eliminar el cargo solo si no hay trabajadores activos
+            $stmt = $pdo->prepare("DELETE FROM tesona WHERE ona_ide = :positionId");
+            $stmt->bindParam(':positionId', $positionId);
+            $stmt->execute();
+            
+            $response = [
+                'success' => true,
+                'message' => 'Cargo ONAPRE eliminado correctamente',
+                'has_active_workers' => false
+            ];
+        }
         
     } catch (Exception $e) {
         $response = [
             'success' => false,
-            'message' => 'Error al eliminar el cargo ONAPRE: ' . $e->getMessage()
+            'message' => 'Error al eliminar el cargo ONAPRE: ' . $e->getMessage(),
+            'has_active_workers' => false
         ];
     }
 

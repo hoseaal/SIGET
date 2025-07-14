@@ -340,54 +340,62 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para eliminar un cargo ONAPRE
     async function eliminarCargoONAPRE(idCargo) {
         try {
-        // Mostrar loader
-        smallSwal.fire({
-            title: 'Eliminando cargo',
-            html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
-            width: 350,
-            showConfirmButton: false,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            didOpen: () => {
-            smallSwal.showLoading();
-            }
-        });
-
-        // Enviar solicitud de eliminación
-        const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_cargoONAPRE.php', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ position_id: idCargo })
-        });
-        
-        const resultado = await respuesta.json();
-        
-        // Cerrar loader
-        smallSwal.close();
-
-        if (resultado.success) {
+            // Mostrar loader
             smallSwal.fire({
-            icon: 'success',
-            title: '¡Eliminado!',
-            text: 'El cargo ONAPRE ha sido eliminado correctamente',
-            showConfirmButton: false,
-            timer: 1500
-            }).then(() => {
-            mostrarCargosONAPRE(paginaActualONAPRE);
+                title: 'Eliminando cargo',
+                html: '<div class="progress" style="height: 4px; background: #e0e0e0; margin-top: 10px;"><div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%; height: 100%;"></div></div>',
+                width: 350,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    smallSwal.showLoading();
+                }
             });
-        } else {
-            throw new Error(resultado.message || 'Error al eliminar el cargo ONAPRE');
-        }
+
+            // Enviar solicitud de eliminación
+            const respuesta = await fetch('../PHP/api/gest-presupuesto/eliminar_cargoONAPRE.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ position_id: idCargo })
+            });
+            
+            const resultado = await respuesta.json();
+            
+            // Cerrar loader
+            smallSwal.close();
+
+            if (resultado.success) {
+                smallSwal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: 'El cargo ONAPRE ha sido eliminado correctamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    mostrarCargosONAPRE(paginaActualONAPRE);
+                });
+            } else if (resultado.has_active_workers) {
+                // Mostrar mensaje especial para trabajadores activos
+                smallSwal.fire({
+                    icon: 'error',
+                    title: 'No se puede eliminar',
+                    html: resultado.message,
+                    confirmButtonColor: '#3085d6'
+                });
+            } else {
+                throw new Error(resultado.message || 'Error al eliminar el cargo ONAPRE');
+            }
         } catch (error) {
-        console.error('Error al eliminar:', error);
-        smallSwal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Error al eliminar: ' + error.message,
-            confirmButtonColor: '#3085d6'
-        });
+            console.error('Error al eliminar:', error);
+            smallSwal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar: ' + error.message,
+                confirmButtonColor: '#3085d6'
+            });
         }
     }
 
