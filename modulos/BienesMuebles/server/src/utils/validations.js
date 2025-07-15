@@ -26,7 +26,6 @@ export class Validaciones {
       dep_ide: 'Unidad Administrativa',
       bim_ser: 'Serial',
       bim_cod: 'Codigo SUDEBIP',
-      mar_ide: 'Marca',
       mod_ide: 'Modelo',
       cae_ide: 'Categoría Especifica',
       com_ide: 'Concepto de Movimiento'
