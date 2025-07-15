@@ -658,7 +658,7 @@ const handleSubmit = async (e) => {
                                         >
                                             <option value="">Seleccione una opción</option>
                                             {estado.map((item) => (
-                                                <option key={item.est_ide} value={item.est_mon}>
+                                                <option key={item.est_ide} value={item.est_ide}>
                                                     {item.est_est}
                                                 </option>
                                             ))}
