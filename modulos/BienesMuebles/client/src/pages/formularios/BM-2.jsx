@@ -114,7 +114,7 @@ export const Bm2 = () => {
         bim_cod: '',
         bim_obs: null,
         bim_sede: 'PRINCIPAL',
-        est_ide: 4,
+        est_ide: '',
         foa_ide: '',
         con_ide: '',
         esu_ide: '',
@@ -171,6 +171,14 @@ export const Bm2 = () => {
     const [subCat, setsubCat] = useState([]);
     const [catEsp, setCatEsp] = useState([]);
     const [conceptoMov, setConceptoMov] = useState([]);
+    const [estado, setEstado] = useState([]);
+
+    const estadosBien = [
+        { est_ide: 1, est_est: 'Sin etiqueta'},
+        { est_ide: 2, est_est: 'Inoperativo'},
+        { est_ide: 3, est_est: 'Faltante'},
+        { est_ide: 4, est_est: 'Operativo'}
+    ];
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -222,6 +230,7 @@ export const Bm2 = () => {
                 setmar_ide(marcasData);
                 setCatgen(categoriasGenData);
                 setConceptoMov(conceptosMovData);
+                setEstado(estadosBien);
             } catch (error) {
                 console.error('Error al cargar los datos:', error);
             }
@@ -360,7 +369,7 @@ const handleSubmit = async (e) => {
         bim_ser: formData.bim_ser,
         bim_cod: formData.bim_cod,
         bim_sede: 'PRINCIPAL',
-        est_ide: 4,
+        est_ide: formData.est_ide,
         foa_ide: formData.foa_ide,
         con_ide: formData.con_ide,
         esu_ide: formData.esu_ide,
@@ -627,7 +636,7 @@ const handleSubmit = async (e) => {
                                         </div>
                                     </div>
                                     <div className="row mb-3">
-                                        <label className="col-sm-2 col-form-label" htmlFor="basic-default-phone">Código SUDEBIN</label>
+                                        <label className="col-sm-2 col-form-label" htmlFor="basic-default-phone">Código SUDEBIP</label>
                                         <div className="col-sm-10">
                                             <input
                                                 type="text"
@@ -640,6 +649,21 @@ const handleSubmit = async (e) => {
                                             />
                                         </div>
                                     </div>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Estado</Form.Label>
+                                        <Form.Select 
+                                            name='est_ide'
+                                            value={formData.est_ide}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="">Seleccione una opción</option>
+                                            {estado.map((item) => (
+                                                <option key={item.est_ide} value={item.est_mon}>
+                                                    {item.est_est}
+                                                </option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
                                     <Form.Group className="mb-3">
                                         <Form.Label>Estado de uso</Form.Label>
                                         <Form.Select 

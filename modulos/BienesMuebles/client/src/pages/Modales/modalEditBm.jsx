@@ -23,7 +23,7 @@ const editableFields = {
     'bim_ndo': 'Número de Documento',
     'bim_val': 'Valor',
     'bim_color': 'Color',
-    'bim_cod': 'Código SUDEBIM',
+    'bim_cod': 'Código SUDEBIP',
     'bim_obs': 'Observación',
     'est_ide': 'Estado del Bien',
     'con_ide': 'Condición Física',
@@ -40,7 +40,7 @@ const columnAliasBim = {
     'bim_val': 'Valor',
     'bim_moneda': 'Moneda',
     'bim_color': 'Color',
-    'bim_cod': 'Código SUDEBIM',
+    'bim_cod': 'Código SUDEBIP',
     'bim_obs': 'Observación',
     'bim_sede': 'Sede',
     'est_ide': 'Estado del Bien',
@@ -54,7 +54,7 @@ const columnAliasBim = {
     'bim_fed': 'Fecha de Desincorporación',
     'com_ide': 'Concepto de Movimiento',
     'mod_ide': 'Modelo',
-    'bim_ser': 'Serial'
+    'bim_ser': 'Serial',
 };
 
 const estadosBien = [

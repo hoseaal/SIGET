@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Pagination, Card, Dropdown, Modal, Button, Accordion } from 'react-bootstrap';
-import moment from 'moment'; // Asegúrate de tenerlo instalado: npm install moment
+import moment from 'moment';
 
 // Nuevo componente de Modal para los detalles
 export const DetailsModal = ({ show, onHide, oldData, newData }) => {
@@ -15,7 +15,7 @@ export const DetailsModal = ({ show, onHide, oldData, newData }) => {
         'bim_moneda': 'Moneda',
         'bim_color': 'Color',
         'bim_ser': 'Serial',
-        'bim_cod': 'Código SUDEBIN',
+        'bim_cod': 'Código SUDEBIP',
         'bim_obs': 'Observación',
         'bim_sede': 'Sede',
         'est_ide': 'Estado',

@@ -11,15 +11,30 @@ export class Validaciones {
 
   static validarBienMueble (datos) {
     // Validación de campos requeridos
-    const camposRequeridos = [
-      'bim_ide', 'bim_des', 'bim_fec', 'bim_ndo',
-      'bim_val', 'bim_moneda', 'bim_sede',
-      'est_ide', 'foa_ide', 'con_ide', 'esu_ide'
-    ]
+    const camposRequeridos = {
+      bim_ide: 'Codigo',
+      bim_des: 'Descripcion',
+      bim_fec: 'Fecha',
+      bim_ndo: 'Numero de Documento',
+      bim_val: 'Valor del bien',
+      bim_moneda: 'Moneda',
+      bim_sede: 'Sede',
+      est_ide: 'estado',
+      foa_ide: 'Forma de Adquisición',
+      con_ide: 'Condicion Fisica',
+      esu_ide: 'Esatado de uso',
+      dep_ide: 'Unidad Administrativa',
+      bim_ser: 'Serial',
+      bim_cod: 'Codigo SUDEBIP',
+      mar_ide: 'Marca',
+      mod_ide: 'Modelo',
+      cae_ide: 'Categoría Especifica',
+      com_ide: 'Concepto de Movimiento'
+    }
 
-    camposRequeridos.forEach(campo => {
+    Object.entries(camposRequeridos).forEach(([campo, nombre]) => {
       if (!datos[campo] && datos[campo] !== 0) {
-        throw new Error(`El campo ${campo} es requerido`)
+        throw new Error(`El campo ${nombre} es requerido`)
       }
     })
 
@@ -35,7 +50,7 @@ export class Validaciones {
 
     Object.entries(camposNumericos).forEach(([campo, nombre]) => {
       if (datos[campo] && isNaN(Number(datos[campo]))) {
-        throw new Error(`El ${nombre} debe ser un valor numérico (campo: ${campo})`)
+        throw new Error(`El ${nombre} debe ser un valor numérico`)
       }
     })
 
@@ -62,7 +77,7 @@ export class Validaciones {
     }
 
     // Validación de moneda
-    const monedasPermitidas = ['Bolívares', 'Dólares', 'Euros']
+    const monedasPermitidas = ['Bolívares', 'Dólares']
     if (!monedasPermitidas.includes(datos.bim_moneda)) {
       throw new Error(`Moneda no permitida. Use: ${monedasPermitidas.join(', ')}`)
     }
