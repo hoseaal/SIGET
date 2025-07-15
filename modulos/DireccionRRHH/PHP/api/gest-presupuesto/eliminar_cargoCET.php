@@ -26,6 +26,21 @@
             throw new Exception('El cargo no existe');
         }
 
+        // Verificar si hay trabajadores activos con este cargo
+        $checkWorkersQuery = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM tmanom 
+            WHERE cet_ide = :position_id
+        ");
+        $checkWorkersQuery->bindParam(':position_id', $positionId, PDO::PARAM_INT);
+        $checkWorkersQuery->execute();
+        
+        $activeWorkersCount = $checkWorkersQuery->fetchColumn();
+        
+        if ($activeWorkersCount > 0) {
+            throw new Exception("No puede eliminar un cargo, el cual contiene trabajadores en activo; por favor, reasigne los $activeWorkersCount trabajadores(as).");
+        }
+
         // Preparar la consulta de eliminación
         $query = $pdo->prepare("DELETE FROM tescet WHERE cet_ide = :position_id");
         $query->bindParam(':position_id', $positionId, PDO::PARAM_INT);
