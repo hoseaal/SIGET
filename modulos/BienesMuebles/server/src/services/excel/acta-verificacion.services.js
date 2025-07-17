@@ -3,8 +3,8 @@ import ExcelJS from 'exceljs'
 import path from 'path'
 import fs from 'fs'
 
-// --- Your provided fetchApiData function ---
-const API_BASE_URL = 'http://localhost:5001' // Make sure this matches your backend URL
+// --- Función para hacer fetch a la API (sin cambios) ---
+const API_BASE_URL = 'http://localhost:5001' // Asegúrate que esta URL sea la correcta
 
 async function fetchApiData (endpoint, token) {
   const url = `${API_BASE_URL}${endpoint}`
@@ -16,12 +16,17 @@ async function fetchApiData (endpoint, token) {
   try {
     const response = await fetch(url, options)
     if (!response.ok) {
+      // Si la respuesta es un error 404, es posible que no haya datos, lo cual no es un error fatal.
+      if (response.status === 404) {
+        console.warn(`Advertencia: No se encontraron datos en ${url} (404). Se devolverá un array vacío.`)
+        return []
+      }
       throw new Error(`Error en la petición a ${url}: ${response.statusText}`)
     }
     return await response.json()
   } catch (error) {
     console.error(`Error al hacer fetch a ${url}:`, error)
-    return null // Return null or re-throw, depending on desired error handling chain
+    return [] // Devolver un array vacío en caso de error para no detener el proceso
   }
 }
 
@@ -29,26 +34,16 @@ function toUpperCase (str) {
   return str ? str.toUpperCase() : 'N/A'
 }
 
+// --- Función para extraer y aplanar los bienes de los préstamos (sin cambios) ---
 const extraerBienesPrestamo = (data) => {
-  if (!data) return []
+  if (!data || !Array.isArray(data)) return []
 
   return data.flatMap(prestamo => {
     try {
       const detalles = JSON.parse(prestamo.bienes_detalles)
-      // Si bienes_detalles es un objeto individual (no array)
-      if (!Array.isArray(detalles)) {
-        return {
-          ...detalles,
-          pre_ndo: prestamo.pre_ndo,
-          pre_fec: prestamo.pre_fec,
-          pre_est: prestamo.pre_est,
-          pre_ide: prestamo.pre_ide,
-          departamento_origen_nombre: toUpperCase(prestamo.departamento_origen_nombre),
-          departamento_destino_nombre: toUpperCase(prestamo.departamento_destino_nombre)
-        }
-      }
-      // Si bienes_detalles es un array de objetos
-      return detalles.map(d => ({
+      const bienes = Array.isArray(detalles) ? detalles : [detalles]
+
+      return bienes.map(d => ({
         ...d,
         pre_ndo: prestamo.pre_ndo,
         pre_fec: prestamo.pre_fec,
@@ -63,86 +58,121 @@ const extraerBienesPrestamo = (data) => {
     }
   }).filter(Boolean)
 }
+
 export const generarActaVerificacionExcelService = async (datos, accessToken) => {
   try {
     const { dep_ide, departamento_nombre } = datos
 
-    // --- Fetch Data ---
-    const [bienesAllData, prestamosNormalesData] = await Promise.all([
+    // 1. --- OBTENER TODOS LOS DATOS DE FORMA CONCURRENTE ---
+    const [
+      bienesAllData,
+      prestamosSalientesData, // Bienes de este dep prestados a otros
+      prestamosEntrantesData, // Bienes de otros deps prestados a este
+      bienesEnAlmacenData // Bienes de este dep en almacén
+    ] = await Promise.all([
       fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1`, accessToken),
-      fetchApiData(`/api/prestamos/normales?dep_destino_id=${dep_ide}`, accessToken)
+      fetchApiData(`/api/prestamos/normales?dep_origen_id=${dep_ide}`, accessToken),
+      fetchApiData(`/api/prestamos/normales?dep_destino_id=${dep_ide}`, accessToken),
+      fetchApiData(`/api/prestamos/almacen?dep_origen_id=${dep_ide}`, accessToken)
     ])
-    if (!bienesAllData && !prestamosNormalesData) {
-      throw new Error('No se pudo obtener datos de bienes ni de préstamos para el departamento.')
-    }
 
-    // Process fetched data
-    const allBienes = Object.values(bienesAllData || {}) // Convert object to array
-    const prestamoBienes = extraerBienesPrestamo(prestamosNormalesData)
-    // Create a set of bim_ide from prestamos for quick lookup
-    const prestamoBimIds = new Set(prestamoBienes.map(b => b.bim_ide))
+    // 2. --- PROCESAR Y ESTRUCTURAR LOS DATOS ---
+    const bienesDelDepartamento = Object.values(bienesAllData || {})
+    const prestamosSalientes = extraerBienesPrestamo(prestamosSalientesData)
+    const prestamosEntrantes = extraerBienesPrestamo(prestamosEntrantesData)
+    const bienesEnAlmacen = extraerBienesPrestamo(bienesEnAlmacenData)
 
-    // Consolidate data for Excel rows
+    // Crear Maps para una búsqueda rápida y eficiente por ID del bien (bim_ide)
+    const salientesMap = new Map(prestamosSalientes.map(b => [b.bim_ide, b]))
+    const almacenMap = new Map(bienesEnAlmacen.map(b => [b.bim_ide, b]))
+
+    // 3. --- CONSOLIDAR LA LISTA DE BIENES Y ASIGNAR OBSERVACIONES ---
     const excelRows = []
     let counter = 1
 
-    // Add bienes from /api/prestamos/normales first, as they have specific observation logic
+    // Procesar la lista principal de bienes que pertenecen al departamento
+    bienesDelDepartamento.forEach(bien => {
+      let observacion = bien.bim_obs || '' // Observación por defecto
+      const direccion = toUpperCase(departamento_nombre) // Dirección por defecto
 
-    // Add bienes from /api/bienes/all that are NOT already in prestamos
-    allBienes.forEach(bien => {
-      if (!prestamoBimIds.has(bien.bim_ide)) {
-        excelRows.push({
-          num: counter++,
-          bim_ide: bien.bim_ide,
-          bim_des: bien.bim_des,
-          direccion: departamento_nombre, // Assuming this is the department for non-loaned items
-          observacion: bien.bim_obs || '' // Use bim_obs if it exists
-        })
+      // JERARQUÍA DE OBSERVACIONES:
+      // 1. ¿Está en almacén? (Máxima prioridad)
+      if (almacenMap.has(bien.bim_ide)) {
+        observacion = 'Mal estado (ubicado en Almacen para su resguardo)'
+
+      // 2. Si no, ¿está prestado a otro departamento?
+      } else if (salientesMap.has(bien.bim_ide)) {
+        const prestamo = salientesMap.get(bien.bim_ide)
+        // La observación indica a dónde se fue el bien
+        observacion = `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
       }
-    })
 
-    prestamoBienes.forEach(prestamoBien => {
       excelRows.push({
         num: counter++,
-        bim_ide: prestamoBien.bim_ide,
-        bim_des: prestamoBien.bim_des, // Use full description if available
-        direccion: prestamoBien.departamento_origen_nombre, // Or departamento_destino_nombre from the main prestamo object
-        observacion: `Bien prestado a ${prestamoBien.departamento_destino_nombre} por ${prestamoBien.departamento_origen_nombre}`
+        bim_ide: bien.bim_ide,
+        bim_des: bien.bim_des,
+        direccion,
+        observacion
       })
     })
 
-    // --- Create Workbook and Worksheet ---
+    // Añadir los bienes que están prestados EN ESTE departamento (vienen de otros)
+    prestamosEntrantes.forEach(prestamoBien => {
+      excelRows.push({
+        num: counter++,
+        bim_ide: prestamoBien.bim_ide,
+        bim_des: prestamoBien.bim_des,
+        // La dirección es de dónde vino el bien
+        direccion: toUpperCase(prestamoBien.departamento_origen_nombre),
+        // La observación indica que está aquí temporalmente
+        observacion: `Este bien pertenece a ${prestamoBien.departamento_origen_nombre} y se encuentra en calidad de préstamo en esta dirección.`
+      })
+    })
+
+    if (dep_ide === 11) {
+      const todosEnAlmacenData = await fetchApiData('/api/prestamos/almacen', accessToken)
+      const bienesEnAlmacen = extraerBienesPrestamo(todosEnAlmacenData)
+
+      bienesEnAlmacen.forEach(prestamoBien => {
+        excelRows.push({
+          num: counter++,
+          bim_ide: prestamoBien.bim_ide,
+          bim_des: prestamoBien.bim_des,
+          direccion: prestamoBien.departamento_origen_nombre,
+          observacion: `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} pero se encuentra en almacén para su resguardo`
+        })
+      })
+    }
+
+    // 4. --- CREACIÓN DEL DOCUMENTO EXCEL (CÓDIGO SIN CAMBIOS) ---
     const workbook = new ExcelJS.Workbook()
     workbook.creator = 'Contraloría del Estado Táchira'
     workbook.lastModifiedBy = 'Sistema de Bienes Nacionales'
     workbook.created = new Date()
     workbook.modified = new Date()
-    workbook.properties.date1904 = false // Excel's default date system
+    workbook.properties.date1904 = false
 
     const worksheet = workbook.addWorksheet(`Verificación ${departamento_nombre}`)
 
-    // --- Add Logo ---
+    // --- Añadir Logo ---
     try {
-      // Adjust this path if 'public/img' is not directly under your project root
       const logoPath = path.join(process.cwd(), 'public', 'img', 'logo-contraloria-home1.png')
-
       if (fs.existsSync(logoPath)) {
         const logo = workbook.addImage({
           buffer: fs.readFileSync(logoPath),
           extension: 'png'
         })
-        // Posicionar el logo de A1 a A3 (ajustado para no fusionarse con el texto)
         worksheet.addImage(logo, 'A1:B3')
       } else {
-        console.warn('Advertencia: El archivo del logo no se encontró en la ruta especificada:', logoPath)
+        console.warn('Advertencia: El archivo del logo no se encontró en:', logoPath)
       }
     } catch (logoError) {
       console.warn('Advertencia: No se pudo procesar el logo.', logoError.message)
     }
 
-    // --- Main Header Text ---
-    worksheet.mergeCells('C1:E8') // Fusión de celdas como lo pediste
-    const headerCell = worksheet.getCell('C1') // Accedemos a la celda fusionada (B1 es el inicio de la fusión)
+    // --- Encabezado principal ---
+    worksheet.mergeCells('C1:E8')
+    const headerCell = worksheet.getCell('C1')
     headerCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
     headerCell.font = { name: 'Arial', size: 12 }
 
@@ -150,45 +180,29 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`
 
     const headerText = [
-      'REPORTE DE VERIFICACION DEL INVENTARIO DE BIENES MUEBLES',
-      'UNIDAD EJECUTORA: CONTRALORÍA DEL ESTADO TACHIRA',
-      'DIRECCION O UNIDAD ADMINISTRATIVA: DIRECCION DE ADMINISTRACION',
-      `FECHA DEL REPORTE: ${formattedDate}`,
-      `${departamento_nombre}` // Departamento actual enviado en el body
+      'REPÚBLICA BOLIVARIANA DE VENEZUELA',
+      'CONTRALORÍA DEL ESTADO TÁCHIRA',
+      'DIRECCIÓN DE ADMINISTRACIÓN Y SERVICIOS',
+      'COORDINACIÓN DE BIENES',
+      `ACTA DE VERIFICACIÓN DE BIENES MUEBLES DE LA UNIDAD DE: ${toUpperCase(departamento_nombre)}`,
+      `FECHA: ${formattedDate}`
     ].join('\n')
 
     headerCell.value = headerText
+    headerCell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
 
-    // Optional: Add borders to header cell
-    headerCell.border = {
-      top: { style: 'thin' },
-      left: { style: 'thin' },
-      bottom: { style: 'thin' },
-      right: { style: 'thin' }
-    }
-
-    // --- Column Headers ---
-    // Start column headers below the main header, e.g., row 9 (assuming header is B1:G7 and logo A1:A3)
-    const columnHeaderRowNumber = 9 // Adjust this row number as needed based on header height
+    // --- Cabeceras de las columnas ---
+    const columnHeaderRowNumber = 9
     worksheet.getRow(columnHeaderRowNumber).values = ['Nº', 'Nº DEL BIEN', 'DESCRIPCION', 'DIRECCION', 'OBSERVACION']
 
-    // Apply styling to column headers
     worksheet.getRow(columnHeaderRowNumber).eachCell((cell) => {
       cell.font = { bold: true, size: 10, name: 'Arial' }
       cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } }
-      if (cell === 'DESCRIPCION') {
-        cell.width = 12
-      } // Light grey background
-      cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' }
-      }
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
     })
 
-    // --- Populate Rows ---
+    // --- Poblar las filas con los datos consolidados ---
     const startDataRow = columnHeaderRowNumber + 1
     excelRows.forEach((rowData, index) => {
       const row = worksheet.getRow(startDataRow + index)
@@ -199,35 +213,46 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
         rowData.direccion,
         rowData.observacion
       ]
-
-      // Apply general row styling
       row.eachCell((cell) => {
         cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true }
         cell.font = { name: 'Arial', size: 10 }
-        cell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' }
-        }
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
       })
     })
 
-    // --- Adjust Column Widths ---
+    // --- Ajustar anchos de columna ---
     worksheet.columns = [
       { key: 'num', width: 5 },
       { key: 'bim_ide', width: 15 },
       { key: 'bim_des', width: 50 },
       { key: 'direccion', width: 30 },
-      { key: 'observacion', width: 40 }
+      { key: 'observacion', width: 45 }
     ]
 
-    // --- Generate Excel Buffer ---
+    // --- Firmas al final del documento ---
+    const lastRow = worksheet.lastRow.number
+    const firmaRow1 = worksheet.getRow(lastRow + 4)
+    worksheet.mergeCells(`B${firmaRow1.number}:C${firmaRow1.number}`)
+    worksheet.mergeCells(`D${firmaRow1.number}:E${firmaRow1.number}`)
+
+    const cellJefeUnidad = worksheet.getCell(`B${firmaRow1.number}`)
+    cellJefeUnidad.value = 'JEFE DE LA UNIDAD'
+    cellJefeUnidad.alignment = { horizontal: 'center' }
+    cellJefeUnidad.font = { bold: true }
+    worksheet.getCell(`B${firmaRow1.number - 1}`).border = { top: { style: 'thin' } }
+
+    const cellAnalistaBienes = worksheet.getCell(`D${firmaRow1.number}`)
+    cellAnalistaBienes.value = 'ANALISTA DE BIENES'
+    cellAnalistaBienes.alignment = { horizontal: 'center' }
+    cellAnalistaBienes.font = { bold: true }
+    worksheet.getCell(`D${firmaRow1.number - 1}`).border = { top: { style: 'thin' } }
+
+    // --- Generar Buffer ---
     const buffer = await workbook.xlsx.writeBuffer()
 
-    // --- Define Filename ---
-    const datePart = new Date().toISOString().split('T')[0] // YYYY-MM-DD
-    const departmentNameClean = datos.departamento_nombre.replace(/[^a-zA-Z0-9]/g, '_')
+    // --- Nombre del archivo ---
+    const datePart = new Date().toISOString().split('T')[0]
+    const departmentNameClean = departamento_nombre.replace(/[^a-zA-Z0-9]/g, '_')
     const excelFileName = `Acta_Verificacion_Bienes_${departmentNameClean}_${datePart}.xlsx`
 
     return {
@@ -235,7 +260,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       excelFileName
     }
   } catch (error) {
-    console.error('Error in generarActaVerificacionExcelService:', error)
-    throw error // Re-throw to be caught by the controller
+    console.error('Error en generarActaVerificacionExcelService:', error)
+    throw error
   }
 }
