@@ -497,7 +497,7 @@ export const Categorias = () => {
                         show={showcatEsUpModal}
                         handleClose={() => setShowcatEsUpModal(false)}
                         columns={columns3}
-                        tableName='tesscae'
+                        tableName='tescae'
                         rowData={editingItem} // Pasa el item específico a editar
                         foreign='tessca'
                         onSuccess={handleSuccess}
@@ -506,7 +506,7 @@ export const Categorias = () => {
                     <ModalDelete 
                         show={showcatEsDelModal}
                         handleClose={() => setShowcatEsDelModal(false)}
-                        tableName="tesscae"
+                        tableName="tescae"
                         rowId={deleteItem} 
                         idColumn={idColumn3} 
                         onSuccess={handleSuccess} 
