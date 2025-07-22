@@ -165,7 +165,7 @@ CREATE TABLE `tmab_m` (
   `bim_des` text NOT NULL COMMENT 'Descripcion del bien',
   `bim_fec` date NOT NULL COMMENT 'Fecha de adquisicion del bien',
   `bim_ndo` varchar(10) NOT NULL COMMENT 'Numero de documento (factura) del bien',
-  `bim_val` decimal(10,0) NOT NULL COMMENT 'Valor monetario de adquisicion del bien ',
+  `bim_val` decimal(10,2) NOT NULL COMMENT 'Valor monetario de adquisicion del bien ',
   `bim_moneda` varchar(10) NOT NULL COMMENT 'Moneda en la que esta el valor del bien (Bolivares)',
   `bim_color` varchar(30) NOT NULL COMMENT 'Color del bien',
   `bim_ser` varchar(30) NOT NULL COMMENT 'Serial del bien',

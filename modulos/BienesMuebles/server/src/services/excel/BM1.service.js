@@ -112,7 +112,11 @@ class ExcelService {
     // --- Datos de la Base de Datos (a partir de la fila 10) ---
     const bienes = await BienModel.getBM1ForExcel()
 
+    let totalValor = 0
+
     bienes.forEach(bien => {
+      totalValor += Number(bien.bim_val) || 0
+
       worksheet.addRow({
         categoria_general: bien.categoria_general,
         subcategoria: bien.subcategoria,
@@ -126,21 +130,58 @@ class ExcelService {
 
     // Aplicar bordes a las celdas de datos y formatear el valor
     worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber > 9) { // Aplicar a partir de la fila 10 (después de los encabezados)
+      if (rowNumber > 9) {
         row.height = 30
         row.eachCell((cell, colNumber) => {
           cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
-          cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
+          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+
+          // Formatear la columna 'Valor' como moneda y 'Cantidad' como número
+          const valorColIndex = columnDefinitions.findIndex(col => col.key === 'bim_val') + 1
+          const cantidadColIndex = columnDefinitions.findIndex(col => col.key === 'cantidad') + 1
+
+          if (colNumber === valorColIndex) {
+            cell.numFmt = '#,##0.00'
           }
-          // Formatear la columna 'Valor' como moneda
-          if (colNumber === columnDefinitions.findIndex(col => col.key === 'bim_val') + 1) {
-            cell.numFmt = '#,##0.00' // Formato de número con dos decimales y separador de miles
+          if (colNumber === cantidadColIndex) {
+            cell.numFmt = '0'
           }
         })
+      }
+    })
+
+    const totalRow = worksheet.addRow([]) // Añadir una fila vacía para obtener su número
+    const totalRowNum = totalRow.number
+    totalRow.height = 30
+
+    // Combinar celdas para la etiqueta principal
+    worksheet.mergeCells(`A${totalRowNum}:C${totalRowNum}`)
+    const labelCell = worksheet.getCell(`A${totalRowNum}`)
+    labelCell.value = 'TOTALES'
+    labelCell.font = { name: 'Arial', size: 12, bold: true }
+    labelCell.alignment = { vertical: 'middle', horizontal: 'center' }
+
+    // Añadir la cantidad total de bienes en la columna 'Cantidad' (D)
+    const totalCountCell = totalRow.getCell('D')
+    totalCountCell.value = bienes.length // Total de filas generadas
+    totalCountCell.font = { name: 'Arial', size: 12, bold: true }
+    totalCountCell.alignment = { vertical: 'middle', horizontal: 'center' }
+    totalCountCell.numFmt = '0'
+
+    // Añadir el monto total en la columna 'Valor' (G)
+    const totalValueCell = totalRow.getCell('G')
+    totalValueCell.value = totalValor // Suma de la columna bim_val
+    totalValueCell.font = { name: 'Arial', size: 12, bold: true }
+    totalValueCell.numFmt = '#,##0.00' // Formato de moneda
+    totalValueCell.alignment = { vertical: 'middle', horizontal: 'center' }
+
+    // Aplicar bordes a todas las celdas de la fila de totales para consistencia
+    totalRow.eachCell({ includeEmpty: true }, (cell) => {
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
       }
     })
 

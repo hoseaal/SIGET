@@ -71,8 +71,8 @@ export class Validaciones {
     }
 
     // Validación de valores monetarios
-    if (Number(datos.bim_val) <= 0) {
-      throw new Error('El valor debe ser mayor a cero')
+    if (Number(datos.bim_val) < 0) {
+      throw new Error('El valor debe ser mayor o igual a cero')
     }
 
     // Validación de moneda
