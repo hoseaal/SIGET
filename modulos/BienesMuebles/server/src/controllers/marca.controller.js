@@ -9,6 +9,15 @@ export const obtenerMarcas = async (req, res) => {
   }
 }
 
+export const obtenerMarcasAlfabeticamente = async (req, res) => {
+  try {
+    const marcas = await MarcaService.obtenerTodasAlfabeticamente()
+    res.json(marcas)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
 export const obtenerMarca = async (req, res) => {
   try {
     const { id } = req.params

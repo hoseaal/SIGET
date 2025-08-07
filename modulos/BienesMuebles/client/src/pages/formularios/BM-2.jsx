@@ -196,7 +196,7 @@ export const Bm2 = () => {
                     fetch('/api/formas-adquisicion'),
                     fetch('/api/estados-uso'),
                     fetch('/api/condiciones-fisicas'),
-                    fetch('/api/marcas', { credentials: 'include' } ),
+                    fetch('/api/marcas/alfabeticamente', { credentials: 'include' }),
                     fetch('/api/categorias'),
                     fetch('/api/conceptos-movimiento')
                 ]);

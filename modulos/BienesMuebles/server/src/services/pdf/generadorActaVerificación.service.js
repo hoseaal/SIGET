@@ -9,6 +9,74 @@ import fetch from 'node-fetch'
 
 const API_BASE_URL = 'http://localhost:5001'
 
+function formatCurrentDateTime () {
+  const now = new Date()
+  const day = now.getDate()
+  const monthNames = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ]
+  const month = monthNames[now.getMonth()]
+  const mes = now.getMonth() + 1
+  const year = now.getFullYear()
+  const yearInWords = numberToWords(year)
+
+  const fechacorta = `${day}/${mes}/${year}`
+  console.log(fechacorta)
+  return {
+    day,
+    month,
+    yearInWords,
+    fechacorta
+  }
+}
+
+function numberToWords (num) {
+  const units = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve']
+  const teens = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve']
+  const tens = ['', 'diez', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa']
+  const hundreds = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos']
+
+  if (num === 0) return 'cero'
+
+  function convertLessThanOneThousand (n) {
+    if (n < 10) return units[n]
+    if (n < 20) return teens[n - 10]
+    if (n < 100) {
+      const ten = tens[Math.floor(n / 10)]
+      const unit = units[n % 10]
+      if (ten === 'veinte') {
+        return unit ? 'veinti' + unit : 'veinte'
+      } else {
+        return ten + (unit ? ' y ' + unit : '')
+      }
+    }
+    // For numbers like 100, 200...
+    if (n === 100) return 'cien'
+    const hundred = hundreds[Math.floor(n / 100)]
+    const rest = convertLessThanOneThousand(n % 100)
+    return hundred + (rest ? ' ' + rest : '')
+  }
+
+  if (num < 1000) return convertLessThanOneThousand(num)
+  // For "dos mil veinticinco" (2025) format for years, we only need up to thousands
+  const thousands = Math.floor(num / 1000)
+  const remainder = num % 1000
+
+  let result = ''
+  if (thousands === 1) { // "mil"
+    result += 'mil'
+  } else { // "dos mil", "tres mil"
+    result += units[thousands] + ' mil'
+  }
+
+  if (remainder > 0) {
+    result += ' ' + convertLessThanOneThousand(remainder)
+  }
+
+  return result.trim()
+}
+
 async function fetchApiData (endpoint, token) {
   const url = `${API_BASE_URL}${endpoint}`
   const options = {
@@ -116,6 +184,10 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       // Calcular TOTAL como suma de las filas (excepto préstamos de otros)
       const totalBienesTabla = countEnServicio + countFaltantes + countMalEstado + countPrestadosAOtro + countPrestadosDeOtro
 
+      const { day, month, yearInWords, fechacorta } = formatCurrentDateTime()
+
+      console.log(fechacorta)
+
       // Crear PDF
       const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true })
       const tempDir = path.join(process.cwd(), 'temp')
@@ -139,11 +211,9 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       doc.moveDown(2)
 
       // Párrafo introductorio
-      const fechaLarga = '15 días del mes de junio de 2025'
-      const fechaCorta = '15/06/2025'
 
       doc.font('Helvetica').fontSize(12)
-      const parrafo = `En San Cristóbal a los ${fechaLarga} reunidos en el ${departamentoNombreUpper} los Ciudadanos: ${datosPost.director_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.director_cedula || 'N/A'} (${datosPost.director_cargo || 'N/A'}) y Lcda. ${datosPost.analista_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.analista_cedula || 'N/A'} (Analista de Bienes e Inventarios I), para dejar constancia de la verificación por percepción directa del inventario físico al ${fechaCorta}, fecha del reporte BM1 bienes adscritos a la Unidad antes mencionada, los cuales ascienden a un total de ${totalBienesTabla} bienes, según la relación de bienes muebles formulario BM-1.`
+      const parrafo = `En la ciudad de San Cristóbal a los ${day} días del mes de ${month} del año ${yearInWords} reunidos en la dirección de ${departamentoNombreUpper} los Ciudadanos: ${datosPost.director_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.director_cedula || 'N/A'} (${datosPost.director_cargo || 'N/A'}) y Lcda. ${datosPost.analista_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.analista_cedula || 'N/A'} (Analista de Bienes e Inventarios I), para dejar constancia de la verificación por percepción directa del inventario físico al ${fechacorta}, fecha del reporte BM1 bienes adscritos a la Unidad antes mencionada, los cuales ascienden a un total de ${totalBienesTabla} bienes, según la relación de bienes muebles formulario BM-1.`
       doc.text(parrafo, { align: 'justify' })
       doc.moveDown(2)
 

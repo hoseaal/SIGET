@@ -9,6 +9,15 @@ export const obtenerModelos = async (req, res) => {
   }
 }
 
+export const obtenerModelosAlfabeticamente = async (req, res) => {
+  try {
+    const modelos = await ModeloService.obtenerTodosAlfabeticamente()
+    res.json(modelos)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
 export const obtenerModelo = async (req, res) => {
   try {
     const { id } = req.params

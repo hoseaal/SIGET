@@ -9,7 +9,7 @@ const foreignKeyEndpoints = {
     'foa_ide': '/api/formas-adquisicion',
     'esu_ide': '/api/estados-uso',
     'con_ide': '/api/condiciones-fisicas',
-    'mod_ide': '/api/modelos',
+    'mod_ide': '/api/modelos/alfabeticamente',
     'mar_ide': '/api/marcas',
     'cae_ide': '/api/categorias',
     'com_ide': '/api/conceptos-movimiento',

@@ -1,6 +1,7 @@
 import express from 'express'
 import {
   obtenerModelos,
+  obtenerModelosAlfabeticamente,
   obtenerModelo,
   obtenerModelosPorMarca,
   crearModelo,
@@ -11,6 +12,7 @@ import {
 const router = express.Router()
 
 router.get('/', obtenerModelos)
+router.get('/alfabeticamente', obtenerModelosAlfabeticamente)
 router.get('/:id', obtenerModelo)
 router.get('/por-marca/:marId', obtenerModelosPorMarca)
 router.post('/', crearModelo)

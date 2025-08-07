@@ -7,6 +7,11 @@ export class MarcaModel {
     return rows
   }
 
+  static async getAllAlphabetically () {
+    const [rows] = await pool.query('SELECT mar_ide, mar_mar FROM tmamar ORDER BY mar_mar')
+    return rows
+  }
+
   static async getById (id) {
     const [rows] = await pool.query(
       'SELECT mar_ide, mar_mar FROM tmamar WHERE mar_ide = ?',

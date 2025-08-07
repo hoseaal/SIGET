@@ -6,6 +6,10 @@ export class MarcaService {
     return await MarcaModel.getAll()
   }
 
+  static async obtenerTodasAlfabeticamente () {
+    return await MarcaModel.getAllAlphabetically()
+  }
+
   static async obtenerPorId (id) {
     const marca = await MarcaModel.getById(id)
     if (!marca) throw new Error('Marca no encontrada')

@@ -6,6 +6,10 @@ export class ModeloService {
     return await ModeloModel.getAll()
   }
 
+  static async obtenerTodosAlfabeticamente () {
+    return await ModeloModel.getAllAlphabetically()
+  }
+
   static async obtenerPorId (id) {
     const modelo = await ModeloModel.getById(id)
     if (!modelo) throw new Error('Modelo no encontrado')
