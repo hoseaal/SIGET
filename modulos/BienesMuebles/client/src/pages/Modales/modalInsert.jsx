@@ -30,7 +30,18 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
     };
 
     useEffect(() => {
-        if (foreign && show) {
+        if (foreign === 'tmamar' && show ) {
+            const fetchForeign = async () => {
+                try {
+                    const res = await fetch(`/api/marcas/alfabeticamente`);
+                    const data = await res.json();
+                    setForeignTable(data);
+                } catch (error) {
+                    console.error('Error al obtener datos foráneos:', error);
+                }
+            };
+            fetchForeign();
+        } else if (foreign && show) { 
             const fetchForeign = async () => {
                 try {
                     const res = await fetch(`${endpointMap[foreign]}`);
