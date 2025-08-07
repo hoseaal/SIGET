@@ -29,7 +29,20 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
     }, [show, rowData]);
 
     useEffect(() => {
-        if (show && foreign) {
+        if (foreign === 'tmamar' && show ) {
+            const fetchForeignData = async () => {
+                try {
+                    const response = await fetch(`/api/marcas/alfabeticamente`);
+                    if (!response.ok) throw new Error('Error al obtener datos');
+                    const data = await response.json();
+                    setForeignTable(data);
+                } catch (error) {
+                    console.error(`Error al obtener datos de ${foreign}:`, error);
+                    setErrorMessage(`Error al cargar datos de ${foreign}`);
+                }
+            };
+            fetchForeignData();
+        } else if (show && foreign) {
             const fetchForeignData = async () => {
                 try {
                     const response = await fetch(`${endpointMap[foreign]}`);
