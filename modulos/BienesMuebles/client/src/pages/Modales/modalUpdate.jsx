@@ -11,6 +11,44 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
     const [errorMessage, setErrorMessage] = useState(''); 
     const [foreignTable, setForeignTable] = useState([]);
 
+    const tipo = [
+                {
+                    "usu_tip": 1,
+                    "tipo": "Visualizador"
+                },
+                {
+                    "usu_tip": 2,
+                    "tipo": "Temporal"
+                },
+                {
+                    "usu_tip": 3,
+                    "tipo": "Trabajador"
+                },
+                {
+                    "usu_tip": 4,
+                    "tipo": "Jefe de area"
+                },
+                {
+                    "usu_tip": 5,
+                    "tipo": "Administrador"
+                }
+            ];
+
+            const modulos = [
+                {
+                    "usu_mod": 1,
+                    "mod": "Acceso Global"
+                },
+                {
+                    "usu_mod": 2,
+                    "mod": "Modulo de Recursos Humanos"
+                },
+                {
+                    "usu_mod": 3,
+                    "mod": "Modulo de Bienes Muebles"
+                }
+            ];
+
     const endpointMap = {
         tmacat: '/api/categorias',
         tessca: '/api/subcategorias',
@@ -21,6 +59,10 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
         tesusu: '/api/user',
         tmacom: '/api/conceptos-movimiento',
     };
+
+    if (tableName === 'tesusu' ) {
+        columns = columns.filter(col => col.originalName !== 'usu_tip' && col.originalName !== 'usu_mod');
+    }
 
     useEffect(() => {
         if (show && rowData) {
@@ -149,12 +191,14 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
                                                 {displayField ? item[displayField] : item[ideField]}
                                             </option>
                                         ))}
+                                    
                                     </Form.Select>
                                 </Form.Group>
                             );
                         }
 
                         return (
+                            
                             <Form.Group key={index} className="mb-3">
                                 <Form.Label>{column.displayName}</Form.Label>
                                 <Form.Control
@@ -166,9 +210,51 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
                                     required={column.isPrimaryKey}
                                     disabled={isFieldDisabled(column)}
                                 />
+                                
                             </Form.Group>
-                        );
+                        );          
                     })}
+                    {tableName === 'tesusu' && (
+                        <>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Tipo de Usuario</Form.Label>
+                                <Form.Select
+                                    name="usu_tip"
+                                    value={formData.usu_tip || ''}
+                                    onChange={handleChange}
+                                >
+                                    <option value="">Seleccione una opción</option>
+                                    {tipo.map((item) => (
+                                        <option 
+                                            key={item.usu_tip} 
+                                            value={item.usu_tip}
+                                        >
+                                            {item.tipo}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Módulo de Usuario</Form.Label>
+                                <Form.Select
+                                    name="usu_mod"
+                                    value={formData.usu_mod || ''}
+                                    onChange={handleChange}
+                                >
+                                    <option value="">Seleccione una opción</option>
+                                    {modulos.map((item) => (
+                                        <option 
+                                            key={item.usu_mod} 
+                                            value={item.usu_mod}
+                                        >
+                                            {item.mod}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </>
+                    )}
+                   
                 </Form>
             </Modal.Body>
             <Modal.Footer>
