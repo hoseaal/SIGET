@@ -3,6 +3,7 @@ import { Modal, Button, Form, Alert, Row, Col } from 'react-bootstrap';
 import Select from 'react-select';
 
 function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
+
     const [formData, setFormData] = useState({
         pre_ndo: '',           // Número de oficio
         pre_fec: new Date().toISOString().slice(0, 10), // Fecha actual por defecto
@@ -79,8 +80,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             const depOrigenId = parseInt(formData.dep_origen_ide);
             const bienesFiltrados = bienesDisponibles.filter(bien =>
                 bien.dep_ide === depOrigenId && // Bienes que pertenecen al departamento de origen seleccionado
-                bien.con_ide !== CONDICION_FISICA_EXCLUIDA && // No "Mal estado en almacén"
-                bien.dep_ide !== DEPARTAMENTO_ALMACEN_ID // No del departamento "Almacén"
+                bien.con_ide !== CONDICION_FISICA_EXCLUIDA // No "Mal estado en almacén"
             );
             setFilteredBienes(bienesFiltrados);
             // Si los bienes seleccionados ya no están en el filteredBienes, removerlos
@@ -129,13 +129,6 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
 
         if (formData.dep_origen_ide === formData.dep_ide) {
             setErrorMessage('El Departamento de Origen y el Departamento de Destino no pueden ser el mismo.');
-            setShowAlert(true);
-            return;
-        }
-
-        // Exclusión de Departamento "Almacén" como destino para préstamos normales
-        if (parseInt(formData.dep_ide) === DEPARTAMENTO_ALMACEN_ID) {
-            setErrorMessage('No se puede realizar un préstamo normal al Departamento de Almacén. Use la gestión de "Bienes en Mal Estado".');
             setShowAlert(true);
             return;
         }
@@ -245,7 +238,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                 >
                                     <option value="">Seleccione un departamento</option>
                                     {departamentos
-                                        .filter(dep => dep.dep_ide !== DEPARTAMENTO_ALMACEN_ID && dep.dep_ide !== parseInt(formData.dep_ide)) // Excluir "Almacén" y el destino
+                                        .filter(dep => dep.dep_ide !== parseInt(formData.dep_ide)) // Excluir "Almacén" y el destino
                                         .map(dep => (
                                             <option key={dep.dep_ide} value={dep.dep_ide}>
                                                 {dep.dep_nom}
@@ -266,7 +259,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                 >
                                     <option value="">Seleccione un departamento</option>
                                     {departamentos
-                                        .filter(dep => dep.dep_ide !== DEPARTAMENTO_ALMACEN_ID && dep.dep_ide !== parseInt(formData.dep_origen_ide)) // Excluir "Almacén" y el origen
+                                        .filter(dep => dep.dep_ide !== parseInt(formData.dep_origen_ide)) // Excluir "Almacén" y el origen
                                         .map(dep => (
                                             <option key={dep.dep_ide} value={dep.dep_ide}>
                                                 {dep.dep_nom}
