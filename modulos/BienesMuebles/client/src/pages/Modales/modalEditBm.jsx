@@ -199,7 +199,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
 
             console.log(changedFields)
 
-            if (prestamoInfo !== null && bienData.con_ide === 4 &&  changedFields.con_ide !== null && changedFields.con_ide !== undefined && changedFields.con_ide !== 4) {
+            if (prestamoInfo !== null) {
                 throw new Error('No se puede cambiar la condición física del bien mientras esté prestado.');
             }
 

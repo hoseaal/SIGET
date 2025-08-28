@@ -44,11 +44,6 @@ export class PrestamoService {
       if (bienExists.dep_ide === dep_ide) {
         throw new Error(`El bien con ID '${bim_ide}' ya se encuentra en el departamento de destino (${bienExists.departamento}).`)
       }
-
-      // Validación para movimientos a almacén por mal estado (frontend también valida, pero doble check)
-      if (dep_ide === DEP_ALMACEN_ID && bienExists.con_ide !== CON_MAL_ESTADO_ID) {
-        throw new Error(`El bien con ID '${bim_ide}' no puede ser trasladado a almacén por mal estado, ya que su condición no es 'Mal Estado'.`)
-      }
     }
     return await PrestamoModel.create(data)
   }
