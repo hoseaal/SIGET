@@ -690,8 +690,8 @@ CREATE TABLE `bit_pri` (
 
 CREATE TABLE ttrpre (
     pre_ide INT PRIMARY KEY AUTO_INCREMENT COMMENT 'Identificador unico de prestamo',
-    pre_fec DATE NOT NULL COMMENT 'fecha del prestamo',
-    pre_ndo VARCHAR(50) NOT NULL UNIQUE COMMENT 'Número de documento (oficio)', 
+    pre_fec DATE COMMENT 'fecha del prestamo',
+    pre_ndo VARCHAR(50) NOT NULL COMMENT 'Número de documento (oficio)', 
     dep_ide INT NOT NULL COMMENT 'Departamento donde está prestado el bien (destino)', 
     pre_est TINYINT NOT NULL DEFAULT 1 COMMENT 'Estatus del préstamo (1: activo, 0: inactivo/devuelto)', 
     FOREIGN KEY (dep_ide) REFERENCES tesdep(dep_ide)
@@ -710,6 +710,10 @@ CREATE TABLE ttrdpr (
 ALTER TABLE ttrpre
 ADD COLUMN dep_origen_ide INT NOT NULL COMMENT 'Departamento de origen de los bienes en este prestamo',
 ADD CONSTRAINT fk_ttrpre_dep_origen FOREIGN KEY (dep_origen_ide) REFERENCES tesdep(dep_ide);
+
+ALTER TABLE ttrpre
+ADD COLUMN pre_tip VARCHAR(20) NOT NULL COMMENT 'Tipo de préstamo (oficio, transferencia)';
+
 
 CREATE TABLE rep_mensual (
     id INT PRIMARY KEY AUTO_INCREMENT COMMENT "Identificador único del registro.",

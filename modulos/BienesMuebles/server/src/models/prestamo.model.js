@@ -16,15 +16,15 @@ export class PrestamoModel {
    * @param {string[]} data.bienes - Array de bim_ide de los bienes prestados.
    * @returns {Promise<object>} Objeto del préstamo creado.
    */
-  static async create ({ pre_fec, pre_ndo, dep_ide, dep_origen_ide, bienes }) {
+  static async create ({ pre_fec, pre_tip, pre_ndo, dep_ide, dep_origen_ide, bienes }) {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
 
       // Insertar el préstamo principal
       const [resultPrestamo] = await connection.query(
-        'INSERT INTO ttrpre (pre_fec, pre_ndo, dep_ide, dep_origen_ide) VALUES (?, ?, ?, ?)',
-        [pre_fec, pre_ndo, dep_ide, dep_origen_ide]
+        'INSERT INTO ttrpre (pre_fec, pre_tip, pre_ndo, dep_ide, dep_origen_ide) VALUES (?, ?, ?, ?, ?)',
+        [pre_fec, pre_tip, pre_ndo, dep_ide, dep_origen_ide]
       )
       const pre_ide = resultPrestamo.insertId
 

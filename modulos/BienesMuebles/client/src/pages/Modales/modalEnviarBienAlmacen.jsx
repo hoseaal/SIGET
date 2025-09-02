@@ -183,7 +183,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
     // Opciones para react-select, mostrando solo los bienes filtrados
     const bienOptions = filteredBienes.map(bien => ({
         value: bien.bim_ide,
-        label: `${bien.bim_cod || 'N/A'} - ${bien.bim_des}`, // Usar bim_cod y bim_des para el label
+        label: `${bien.bim_ide || 'N/A'} - ${bien.bim_des}`, // Usar bim_ide y bim_des para el label
     }));
 
     return (
