@@ -5,6 +5,9 @@ import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo';
 import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
 export const Almacen = () => {
+    const DEP_ALMACEN_03 = 11; // ID del departamento "Almacén"
+    const DEP_ALMACEN_04 = 9; // ID del departamento "Almacén"
+
     const [data, setData] = useState([]);
     const [departamentos, setDepartamentos] = useState([]); // Para cargar la lista de departamentos
     const [loading, setLoading] = useState(true); // Estado de carga
@@ -18,6 +21,7 @@ export const Almacen = () => {
     // Filtros: solo necesitamos el departamento de origen para esta vista
     const [filtros, setFiltros] = useState({
         dep_origen_id: '',   // Cadena vacía para "Todos"
+        dep_destino_id: '', 
     });
 
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -71,6 +75,9 @@ const [userType, setUserType] = useState(null);
                 if (filtros.dep_origen_id) {
                     url += `dep_origen_id=${filtros.dep_origen_id}&`;
                 }
+                if (filtros.dep_destino_id) {
+                    url += `dep_destino_id=${filtros.dep_destino_id}&`;
+                }
                 
                 // Eliminar el último '&' si existe
                 url = url.endsWith('&') ? url.slice(0, -1) : url;
@@ -92,7 +99,7 @@ const [userType, setUserType] = useState(null);
         };
 
         loadPrestamosEnAlmacen();
-    }, [filtros.dep_origen_id, searchQueryOficio, refreshKey]); // Dependencias del useEffect
+    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQueryOficio, refreshKey]); // Dependencias del useEffect
 
     // --- Cargar la lista de departamentos para los filtros ---
     useEffect(() => {
@@ -208,6 +215,24 @@ const [userType, setUserType] = useState(null);
                             </Form.Control>
                         </Form.Group>
 
+                        <Form.Group controlId="filtroDepDestino" className="flex-grow-1">
+                            <Form.Label className="visually-hidden">Almacen de Destino</Form.Label>
+                            <Form.Control
+                                as="select"
+                                value={filtros.dep_destino_id}
+                                onChange={(e) => handleFiltroChange('dep_destino_id', e.target.value)}
+                            >
+                                <option value="">Almacen de Destino</option>
+                                {departamentos
+                                        .filter(dep => dep.dep_ide === DEP_ALMACEN_03 || dep.dep_ide === DEP_ALMACEN_04)
+                                        .map(dep => (
+                                            <option key={dep.dep_ide} value={dep.dep_ide}>
+                                                {dep.dep_nom}
+                                            </option>
+                                        ))}
+                            </Form.Control>
+                        </Form.Group>
+
                         </div>
                     </Form>
                         
@@ -226,7 +251,7 @@ const [userType, setUserType] = useState(null);
                             <Table striped bordered hover className="table">
                                 <thead>
                                     <tr>
-                                        <th>N° Oficio</th>
+                                        <th>N° Oficio/Transferencia</th>
                                         <th>Fecha Préstamo</th>
                                         <th>Departamento Origen</th>
                                         {/* La columna de Departamento Destino se elimina */}
@@ -239,7 +264,7 @@ const [userType, setUserType] = useState(null);
                                         data.map((prestamo) => (
                                             <tr key={prestamo.pre_ide}>
                                                 <td><strong>{truncateText(prestamo.pre_ndo)}</strong></td>
-                                                <td>{new Date(prestamo.pre_fec).toLocaleDateString('es-ES')}</td>
+                                                <td>{prestamo.pre_fec && new Date(prestamo.pre_fec).toLocaleDateString('es-ES') ||  'Sin fecha'}</td>
                                                 {/* Usar los nombres que vienen directamente de la API */}
                                                 <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
                                                 {/* Se asume que el destino es el almacén, por lo que no se muestra */}

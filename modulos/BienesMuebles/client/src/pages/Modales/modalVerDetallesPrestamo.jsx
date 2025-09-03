@@ -224,6 +224,12 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                     <Form.Control type="text" value={prestamoDetalle.departamento_destino_nombre || 'N/A'} readOnly plaintext />
                                 </Form.Group>
                             </Col>
+                            <Col md={6}>
+                                <Form.Group>
+                                    <Form.Label><strong>Tipo de Prestamo:</strong></Form.Label>
+                                    <Form.Control type="text" value={prestamoDetalle.pre_tip || 'N/A'} readOnly plaintext />
+                                </Form.Group>
+                            </Col>
                         </Row>
 
                         <hr />
@@ -337,7 +343,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                             onClick={handleDevolver} 
                                             disabled={isDevolverOficioDisabled}
                                         >
-                                            {isSubmitting ? <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />Devolviendo Oficio Completo...</> : 'Devolver Oficio Completo'}
+                                            {isSubmitting ? <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />{`Devolviendo ${prestamoDetalle.pre_tip}...`}</> : `Devolver ${prestamoDetalle.pre_tip}`}
                                         </Button>
                                     )}
 

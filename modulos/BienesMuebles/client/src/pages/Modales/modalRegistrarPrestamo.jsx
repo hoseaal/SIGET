@@ -6,11 +6,14 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
 
     const [formData, setFormData] = useState({
         pre_ndo: '',           // Número de oficio
+        pre_tip: 'Oficio',            // Tipo de préstamo
         pre_fec: new Date().toISOString().slice(0, 10), // Fecha actual por defecto
         dep_origen_ide: '',    // Departamento de origen
         dep_ide: '',           // Departamento de destino
         bienesSeleccionados: [], // Array para los bienes seleccionados
     });
+
+    const [sinNumero, setSinNumero] = useState(false);
 
     const [departamentos, setDepartamentos] = useState([]);
     const [condicionesFisicas, setCondicionesFisicas] = useState([]);
@@ -31,6 +34,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             // Reiniciar formData cada vez que el modal se abre
             setFormData({
                 pre_ndo: '',
+                pre_tip: 'Oficio',
                 pre_fec: new Date().toISOString().slice(0, 10),
                 dep_origen_ide: '',
                 dep_ide: '',
@@ -99,6 +103,24 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
         }
     }, [formData.dep_origen_ide, bienesDisponibles]);
 
+    const handleSinNumeroChange = (e) => {
+        const isChecked = e.target.checked;
+        setSinNumero(isChecked);
+
+        if (isChecked) {
+            setFormData(prev => ({
+                ...prev,
+                pre_ndo: 'Sin Numero',
+                pre_fec: null, // Limpiar la fecha
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                pre_ndo: '', // Limpiar el número de oficio para que el usuario pueda escribir
+                pre_fec: new Date().toISOString().slice(0, 10), // Restaurar fecha actual
+            }));
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -121,7 +143,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
         setErrorMessage('');
 
         // Validaciones previas
-        if (!formData.pre_ndo || !formData.pre_fec || !formData.dep_origen_ide || !formData.dep_ide) {
+        if (!formData.pre_ndo || !formData.dep_origen_ide || !formData.dep_ide) {
             setErrorMessage('Por favor, complete todos los campos obligatorios.');
             setShowAlert(true);
             return;
@@ -143,11 +165,14 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
 
         const payload = {
             pre_ndo: formData.pre_ndo,
+            pre_tip: formData.pre_tip,    
             pre_fec: formData.pre_fec,
             dep_origen_ide: parseInt(formData.dep_origen_ide),
             dep_ide: parseInt(formData.dep_ide),
             bienes: bienesParaEnviar, // IDs de los bienes
         };
+
+        console.log(payload)
 
         try {
             const response = await fetch('/api/prestamos', { // Endpoint para crear un nuevo préstamo
@@ -200,6 +225,28 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                     <Row>
                         <Col md={6}>
                             <Form.Group className="mb-3">
+                                <Form.Label>Tipo de Préstamo</Form.Label>
+                                <Form.Control as="select" name="pre_tip" value={formData.pre_tip} onChange={handleChange} required>
+                                    <option value="Oficio">Oficio</option>
+                                    <option value="Transferencia">Transferencia</option>
+                                </Form.Control>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6} className="d-flex align-items-end pb-3">
+                             <Form.Group>
+                                <Form.Check
+                                    type="switch"
+                                    id="sin-numero-switch"
+                                    label="Préstamo sin Número / Fecha"
+                                    checked={sinNumero}
+                                    onChange={handleSinNumeroChange}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className="mb-3">
                                 <Form.Label>Número de Oficio</Form.Label>
                                 <Form.Control
                                     type="text"
@@ -208,6 +255,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                     onChange={handleChange}
                                     placeholder="Ingrese el número de oficio"
                                     required
+                                    disabled={sinNumero} // Deshabilitado si el switch está activo
                                 />
                             </Form.Group>
                         </Col>
@@ -217,9 +265,10 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                 <Form.Control
                                     type="date"
                                     name="pre_fec"
-                                    value={formData.pre_fec}
+                                    value={sinNumero ? 'S/N' : formData.pre_fec}
                                     onChange={handleChange}
                                     required
+                                    disabled={sinNumero} // Deshabilitado si el switch está activo
                                 />
                             </Form.Group>
                         </Col>
@@ -229,16 +278,10 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                         <Col md={6}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Departamento de Origen</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    name="dep_origen_ide"
-                                    value={formData.dep_origen_ide}
-                                    onChange={handleChange}
-                                    required
-                                >
+                                <Form.Control as="select" name="dep_origen_ide" value={formData.dep_origen_ide} onChange={handleChange} required >
                                     <option value="">Seleccione un departamento</option>
                                     {departamentos
-                                        .filter(dep => dep.dep_ide !== parseInt(formData.dep_ide)) // Excluir "Almacén" y el destino
+                                        .filter(dep => dep.dep_ide !== parseInt(formData.dep_ide))
                                         .map(dep => (
                                             <option key={dep.dep_ide} value={dep.dep_ide}>
                                                 {dep.dep_nom}
@@ -250,16 +293,10 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                         <Col md={6}>
                             <Form.Group className="mb-3">
                                 <Form.Label>Departamento de Destino</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    name="dep_ide"
-                                    value={formData.dep_ide}
-                                    onChange={handleChange}
-                                    required
-                                >
+                                <Form.Control as="select" name="dep_ide" value={formData.dep_ide} onChange={handleChange} required>
                                     <option value="">Seleccione un departamento</option>
                                     {departamentos
-                                        .filter(dep => dep.dep_ide !== parseInt(formData.dep_origen_ide)) // Excluir "Almacén" y el origen
+                                        .filter(dep => dep.dep_ide !== parseInt(formData.dep_origen_ide))
                                         .map(dep => (
                                             <option key={dep.dep_ide} value={dep.dep_ide}>
                                                 {dep.dep_nom}
@@ -284,7 +321,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                             noOptionsMessage={() => "No hay bienes disponibles o no se ha seleccionado departamento de origen."}
                         />
                         <Form.Text className="text-muted">
-                            Solo se muestran bienes del departamento de origen seleccionado que no están en almacén.
+                            Solo se muestran bienes del departamento de origen seleccionado que no están en mal estado.
                         </Form.Text>
                     </Form.Group>
                 </Form>

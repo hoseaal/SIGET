@@ -19,10 +19,10 @@ export class PrestamoService {
    * @returns {Promise<object>} Objeto del préstamo creado.
    */
   static async createLoan (data) {
-    const { pre_fec, pre_ndo, dep_ide, dep_origen_ide, bienes } = data
+    const { pre_tip, pre_fec, pre_ndo, dep_ide, dep_origen_ide, bienes } = data
 
-    if (!pre_fec || !pre_ndo || !dep_ide || !dep_origen_ide || !Array.isArray(bienes) || bienes.length === 0) {
-      throw new Error('Datos de préstamo incompletos. Se requiere fecha, oficio, departamentos y al menos un bien.')
+    if (!pre_tip || !pre_ndo || !dep_ide || !dep_origen_ide || !Array.isArray(bienes) || bienes.length === 0) {
+      throw new Error('Datos de préstamo incompletos. Se requiere fecha, oficio, tipo de prestamo, departamentos y al menos un bien.')
     }
 
     for (const bim_ide of bienes) {
@@ -59,7 +59,7 @@ export class PrestamoService {
 
   /**
    * Obtiene bienes en almacén por mal estado con filtros.
-   * @param {object} filters - Filtros (pre_ndo, dep_origen_id).
+   * @param {object} filters - Filtros (pre_ndo, dep_origen_id, dep_destino_id).
    * @returns {Promise<Array>}
    */
   static async getWarehouseItems (filters) {

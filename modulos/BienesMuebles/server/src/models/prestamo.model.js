@@ -2,7 +2,8 @@
 import pool from '../utils/database.js'
 
 // Constantes para IDs específicos
-const DEP_ALMACEN_ID = 11
+const DEP_ALMACEN_03 = 11
+const DEP_ALMACEN_04 = 9
 const CON_MAL_ESTADO_ID = 4
 
 export class PrestamoModel {
@@ -16,15 +17,15 @@ export class PrestamoModel {
    * @param {string[]} data.bienes - Array de bim_ide de los bienes prestados.
    * @returns {Promise<object>} Objeto del préstamo creado.
    */
-  static async create ({ pre_fec, pre_ndo, dep_ide, dep_origen_ide, bienes }) {
+  static async create ({ pre_fec, pre_tip, pre_ndo, dep_ide, dep_origen_ide, bienes }) {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
 
       // Insertar el préstamo principal
       const [resultPrestamo] = await connection.query(
-        'INSERT INTO ttrpre (pre_fec, pre_ndo, dep_ide, dep_origen_ide) VALUES (?, ?, ?, ?)',
-        [pre_fec, pre_ndo, dep_ide, dep_origen_ide]
+        'INSERT INTO ttrpre (pre_fec, pre_tip, pre_ndo, dep_ide, dep_origen_ide) VALUES (?, ?, ?, ?, ?)',
+        [pre_fec, pre_tip, pre_ndo, dep_ide, dep_origen_ide]
       )
       const pre_ide = resultPrestamo.insertId
 
@@ -85,7 +86,7 @@ export class PrestamoModel {
     whereClauses.push('tp.pre_est = 1')
 
     // EXCLUSIÓN CLAVE para préstamos normales:
-    // NO incluir si el destino es Almacén (11) Y la condición física de ALGUN BIEN es Mal Estado (4)
+    // NO incluir si el destino es Almacén (11) o Administracion (9) Y la condición física de ALGUN BIEN es Mal Estado (4)
     // Esto requiere un subquery o JOIN adicional para verificar la condición de los bienes asociados.
     // Una forma simple es verificar si ALGÚN BIEN de este préstamo cumple la condición de exclusión.
     whereClauses.push(`
@@ -94,10 +95,10 @@ export class PrestamoModel {
         JOIN tmab_m tmab_excl ON tdd_excl.bim_ide = tmab_excl.bim_ide
         WHERE tdd_excl.pre_ide = tp.pre_ide
           AND tmab_excl.con_ide = ?
-          AND tp.dep_ide = ?
+          AND (tp.dep_ide = ? || tp.dep_ide = ?)
       )
     `)
-    params.push(CON_MAL_ESTADO_ID, DEP_ALMACEN_ID)
+    params.push(CON_MAL_ESTADO_ID, DEP_ALMACEN_03, DEP_ALMACEN_04)
 
     // Filtros opcionales
     if (filters.pre_ndo) {
@@ -129,6 +130,7 @@ export class PrestamoModel {
    * @param {object} filters - Filtros para la consulta.
    * @param {string} [filters.pre_ndo] - Filtro por número de oficio.
    * @param {number} [filters.dep_origen_id] - Filtro por ID de departamento de origen del bien.
+   * @param {number} [filters.dep_destino_id] - Filtro por ID de departamento de destino.
    * @returns {Promise<Array>} Lista de bienes en almacén por mal estado.
    */
   static async getWarehouseItems (filters = {}) {
@@ -154,11 +156,11 @@ export class PrestamoModel {
       INNER JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
       INNER JOIN tmacon AS tamb ON tm.con_ide = tamb.con_ide
       WHERE tp.pre_est = 1
-        AND tp.dep_ide = ?
+        AND (tp.dep_ide = ? || tp.dep_ide = ?)
         AND tamb.con_ide = ?
     `
 
-    const params = [DEP_ALMACEN_ID, CON_MAL_ESTADO_ID]
+    const params = [DEP_ALMACEN_03, DEP_ALMACEN_04, CON_MAL_ESTADO_ID]
 
     if (filters.pre_ndo) {
       query += ' AND tp.pre_ndo LIKE ?'
@@ -168,11 +170,16 @@ export class PrestamoModel {
       query += ' AND tp.dep_origen_ide = ?'
       params.push(filters.dep_origen_id)
     }
+    if (filters.dep_destino_id) { // Filtro por dep_ide de ttrpre
+      query += ' AND tp.dep_ide = ?'
+      params.push(filters.dep_destino_id)
+    }
 
     query += ' GROUP BY tp.pre_ide'
     query += ' ORDER BY tp.pre_fec DESC, tp.pre_ndo ASC, tm.bim_cod ASC'
 
     const [rows] = await pool.query(query, params)
+    console.log(query, params)
     return rows
   }
 
@@ -185,6 +192,7 @@ export class PrestamoModel {
     const [rows] = await pool.query(`
       SELECT
         tp.pre_ide,
+        tp.pre_tip,
         tp.pre_fec,
         tp.pre_ndo,
         tp.pre_est,
@@ -308,8 +316,8 @@ export class PrestamoModel {
       WHERE tdd.bim_ide = ?
         AND tdd.dpr_est = 1 -- El detalle del bien está activo (prestado)
         AND tp.pre_est = 1  -- El préstamo principal está activo
-        AND NOT (tp.dep_ide = ? AND tmab.con_ide = ?) -- NO es un préstamo a almacén por mal estado
-    `, [bim_ide, DEP_ALMACEN_ID, CON_MAL_ESTADO_ID])
+        AND NOT ((tp.dep_ide = ? || tp.dep_ide = ?) AND tmab.con_ide = ?) -- NO es un préstamo a almacén por mal estado
+    `, [bim_ide, DEP_ALMACEN_03, DEP_ALMACEN_04, CON_MAL_ESTADO_ID])
     return rows[0] || null
   }
 
@@ -337,9 +345,9 @@ export class PrestamoModel {
       LEFT JOIN tmacon tc ON tmab.con_ide = tc.con_ide
       WHERE tdd.bim_ide = ?
         AND tp.pre_est = 1
-        AND tp.dep_ide = ?
+        AND (tp.dep_ide = ? || tp.dep_ide = ?)
         AND tmab.con_ide = ?
-    `, [bim_ide, DEP_ALMACEN_ID, CON_MAL_ESTADO_ID])
+    `, [bim_ide, DEP_ALMACEN_03, DEP_ALMACEN_04, CON_MAL_ESTADO_ID])
     return rows[0] || null
   }
 }
