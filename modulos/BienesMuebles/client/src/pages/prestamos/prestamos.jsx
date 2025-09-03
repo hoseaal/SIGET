@@ -95,7 +95,7 @@ const [userType, setUserType] = useState(null);
         };
 
         loadPrestamos();
-    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQueryOficio, refreshKey]); // Dependencias del useEffect
+    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQueryOficio, refreshKey, showDetallesModal]); // Dependencias del useEffect
 
     // --- Cargar la lista de departamentos para los filtros ---
     useEffect(() => {
@@ -248,7 +248,7 @@ const [userType, setUserType] = useState(null);
                             <Table striped bordered hover className="table">
                                 <thead>
                                     <tr>
-                                        <th>N° Oficio</th>
+                                        <th>N° Oficio/Transferencia</th>
                                         <th>Fecha Préstamo</th>
                                         <th>Departamento Origen</th>
                                         <th>Departamento Destino</th>
@@ -261,7 +261,7 @@ const [userType, setUserType] = useState(null);
                                         data.map((prestamo) => (
                                             <tr key={prestamo.pre_ide}>
                                                 <td><strong>{truncateText(prestamo.pre_ndo)}</strong></td>
-                                                <td>{new Date(prestamo.pre_fec).toLocaleDateString('es-ES')}</td>
+                                                <td>{prestamo.pre_fec && new Date(prestamo.pre_fec).toLocaleDateString('es-ES') || 'Sin Fecha'}</td>
                                                 {/* Usar los nombres que vienen directamente de la API */}
                                                 <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
                                                 <td>{prestamo.departamento_destino_nombre || 'N/A'}</td> 

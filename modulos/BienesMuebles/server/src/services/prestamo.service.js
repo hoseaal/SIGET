@@ -59,7 +59,7 @@ export class PrestamoService {
 
   /**
    * Obtiene bienes en almacén por mal estado con filtros.
-   * @param {object} filters - Filtros (pre_ndo, dep_origen_id).
+   * @param {object} filters - Filtros (pre_ndo, dep_origen_id, dep_destino_id).
    * @returns {Promise<Array>}
    */
   static async getWarehouseItems (filters) {
