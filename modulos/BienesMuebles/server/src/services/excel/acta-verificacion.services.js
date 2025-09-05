@@ -50,13 +50,14 @@ const extraerBienesPrestamo = (data) => {
         pre_est: prestamo.pre_est,
         pre_ide: prestamo.pre_ide,
         departamento_origen_nombre: toUpperCase(prestamo.departamento_origen_nombre),
+        dep_ide: prestamo.dep_ide,
         departamento_destino_nombre: toUpperCase(prestamo.departamento_destino_nombre)
       }))
     } catch (e) {
       console.warn('Error al parsear bienes_detalles:', e)
-      return null
+      return [] // <-- Corregido: Devuelve un array vacío en lugar de null
     }
-  }).filter(Boolean)
+  })
 }
 
 export const generarActaVerificacionExcelService = async (datos, accessToken) => {
@@ -82,30 +83,36 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     const prestamosEntrantes = extraerBienesPrestamo(prestamosEntrantesData)
     const bienesEnAlmacen = extraerBienesPrestamo(bienesEnAlmacenData)
 
+    const bienesPiso3 = bienesEnAlmacen.filter(b => b.dep_ide === 11);
+    const bienesPiso4 = bienesEnAlmacen.filter(b => b.dep_ide === 9);
+
     // Crear Maps para una búsqueda rápida y eficiente por ID del bien (bim_ide)
     const salientesMap = new Map(prestamosSalientes.map(b => [b.bim_ide, b]))
-    const almacenMap = new Map(bienesEnAlmacen.map(b => [b.bim_ide, b]))
+    const almacenMap3 = new Map(bienesPiso3.map(b => [b.bim_ide, b]))
+    const almacenMap4 = new Map(bienesPiso4.map(b => [b.bim_ide, b]))
 
-    // 3. --- CONSOLIDAR LA LISTA DE BIENES Y ASIGNAR OBSERVACIONES ---
-    const excelRows = []
-    let counter = 1
+     // 3. --- CONSOLIDAR LA LISTA DE BIENES Y ASIGNAR OBSERVACIONES ---
+    const excelRows = []
+    let counter = 1
 
-    // Procesar la lista principal de bienes que pertenecen al departamento
-    bienesDelDepartamento.forEach(bien => {
-      let observacion = bien.bim_obs || '' // Observación por defecto
-      const direccion = toUpperCase(departamento_nombre) // Dirección por defecto
+    // Procesar la lista principal de bienes que pertenecen al departamento
+    bienesDelDepartamento.forEach(bien => {
+      let observacion = bien.bim_obs || '' // Observación por defecto
+      const direccion = toUpperCase(departamento_nombre) // Dirección por defecto
 
-      // JERARQUÍA DE OBSERVACIONES:
-      // 1. ¿Está en almacén? (Máxima prioridad)
-      if (almacenMap.has(bien.bim_ide)) {
-        observacion = 'Mal estado (ubicado en Almacen para su resguardo)'
-
-      // 2. Si no, ¿está prestado a otro departamento?
-      } else if (salientesMap.has(bien.bim_ide)) {
-        const prestamo = salientesMap.get(bien.bim_ide)
-        // La observación indica a dónde se fue el bien
-        observacion = `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
-      }
+      // JERARQUÍA DE OBSERVACIONES:
+      // 1. ¿Está prestado a otro departamento? (Máxima prioridad)
+      if (salientesMap.has(bien.bim_ide)) {
+        const prestamo = salientesMap.get(bien.bim_ide)
+        // La observación indica a dónde se fue el bien
+        observacion = `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
+      }
+      // 2. Si no, ¿está en almacén?
+      else if (almacenMap3.has(bien.bim_ide)) {
+        observacion = 'Mal estado ubicado en Almacen Piso 3 para su resguardo'
+      } else if (almacenMap4.has(bien.bim_ide)) { 
+        observacion = 'Mal estado ubicado en Almacen Piso 4 para su resguardo'
+      } 
 
       excelRows.push({
         num: counter++,
@@ -130,7 +137,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     })
 
     if (dep_ide === 11) {
-      const todosEnAlmacenData = await fetchApiData('/api/prestamos/almacen', accessToken)
+      const todosEnAlmacenData = await fetchApiData('/api/prestamos/almacen?dep_destino_id=11', accessToken)
       const bienesEnAlmacen = extraerBienesPrestamo(todosEnAlmacenData)
 
       bienesEnAlmacen.forEach(prestamoBien => {
@@ -139,7 +146,22 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
           bim_ide: prestamoBien.bim_ide,
           bim_des: prestamoBien.bim_des,
           direccion: prestamoBien.departamento_origen_nombre,
-          observacion: `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} pero se encuentra en almacén para su resguardo`
+          observacion: `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} pero se encuentra en almacén piso 3 para su resguardo`
+        })
+      })
+    }
+
+    if (dep_ide === 9) {
+      const todosEnAlmacenData = await fetchApiData('/api/prestamos/almacen?dep_destino_id=9', accessToken)
+      const bienesEnAlmacen = extraerBienesPrestamo(todosEnAlmacenData)
+
+      bienesEnAlmacen.forEach(prestamoBien => {
+        excelRows.push({
+          num: counter++,
+          bim_ide: prestamoBien.bim_ide,
+          bim_des: prestamoBien.bim_des,
+          direccion: prestamoBien.departamento_origen_nombre,
+          observacion: `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} pero se encuentra en almacén piso 4 para su resguardo`
         })
       })
     }
@@ -203,6 +225,13 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     })
 
     // --- Poblar las filas con los datos consolidados ---
+
+    excelRows.sort((a, b) => {
+      if (a.bim_ide < b.bim_ide) return -1;
+      if (a.bim_ide > b.bim_ide) return 1;
+      return 0;
+    });
+
     const startDataRow = columnHeaderRowNumber + 1
     excelRows.forEach((rowData, index) => {
       const row = worksheet.getRow(startDataRow + index)

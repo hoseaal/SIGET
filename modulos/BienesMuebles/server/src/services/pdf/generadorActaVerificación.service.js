@@ -22,7 +22,6 @@ function formatCurrentDateTime () {
   const yearInWords = numberToWords(year)
 
   const fechacorta = `${day}/${mes}/${year}`
-  console.log(fechacorta)
   return {
     day,
     month,
@@ -97,6 +96,7 @@ async function fetchApiData (endpoint, token) {
 }
 
 function formatFullDate (isoString) {
+  if (!isoString) return ''
   const date = new Date(isoString)
   return date.toLocaleDateString('es-VE', {
     year: 'numeric',
@@ -150,22 +150,28 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       const bienesSinEtiqueta = todosLosBienes.filter(b => b.est_ide === 1)
       const bienesMalEstadoEnDepartamento = bienesMalEstadoEnDepartamentoData || []
 
-      const extraerBienesPrestamo = (data) => (data || []).map(p => {
-        try {
-          const detalles = JSON.parse(p.bienes_detalles)
-          return {
-            ...p,
-            ...detalles,
-            bim_des: limpiarTexto(detalles.bim_des),
-            departamento_origen_nombre: toUpperCase(p.departamento_origen_nombre),
-            departamento_destino_nombre: toUpperCase(p.departamento_destino_nombre)
-          }
-        } catch (e) {
-          console.warn(`Advertencia: No se pudo decodificar bienes_detalles: ${p.bienes_detalles}`)
-          return null
-        }
-      }).filter(Boolean)
+      console.log('Datos de mal estado en departamento:', malEstadoData)
+      const extraerBienesPrestamo = (data) => {
+  return (data || []).flatMap(prestamo => {
+    try {
+      // 1. Decodifica la cadena JSON en un array de bienes.
+      const bienes = JSON.parse(prestamo.bienes_detalles);
 
+      // 2. Por cada bien en ese array, crea un nuevo objeto
+      //    que combina los datos del préstamo con los datos del bien.
+      return bienes.map(bien => ({
+        ...prestamo,
+        ...bien,
+        bim_des: limpiarTexto(bien.bim_des), // Aplica la función al bien individual.
+        departamento_origen_nombre: toUpperCase(prestamo.departamento_origen_nombre),
+        departamento_destino_nombre: toUpperCase(prestamo.departamento_destino_nombre)
+      }));
+    } catch (e) {
+      console.warn('Error al decodificar bienes_detalles:', e);
+      return []; // Devuelve un array vacío para que flatMap lo omita.
+    }
+  });
+};
       const bienesMalEstadoAlmacen = extraerBienesPrestamo(malEstadoData)
       const bienesPrestadosAOtro = extraerBienesPrestamo(prestadosAOtroData)
       const bienesPrestadosDeOtro = extraerBienesPrestamo(prestadosDeOtroData)
@@ -185,8 +191,6 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       const totalBienesTabla = countEnServicio + countFaltantes + countMalEstado + countPrestadosAOtro + countPrestadosDeOtro
 
       const { day, month, yearInWords, fechacorta } = formatCurrentDateTime()
-
-      console.log(fechacorta)
 
       // Crear PDF
       const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true })
@@ -284,17 +288,34 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
 
       // 1. Bienes prestados de otras direcciones
       drawSection(
-        'Los siguientes bienes se prestan:',
+        'Observación: Los siguientes bienes se prestan de otras direcciones:',
         bienesPrestadosDeOtro,
-        b => `EL BIEN Nº${b.bim_ide}: ${b.bim_des} SE DIO EN CALIDAD DE PRÉSTAMO DESDE ${b.departamento_origen_nombre} SEGÚN TRANSFERENCIA DE OFICIO ${b.pre_ndo} EN FECHA ${formatFullDate(b.pre_fec)}`
+        b => `EL BIEN Nº${b.bim_ide}: ${b.bim_des} SE DIO EN CALIDAD DE PRÉSTAMO DESDE ${b.departamento_origen_nombre} SEGÚN ${b.pre_tip} ${b.pre_ndo || ''}${b.pre_fec ? ` FECHA ${formatFullDate(b.pre_fec)}` : ''}.`
       )
 
+      
+
       // 2. Bienes en mal estado en almacén
-      drawSection(
-        'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A PISO 3 PARA SU RESGUARDO:',
-        bienesMalEstadoAlmacen,
-        b => `${b.bim_ide}: ${b.bim_des}`
-      )
+      const bienesPiso3 = bienesMalEstadoAlmacen.filter(b => b.dep_ide === 11);
+      const bienesPiso4 = bienesMalEstadoAlmacen.filter(b => b.dep_ide === 9);
+
+      // Dibuja la sección para el piso 3 si hay datos
+      if (bienesPiso3.length > 0) {
+        drawSection(
+          'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A PISO 3 PARA SU RESGUARDO, POR SERVICIOS GENERALES, SEGURIDAD Y TRANSPORTE:',
+          bienesPiso3,
+          b => `${b.bim_ide}: ${b.bim_des}`
+        );
+      }
+
+      // Dibuja la sección para el piso 4 si hay datos
+      if (bienesPiso4.length > 0) {
+        drawSection(
+          'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A PISO 4 PARA SU RESGUARDO, POR DIRECCIÓN GENERAL:',
+          bienesPiso4,
+          b => `${b.bim_ide}: ${b.bim_des}`
+        );
+      }
 
       // 3. Bienes en mal estado en el departamento
       drawSection(
@@ -311,8 +332,9 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
           if (!prestamosAgrupados[key]) {
             prestamosAgrupados[key] = {
               ndo: b.pre_ndo,
-              fecha: formatFullDate(b.pre_fec),
+              fecha: formatFullDate(b.pre_fec) || null ,
               destino: b.departamento_destino_nombre,
+              tipo: b.pre_tip,
               bienes: []
             }
           }
@@ -321,7 +343,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
 
         Object.values(prestamosAgrupados).forEach(grupo => {
           doc.font('Helvetica-Bold').fontSize(11)
-            .text(`BIENES EN PRÉSTAMO PARA LA ${grupo.destino} SEGÚN OFICIO ${grupo.ndo} DE FECHA ${grupo.fecha}:`, {
+            .text(`BIENES EN PRÉSTAMO PARA LA ${grupo.destino} SEGÚN ${grupo.tipo} N°${grupo.ndo} ${grupo.fecha ? `DE FECHA ${grupo.fecha}` : ''}:`, {
               align: 'left',
               x: doc.page.margins.left
             })
