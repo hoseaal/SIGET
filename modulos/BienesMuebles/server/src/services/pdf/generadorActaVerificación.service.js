@@ -302,7 +302,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       // Dibuja la sección para el piso 3 si hay datos
       if (bienesPiso3.length > 0) {
         drawSection(
-          'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A PISO 3 PARA SU RESGUARDO, POR SERVICIOS GENERALES, SEGURIDAD Y TRANSPORTE:',
+          'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A ALMACEN DE PISO 3 PARA SU RESGUARDO, POR SERVICIOS GENERALES, SEGURIDAD Y TRANSPORTE:',
           bienesPiso3,
           b => `${b.bim_ide}: ${b.bim_des}`
         );
@@ -311,7 +311,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       // Dibuja la sección para el piso 4 si hay datos
       if (bienesPiso4.length > 0) {
         drawSection(
-          'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A PISO 4 PARA SU RESGUARDO, POR DIRECCIÓN GENERAL:',
+          'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A ALMACEN DE PISO 4 PARA SU RESGUARDO:',
           bienesPiso4,
           b => `${b.bim_ide}: ${b.bim_des}`
         );
