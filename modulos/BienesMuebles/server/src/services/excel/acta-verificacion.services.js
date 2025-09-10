@@ -202,12 +202,12 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     const formattedDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`
 
     const headerText = [
-      'REPÚBLICA BOLIVARIANA DE VENEZUELA',
-      'CONTRALORÍA DEL ESTADO TÁCHIRA',
-      'DIRECCIÓN DE ADMINISTRACIÓN Y SERVICIOS',
-      'COORDINACIÓN DE BIENES',
-      `ACTA DE VERIFICACIÓN DE BIENES MUEBLES DE LA UNIDAD DE: ${toUpperCase(departamento_nombre)}`,
-      `FECHA: ${formattedDate}`
+      'REPORTE DE VERIFICACIÓN DEL INVENTARIO DE BIENES MUEBLES',
+      'UNIDAD EJECUTORA: CONTRALORÍA DEL ESTADO TÁCHIRA',
+      'DIRECCION O UNIDAD ADMINISTRATIVA: DIRECCIÓN DE ADMINISTRACIÓN',
+      `FECHA DEL REPORTE: ${formattedDate}`,
+      `ACTA DE VERIFICACIÓN DE BIENES MUEBLES DE: ${toUpperCase(departamento_nombre)}`,
+      ' '
     ].join('\n')
 
     headerCell.value = headerText
