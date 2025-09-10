@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Alert, Row, Col, ListGroup, Spinner } from 'react-bootstrap';
-import Select from 'react-select'; // Importa react-select
 
 function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) {
     const [prestamoDetalle, setPrestamoDetalle] = useState(null);
@@ -11,10 +10,19 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
 
     // Estados para la lógica de devolución
     const [opcionDevolucion, setOpcionDevolucion] = useState('oficio'); // 'oficio' o 'individual'
-    const [bienIndividualSeleccionado, setBienIndividualSeleccionado] = useState(null);
+    const [bienIndividualSeleccionado, setBienIndividualSeleccionado] = useState(''); // Cambiado a string para <select>
     const [bienesActivosPrestamo, setBienesActivosPrestamo] = useState([]); // Bienes con dpr_est = 1
 
-    const truncateText = (text, maxLength = 30) => { // Ajustado a 30 para mejor visibilidad
+    // --- NUEVOS ESTADOS PARA GENERAR PDF ---
+    const [showPdfForm, setShowPdfForm] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [nombreDirectorAdmin, setNombreDirectorAdmin] = useState('');
+    const [nombreJefeCompras, setNombreJefeCompras] = useState('');
+    const [nombreJefeDestino, setNombreJefeDestino] = useState('');
+    // --- FIN DE NUEVOS ESTADOS ---
+
+
+    const truncateText = (text, maxLength = 30) => {
         if (!text) return 'N/A';
         if (text.length <= maxLength) return text;
         
@@ -28,29 +36,35 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
     useEffect(() => {
         if (show && prestamoId) {
             fetchPrestamoDetalle(prestamoId);
-            // Reiniciar estados de devolución cuando el modal se abre
-            setOpcionDevolucion('oficio');
-            setBienIndividualSeleccionado(null);
-            setErrorMessage('');
-            setAlertMessage('');
-            setShowAlert(false);
-            setIsSubmitting(false);
+            // Reiniciar todos los estados al abrir
+            resetModalStates();
         } else if (!show) {
-            // Limpiar el estado cuando el modal se cierra
+            // Limpiar todo cuando el modal se cierra
+            resetModalStates();
             setPrestamoDetalle(null);
-            setErrorMessage('');
-            setAlertMessage('');
-            setShowAlert(false);
-            setIsSubmitting(false);
-            setBienesActivosPrestamo([]);
         }
     }, [show, prestamoId]);
+    
+    // Función para centralizar el reseteo de estados
+    const resetModalStates = () => {
+        setOpcionDevolucion('oficio');
+        setBienIndividualSeleccionado('');
+        setErrorMessage('');
+        setAlertMessage('');
+        setShowAlert(false);
+        setIsSubmitting(false);
+        setShowPdfForm(false);
+        setIsGeneratingPdf(false);
+        setNombreDirectorAdmin('');
+        setNombreJefeCompras('');
+        setNombreJefeDestino('');
+    };
 
     const fetchPrestamoDetalle = async (id) => {
         try {
             setShowAlert(false);
             setErrorMessage('');
-            setAlertMessage(''); // Limpiar también el mensaje de éxito
+            setAlertMessage('');
             const response = await fetch(`/api/prestamos/${id}`, { credentials: 'include' });
 
             if (!response.ok) {
@@ -60,11 +74,9 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                 throw new Error('Error al cargar los detalles del préstamo.');
             }
 
-            const result = await response.json(); // Asume que la API devuelve { success: true, data: prestamo }
-            const data = result; // Acceder a la propiedad 'data'
+            const data = await response.json();
             setPrestamoDetalle(data);
 
-            // Filtrar y establecer solo los bienes que aún están activos (dpr_est = 1)
             const activos = data.bienes_detalles?.filter(bien => bien.dpr_est === 1) || [];
             setBienesActivosPrestamo(activos);
 
@@ -85,18 +97,82 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
 
     const handleOpcionDevolucionChange = (e) => {
         setOpcionDevolucion(e.target.value);
-        setBienIndividualSeleccionado(null); // Limpiar selección individual al cambiar opción
-        setErrorMessage('');
-        setAlertMessage('');
+        setBienIndividualSeleccionado('');
         setShowAlert(false);
     };
 
-    const handleBienSelectChange = (selectedOption) => {
-        setBienIndividualSeleccionado(selectedOption);
+    const handleBienSelectChange = (e) => {
+        setBienIndividualSeleccionado(e.target.value);
+        setShowAlert(false);
+    };
+
+    // --- NUEVA FUNCIÓN PARA GENERAR EL PDF ---
+    const handleGenerarPdf = async (e) => {
+        e.preventDefault(); // Evitar que el formulario recargue la página
+        
+        if (!nombreDirectorAdmin || !nombreJefeCompras || !nombreJefeDestino) {
+            setErrorMessage('Por favor, complete los nombres de todos los funcionarios.');
+            setShowAlert(true);
+            return;
+        }
+
+        setIsGeneratingPdf(true);
         setErrorMessage('');
         setAlertMessage('');
         setShowAlert(false);
+
+        const year = new Date().getFullYear();
+        const datosReporte = {
+            numeroReporte: prestamoDetalle.pre_ndo,
+            fechaReporte: prestamoDetalle.pre_fec,
+            departamentoOrigen: prestamoDetalle.departamento_origen_nombre,
+            departamentoDestino: prestamoDetalle.departamento_destino_nombre,
+            bienes: prestamoDetalle.bienes_detalles.map(bien => ({
+                bim_ide: bien.bim_ide,
+                bim_des: bien.bim_des,
+                observacion: `ENTREGA DEL BIEN ${bien.bim_des}`
+            })),
+            nombreDirectorAdmin,
+            nombreJefeCompras,
+            nombreJefeDestino
+        };
+
+        try {
+            const response = await fetch('/api/pdf/acta-de-entrega', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosReporte)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Error desconocido al generar el PDF.' }));
+                throw new Error(errorData.error || `Error del servidor: ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Acta_de_Entrega_${datosReporte.numeroReporte}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            setAlertMessage('PDF "Acta de Entrega" generado y descargado exitosamente.');
+            setShowAlert(true);
+            setShowPdfForm(false); // Ocultar el formulario después del éxito
+
+        } catch (error) {
+            console.error('Error al generar el PDF:', error);
+            setErrorMessage(error.message);
+            setShowAlert(true);
+        } finally {
+            setIsGeneratingPdf(false);
+        }
     };
+    // --- FIN DE LA NUEVA FUNCIÓN ---
+
 
     const handleDevolver = async () => {
         setShowAlert(false);
@@ -109,7 +185,6 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
             let responseData;
 
             if (opcionDevolucion === 'oficio') {
-                // Devolver todo el oficio
                 response = await fetch(`/api/prestamos/${prestamoDetalle.pre_ide}/estado`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
@@ -123,39 +198,35 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                 setAlertMessage('Oficio devuelto completamente con éxito.');
 
             } else { // Devolución individual
-                if (!bienIndividualSeleccionado || !bienIndividualSeleccionado.value) {
+                if (!bienIndividualSeleccionado) {
                     setErrorMessage('Por favor, seleccione un bien para devolver.');
                     setShowAlert(true);
                     setIsSubmitting(false);
                     return;
                 }
-                // El bim_ide va en la URL, pero dpr_est y pre_ide van en el BODY
                 const payload = {
-                    dpr_est: 0, // El estado a actualizar
-                    pre_ide: prestamoDetalle.pre_ide, // El ID del préstamo para el contexto
+                    dpr_est: 0,
+                    pre_ide: prestamoDetalle.pre_ide,
                 };
 
-                // La URL debe ser /api/prestamos/bien/{bim_ide}/estado
-                response = await fetch(`/api/prestamos/bien/${bienIndividualSeleccionado.value}/estado`, {
+                response = await fetch(`/api/prestamos/bien/${bienIndividualSeleccionado}/estado`, {
                     method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload) // Enviamos el payload con dpr_est y pre_ide
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
                 responseData = await response.json();
 
                 if (!response.ok) {
                     throw new Error(responseData.error || 'Error al devolver el bien individualmente.');
                 }
-                setAlertMessage(`Bien "${bienIndividualSeleccionado.label}" devuelto con éxito.`);
+
+                const bienDevuelto = bienOptions.find(b => b.value === bienIndividualSeleccionado);
+                const bienLabel = bienDevuelto ? bienDevuelto.label : `ID ${bienIndividualSeleccionado}`;
+                setAlertMessage(`Bien "${bienLabel}" devuelto con éxito.`);
             }
 
             setShowAlert(true);
-            // Refrescar los detalles del préstamo después de una devolución exitosa
-            // Esto asegura que la lista de bienes y su estado se actualicen en el modal
             await fetchPrestamoDetalle(prestamoId);
-            // Llamar a onSuccess para que la tabla principal (donde se listan los préstamos) se actualice
             if (onSuccess) onSuccess();
 
         } catch (error) {
@@ -167,19 +238,13 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
         }
     };
 
-    // Opciones para react-select solo para los bienes activos
     const bienOptions = bienesActivosPrestamo.map(bien => ({
         value: bien.bim_ide,
-        label: bien.bim_ide + '-' + bien.bim_des.substring(0, 30)+'...'
+        label: `${bien.bim_ide} - ${bien.bim_des.substring(0, 40)}...`
     }));
 
-    // Determinar si el botón de devolución total debe estar deshabilitado
     const isDevolverOficioDisabled = isSubmitting || bienesActivosPrestamo.length === 0 || prestamoDetalle?.pre_est === 0;
-
-    // Determinar si el botón de devolución individual debe estar deshabilitado
     const isDevolverIndividualDisabled = isSubmitting || bienesActivosPrestamo.length === 0 || !bienIndividualSeleccionado || prestamoDetalle?.pre_est === 0;
-
-    console.log(prestamoDetalle)
 
     return (
         <Modal show={show} onHide={handleClose} size="lg" centered>
@@ -230,7 +295,76 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                     <Form.Control type="text" value={prestamoDetalle.pre_tip || 'N/A'} readOnly plaintext />
                                 </Form.Group>
                             </Col>
+                            {/* --- SECCIÓN BOTÓN GENERAR ACTA --- */}
+                             <Col md={6} className="d-flex align-items-end">
+                                {!showPdfForm && (
+                                     <Button 
+                                        variant="primary" 
+                                        onClick={() => setShowPdfForm(true)}
+                                        disabled={isGeneratingPdf || isSubmitting}
+                                    >
+                                        Generar Acta de Entrega
+                                    </Button>
+                                )}
+                            </Col>
                         </Row>
+
+                        {/* --- FORMULARIO CONDICIONAL PARA DATOS DEL PDF --- */}
+                        {showPdfForm && (
+                            <div className="border p-3 rounded mt-3 bg-light">
+                                <h5 className="mb-3">Datos para el Acta de Entrega</h5>
+                                <Form onSubmit={handleGenerarPdf}>
+                                    <Row>
+                                        <Col md={12}>
+                                            <Form.Group className="mb-3" controlId="formDirectorAdmin">
+                                                <Form.Label>Nombre Director(a) de Administración</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    placeholder="Ej: Lcda. Ruth Apolinar"
+                                                    value={nombreDirectorAdmin}
+                                                    onChange={(e) => setNombreDirectorAdmin(e.target.value)}
+                                                    required
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={12}>
+                                            <Form.Group className="mb-3" controlId="formJefeCompras">
+                                                <Form.Label>Nombre Jefe(a) de Compras</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    placeholder="Ej: Abg. Ender Mogollón"
+                                                    value={nombreJefeCompras}
+                                                    onChange={(e) => setNombreJefeCompras(e.target.value)}
+                                                    required
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={12}>
+                                            <Form.Group className="mb-3" controlId="formJefeDestino">
+                                                <Form.Label>Nombre Jefe(a) del Depto. Destino</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    placeholder="Ej: Abg. José Alexander Pernía"
+                                                    value={nombreJefeDestino}
+                                                    onChange={(e) => setNombreJefeDestino(e.target.value)}
+                                                    required
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <div className="d-flex justify-content-end gap-2">
+                                        <Button variant="secondary" onClick={() => setShowPdfForm(false)} disabled={isGeneratingPdf}>
+                                            Cancelar
+                                        </Button>
+                                        <Button variant="success" type="submit" disabled={isGeneratingPdf} onClick={handleGenerarPdf}>
+                                            {isGeneratingPdf ? 
+                                                <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Generando...</> : 
+                                                'Confirmar y Generar PDF'}
+                                        </Button>
+                                    </div>
+                                </Form>
+                            </div>
+                        )}
 
                         <hr />
 
@@ -240,7 +374,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                 {prestamoDetalle.bienes_detalles.map((bien) => (
                                     <ListGroup.Item 
                                         key={bien.bim_ide} 
-                                        variant={bien.dpr_est === 0 ? 'secondary' : ''} // Estilo para bienes devueltos
+                                        variant={bien.dpr_est === 0 ? 'secondary' : ''}
                                     >
                                         <Row className="align-items-center">
                                             <Col xs={10}>
@@ -253,28 +387,6 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                                     </span>
                                                 </small>
                                             </Col>
-                                            <Col xs={2} className="text-end">
-                                                {/* Solo mostrar botón si el bien está activo y el préstamo no está completamente devuelto */}
-                                                {bien.dpr_est === 1 && prestamoDetalle.pre_est === 1 && (
-                                                    <Button 
-                                                        variant="outline-primary" 
-                                                        size="sm" 
-                                                        onClick={() => {
-                                                            setOpcionDevolucion('individual');
-                                                            setBienIndividualSeleccionado({ value: bien.bim_ide, label: `${bien.bim_cod || 'N/A'} - ${bien.bim_des}` });
-                                                            // Opcional: Desplazar a la sección de devolución
-                                                            const devolucionSection = document.getElementById('devolucion-section');
-                                                            if (devolucionSection) {
-                                                                devolucionSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                                            }
-                                                        }}
-                                                        disabled={isSubmitting}
-                                                        title="Devolver solo este bien"
-                                                    >
-                                                        Devolver
-                                                    </Button>
-                                                )}
-                                            </Col>
                                         </Row>
                                     </ListGroup.Item>
                                 ))}
@@ -282,8 +394,8 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                         ) : (
                             <Alert variant="info">No hay bienes asociados a este préstamo.</Alert>
                         )}
-
-                        {/* Sección de Devolución, solo si el préstamo está activo */}
+                        
+                        {/* SECCION DE DEVOLUCION */}
                         {prestamoDetalle.pre_est === 1 && (
                             <>
                                 <hr />
@@ -294,7 +406,6 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                         type="radio"
                                         label="Devolver TODOS los bienes de este oficio"
                                         name="devolucionOption"
-                                        id="devolucionOficio"
                                         value="oficio"
                                         checked={opcionDevolucion === 'oficio'}
                                         onChange={handleOpcionDevolucionChange}
@@ -305,7 +416,6 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                         type="radio"
                                         label="Devolver UN bien individualmente"
                                         name="devolucionOption"
-                                        id="devolucionIndividual"
                                         value="individual"
                                         checked={opcionDevolucion === 'individual'}
                                         onChange={handleOpcionDevolucionChange}
@@ -316,26 +426,22 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                 {opcionDevolucion === 'individual' && (
                                     <Form.Group className="mb-3">
                                         <Form.Label>Seleccione el Bien a Devolver:</Form.Label>
-                                        <Select
-                                            name="bienIndividual"
-                                            options={bienOptions}
-                                            className="basic-single-select"
-                                            classNamePrefix="select"
-                                            onChange={handleBienSelectChange}
+                                        <Form.Control
+                                            as="select"
                                             value={bienIndividualSeleccionado}
-                                            placeholder="Buscar y seleccionar bien..."
-                                            noOptionsMessage={() => "No hay bienes activos para devolución individual."}
-                                            isClearable
-                                            isDisabled={isSubmitting || bienesActivosPrestamo.length === 0}
-                                        />
-                                        {bienesActivosPrestamo.length === 0 && (
-                                            <Form.Text className="text-muted">
-                                                No hay bienes pendientes de devolución en este oficio que puedan ser devueltos individualmente.
-                                            </Form.Text>
-                                        )}
+                                            onChange={handleBienSelectChange}
+                                            disabled={isSubmitting || bienesActivosPrestamo.length === 0}
+                                        >
+                                            <option value="">Buscar y seleccionar bien...</option>
+                                            {bienOptions.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </Form.Control>
                                     </Form.Group>
                                 )}
-
+                                
                                 <div className="d-grid gap-2 mt-4">
                                     {opcionDevolucion === 'oficio' && (
                                         <Button 
@@ -353,13 +459,13 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                             onClick={handleDevolver} 
                                             disabled={isDevolverIndividualDisabled}
                                         >
-                                            {isSubmitting ? <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />Devolviendo Bien Seleccionado...</> : 'Devolver Bien Seleccionado'}
+                                            {isSubmitting ? <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />Devolviendo Bien...</> : 'Devolver Bien Seleccionado'}
                                         </Button>
                                     )}
                                 </div>
                             </>
                         )}
-                         {prestamoDetalle.pre_est === 0 && (
+                        {prestamoDetalle.pre_est === 0 && (
                             <Alert variant="success" className="mt-4 text-center">
                                 Este préstamo ha sido completamente devuelto.
                             </Alert>
@@ -373,7 +479,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                 )}
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose} disabled={isSubmitting}>
+                <Button variant="secondary" onClick={handleClose} disabled={isSubmitting || isGeneratingPdf}>
                     Cerrar
                 </Button>
             </Modal.Footer>

@@ -8,6 +8,7 @@ import { generarActaVerificacionService } from './generadorActaVerificación.ser
 import { generarActaDesincorporacion } from './actaDesincorporacion.js'
 import { generarReporteBM4 } from './repBM4.js'
 import { generarEtiquetasPDF } from './etiquetas.js'
+import { generarActaDeEntrega } from './actaDeEntrega.js'
 
 export class PdfService {
   // --- 2. MODIFICAR LA FIRMA PARA ACEPTAR EL TOKEN ---
@@ -31,6 +32,9 @@ export class PdfService {
         break
       case 'reporte-bm4':
         pdfPath = await generarReporteBM4(datos)
+        break
+      case 'acta-de-entrega':
+        pdfPath = await generarActaDeEntrega(datos)
         break
       case 'etiquetas':
         // eslint-disable-next-line no-case-declarations
