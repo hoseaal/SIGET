@@ -206,7 +206,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       'UNIDAD EJECUTORA: CONTRALORÍA DEL ESTADO TÁCHIRA',
       'DIRECCION O UNIDAD ADMINISTRATIVA: DIRECCIÓN DE ADMINISTRACIÓN',
       `FECHA DEL REPORTE: ${formattedDate}`,
-      `ACTA DE VERIFICACIÓN DE BIENES MUEBLES DE: ${toUpperCase(departamento_nombre)}`,
+      `${toUpperCase(departamento_nombre)}`,
       ' '
     ].join('\n')
 
