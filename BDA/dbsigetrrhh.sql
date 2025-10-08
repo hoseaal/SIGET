@@ -46,3 +46,196 @@ CREATE TABLE `tesuni` (
   CONSTRAINT `fk_uni_div` FOREIGN KEY (`div_ide`) REFERENCES `tesdiv` (`div_ide`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Unidades';
 
+--
+-- Tabla Maestra (tma): Profesiones
+--
+CREATE TABLE `tmapro` (
+  `pro_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la Profesión',
+  `pro_nom` VARCHAR(100) NOT NULL COMMENT 'Nombre de la Profesión o Título',
+  PRIMARY KEY (`pro_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Profesiones';
+
+--
+-- Tabla Maestra (tma): Estatus del Funcionario
+--
+CREATE TABLE `tmaest` (
+  `est_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Estatus del funcionario',
+  `est_nom` VARCHAR(50) NOT NULL COMMENT 'Nombre o descripción corta del Estatus',
+  PRIMARY KEY (`est_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Estatus de Funcionarios';
+
+--
+-- Tabla Maestra (tma): Funcionarios (Datos Personales y Claves Foráneas)
+--
+CREATE TABLE `tmafun` (
+  -- 1. Identificación Principal
+  `fun_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Funcionario (Clave Primaria)',
+  `fun_ced` VARCHAR(15) NOT NULL UNIQUE COMMENT 'Número de Cédula de Identidad',
+  `fun_nom` VARCHAR(100) NOT NULL COMMENT 'Nombres del Funcionario',
+  `fun_ape` VARCHAR(100) NOT NULL COMMENT 'Apellidos del Funcionario',
+  `fun_rif` VARCHAR(20) UNIQUE COMMENT 'Registro de Información Fiscal (RIF) del Funcionario (puede ser NULL)',
+
+  -- 2. Datos Personales
+  `fun_fna` DATE NOT NULL COMMENT 'Fecha de nacimiento del Funcionario',
+  `fun_lna` VARCHAR(100) NOT NULL COMMENT 'Lugar o ciudad de nacimiento (texto libre)',
+  `fun_gen` ENUM('M','F','O') NOT NULL COMMENT 'Género del Funcionario (M: Masculino, F: Femenino, O: Otro)',
+  `fun_est` VARCHAR(50) NOT NULL COMMENT 'Estado Civil (Ej: Soltero, Casado, etc.)',
+  `fun_san` VARCHAR(5) COMMENT 'Tipo de sangre (Ej: A+, O-, etc.)',
+  
+  -- 3. Hobbies y Actividades
+  `fun_dep` TEXT COMMENT 'Deportes que practica el Funcionario (texto libre, puede ser NULL)',
+  `fun_cul` TEXT COMMENT 'Actividades culturales o artísticas que realiza (texto libre, puede ser NULL)',
+  
+  -- 4. Contacto y Residencia
+  `fun_dir` VARCHAR(255) NOT NULL COMMENT 'Dirección de habitación o residencia (texto libre)',
+  `fun_tel` VARCHAR(20) COMMENT 'Número de teléfono residencial (puede ser NULL)',
+  `fun_cel` VARCHAR(20) NOT NULL COMMENT 'Número de teléfono celular principal',
+  `fun_ema1` VARCHAR(150) NOT NULL COMMENT 'Correo electrónico principal',
+  `fun_ema2` VARCHAR(150) COMMENT 'Correo electrónico secundario (puede ser NULL)',
+  
+  -- 5. Datos Institucionales y Académicos
+  `fun_fing` DATE NOT NULL COMMENT 'Fecha de ingreso a la institución',
+  `fun_estu` VARCHAR(255) COMMENT 'Estudios que está cursando actualmente (puede ser NULL)',
+  `fun_fcul` DATE COMMENT 'Fecha de culminación de los estudios en curso (puede ser NULL)',
+  
+  -- 6. Contactos de Emergencia
+  `fun_emer1` VARCHAR(150) NOT NULL COMMENT 'Nombre y apellido del contacto de emergencia 1',
+  `fun_emer2` VARCHAR(150) COMMENT 'Nombre y apellido del contacto de emergencia 2 (puede ser NULL)',
+  `fun_teme1` VARCHAR(20) NOT NULL COMMENT 'Número de teléfono de emergencia 1',
+  `fun_teme2` VARCHAR(20) COMMENT 'Número de teléfono de emergencia 2 (puede ser NULL)',
+  
+  -- 7. Claves Foráneas (Referencias a Tablas Maestras)
+  `pro_ide` INT(11) COMMENT 'Clave foránea de la Profesión (tmapro)',
+  `est_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Estatus del Funcionario (tmaest)',
+  
+  -- Restricciones
+  PRIMARY KEY (`fun_ide`),
+  UNIQUE KEY `uk_fun_ced` (`fun_ced`),
+  UNIQUE KEY `uk_fun_rif` (`fun_rif`),
+  
+  -- Definición de Claves Foráneas
+  CONSTRAINT `fk_fun_pro` FOREIGN KEY (`pro_ide`) REFERENCES `tmapro` (`pro_ide`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_fun_est` FOREIGN KEY (`est_ide`) REFERENCES `tmaest` (`est_ide`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Datos Personales del Funcionario';
+
+--
+-- Tabla Maestra (tma): Condición Laboral
+--
+CREATE TABLE `tmacol` (
+  `col_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la Condición Laboral',
+  `col_nom` VARCHAR(100) NOT NULL COMMENT 'Nombre de la Condición Laboral (Ej: Fijo, Contratado, etc.)',
+  PRIMARY KEY (`col_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Condición Laboral';
+
+--
+-- Tabla Maestra (tma): Cargo CET (Clasificación Estándar)
+--
+CREATE TABLE `tmacet` (
+  `cet_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Cargo CET',
+  `cet_nom` VARCHAR(150) NOT NULL COMMENT 'Nombre del Cargo según la clasificación CET',
+  PRIMARY KEY (`cet_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Cargos CET';
+
+--
+-- Tabla Maestra (tma): Deducciones
+--
+CREATE TABLE `tmade` (
+  `ded_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la Deducción',
+  `ded_nom` VARCHAR(100) NOT NULL COMMENT 'Nombre de la Deducción (Ej: Seguro Social Obligatorio)',
+  `ded_por` DECIMAL(5,2) NOT NULL COMMENT 'Porcentaje de la Deducción (Ej: 13.50 para 13.5%)',
+  PRIMARY KEY (`ded_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Deducciones';
+
+--
+-- Tabla Maestra (tma): Cargo ONAPRE
+--
+CREATE TABLE `tmaona` (
+  `ona_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Cargo ONAPRE',
+  `ona_nom` VARCHAR(150) NOT NULL COMMENT 'Nombre del Cargo según la clasificación ONAPRE',
+  PRIMARY KEY (`ona_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Cargos ONAPRE';
+
+--
+-- Tabla Maestra (tma): Primas Generales
+--
+CREATE TABLE `tmapri` (
+  `pri_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la Prima',
+  `pri_nom` VARCHAR(100) NOT NULL COMMENT 'Nombre de la Prima (Ej: Antigüedad, Hijos, etc.)',
+  `pri_por` DECIMAL(5,2) NOT NULL COMMENT 'Porcentaje de la Prima (Ej: 25.00 para 25%)',
+  PRIMARY KEY (`pri_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Primas Generales';
+
+--
+-- Tabla Maestra (tma): Prima de Profesionalización
+--
+CREATE TABLE `tmaprf` (
+  `prf_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del histórico de Prima de Profesionalización',
+  `prf_nom` VARCHAR(100) NOT NULL COMMENT 'Descripción de la prima (Ej: TSU, Licenciado, Postgrado)',
+  `prf_act` DECIMAL(5,2) NOT NULL COMMENT 'Porcentaje actual de la Prima',
+  `prf_ant` DECIMAL(5,2) COMMENT 'Porcentaje antiguo (anterior) de la Prima (puede ser NULL)',
+  PRIMARY KEY (`prf_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Prima de Profesionalización (Histórico)';
+
+--
+-- Tabla Esclava (tes): Nivel Salarial Actual (Administrativo/Profesional)
+--
+CREATE TABLE `tesniv` (
+  `niv_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Nivel Salarial',
+  `niv_nom` VARCHAR(50) NOT NULL COMMENT 'Nombre del Nivel Salarial (Ej: Nivel I, Nivel IV)',
+  `niv_sal` DECIMAL(10,2) NOT NULL COMMENT 'Salario base mensual para este nivel',
+  `ona_ide` INT(11) NOT NULL COMMENT 'Referencia al Cargo ONAPRE al que pertenece el nivel (tmaona)',
+  PRIMARY KEY (`niv_ide`),
+  KEY `fk_niv_ona` (`ona_ide`),
+  CONSTRAINT `fk_niv_ona` FOREIGN KEY (`ona_ide`) REFERENCES `tmaona` (`ona_ide`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Nivel Salarial Actual';
+
+--
+-- Tabla Esclava (tes): Nivel Salarial Antiguo (Histórico)
+--
+CREATE TABLE `tesnivant` (
+  `nivant_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Nivel Salarial Antiguo',
+  `nivant_nom` VARCHAR(50) NOT NULL COMMENT 'Nombre del Nivel Salarial Antiguo',
+  `nivant_sal` DECIMAL(10,2) NOT NULL COMMENT 'Salario base mensual antiguo para este nivel',
+  `ona_ide` INT(11) NOT NULL COMMENT 'Referencia al Cargo ONAPRE al que pertenece el nivel (tmaona)',
+  PRIMARY KEY (`nivant_ide`),
+  KEY `fk_nivant_ona` (`ona_ide`),
+  CONSTRAINT `fk_nivant_ona` FOREIGN KEY (`ona_ide`) REFERENCES `tmaona` (`ona_ide`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Nivel Salarial Antiguo';
+
+-- Tabla Esclava (tes): Datos Contractuales y Asignaciones
+--
+CREATE TABLE `tesfun` (
+  -- Clave Primaria y Foránea a tmafun (Relación 1:1)
+  `fun_ide` INT(11) NOT NULL COMMENT 'Clave foránea y Primaria del Funcionario (tmafun)',
+
+  -- Claves Foráneas de Clasificación y Salario
+  `cet_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Cargo CET asignado (tmacet)',
+  `ona_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Cargo ONAPRE asignado (tmaona)',
+  `niv_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Nivel Salarial actual (tesniv o tesniob)',
+  `nivant_ide` INT(11) COMMENT 'Clave foránea del Nivel Salarial Antiguo (tesnivant) (puede ser NULL)',
+  `col_ide` INT(11) NOT NULL COMMENT 'Clave foránea de la Condición Laboral (tmacol)',
+  `prf_ide` INT(11) COMMENT 'Clave foránea de la Prima de Profesionalización (tmaprf) (puede ser NULL)',
+
+  -- Claves Foráneas de la Estructura Organizacional (Puede ser NULL si la asignación no es fija)
+  `dir_ide` INT(11) COMMENT 'Clave foránea de la Dirección asignada (tmadir) (puede ser NULL)',
+  `div_ide` INT(11) COMMENT 'Clave foránea de la División asignada (tesdiv) (puede ser NULL)',
+  `uni_ide` INT(11) COMMENT 'Clave foránea de la Unidad asignada (tesuni) (puede ser NULL)',
+
+  -- Restricciones
+  PRIMARY KEY (`fun_ide`),
+  
+  -- Definición de Claves Foráneas
+  CONSTRAINT `fk_tesfun_fun` FOREIGN KEY (`fun_ide`) REFERENCES `tmafun` (`fun_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_tesfun_cet` FOREIGN KEY (`cet_ide`) REFERENCES `tmacet` (`cet_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_tesfun_ona` FOREIGN KEY (`ona_ide`) REFERENCES `tmaona` (`ona_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_tesfun_niv` FOREIGN KEY (`niv_ide`) REFERENCES `tesniv` (`niv_ide`) ON DELETE RESTRICT ON UPDATE CASCADE, 
+  CONSTRAINT `fk_tesfun_nivant` FOREIGN KEY (`nivant_ide`) REFERENCES `tesnivant` (`nivant_ide`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_tesfun_col` FOREIGN KEY (`col_ide`) REFERENCES `tmacol` (`col_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_tesfun_prf` FOREIGN KEY (`prf_ide`) REFERENCES `tmaprf` (`prf_ide`) ON DELETE SET NULL ON UPDATE CASCADE,
+
+  -- Foráneas de la estructura organizacional (con SET NULL si la unidad/división es eliminada, aunque RESTRICT es más seguro)
+  CONSTRAINT `fk_tesfun_dir` FOREIGN KEY (`dir_ide`) REFERENCES `tmadir` (`dir_ide`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_tesfun_div` FOREIGN KEY (`div_ide`) REFERENCES `tesdiv` (`div_ide`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_tesfun_uni` FOREIGN KEY (`uni_ide`) REFERENCES `tesuni` (`uni_ide`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Datos Contractuales y Asignaciones';
+
