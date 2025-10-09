@@ -6,7 +6,7 @@
 -- Tiempo de generación: 02-04-2025 a las 17:12:35
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
-DROP DATABASE IF EXISTS `dbsigetrrhh`;
+
 CREATE DATABASE IF NOT EXISTS `dbsigetrrhh`;
 USE `dbsigetrrhh`;
 
@@ -238,4 +238,95 @@ CREATE TABLE `tesfun` (
   CONSTRAINT `fk_tesfun_div` FOREIGN KEY (`div_ide`) REFERENCES `tesdiv` (`div_ide`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_tesfun_uni` FOREIGN KEY (`uni_ide`) REFERENCES `tesuni` (`uni_ide`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Datos Contractuales y Asignaciones';
+
+--
+-- Tabla Maestra (tma): Porcentaje de Antigüedad
+--
+CREATE TABLE `tmaant` (
+  `ant_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del porcentaje de Antigüedad',
+  `ant_ani` INT(3) NOT NULL UNIQUE COMMENT 'Cantidad de años cumplidos para aplicar este porcentaje',
+  `ant_act` DECIMAL(5,2) NOT NULL COMMENT 'Porcentaje actual de Antigüedad (Ej: 15.00 para 15%)',
+  `ant_ant` DECIMAL(5,2) COMMENT 'Porcentaje antiguo (anterior) de Antigüedad (puede ser NULL)',
+  PRIMARY KEY (`ant_ide`),
+  UNIQUE KEY `uk_ant_ani` (`ant_ani`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Porcentajes de Antigüedad';
+
+--
+-- Tabla Esclava (tes): Historial de Salarios
+--
+CREATE TABLE `teshisal` (
+  `his_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del registro de Salario',
+  `fun_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Funcionario (tmafun)',
+  `his_fpa` DATE NOT NULL COMMENT 'Fecha de pago del salario',
+  `his_net` DECIMAL(10,2) NOT NULL COMMENT 'Salario neto depositado',
+  `his_bru` DECIMAL(10,2) NOT NULL COMMENT 'Salario bruto devengado',
+  PRIMARY KEY (`his_ide`),
+  KEY `fk_hisal_fun` (`fun_ide`),
+  CONSTRAINT `fk_hisal_fun` FOREIGN KEY (`fun_ide`) REFERENCES `tmafun` (`fun_ide`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Historial de Salarios por Funcionario';
+
+--
+-- Tabla Esclava (tes): Hijos del Funcionario
+--
+CREATE TABLE `teshij` (
+  `hij_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Hijo',
+  `fun_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Funcionario (Padre/Madre) (tmafun)',
+  `hij_nom` VARCHAR(100) NOT NULL COMMENT 'Nombre(s) del hijo',
+  `hij_ape` VARCHAR(100) NOT NULL COMMENT 'Apellido(s) del hijo',
+  `hij_fna` DATE NOT NULL COMMENT 'Fecha de nacimiento del hijo',
+  PRIMARY KEY (`hij_ide`),
+  KEY `fk_hij_fun` (`fun_ide`),
+  CONSTRAINT `fk_hij_fun` FOREIGN KEY (`fun_ide`) REFERENCES `tmafun` (`fun_ide`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Hijos del Funcionario';
+
+--
+-- Tabla Esclava (tes): Registro de Antigüedades
+--
+CREATE TABLE `tesant` (
+  `ant_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del registro de Antigüedad',
+  `fun_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Funcionario (tmafun)',
+  `ant_fin` DATE NOT NULL COMMENT 'Fecha de inicio del periodo de cálculo de Antigüedad',
+  `ant_ffen` DATE COMMENT 'Fecha de fin del periodo de cálculo de Antigüedad (NULL si está vigente)',
+  PRIMARY KEY (`ant_ide`),
+  KEY `fk_ant_fun` (`fun_ide`),
+  CONSTRAINT `fk_ant_fun` FOREIGN KEY (`fun_ide`) REFERENCES `tmafun` (`fun_ide`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Registros de Antigüedades del Funcionario';
+
+--
+-- Tabla Esclava (tes): Registro de Encargos Temporales
+--
+CREATE TABLE `tesenc` (
+  `enc_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Encargo',
+  `fun_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Funcionario encargado (tmafun)',
+  
+  `enc_ini` DATE NOT NULL COMMENT 'Fecha de inicio del encargo',
+  `enc_fin` DATE COMMENT 'Fecha de fin del encargo (NULL si está vigente)',
+  `enc_est` BOOLEAN NOT NULL COMMENT 'Estado del encargo (1: Vigente/Activo, 0: Finalizado/Inactivo)',
+  
+  -- Claves Foráneas de Clasificación y Salario del Encargo
+  `cet_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Cargo CET del Encargo (tmacet)',
+  `ona_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Cargo ONAPRE del Encargo (tmaona)',
+  `niv_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Nivel Salarial del Encargo (tesniv/tesniob)',
+  `nivant_ide` INT(11) COMMENT 'Clave foránea del Nivel Salarial Antiguo del Encargo (tesnivant) (puede ser NULL)',
+
+  -- Claves Foráneas de la Estructura Organizacional del Encargo
+  `dir_ide` INT(11) NOT NULL COMMENT 'Clave foránea de la Dirección del Encargo (tmadir)',
+  `div_ide` INT(11) NOT NULL COMMENT 'Clave foránea de la División del Encargo (tesdiv)',
+  `uni_ide` INT(11) NOT NULL COMMENT 'Clave foránea de la Unidad del Encargo (tesuni)',
+
+  PRIMARY KEY (`enc_ide`),
+  KEY `fk_enc_fun` (`fun_ide`),
+  CONSTRAINT `fk_enc_fun` FOREIGN KEY (`fun_ide`) REFERENCES `tmafun` (`fun_ide`) ON DELETE CASCADE ON UPDATE CASCADE,
+  
+  -- Restricciones de Cargos del Encargo
+  CONSTRAINT `fk_enc_cet` FOREIGN KEY (`cet_ide`) REFERENCES `tmacet` (`cet_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_enc_ona` FOREIGN KEY (`ona_ide`) REFERENCES `tmaona` (`ona_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_enc_niv` FOREIGN KEY (`niv_ide`) REFERENCES `tesniv` (`niv_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_enc_nivant` FOREIGN KEY (`nivant_ide`) REFERENCES `tesnivant` (`nivant_ide`) ON DELETE SET NULL ON UPDATE CASCADE,
+  
+  -- Restricciones de Ubicación del Encargo
+  CONSTRAINT `fk_enc_dir` FOREIGN KEY (`dir_ide`) REFERENCES `tmadir` (`dir_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_enc_div` FOREIGN KEY (`div_ide`) REFERENCES `tesdiv` (`div_ide`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_enc_uni` FOREIGN KEY (`uni_ide`) REFERENCES `tesuni` (`uni_ide`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Encargos Temporales de Funcionarios';
 
