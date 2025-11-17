@@ -1,0 +1,133 @@
+[
+    {
+        "header": "",
+        "items": [
+            {
+                "text": "Dashboard",
+                "icon": "bx bx-home",
+                "available": true,
+                "link": "/Dashboard"
+            }
+        ]
+    },
+    {
+        "header": "Gestion de Bienes",
+        "items": [
+            {
+                "text": "Formularios de Bienes Muebles",
+                "icon": "bx bx-cabinet",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "BM-1",
+                        "available": true,
+                        "link": "/BM/BM-1"
+                    },
+                    {
+                        "text": "BM-2",
+                        "available": true,
+                        "link": "/BM/BM-2"
+                    },
+                    {
+                        "text": "BM-3",
+                        "available": true,
+                        "link": "/BM/BM-3"
+                    },
+                    {
+                        "text": "BM-4",
+                        "available": true,
+                        "link": "/BM/BM-4"
+                    }
+                ]
+            },
+            {
+                "text": "Gestion de Movimientos",
+                "icon": "bx bx-transfer",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Bienes en Almacen",
+                        "available": true,
+                        "link": "/Almacen"
+                    },
+                    {
+                        "text": "Préstamos",
+                        "available": true,
+                        "link": "/Prestamos"
+                    }
+                ]
+            },
+            {
+                "text": "Gestion de Archivos",
+                "icon": "bx bx-spreadsheet",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Reportes de Bienes",
+                        "available": true,
+                        "link": "/Reportes"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "header": "Configuración",
+        "items": [
+            {
+                "text": "Configuración General",
+                "icon": "bx bx-cog",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Categorías",
+                        "available": true,
+                        "link": "/Configuracion/Categorias"
+                    },
+                    {
+                        "text": "Modelos y Marcas",
+                        "available": true,
+                        "link": "/Configuracion/ModelosyMarcas"
+                    },
+                    {
+                        "text": "Conceptos de Movimiento",
+                        "available": true,
+                        "link": "/Configuracion/ConceptoMovimiento"
+                    },
+                    {
+                        "text": "Condicines Fisicas",
+                        "available": true,
+                        "link": " "
+                    }
+                ]
+            },
+            {
+                "text": "Usuarios",
+                "icon": "bx bx-user-plus",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Registrar Nuevo Usuario",
+                        "available": true,
+                        "link": "/Configuracion/NuevoUsuario"
+                    },
+                    {
+                        "text": "Usuarios",
+                        "available": true,
+                        "link": "/Configuracion/Usuarios"
+                    },
+                    {
+                        "text": "Bitácora de Cambios",
+                        "available": true,
+                        "link": "/Configuracion/Bitacora"
+                    }
+                ]
+            }
+        ]
+    }
+]

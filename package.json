@@ -1,7 +1,9 @@
 {
   "scripts": {
     "dev": "cd modulos/BienesMuebles/server && npm run dev",
+    "devv": "cd modulos/RRHH/server && npm run dev",
     "start": "cd modulos/BienesMuebles/client && npm run dev",
+    "startt": "cd modulos/RRHH/client && npm run dev",
     "fullstack": "concurrently \"npm run start\" \"npm run dev\""
   },
   "dependencies": {
