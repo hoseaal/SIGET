@@ -1,0 +1,25 @@
+import { useLocation } from "react-router-dom";
+import Layout from "./layouts/Layout";
+import AppRoutes from "./router/AppRoutes";
+import { Blank } from "./layouts/Blank";
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
+function App() {
+  const location = useLocation();
+  const isAuthPath = location.pathname.includes("Register") ||location.pathname.includes("Login") || location.pathname.includes("error") || location.pathname.includes("under-maintenance") | location.pathname.includes("blank");
+  return (
+    <>
+      {isAuthPath ? (
+        <AppRoutes>
+            <Blank/>
+          </AppRoutes>
+      ) : (
+        <Layout>
+          <AppRoutes />
+        </Layout>
+      )}
+    </>
+  );
+}
+
+export default App;

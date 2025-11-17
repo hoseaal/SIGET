@@ -330,3 +330,139 @@ CREATE TABLE `tesenc` (
   CONSTRAINT `fk_enc_uni` FOREIGN KEY (`uni_ide`) REFERENCES `tesuni` (`uni_ide`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Encargos Temporales de Funcionarios';
 
+--
+-- Tabla Maestra (tma): Sueldo Base de Pensionados
+--
+CREATE TABLE `tmasup` (
+  `sup_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Sueldo Base de Pensionados',
+  `sup_sal` DECIMAL(10,2) NOT NULL COMMENT 'Monto del salario base mensual del pensionado/jubilado',
+  PRIMARY KEY (`sup_ide`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Maestra de Sueldo Base para Pensionados';
+
+--
+-- Tabla Esclava (tes): Registro de Jubilados
+--
+CREATE TABLE `tesjub` (
+  `jub_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del registro de Jubilado',
+  `fun_ide` INT(11) NOT NULL UNIQUE COMMENT 'Clave foránea y única del Funcionario jubilado (tmafun)',
+  
+  `jub_por` DECIMAL(5,2) NOT NULL COMMENT 'Porcentaje de Jubilación aplicado (Ej: 80.00 para el 80%)',
+  `jub_fju` DATE NOT NULL COMMENT 'Fecha efectiva de la Jubilación',
+  
+  PRIMARY KEY (`jub_ide`),
+  UNIQUE KEY `uk_jub_fun` (`fun_ide`),
+  
+  -- Definición de Claves Foráneas
+  CONSTRAINT `fk_jub_fun` FOREIGN KEY (`fun_ide`) REFERENCES `tmafun` (`fun_ide`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Datos de Jubilación de Funcionarios';
+
+--
+
+-- Tabla Esclava (tes): Permisos Remunerados
+
+--
+
+CREATE TABLE `tesperm` (
+
+  `per_ide` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único del Permiso Remunerado',
+
+  `fun_ide` INT(11) NOT NULL COMMENT 'Clave foránea del Funcionario solicitante (tmafun)',
+
+
+
+  -- Información del Permiso
+
+  `per_mot` VARCHAR(255) NOT NULL COMMENT 'Motivo o razón de la solicitud del permiso',
+
+  `per_jus` BOOLEAN NOT NULL DEFAULT 0 COMMENT 'Requiere Justificativo (1: Sí, 0: No)',
+
+  `per_fsol` DATE NOT NULL COMMENT 'Fecha en la que se realiza la solicitud del permiso',
+
+  
+
+  -- Fechas del Permiso
+
+  `per_fin` DATE NOT NULL COMMENT 'Fecha de inicio del permiso',
+
+  `per_ffe` DATE COMMENT 'Fecha de fin del permiso (NULL si es de un solo día)',
+
+  
+
+  -- Aprobación (Aprobada por RRHH)
+
+  `per_apr` BOOLEAN NOT NULL DEFAULT 0 COMMENT 'Estado de Aprobación (1: Aprobado, 0: Pendiente/Rechazado)',
+
+  
+
+  PRIMARY KEY (`per_ide`),
+
+  KEY `fk_perm_fun` (`fun_ide`),
+
+  CONSTRAINT `fk_perm_fun` FOREIGN KEY (`fun_ide`) REFERENCES `tmafun` (`fun_ide`) ON DELETE CASCADE ON UPDATE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla Esclava de Permisos Remunerados por Funcionario';
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tesusu`
+--
+
+CREATE TABLE `tesusu` (
+  `usu_ide` varchar(10) NOT NULL COMMENT 'Identificador unico del usuario',
+  `usu_usu` varchar(10) NOT NULL COMMENT 'Nickname del usuario',
+  `usu_con` varchar(255) NOT NULL COMMENT 'Contraseña del usuario (hashed)',
+  `usu_nom` varchar(50) NOT NULL COMMENT 'Nombres del Usuario',
+  `usu_ape` varchar(50) NOT NULL COMMENT 'Apellidos del usuario',
+  `usu_tip` int(1) NOT NULL COMMENT 'Perfil o tipo de usuario',
+  `usu_mod` int(2) NOT NULL COMMENT 'Módulos de acceso',
+  `nom_ced` varchar(10) DEFAULT NULL COMMENT 'Cédula del empleado, usado en caso tal como referencia a empleado en tmanom',
+  UNIQUE (`usu_usu`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `testip`
+--
+
+CREATE TABLE `testip` ( 
+  `usu_tip` INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador AI de tipos de usuario', 
+  `tip_nom` varchar(50) NOT NULL COMMENT 'Nombre de usuario' 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci; 
+
+ALTER TABLE `testip` AUTO_INCREMENT = 0;
+
+--
+-- Estructura de tabla para la tabla `tesacc`
+--
+
+CREATE TABLE `tesacc` ( 
+  `usu_mod` INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Identificador AI de tipos de acceso', 
+  `acc_nom` varchar(50) NOT NULL COMMENT 'Acceso al sistema' 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci; 
+
+--
+-- Indices de la tabla `tesusu`
+--
+ALTER TABLE `tesusu`
+  ADD PRIMARY KEY (`usu_ide`),
+  ADD UNIQUE KEY `nom_ced` (`nom_ced`);
+
+--
+-- Modificación para AI para la tabla `tesusu`
+--
+ALTER TABLE `tesusu`
+MODIFY `usu_ide` INT NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico del usuario';
+
+--
+-- Ajuste para la tabla `tesusu`
+--
+ALTER TABLE `tesusu`
+  ADD CONSTRAINT `fk_tesusu_roles` FOREIGN KEY (`usu_tip`) REFERENCES `testip` (`usu_tip`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+--
+-- Ajuste para la tabla `tesusu`
+--
+ALTER TABLE `tesusu`
+  ADD CONSTRAINT `fk_tesusu_accesos` FOREIGN KEY (`usu_mod`) REFERENCES `tesacc` (`usu_mod`) ON DELETE RESTRICT ON UPDATE CASCADE;

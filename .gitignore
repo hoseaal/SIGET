@@ -3,6 +3,9 @@ vendor/firebase/php-jwt/
 /.env
 /modulos/BienesMuebles/server/node_modules/
 /modulos/BienesMuebles/client/node_modules/
+/modulos/RRHH/server/node_modules/
+/modulos/RRHH/client/node_modules/
 /vendor/composer
 /vendor
 /modulos/BienesMuebles/server/.env
+/modulos/RRHH/server/.env
