@@ -6,9 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node api-rest.js",
-    "dev": "node --watch api-rest.js",
-    "swagger:generate": "node ./scripts/generate_swagger.js",
-    "docs:html": "npm run swagger:generate && npx redoc-cli bundle swagger_output.json -o docs/api-documentation.html"
+    "dev": "node --watch api-rest.js"
   },
   "keywords": [],
   "author": "",

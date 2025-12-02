@@ -3,6 +3,9 @@ import { connectDB } from './src/utils/database.js'
 import cookieParser from 'cookie-parser'
 import authRouter from './src/auth/auth.routes.js'
 import userRoutes from './src/routes/user.routes.js'
+import direccionRouter from './src/routes/direccion.routes.js'
+import divisionRouter from './src/routes/division.routes.js'
+import unidadRouter from './src/routes/unidad.routes.js'
 import cors from 'cors'
 import morgan from 'morgan'
 
@@ -32,6 +35,10 @@ app.use(cors({
 app.use('/api/auth', authRouter)
 
 app.use('/api/user', userRoutes)
+
+app.use('/api/direcciones', direccionRouter)
+app.use('/api/divisiones', divisionRouter)
+app.use('/api/unidades', unidadRouter)
 
 const PORT = 5002
 app.listen(PORT, () => {
