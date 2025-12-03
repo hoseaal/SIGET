@@ -16,3 +16,5 @@ Ejemplo de tabla bien documentada:
         is_activo BOOLEAN DEFAULT TRUE COMMENT "Estado de la cuenta",  
         creado_fecha DATETIME DEFAULT CURRENT_TIMESTAMP  
     ) ENGINE=InnoDB ON UPDATE CASCADE ON DELETE CASCADE;  
+
+    
