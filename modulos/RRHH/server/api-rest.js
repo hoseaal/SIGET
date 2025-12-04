@@ -9,6 +9,7 @@ import unidadRouter from './src/routes/unidad.routes.js'
 import profesionRouter from './src/routes/profesion.routes.js'
 import estatusRouter from './src/routes/estatus.routes.js'
 import funcionarioRouter from './src/routes/funcionario.routes.js'
+import cargoCetRouter from './src/routes/cargoCET.routes.js'
 import cors from 'cors'
 import morgan from 'morgan'
 
@@ -47,6 +48,9 @@ app.use('/api/estatus', estatusRouter)
 
 
 app.use('/api/funcionarios', funcionarioRouter)
+
+
+app.use('/api/cargos-cet', cargoCetRouter)
 
 const PORT = 5002
 app.listen(PORT, () => {
