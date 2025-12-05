@@ -10,6 +10,8 @@ import profesionRouter from './src/routes/profesion.routes.js'
 import estatusRouter from './src/routes/estatus.routes.js'
 import funcionarioRouter from './src/routes/funcionario.routes.js'
 import cargoCetRouter from './src/routes/cargoCET.routes.js'
+import deduccionRouter from './src/routes/deduccion.routes.js'
+import cargoOnapreRouter from './src/routes/cargoOnapre.routes.js'
 import cors from 'cors'
 import morgan from 'morgan'
 
@@ -51,6 +53,8 @@ app.use('/api/funcionarios', funcionarioRouter)
 
 
 app.use('/api/cargos-cet', cargoCetRouter)
+app.use('/api/deducciones', deduccionRouter)
+app.use('/api/cargos-onapre', cargoOnapreRouter)
 
 const PORT = 5002
 app.listen(PORT, () => {
