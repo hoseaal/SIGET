@@ -12,6 +12,10 @@ import funcionarioRouter from './src/routes/funcionario.routes.js'
 import cargoCetRouter from './src/routes/cargoCET.routes.js'
 import deduccionRouter from './src/routes/deduccion.routes.js'
 import cargoOnapreRouter from './src/routes/cargoOnapre.routes.js'
+import primaRouter from './src/routes/prima.routes.js'
+import primaProfRouter from './src/routes/primaProfesionalizacion.routes.js'
+import nivelSalarialRouter from './src/routes/nivelSalarial.routes.js'
+import nivelAntiguoRouter from './src/routes/nivelSalarialAntiguo.routes.js'
 import cors from 'cors'
 import morgan from 'morgan'
 
@@ -55,7 +59,10 @@ app.use('/api/funcionarios', funcionarioRouter)
 app.use('/api/cargos-cet', cargoCetRouter)
 app.use('/api/deducciones', deduccionRouter)
 app.use('/api/cargos-onapre', cargoOnapreRouter)
-
+app.use('/api/primas', primaRouter)
+app.use('/api/primas-profesionalizacion', primaProfRouter)
+app.use('/api/niveles-salariales', nivelSalarialRouter)
+app.use('/api/niveles-salariales-antiguos', nivelAntiguoRouter)
 const PORT = 5002
 app.listen(PORT, () => {
   console.log(`🚀 Servidor en http://localhost:${PORT}`)
