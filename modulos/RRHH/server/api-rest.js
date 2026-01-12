@@ -16,6 +16,13 @@ import primaRouter from './src/routes/prima.routes.js'
 import primaProfRouter from './src/routes/primaProfesionalizacion.routes.js'
 import nivelSalarialRouter from './src/routes/nivelSalarial.routes.js'
 import nivelAntiguoRouter from './src/routes/nivelSalarialAntiguo.routes.js'
+import antiguedadRouter from './src/routes/antiguedad.routes.js'
+import hijoRouter from './src/routes/hijo.routes.js'
+
+import historialSalarioRouter from './src/routes/historialSalario.routes.js'
+
+
+
 import cors from 'cors'
 import morgan from 'morgan'
 
@@ -63,6 +70,14 @@ app.use('/api/primas', primaRouter)
 app.use('/api/primas-profesionalizacion', primaProfRouter)
 app.use('/api/niveles-salariales', nivelSalarialRouter)
 app.use('/api/niveles-salariales-antiguos', nivelAntiguoRouter)
+app.use('/api/antiguedad', antiguedadRouter)
+
+
+app.use('/api/hijos', hijoRouter)
+
+
+app.use('/api/historial-salarios', historialSalarioRouter)
+
 const PORT = 5002
 app.listen(PORT, () => {
   console.log(`🚀 Servidor en http://localhost:${PORT}`)
