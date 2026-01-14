@@ -293,14 +293,17 @@ export class BienMuebleModel {
       queryParams.push(filters.fechaDesincorporacionHasta)
     }
 
-    // Construcción de la consulta COUNT
     let countQuery = 'SELECT COUNT(*) as total FROM tmab_m b'
+
+    // Construcción de la consulta COUNT
+
 
     // Agregar WHERE si hay filtros
     if (whereClauses.length > 0) {
       countQuery += ' WHERE ' + whereClauses.join(' AND ')
     }
 
+    console.log('Count Query:', countQuery, queryParams)
     // Ejecutar consulta y devolver solo el total
     const [[{ total }]] = await pool.query(countQuery, queryParams)
     return { total }

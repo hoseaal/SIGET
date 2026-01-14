@@ -85,4 +85,35 @@ export class ReporteBM4Model {
       throw new Error('No se pudo guardar el cierre de mes.')
     }
   }
+
+  static async getCategorias () {
+    try {
+      const [result] = await pool.query(
+                `(SELECT 
+                      c.cat_cat AS categoria,
+                      COUNT(b.bim_ide) AS cantidad, 
+                      COALESCE(SUM(b.bim_val), 0) AS valor 
+                  FROM tmab_m b 
+                  JOIN tescae e ON e.cae_ide = b.cae_ide 
+                  JOIN tessca s ON s.sca_ide = e.sca_ide 
+                  JOIN tmacat c ON c.cat_ide = s.cat_ide 
+                  GROUP BY c.cat_cat)
+
+                  UNION ALL
+
+                  SELECT 
+                      'TOTAL GENERAL',
+                      COUNT(b.bim_ide), 
+                      COALESCE(SUM(b.bim_val), 0)
+                  FROM tmab_m b 
+                  JOIN tescae e ON e.cae_ide = b.cae_ide 
+                  JOIN tessca s ON s.sca_ide = e.sca_ide 
+                  JOIN tmacat c ON c.cat_ide = s.cat_ide;`
+      )
+      return result
+    } catch (error) {
+      console.error('Error al generar datos:', error)
+      throw new Error('No se pudo cargar las categorias.')
+    }
+  }
 }

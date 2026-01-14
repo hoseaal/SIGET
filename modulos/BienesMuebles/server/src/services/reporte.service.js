@@ -82,4 +82,12 @@ export class ReporteBM4Service {
       existenciaActualRealTime: existencia
     }
   }
+
+  static async getCategorias () {
+    console.log('[Service] Obteniendo data actual en tiempo real.')
+    const existencia = await ReporteBM4Model.getCategorias()
+    return {
+      Categorias: existencia
+    }
+  }
 }

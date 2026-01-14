@@ -114,7 +114,8 @@ export const contarBienes = async (req, res) => {
       fechaIncorporacionDesde: req.query.fechaIncDesde,
       fechaIncorporacionHasta: req.query.fechaIncHasta,
       fechaDesincorporacionDesde: req.query.fechaDesDesde,
-      fechaDesincorporacionHasta: req.query.fechaDesHasta
+      fechaDesincorporacionHasta: req.query.fechaDesHasta,
+      cat: req.query.cat
     }
 
     // Eliminar propiedades undefined

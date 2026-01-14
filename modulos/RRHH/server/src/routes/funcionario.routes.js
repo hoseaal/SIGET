@@ -19,4 +19,11 @@ router.put('/:id', actualizarFuncionarioCompleto)
 
 router.delete('/:id', eliminarFuncionario)
 
+// --- SUB-RECURSO: ENCARGOS ---
+// POST: Asignar un encargo al funcionario :id
+router.post('/:id/encargo', asignarEncargo)
+
+// PUT: Finalizar el encargo activo del funcionario :id
+router.put('/:id/encargo/finalizar', finalizarEncargo)
+
 export default router
