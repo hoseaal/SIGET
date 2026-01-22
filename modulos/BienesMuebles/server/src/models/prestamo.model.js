@@ -86,7 +86,7 @@ export class PrestamoModel {
     const params = []
 
     // Parametro: El préstamo debe estar activo
-    whereClauses.push('tp.pre_est = 1')
+    whereClauses.push('tp.pre_est = 1 AND tdd.dpr_est = 1')
 
     // EXCLUSIÓN CLAVE para préstamos normales:
     // NO incluir si el destino es Almacén (11) o Administracion (9) Y la condición física de ALGUN BIEN es Mal Estado (4)
@@ -154,7 +154,7 @@ export class PrestamoModel {
       INNER JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
       INNER JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
       INNER JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
-      WHERE tp.pre_est = 1
+      WHERE tp.pre_est = 1 AND tdd.dpr_est = 1
         AND tp.pre_cla = ?
     `
 
