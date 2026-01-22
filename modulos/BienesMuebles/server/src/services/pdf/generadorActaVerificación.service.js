@@ -50,7 +50,6 @@ function numberToWords (num) {
         return ten + (unit ? ' y ' + unit : '')
       }
     }
-    // For numbers like 100, 200...
     if (n === 100) return 'cien'
     const hundred = hundreds[Math.floor(n / 100)]
     const rest = convertLessThanOneThousand(n % 100)
@@ -58,14 +57,13 @@ function numberToWords (num) {
   }
 
   if (num < 1000) return convertLessThanOneThousand(num)
-  // For "dos mil veinticinco" (2025) format for years, we only need up to thousands
   const thousands = Math.floor(num / 1000)
   const remainder = num % 1000
 
   let result = ''
-  if (thousands === 1) { // "mil"
+  if (thousands === 1) { 
     result += 'mil'
-  } else { // "dos mil", "tres mil"
+  } else { 
     result += units[thousands] + ' mil'
   }
 
@@ -86,12 +84,14 @@ async function fetchApiData (endpoint, token) {
   try {
     const response = await fetch(url, options)
     if (!response.ok) {
-      throw new Error(`Error en la petición a ${url}: ${response.statusText}`)
+        // Manejo silencioso de 404 para arrays vacíos
+        if (response.status === 404) return []
+        throw new Error(`Error en la petición a ${url}: ${response.statusText}`)
     }
     return await response.json()
   } catch (error) {
     console.error(`Error al hacer fetch a ${url}:`, error)
-    return null
+    return [] // Retornar array vacío en error para no romper Promise.all
   }
 }
 
@@ -112,7 +112,6 @@ function toUpperCase (str) {
 
 function limpiarTexto (texto) {
   if (!texto) return ''
-  // Reemplazar saltos de línea y múltiples espacios por un solo espacio
   return texto.replace(/\s+/g, ' ').trim()
 }
 
@@ -126,12 +125,14 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
     }
 
     try {
+      // 1. OBTENER DATOS CONCURRENTE (Lógica actualizada)
       const [
         bienesData,
-        malEstadoData,
-        prestadosAOtroData,
-        prestadosDeOtroData,
-        bienesMalEstadoEnDepartamentoData
+        bienesEnAlmacenData,  // Endpoint: prestamos/almacen (Reemplaza malEstadoData)
+        prestadosAOtroData,   // Endpoint: prestamos/normales (salientes)
+        prestadosDeOtroData,  // Endpoint: prestamos/normales (entrantes)
+        // Ya no necesitamos buscar específicamente "con=4" porque el almacen lo define el endpoint
+        bienesMalEstadoEnDepartamentoData // Mantenemos esto por si quieres listar rotos que NO están en almacén
       ] = await Promise.all([
         fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1`, accessToken),
         fetchApiData(`/api/prestamos/almacen?dep_origen_id=${dep_ide}`, accessToken),
@@ -140,59 +141,63 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1&con=4`, accessToken)
       ])
 
-      if (!bienesData) {
-        return reject(new Error('Error crítico: no se pudieron obtener los datos principales de los bienes.'))
-      }
-
-      // Procesar datos
-      const todosLosBienes = bienesData || []
+      const todosLosBienes = Array.isArray(bienesData) ? bienesData : (bienesData?.data || [])
+      
+      // Filtros básicos
       const bienesFaltantes = todosLosBienes.filter(b => b.est_ide === 3)
       const bienesSinEtiqueta = todosLosBienes.filter(b => b.est_ide === 1)
       const bienesMalEstadoEnDepartamento = bienesMalEstadoEnDepartamentoData || []
 
-      console.log('Datos de mal estado en departamento:', malEstadoData)
+      // Función auxiliar para aplanar
       const extraerBienesPrestamo = (data) => {
-  return (data || []).flatMap(prestamo => {
-    try {
-      // 1. Decodifica la cadena JSON en un array de bienes.
-      const bienes = JSON.parse(prestamo.bienes_detalles);
+        return (data || []).flatMap(prestamo => {
+          try {
+            const detalles = typeof prestamo.bienes_detalles === 'string' 
+                ? JSON.parse(prestamo.bienes_detalles) 
+                : (prestamo.bienes_detalles || [])
+            
+            const bienesArray = Array.isArray(detalles) ? detalles : [detalles]
 
-      // 2. Por cada bien en ese array, crea un nuevo objeto
-      //    que combina los datos del préstamo con los datos del bien.
-      return bienes.map(bien => ({
-        ...prestamo,
-        ...bien,
-        bim_des: limpiarTexto(bien.bim_des), // Aplica la función al bien individual.
-        departamento_origen_nombre: toUpperCase(prestamo.departamento_origen_nombre),
-        departamento_destino_nombre: toUpperCase(prestamo.departamento_destino_nombre)
-      }));
-    } catch (e) {
-      console.warn('Error al decodificar bienes_detalles:', e);
-      return []; // Devuelve un array vacío para que flatMap lo omita.
-    }
-  });
-};
-      const bienesMalEstadoAlmacen = extraerBienesPrestamo(malEstadoData)
+            return bienesArray.map(bien => ({
+              ...prestamo,
+              ...bien,
+              bim_des: limpiarTexto(bien.bim_des),
+              departamento_origen_nombre: toUpperCase(prestamo.departamento_origen_nombre),
+              departamento_destino_nombre: toUpperCase(prestamo.departamento_destino_nombre)
+            }))
+          } catch (e) {
+            console.warn('Error al decodificar bienes_detalles:', e)
+            return []
+          }
+        })
+      }
+
+      // Procesar listas
+      const bienesEnviadosAlmacen = extraerBienesPrestamo(bienesEnAlmacenData)
       const bienesPrestadosAOtro = extraerBienesPrestamo(prestadosAOtroData)
       const bienesPrestadosDeOtro = extraerBienesPrestamo(prestadosDeOtroData)
 
-      // Filtrar bienes en mal estado que no están en almacén
+      // Filtrar bienes que están "rotos" (con=4) en el sistema pero que NO han sido enviados al almacén (siguen físicos aquí)
       const bienesMalEstadoSoloEnDepartamento = bienesMalEstadoEnDepartamento.filter(b =>
-        !bienesMalEstadoAlmacen.some(m => m.bim_ide === b.bim_ide)
+        !bienesEnviadosAlmacen.some(m => m.bim_ide === b.bim_ide)
       )
+
       // Calcular totales
       const countFaltantes = bienesFaltantes.length
-      const countMalEstado = bienesMalEstadoAlmacen.length + bienesMalEstadoSoloEnDepartamento.length
+      // Nota: En tu lógica anterior "Mal Estado" sumaba Almacén + RotosLocales. Mantenemos esa lógica de conteo.
+      const countEnAlmacen = bienesEnviadosAlmacen.length + bienesMalEstadoSoloEnDepartamento.length
       const countPrestadosAOtro = bienesPrestadosAOtro.length
       const countPrestadosDeOtro = bienesPrestadosDeOtro.length
-      const countEnServicio = todosLosBienes.length - countFaltantes - countPrestadosAOtro - countMalEstado
+      
+      // En servicio = Total - (Faltantes + Prestados + EnAlmacen/Rotos)
+      const countEnServicio = todosLosBienes.length - countFaltantes - countPrestadosAOtro - countEnAlmacen
 
-      // Calcular TOTAL como suma de las filas (excepto préstamos de otros)
-      const totalBienesTabla = countEnServicio + countFaltantes + countMalEstado + countPrestadosAOtro + countPrestadosDeOtro
+      // TOTAL GLOBAL (Suma de todo lo propio)
+      const totalBienesTabla = countEnServicio + countFaltantes + countEnAlmacen + countPrestadosAOtro + countPrestadosDeOtro
 
       const { day, month, yearInWords, fechacorta } = formatCurrentDateTime()
 
-      // Crear PDF
+      // --- CREAR PDF ---
       const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true })
       const tempDir = path.join(process.cwd(), 'temp')
       if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true })
@@ -215,17 +220,17 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       doc.moveDown(2)
 
       // Párrafo introductorio
-
       doc.font('Helvetica').fontSize(12)
       const parrafo = `En la ciudad de San Cristóbal a los ${day} días del mes de ${month} del año ${yearInWords} reunidos en la dirección de ${departamentoNombreUpper} los Ciudadanos: ${datosPost.director_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.director_cedula || 'N/A'} (${datosPost.director_cargo || 'N/A'}) y Lcda. ${datosPost.analista_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.analista_cedula || 'N/A'} (Analista de Bienes e Inventarios I), para dejar constancia de la verificación por percepción directa del inventario físico al ${fechacorta}, fecha del reporte BM1 bienes adscritos a la Unidad antes mencionada, los cuales ascienden a un total de ${totalBienesTabla} bienes, según la relación de bienes muebles formulario BM-1.`
       doc.text(parrafo, { align: 'justify' })
       doc.moveDown(2)
 
       // Tabla de resumen
+      // Re-verificamos la lista de "En Servicio" asegurando que no incluya los otros estados
       const bienesEnServicio = todosLosBienes.filter(b =>
         b.est_ide !== 3 &&
         !bienesPrestadosAOtro.some(p => p.bim_ide === b.bim_ide) &&
-        !bienesMalEstadoAlmacen.some(m => m.bim_ide === b.bim_ide) &&
+        !bienesEnviadosAlmacen.some(m => m.bim_ide === b.bim_ide) &&
         !bienesMalEstadoSoloEnDepartamento.some(m => m.bim_ide === b.bim_ide)
       )
 
@@ -241,9 +246,10 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
           obs: bienesFaltantes.map(b => b.bim_ide).join(', ')
         },
         {
+          // MANTENEMOS LA ETIQUETA "Mal Estado" VISUALMENTE COMO PEDISTE
           label: 'Bienes en Mal Estado:',
-          total: countMalEstado,
-          obs: [...bienesMalEstadoAlmacen, ...bienesMalEstadoSoloEnDepartamento].map(b => b.bim_ide).join(', ')
+          total: countEnAlmacen,
+          obs: [...bienesEnviadosAlmacen, ...bienesMalEstadoSoloEnDepartamento].map(b => b.bim_ide).join(', ')
         },
         {
           label: 'Bienes en Préstamo a otras direcciones:',
@@ -260,7 +266,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       drawTable(doc, tableData, totalBienesTabla)
       doc.moveDown(2)
 
-      // Secciones de detalles
+      // --- SECCIONES DE DETALLES ---
       doc.x = doc.page.margins.left
       doc.font('Helvetica-Bold').fontSize(12).text('OBSERVACION:', {
         align: 'left',
@@ -293,13 +299,11 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         b => `EL BIEN Nº${b.bim_ide}: ${b.bim_des} SE DIO EN CALIDAD DE PRÉSTAMO DESDE ${b.departamento_origen_nombre} SEGÚN ${b.pre_tip} ${b.pre_ndo || ''}${b.pre_fec ? ` FECHA ${formatFullDate(b.pre_fec)}` : ''}.`
       )
 
-      
+      // 2. Bienes en Almacén (Visualmente "Mal Estado Trasladados")
+      // Separamos por destino (Piso 3 u otros)
+      const bienesPiso3 = bienesEnviadosAlmacen.filter(b => b.dep_ide === 11);
+      const bienesPiso4 = bienesEnviadosAlmacen.filter(b => b.dep_ide === 9);
 
-      // 2. Bienes en mal estado en almacén
-      const bienesPiso3 = bienesMalEstadoAlmacen.filter(b => b.dep_ide === 11);
-      const bienesPiso4 = bienesMalEstadoAlmacen.filter(b => b.dep_ide === 9);
-
-      // Dibuja la sección para el piso 3 si hay datos
       if (bienesPiso3.length > 0) {
         drawSection(
           'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A ALMACEN DE PISO 3 PARA SU RESGUARDO, POR SERVICIOS GENERALES, SEGURIDAD Y TRANSPORTE:',
@@ -308,7 +312,6 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         );
       }
 
-      // Dibuja la sección para el piso 4 si hay datos
       if (bienesPiso4.length > 0) {
         drawSection(
           'BIENES EN MAL ESTADO QUE FUERON TRASLADADOS A ALMACEN DE PISO 4 PARA SU RESGUARDO:',
@@ -317,7 +320,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         );
       }
 
-      // 3. Bienes en mal estado en el departamento
+      // 3. Bienes en mal estado (Físicos en el departamento, no enviados)
       drawSection(
         `BIENES EN MAL ESTADO DENTRO DE ${departamentoNombreUpper}:`,
         bienesMalEstadoSoloEnDepartamento,
@@ -378,7 +381,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         b => `${b.bim_ide}: ${b.bim_des}`
       )
 
-      // Firmas
+      // --- FIRMAS ---
       let finalY = doc.y
       if (finalY > 600) {
         doc.addPage()

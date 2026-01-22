@@ -2,7 +2,7 @@ import { FuncionarioService } from '../services/funcionario.service.js'
 
 /**
  * Obtiene la lista de funcionarios con paginación y filtros.
- * @param {string} [req.query.type] - Si es 'full', incluye datos del contrato.
+ * @param {string} [req.query.type] - Si es 'full', incluye datos del contrato y encargo activo.
  */
 export const obtenerFuncionarios = async (req, res) => {
   try {
@@ -16,7 +16,7 @@ export const obtenerFuncionarios = async (req, res) => {
 
 /**
  * Obtiene un funcionario específico.
- * @param {string} [req.query.type] - Si es 'full', incluye datos del contrato.
+ * @param {string} [req.query.type] - Si es 'full', incluye datos del contrato y encargo activo.
  */
 export const obtenerFuncionario = async (req, res) => {
   try {
@@ -67,6 +67,35 @@ export const eliminarFuncionario = async (req, res) => {
     const { id } = req.params
     const eliminado = await FuncionarioService.eliminar(id)
     res.json({ success: eliminado })
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
+}
+
+export const asignarEncargo = async (req, res) => {
+  try {
+    const { id } = req.params // fun_ide viene en la URL
+    // Pasamos el ID y el body con los datos del encargo (cargo, fechas, ubicación)
+    const nuevoId = await FuncionarioService.asignarEncargo(id, req.body)
+    res.status(201).json({ 
+      success: true, 
+      encargo_id: nuevoId, 
+      message: 'Encargo asignado correctamente' 
+    })
+  } catch (error) {
+    // Capturamos errores de validación o si ya tiene encargo activo
+    res.status(400).json({ error: error.message })
+  }
+}
+
+export const finalizarEncargo = async (req, res) => {
+  try {
+    const { id } = req.params // fun_ide
+    await FuncionarioService.finalizarEncargo(id)
+    res.json({ 
+      success: true, 
+      message: 'Encargo finalizado. El funcionario vuelve a sus funciones base.' 
+    })
   } catch (error) {
     res.status(400).json({ error: error.message })
   }

@@ -26,7 +26,7 @@ const editableFields = {
     'bim_cod': 'Código SUDEBIP',
     'bim_obs': 'Observación',
     'est_ide': 'Estado del Bien',
-    'con_ide': 'Condición Física',
+    'con_ide': 'Condición Física', // Ahora es editable siempre
     'esu_ide': 'Estado de Uso',
     'mod_ide': 'Modelo',
     'foa_ide': 'Forma de Adquisición',
@@ -75,15 +75,10 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    const truncateText = (text, maxLength = 10) => {
+    const truncateText = (text, maxLength = 30) => { // Aumenté un poco el límite
         if (!text) return 'N/A';
         if (text.length <= maxLength) return text;
-        
-        return (
-            <span title={text}>
-                {`${text.substring(0, maxLength)}...`}
-            </span>
-        );
+        return <span title={text}>{`${text.substring(0, maxLength)}...`}</span>;
     };
 
     useEffect(() => {
@@ -111,6 +106,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                         };
                     });
 
+                    // Asegurar que mar_ide esté presente
                     if (!formattedColumns.some(c => c.originalName === 'mar_ide')) {
                         formattedColumns.push({
                             originalName: 'mar_ide',
@@ -121,8 +117,6 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     }
 
                     setColumns(formattedColumns);
-
-                    
 
                     // --- Carga de datos del bien ---
                     const bienRes = await fetch(`/api/bienes/${BienId}`);
@@ -135,20 +129,22 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     setFormData(bien);
 
                     // --- Carga de información de préstamo ---
+                    // Nota: Asumimos que el endpoint devuelve info si está prestado O en almacén
                     const prestamoRes = await fetch(`/api/prestamos/estado-bien/${BienId}`);
                     if (!prestamoRes.ok) {
                         if (prestamoRes.status === 404) {
-                            setPrestamoInfo(null);
+                            setPrestamoInfo(null); // No está activo en ningún lado, está en su origen
                         } else {
-                            const errData = await prestamoRes.json();
-                            throw new Error(errData.error || 'Error al verificar el préstamo del bien.');
+                            // Si falla, no bloqueamos el modal, solo logueamos
+                            console.warn('No se pudo verificar el estado de préstamo del bien.');
+                            setPrestamoInfo(null);
                         }
                     } else {
                         const prestamoData = await prestamoRes.json();
                         setPrestamoInfo(prestamoData);
                     }
-                    // --- FIN Carga de información de préstamo ---
 
+                    // --- Carga de selects ---
                     const optionPromises = Object.entries(foreignKeyEndpoints)
                         .filter(([key]) => Object.keys(editableFields).includes(key))
                         .map(async ([key, endpoint]) => {
@@ -174,7 +170,6 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-
     };
 
     const handleSubmit = async (e) => {
@@ -187,21 +182,22 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
             const changedFields = {};
             
             Object.keys(editableFields).forEach(key => {
-                if (formData[key] !== originalData[key]) {
+                // Comparamos valores (convirtiendo a string por si acaso vienen números y strings mixtos)
+                if (String(formData[key]) !== String(originalData[key])) {
                     changedFields[key] = formData[key];
                 }
             });
 
             if (Object.keys(changedFields).length === 0) {
                 setSuccess('No se detectaron cambios para guardar');
+                setLoading(false);
                 return;
             }
 
-            console.log(changedFields)
-
-            if (prestamoInfo !== null) {
-                throw new Error('No se puede cambiar la condición física del bien mientras esté prestado.');
-            }
+            // --- CORRECCIÓN CLAVE ---
+            // Se eliminó el bloque que lanzaba error si 'prestamoInfo !== null'.
+            // Ahora se permite editar aunque esté prestado.
+            // ------------------------
 
             const response = await fetch(`/api/bienes/${BienId}`, {
                 method: 'PUT',
@@ -218,7 +214,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
             setTimeout(() => {
                 handleClose();
                 if (onSuccess) onSuccess();
-            }, 2000);
+            }, 1500);
         } catch (err) {
             setError(`✗ ${err.message}`);
         } finally {
@@ -232,7 +228,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
         const isDisabled = loading || !column.isEditable;
         const isSelect = (fieldName.slice(-3) === 'ide') && !column.isPrimaryKey;
 
-        // Mapeo de campos a sus respectivas propiedades en BienData
+        // Mapeo de campos solo visuales (read-only)
         const fieldDisplayMap = {
             'mar_ide': bienData?.marca,
             'cae_ide': bienData?.categoria_especifica,
@@ -259,7 +255,6 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
             );
         }
 
-        // Si el campo está en nuestro mapeo, mostrar el valor correspondiente deshabilitado
         if (fieldName in fieldDisplayMap) {
             return (
                 <Form.Control
@@ -289,6 +284,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
 
         if (isSelect) {
             const options = selectOptions[fieldName] || [];
+            // Lógica para detectar dinámicamente qué campo es el ID y cuál el Label en el objeto
             const valueKey = options.length > 0 ? Object.keys(options[0]).find(k => k.endsWith('_ide')) : '';
             const displayKey = options.length > 0 ? Object.keys(options[0]).find(k => !k.endsWith('_ide') && k !== valueKey) : '';
             
@@ -319,9 +315,9 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 />
             );
         }
-        // Excluir 'dep_ide' de este renderizado genérico
+        // Excluir 'dep_ide' de este renderizado genérico (se muestra arriba manualmente)
         if (fieldName === 'dep_ide') {
-            return null; // No renderizarlo aquí, lo manejaremos por separado
+            return null; 
         }
 
         return (
@@ -338,7 +334,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
     };
 
     const getEstadoBadge = (est_ide) => {
-        const estado = estadosBien.find(e => e.est_ide === est_ide);
+        const estado = estadosBien.find(e => e.est_ide === Number(est_ide));
         if (!estado) return null;
         
         return (
@@ -348,64 +344,87 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
         );
     };
 
+    // Helper para el título de ubicación actual
+    const getUbicacionLabel = () => {
+        if (!prestamoInfo) return 'Ubicación: Departamento Original (En Custodia)';
+        // Si tienes el campo pre_cla en prestamoInfo podrías ser más específico:
+        // if (prestamoInfo.pre_cla === 'A') return `EN ALMACÉN (Oficio: ${prestamoInfo.pre_ndo})`;
+        // if (prestamoInfo.pre_cla === 'P') return `EN PRÉSTAMO (Oficio: ${prestamoInfo.pre_ndo})`;
+        return `UBICACIÓN ACTUAL (Activo en: ${prestamoInfo.pre_ndo})`;
+    };
+
     return (
         <Modal show={show} onHide={handleClose} size="xl" backdrop="static">
             <Form onSubmit={handleSubmit}>
                 <Modal.Header closeButton>
-                    <Modal.Title className="w-100"> {/* w-100 para que ocupe todo el ancho */}
+                    <Modal.Title className="w-100"> 
                         <div className="d-flex justify-content-between align-items-center mb-2">
-                            <span>Editar Bien: {bienData?.bim_ide} - {truncateText(bienData?.bim_des)}</span>
+                            <span>Editar Bien: {bienData?.bim_ide}</span>
                             {bienData?.est_ide && (
                                 <div>
                                     {getEstadoBadge(formData.est_ide)}
                                 </div>
                             )}
                         </div>
+                        <small className="text-muted">{truncateText(bienData?.bim_des, 60)}</small>
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {loading && !bienData ? (
-                        <div className="text-center"><Spinner animation="border" /><p>Cargando datos...</p></div>
+                        <div className="text-center my-4">
+                            <Spinner animation="border" variant="primary" />
+                            <p className="mt-2">Cargando datos del bien...</p>
+                        </div>
                     ) : (
-                        <Row className="mb-6 g-2"> {/* g-2 para un pequeño gap entre columnas */}
+                        <Row className="mb-6 g-3"> 
+                            {/* Información de Ubicación (Solo Lectura) */}
                             <Col md={6}>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Departamento Original:</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    value={bienData?.departamento || ''}
-                                    disabled={true}
-                                    readOnly={true}
-                                    className="form-control-readonly "
-                                    style={{ fontWeight: 'bold' }}
-                                />
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Departamento Propietario (Origen):</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={bienData?.departamento || ''}
+                                        disabled={true}
+                                        readOnly={true}
+                                        className="form-control-readonly"
+                                        style={{ fontWeight: '500' }}
+                                    />
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
-                            <Form.Group className="mb-3">
-                            <Form.Label>{prestamoInfo 
-                                    ? `BIEN PRESTADO EN (Oficio: ${prestamoInfo.pre_ndo})`
-                                    : 'Bien en servicio en su departamento original'}</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={prestamoInfo 
-                                    ? `${prestamoInfo.departamento_destino_nombre}`
-                                    : 'Bien en servicio en su departamento original'}
-                                disabled={true} // Siempre deshabilitado
-                                readOnly={true}
-                                className={prestamoInfo ? 'form-control-readonly text-dark' : 'form-control-readonly'}
-                                style={{ fontWeight: 'bold' }}
-                            />
-                            </Form.Group>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{getUbicacionLabel()}</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={prestamoInfo 
+                                            ? `${prestamoInfo.departamento_destino_nombre}`
+                                            : 'En resguardo del propietario'}
+                                        disabled={true} 
+                                        readOnly={true}
+                                        className={prestamoInfo ? 'form-control-readonly border-info' : 'form-control-readonly'}
+                                        style={{ fontWeight: 'bold', color: prestamoInfo ? '#007bff' : '#6c757d' }}
+                                    />
+                                    {prestamoInfo && (
+                                        <Form.Text className="text-muted">
+                                            Este bien tiene un movimiento activo. Puede editar sus características físicas, pero no su departamento origen.
+                                        </Form.Text>
+                                    )}
+                                </Form.Group>
                             </Col>
                         
-                        
+                            <div className="border-bottom my-2"></div> {/* Separador */}
+
+                            {/* Renderizado dinámico de columnas */}
                             {columns.map((column) => {
+                                // Renderizamos el campo solo si renderFormField no retorna null
+                                const field = renderFormField(column);
+                                if (!field) return null;
+
                                 return (
                                     <Col md={6} key={column.originalName}>
                                         <Form.Group className="mb-3">
                                             <Form.Label>{column.displayName}</Form.Label>
-                                            {renderFormField(column)}
+                                            {field}
                                         </Form.Group>
                                     </Col>
                                 );
@@ -414,10 +433,14 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    {(error || success) && (<Alert type={error ? 'danger' : 'success'}>{error || success}</Alert>)}
+                    {(error || success) && (
+                        <div className="flex-grow-1">
+                             <Alert type={error ? 'danger' : 'success'}>{error || success}</Alert>
+                        </div>
+                    )}
                     <Button variant="secondary" onClick={handleClose} disabled={loading}>Cancelar</Button>
                     <Button variant="primary" type="submit" disabled={loading}>
-                        {loading ? <Spinner as="span" animation="border" size="sm" /> : 'Guardar Cambios'}
+                        {loading ? <><Spinner as="span" animation="border" size="sm" className="me-1"/> Guardando...</> : 'Guardar Cambios'}
                     </Button>
                 </Modal.Footer>
             </Form>

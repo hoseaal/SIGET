@@ -13,4 +13,6 @@ router.get('/existencia-anterior', ReporteBM4Controller.getExistenciaAnterior)
 // Nueva ruta para obtener la existencia total actual en tiempo real
 router.get('/existencia-actual', ReporteBM4Controller.getExistenciaActual)
 
+router.get('/reporte-categorias', ReporteBM4Controller.getCategorias)
+
 export default router

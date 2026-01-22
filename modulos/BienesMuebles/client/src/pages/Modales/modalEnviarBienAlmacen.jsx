@@ -1,54 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Alert, Row, Col, Spinner } from 'react-bootstrap';
-import Select from 'react-select'; // Asegúrate de tener react-select instalado
+import Select from 'react-select'; 
 
 function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
     const DEP_ALMACEN_03 = 11; // ID del departamento "Almacén"
-    const DEP_ALMACEN_04 = 9; // ID del departamento "Almacén"
-    const CONDICION_FISICA = 4; // "Mal estado en almacén" (no deberían enviarse más a almacén si ya están así)
+    const DEP_ALMACEN_04 = 9;  // ID del departamento "Almacén"
 
     const [formData, setFormData] = useState({
-        pre_ndo: '',                         // Número de oficio
-        pre_tip: 'Oficio',            // Tipo de préstamo
-        pre_fec: new Date().toISOString().slice(0, 10), // Fecha actual por defecto
-        dep_origen_ide: '',                  // Departamento de origen (seleccionable)
-        dep_ide: '',    // Departamento de destino (fijo: Almacén)
-        bienesSeleccionados: [],             // Array para los bienes seleccionados
+        pre_ndo: '',                         
+        pre_tip: 'Oficio',            
+        pre_fec: new Date().toISOString().slice(0, 10), 
+        dep_origen_ide: '',                  
+        dep_ide: '',    // Se llenará con la selección del usuario (9 u 11)
+        bienesSeleccionados: [],             
     });
 
     const [sinNumero, setSinNumero] = useState(false);
 
     const [departamentos, setDepartamentos] = useState([]);
-    const [bienesDisponibles, setBienesDisponibles] = useState([]); // Todos los bienes
-    const [filteredBienes, setFilteredBienes] = useState([]);     // Bienes filtrados para selección
+    const [bienesDisponibles, setBienesDisponibles] = useState([]); 
+    const [filteredBienes, setFilteredBienes] = useState([]);     
 
-    const [loading, setLoading] = useState(false); // Estado de carga del formulario
+    const [loading, setLoading] = useState(false); 
     const [errorMessage, setErrorMessage] = useState('');
     const [alertMessage, setAlertMessage] = useState('');
     const [showAlert, setShowAlert] = useState(false);
 
     useEffect(() => {
         if (show) {
-            // Reiniciar formData y estados de alerta cada vez que el modal se abre
             setFormData({
                 pre_ndo: '',
                 pre_tip: 'Oficio',
                 pre_fec: new Date().toISOString().slice(0, 10),
                 dep_origen_ide: '',
-                dep_ide: '', // Asegurarse de que el destino es siempre Almacén
+                dep_ide: '', 
                 bienesSeleccionados: [],
             });
             setErrorMessage('');
             setAlertMessage('');
             setShowAlert(false);
             setLoading(false);
-
-            // Cargar datos al abrir el modal
             fetchInitialData();
         }
     }, [show]);
 
-    // Cargar departamentos y todos los bienes
     const fetchInitialData = async () => {
         try {
             const [depRes, bienesRes] = await Promise.all([
@@ -56,34 +51,37 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                 fetch('/api/bienes/all?inc=1', { credentials: 'include' }),
             ]);
 
-            if (!depRes.ok || !bienesRes.ok) {
-                throw new Error('Error al cargar datos iniciales necesarios.');
-            }
+            if (!depRes.ok || !bienesRes.ok) throw new Error('Error al cargar datos iniciales.');
 
             const depData = await depRes.json();
             const bienesData = await bienesRes.json();
 
             setDepartamentos(Array.isArray(depData) ? depData : (depData.data || []));
             setBienesDisponibles(Array.isArray(bienesData) ? bienesData : (bienesData.data || []));
-            setFilteredBienes([]); // Reset filteredBienes
+            setFilteredBienes([]); 
         } catch (error) {
             console.error('Error fetching initial data:', error);
-            setErrorMessage('No se pudieron cargar los datos necesarios para el formulario.');
+            setErrorMessage('No se pudieron cargar los datos necesarios.');
             setShowAlert(true);
         }
     };
 
-    // Filtrar bienes por departamento de origen seleccionado y exclusiones
+    // --- LÓGICA DE FILTRADO ACTUALIZADA ---
     useEffect(() => {
         if (formData.dep_origen_ide) {
             const depOrigenId = parseInt(formData.dep_origen_ide);
+            
             const bienesFiltrados = bienesDisponibles.filter(bien =>
-                bien.dep_ide === depOrigenId && // Bienes que actualmente pertenecen al departamento de origen seleccionado
-                bien.dep_ide !== (DEP_ALMACEN_03 || DEP_ALMACEN_04) && // Asegurarse de que no están ya en almacén
-                bien.con_ide === CONDICION_FISICA // solo incluir bienes ya marcados como "Mal estado en almacén"
+                bien.dep_ide === depOrigenId && // Debe pertenecer al origen seleccionado
+                // Validar que NO esté ya en ninguno de los dos almacenes (corrección lógica)
+                bien.dep_ide !== DEP_ALMACEN_03 && 
+                bien.dep_ide !== DEP_ALMACEN_04
+                // ELIMINADO: bien.con_ide === CONDICION_FISICA (Ahora pasan todos los estados)
             );
+            
             setFilteredBienes(bienesFiltrados);
-            // Si los bienes seleccionados ya no están en el filteredBienes, removerlos
+            
+            // Limpiar selección si los items ya no coinciden
             setFormData(prev => ({
                 ...prev,
                 bienesSeleccionados: prev.bienesSeleccionados.filter(bienId =>
@@ -92,38 +90,23 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
             }));
         } else {
             setFilteredBienes([]);
-            setFormData(prev => ({
-                ...prev,
-                bienesSeleccionados: [],
-            }));
+            setFormData(prev => ({ ...prev, bienesSeleccionados: [] }));
         }
     }, [formData.dep_origen_ide, bienesDisponibles]);
 
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value,
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSinNumeroChange = (e) => {
         const isChecked = e.target.checked;
         setSinNumero(isChecked);
-
         if (isChecked) {
-            setFormData(prev => ({
-                ...prev,
-                pre_ndo: 'Sin Numero',
-                pre_fec: null, // Limpiar la fecha
-            }));
+            setFormData(prev => ({ ...prev, pre_ndo: 'Sin Numero', pre_fec: null }));
         } else {
-            setFormData(prev => ({
-                ...prev,
-                pre_ndo: '', // Limpiar el número de oficio para que el usuario pueda escribir
-                pre_fec: new Date().toISOString().slice(0, 10), // Restaurar fecha actual
-            }));
+            setFormData(prev => ({ ...prev, pre_ndo: '', pre_fec: new Date().toISOString().slice(0, 10) }));
         }
     };
 
@@ -140,26 +123,23 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
         setErrorMessage('');
         setLoading(true);
 
-        // Validaciones previas
-        if (!formData.pre_ndo || !formData.dep_origen_ide) {
-            setErrorMessage('Por favor, complete todos los campos obligatorios (Número de Oficio, Departamento de Origen).');
+        // Validaciones
+        if (!formData.pre_ndo || !formData.dep_origen_ide || !formData.dep_ide) {
+            setErrorMessage('Por favor, complete todos los campos obligatorios.');
             setShowAlert(true);
             setLoading(false);
             return;
         }
 
-        // Validación específica para esta funcionalidad
-        if (parseInt(formData.dep_origen_ide) === DEP_ALMACEN_03) {
-            setErrorMessage('El Departamento de Origen no puede ser "Servicios Generales Seguridad y Transporte" para enviar bienes al Almacén.');
-            setShowAlert(true);
-            setLoading(false);
-            return;
+        if (parseInt(formData.dep_origen_ide) === DEP_ALMACEN_03 || parseInt(formData.dep_origen_ide) === DEP_ALMACEN_04) {
+             setErrorMessage('El origen no puede ser un Almacén.');
+             setShowAlert(true);
+             setLoading(false);
+             return;
         }
 
-        const bienesParaEnviar = formData.bienesSeleccionados;
-
-        if (bienesParaEnviar.length === 0) {
-            setErrorMessage('Debe seleccionar al menos un bien para enviar al almacén.');
+        if (formData.bienesSeleccionados.length === 0) {
+            setErrorMessage('Debe seleccionar al menos un bien.');
             setShowAlert(true);
             setLoading(false);
             return;
@@ -170,17 +150,17 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
             pre_tip: formData.pre_tip,
             pre_fec: formData.pre_fec,
             dep_origen_ide: parseInt(formData.dep_origen_ide),
-            dep_ide: formData.dep_ide, // Aseguramos que el destino es el Almacén
-            bienes: bienesParaEnviar, // IDs de los bienes
+            dep_ide: parseInt(formData.dep_ide),
+            bienes: formData.bienesSeleccionados,
+            
+            // --- AQUÍ ESTÁ EL CAMBIO CLAVE ---
+            pre_cla: 'A' // Clasificación: 'A' para Almacén. (Cámbialo a 'C' solo si actualizaste la BD para buscar 'C')
         };
 
         try {
-            // Usamos el endpoint específico para préstamos a almacén
             const response = await fetch('/api/prestamos/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
 
@@ -191,24 +171,22 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                 setShowAlert(true);
                 setTimeout(() => {
                     handleClose();
-                    if (onSuccess) onSuccess(); // Forzar la recarga de la tabla padre
-                }, 1500); // Dar tiempo para ver el mensaje de éxito
+                    if (onSuccess) onSuccess(); 
+                }, 1500);
             } else {
-                throw new Error(responseData.error || 'Error al enviar el bien(es) al almacén.');
+                throw new Error(responseData.error || 'Error al enviar al almacén.');
             }
         } catch (error) {
             setErrorMessage(error.message);
             setShowAlert(true);
-            console.error('Error al enviar bien(es) al almacén:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    // Opciones para react-select, mostrando solo los bienes filtrados
     const bienOptions = filteredBienes.map(bien => ({
         value: bien.bim_ide,
-        label: `${bien.bim_ide || 'N/A'} - ${bien.bim_des}`, // Usar bim_ide y bim_des para el label
+        label: `${bien.bim_ide} - ${bien.bim_des} (${bien.condicion_nombre || 'Estado desconocido'})`, // Útil mostrar el estado visualmente aunque no se filtre
     }));
 
     return (
@@ -226,10 +204,11 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                     <Row>
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Tipo de Préstamo</Form.Label>
+                                <Form.Label>Tipo de Movimiento</Form.Label>
                                 <Form.Control as="select" name="pre_tip" value={formData.pre_tip} onChange={handleChange} required>
                                     <option value="Oficio">Oficio</option>
                                     <option value="Transferencia">Transferencia</option>
+                                    <option value="Acta">Acta de Recepción</option>
                                 </Form.Control>
                             </Form.Group>
                         </Col>
@@ -238,7 +217,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                                 <Form.Check
                                     type="switch"
                                     id="sin-numero-switch"
-                                    label="Préstamo sin Número / Fecha"
+                                    label="Documento sin Número / Fecha"
                                     checked={sinNumero}
                                     onChange={handleSinNumeroChange}
                                 />
@@ -248,28 +227,28 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                     <Row>
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Número de Oficio</Form.Label>
+                                <Form.Label>Número de Documento</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="pre_ndo"
                                     value={formData.pre_ndo}
                                     onChange={handleChange}
-                                    placeholder="Ingrese el número de oficio"
+                                    placeholder="Ej. OFICIO-2024-001"
                                     required
-                                    disabled={sinNumero} // Deshabilitado si el switch está activo
+                                    disabled={sinNumero}
                                 />
                             </Form.Group>
                         </Col>
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Fecha del Envío</Form.Label>
+                                <Form.Label>Fecha</Form.Label>
                                 <Form.Control
                                     type="date"
                                     name="pre_fec"
                                     value={sinNumero ? 'S/N' : formData.pre_fec}
                                     onChange={handleChange}
                                     required
-                                    disabled={sinNumero} // Deshabilitado si el switch está activo
+                                    disabled={sinNumero}
                                 />
                             </Form.Group>
                         </Col>
@@ -287,37 +266,34 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                                     required
                                     disabled={loading}
                                 >
-                                    <option value="">Seleccione un departamento</option>
+                                    <option value="">Seleccione origen...</option>
                                     {departamentos
-                                        .filter(dep => dep.dep_ide !== DEP_ALMACEN_03) // Excluir "Almacén" como origen
+                                        .filter(dep => dep.dep_ide !== DEP_ALMACEN_03 && dep.dep_ide !== DEP_ALMACEN_04)
                                         .map(dep => (
-                                            <option key={dep.dep_ide} value={dep.dep_ide}>
-                                                {dep.dep_nom}
-                                            </option>
-                                        ))}
+                                            <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
+                                    ))}
                                 </Form.Control>
                             </Form.Group>
                         </Col>
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Almacen de Destino</Form.Label>
+                                <Form.Label>Almacén de Destino</Form.Label>
                                 <Form.Control as="select" name="dep_ide" value={formData.dep_ide} onChange={handleChange} required>
-                                    <option value="">Seleccione un departamento</option>
+                                    <option value="">Seleccione almacén...</option>
                                     {departamentos
-                                        .filter(dep => dep.dep_ide !== parseInt(formData.dep_origen_ide))
                                         .filter(dep => dep.dep_ide === DEP_ALMACEN_03 || dep.dep_ide === DEP_ALMACEN_04)
                                         .map(dep => (
                                             <option key={dep.dep_ide} value={dep.dep_ide}>
                                                 {dep.dep_nom}
                                             </option>
-                                        ))}
+                                    ))}
                                 </Form.Control>
                             </Form.Group>
                         </Col>
                     </Row>
 
                     <Form.Group className="mb-3">
-                        <Form.Label>Bienes a Enviar al Almacén</Form.Label>
+                        <Form.Label>Seleccionar Bienes</Form.Label>
                         <Select
                             isMulti
                             name="bienes"
@@ -326,12 +302,12 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                             classNamePrefix="select"
                             onChange={handleBienSelectChange}
                             value={bienOptions.filter(option => formData.bienesSeleccionados.includes(option.value))}
-                            placeholder="Seleccione los bienes a enviar"
-                            noOptionsMessage={() => "No hay bienes disponibles en el departamento de origen seleccionado."}
+                            placeholder={formData.dep_origen_ide ? "Busque y seleccione bienes..." : "Primero seleccione un origen"}
+                            noOptionsMessage={() => "No hay bienes disponibles en el origen seleccionado."}
                             isDisabled={loading || !formData.dep_origen_ide}
                         />
                         <Form.Text className="text-muted">
-                            Solo se muestran bienes del departamento de origen seleccionado que NO están actualmente en el almacén ni en mal estado.
+                            Se listan todos los bienes del departamento de origen que no están actualmente en almacén.
                         </Form.Text>
                     </Form.Group>
                 </Form>
@@ -341,14 +317,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                     Cancelar
                 </Button>
                 <Button variant="primary" onClick={handleSubmit} disabled={loading}>
-                    {loading ? (
-                        <>
-                            <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />
-                            Enviando...
-                        </>
-                    ) : (
-                        'Enviar al Almacén'
-                    )}
+                    {loading ? <><Spinner as="span" animation="border" size="sm" className="me-1"/> Procesando...</> : 'Registrar Ingreso'}
                 </Button>
             </Modal.Footer>
         </Modal>

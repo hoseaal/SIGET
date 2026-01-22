@@ -3,8 +3,8 @@ import ExcelJS from 'exceljs'
 import path from 'path'
 import fs from 'fs'
 
-// --- Función para hacer fetch a la API (sin cambios) ---
-const API_BASE_URL = 'http://localhost:5001' // Asegúrate que esta URL sea la correcta
+// --- Función para hacer fetch a la API ---
+const API_BASE_URL = 'http://localhost:5001' 
 
 async function fetchApiData (endpoint, token) {
   const url = `${API_BASE_URL}${endpoint}`
@@ -16,9 +16,7 @@ async function fetchApiData (endpoint, token) {
   try {
     const response = await fetch(url, options)
     if (!response.ok) {
-      // Si la respuesta es un error 404, es posible que no haya datos, lo cual no es un error fatal.
       if (response.status === 404) {
-        console.warn(`Advertencia: No se encontraron datos en ${url} (404). Se devolverá un array vacío.`)
         return []
       }
       throw new Error(`Error en la petición a ${url}: ${response.statusText}`)
@@ -26,7 +24,7 @@ async function fetchApiData (endpoint, token) {
     return await response.json()
   } catch (error) {
     console.error(`Error al hacer fetch a ${url}:`, error)
-    return [] // Devolver un array vacío en caso de error para no detener el proceso
+    return []
   }
 }
 
@@ -34,13 +32,17 @@ function toUpperCase (str) {
   return str ? str.toUpperCase() : 'N/A'
 }
 
-// --- Función para extraer y aplanar los bienes de los préstamos (sin cambios) ---
+// --- Función para extraer y aplanar los bienes de los préstamos ---
 const extraerBienesPrestamo = (data) => {
   if (!data || !Array.isArray(data)) return []
 
   return data.flatMap(prestamo => {
     try {
-      const detalles = JSON.parse(prestamo.bienes_detalles)
+      // Manejo robusto del JSON de detalles
+      const detalles = typeof prestamo.bienes_detalles === 'string' 
+        ? JSON.parse(prestamo.bienes_detalles) 
+        : (prestamo.bienes_detalles || [])
+
       const bienes = Array.isArray(detalles) ? detalles : [detalles]
 
       return bienes.map(d => ({
@@ -55,7 +57,7 @@ const extraerBienesPrestamo = (data) => {
       }))
     } catch (e) {
       console.warn('Error al parsear bienes_detalles:', e)
-      return [] // <-- Corregido: Devuelve un array vacío en lugar de null
+      return [] 
     }
   })
 }
@@ -64,12 +66,13 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
   try {
     const { dep_ide, departamento_nombre } = datos
 
-    // 1. --- OBTENER TODOS LOS DATOS DE FORMA CONCURRENTE ---
+    // 1. --- OBTENER TODOS LOS DATOS ---
+    // Usamos los endpoints separados: 'normales' para préstamos y 'almacen' para inventario
     const [
       bienesAllData,
-      prestamosSalientesData, // Bienes de este dep prestados a otros
-      prestamosEntrantesData, // Bienes de otros deps prestados a este
-      bienesEnAlmacenData // Bienes de este dep en almacén
+      prestamosSalientesData, // Préstamos normales salientes
+      prestamosEntrantesData, // Préstamos normales entrantes
+      bienesEnAlmacenData     // Bienes enviados al almacén (pre_cla = 'A')
     ] = await Promise.all([
       fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1`, accessToken),
       fetchApiData(`/api/prestamos/normales?dep_origen_id=${dep_ide}`, accessToken),
@@ -78,41 +81,40 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     ])
 
     // 2. --- PROCESAR Y ESTRUCTURAR LOS DATOS ---
-    const bienesDelDepartamento = Object.values(bienesAllData || {})
+    // Aseguramos que sea array
+    const bienesDelDepartamento = Array.isArray(bienesAllData) ? bienesAllData : (bienesAllData.data || [])
+    
     const prestamosSalientes = extraerBienesPrestamo(prestamosSalientesData)
     const prestamosEntrantes = extraerBienesPrestamo(prestamosEntrantesData)
     const bienesEnAlmacen = extraerBienesPrestamo(bienesEnAlmacenData)
 
-    const bienesPiso3 = bienesEnAlmacen.filter(b => b.dep_ide === 11);
-    const bienesPiso4 = bienesEnAlmacen.filter(b => b.dep_ide === 9);
-
-    // Crear Maps para una búsqueda rápida y eficiente por ID del bien (bim_ide)
+    // Maps para búsqueda rápida
     const salientesMap = new Map(prestamosSalientes.map(b => [b.bim_ide, b]))
-    const almacenMap3 = new Map(bienesPiso3.map(b => [b.bim_ide, b]))
-    const almacenMap4 = new Map(bienesPiso4.map(b => [b.bim_ide, b]))
+    const almacenMap = new Map(bienesEnAlmacen.map(b => [b.bim_ide, b])) // Mapa unificado de almacén
 
-     // 3. --- CONSOLIDAR LA LISTA DE BIENES Y ASIGNAR OBSERVACIONES ---
-    const excelRows = []
-    let counter = 1
+    // 3. --- CONSOLIDAR LA LISTA DE BIENES Y ASIGNAR OBSERVACIONES ---
+    const excelRows = []
+    let counter = 1
 
-    // Procesar la lista principal de bienes que pertenecen al departamento
-    bienesDelDepartamento.forEach(bien => {
-      let observacion = bien.bim_obs || '' // Observación por defecto
-      const direccion = toUpperCase(departamento_nombre) // Dirección por defecto
+    // A) Procesar la lista principal de bienes que pertenecen al departamento
+    bienesDelDepartamento.forEach(bien => {
+      let observacion = bien.bim_obs || '' 
+      const direccion = toUpperCase(departamento_nombre) 
 
-      // JERARQUÍA DE OBSERVACIONES:
-      // 1. ¿Está prestado a otro departamento? (Máxima prioridad)
-      if (salientesMap.has(bien.bim_ide)) {
-        const prestamo = salientesMap.get(bien.bim_ide)
-        // La observación indica a dónde se fue el bien
-        observacion = `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
-      }
-      // 2. Si no, ¿está en almacén?
-      else if (almacenMap3.has(bien.bim_ide)) {
-        observacion = 'Mal estado ubicado en Almacen Piso 3 para su resguardo'
-      } else if (almacenMap4.has(bien.bim_ide)) { 
-        observacion = 'Mal estado ubicado en Almacen Piso 4 para su resguardo'
-      } 
+      // LÓGICA CORREGIDA:
+      
+      // 1. Si está prestado (Préstamo Normal)
+      if (salientesMap.has(bien.bim_ide)) {
+        const prestamo = salientesMap.get(bien.bim_ide)
+        observacion = `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
+      }
+      // 2. Si está en Almacén (Ya no validamos "Mal estado", solo si está en la lista de almacén)
+      else if (almacenMap.has(bien.bim_ide)) {
+        const itemAlmacen = almacenMap.get(bien.bim_ide)
+        // Mantenemos el formato de texto similar, pero quitamos "Mal estado" obligatorio
+        // Usamos el nombre del destino (Piso 3 o Piso 4) dinámicamente
+        observacion = `Ubicado en ${itemAlmacen.departamento_destino_nombre} para su resguardo`
+      }
 
       excelRows.push({
         num: counter++,
@@ -123,50 +125,36 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       })
     })
 
-    // Añadir los bienes que están prestados EN ESTE departamento (vienen de otros)
+    // B) Añadir los bienes que están prestados EN ESTE departamento (vienen de otros)
     prestamosEntrantes.forEach(prestamoBien => {
       excelRows.push({
         num: counter++,
         bim_ide: prestamoBien.bim_ide,
         bim_des: prestamoBien.bim_des,
-        // La dirección es de dónde vino el bien
         direccion: toUpperCase(prestamoBien.departamento_origen_nombre),
-        // La observación indica que está aquí temporalmente
         observacion: `Este bien pertenece a ${prestamoBien.departamento_origen_nombre} y se encuentra en calidad de préstamo en esta dirección.`
       })
     })
 
-    if (dep_ide === 11) {
-      const todosEnAlmacenData = await fetchApiData('/api/prestamos/almacen?dep_destino_id=11', accessToken)
-      const bienesEnAlmacen = extraerBienesPrestamo(todosEnAlmacenData)
+    // C) Si el departamento actual ES un Almacén (11 o 9), listar lo que tienen guardado
+    if (dep_ide === 11 || dep_ide === 9) {
+      // Buscamos lo que está destinado a ESTE almacén específico
+      const todosEnAlmacenData = await fetchApiData(`/api/prestamos/almacen?dep_destino_id=${dep_ide}`, accessToken)
+      const bienesResguardados = extraerBienesPrestamo(todosEnAlmacenData)
 
-      bienesEnAlmacen.forEach(prestamoBien => {
+      bienesResguardados.forEach(prestamoBien => {
         excelRows.push({
           num: counter++,
           bim_ide: prestamoBien.bim_ide,
           bim_des: prestamoBien.bim_des,
           direccion: prestamoBien.departamento_origen_nombre,
-          observacion: `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} pero se encuentra en almacén piso 3 para su resguardo`
+          // Ajustamos el texto para que coincida con tu formato pero sea lógico
+          observacion: `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} se encuentra en ${prestamoBien.departamento_destino_nombre} para su resguardo`
         })
       })
     }
 
-    if (dep_ide === 9) {
-      const todosEnAlmacenData = await fetchApiData('/api/prestamos/almacen?dep_destino_id=9', accessToken)
-      const bienesEnAlmacen = extraerBienesPrestamo(todosEnAlmacenData)
-
-      bienesEnAlmacen.forEach(prestamoBien => {
-        excelRows.push({
-          num: counter++,
-          bim_ide: prestamoBien.bim_ide,
-          bim_des: prestamoBien.bim_des,
-          direccion: prestamoBien.departamento_origen_nombre,
-          observacion: `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} pero se encuentra en almacén piso 4 para su resguardo`
-        })
-      })
-    }
-
-    // 4. --- CREACIÓN DEL DOCUMENTO EXCEL (CÓDIGO SIN CAMBIOS) ---
+    // 4. --- CREACIÓN DEL DOCUMENTO EXCEL (MANTENIENDO FORMATO EXACTO) ---
     const workbook = new ExcelJS.Workbook()
     workbook.creator = 'Contraloría del Estado Táchira'
     workbook.lastModifiedBy = 'Sistema de Bienes Nacionales'
@@ -192,7 +180,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       console.warn('Advertencia: No se pudo procesar el logo.', logoError.message)
     }
 
-    // --- Encabezado principal ---
+    // --- Encabezado principal (TEXTO ORIGINAL) ---
     worksheet.mergeCells('C1:E8')
     const headerCell = worksheet.getCell('C1')
     headerCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
@@ -204,7 +192,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     const headerText = [
       'REPORTE DE VERIFICACIÓN DEL INVENTARIO DE BIENES MUEBLES',
       'UNIDAD EJECUTORA: CONTRALORÍA DEL ESTADO TÁCHIRA',
-      'DIRECCION O UNIDAD ADMINISTRATIVA: DIRECCIÓN DE ADMINISTRACIÓN',
+      'DIRECCION O UNIDAD ADMINISTRATIVA: DIRECCIÓN DE ADMINISTRACIÓN', // Ojo: ¿Esto es fijo o dinámico? Lo dejé fijo como estaba
       `FECHA DEL REPORTE: ${formattedDate}`,
       `${toUpperCase(departamento_nombre)}`,
       ' '
@@ -224,8 +212,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
     })
 
-    // --- Poblar las filas con los datos consolidados ---
-
+    // --- Poblar las filas ---
     excelRows.sort((a, b) => {
       if (a.bim_ide < b.bim_ide) return -1;
       if (a.bim_ide > b.bim_ide) return 1;
@@ -258,7 +245,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       { key: 'observacion', width: 45 }
     ]
 
-    // --- Firmas al final del documento ---
+    // --- Firmas al final del documento (MANTENIDO) ---
     const lastRow = worksheet.lastRow.number
     const firmaRow1 = worksheet.getRow(lastRow + 4)
     worksheet.mergeCells(`B${firmaRow1.number}:C${firmaRow1.number}`)
@@ -279,7 +266,6 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     // --- Generar Buffer ---
     const buffer = await workbook.xlsx.writeBuffer()
 
-    // --- Nombre del archivo ---
     const datePart = new Date().toISOString().split('T')[0]
     const departmentNameClean = departamento_nombre.replace(/[^a-zA-Z0-9]/g, '_')
     const excelFileName = `Acta_Verificacion_Bienes_${departmentNameClean}_${datePart}.xlsx`
