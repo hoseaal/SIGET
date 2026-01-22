@@ -1,37 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Alert, Row, Col } from 'react-bootstrap';
+import { Modal, Button, Form, Alert, Row, Col, Spinner } from 'react-bootstrap';
 import Select from 'react-select';
 
 function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
+    // IDs de Almacén para validación (evitar que usen este modal para enviar a almacén)
+    const DEP_ALMACEN_03 = 11; 
+    const DEP_ALMACEN_04 = 9;
 
     const [formData, setFormData] = useState({
-        pre_ndo: '',           // Número de oficio
-        pre_tip: 'Oficio',            // Tipo de préstamo
-        pre_fec: new Date().toISOString().slice(0, 10), // Fecha actual por defecto
-        dep_origen_ide: '',    // Departamento de origen
-        dep_ide: '',           // Departamento de destino
-        bienesSeleccionados: [], // Array para los bienes seleccionados
+        pre_ndo: '',          
+        pre_tip: 'Oficio',           
+        pre_fec: new Date().toISOString().slice(0, 10), 
+        dep_origen_ide: '',   
+        dep_ide: '',          
+        bienesSeleccionados: [], 
     });
 
     const [sinNumero, setSinNumero] = useState(false);
 
     const [departamentos, setDepartamentos] = useState([]);
-    const [condicionesFisicas, setCondicionesFisicas] = useState([]);
-    const [bienesDisponibles, setBienesDisponibles] = useState([]); // Bienes que se pueden seleccionar
-    const [filteredBienes, setFilteredBienes] = useState([]); // Bienes filtrados por departamento de origen
+    const [bienesDisponibles, setBienesDisponibles] = useState([]); 
+    const [filteredBienes, setFilteredBienes] = useState([]); 
 
-    const [formEnviado, setFormEnviado] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [alertMessage, setAlertMessage] = useState('');
     const [showAlert, setShowAlert] = useState(false);
 
-    // IDs de exclusión
-    const CONDICION_FISICA_EXCLUIDA = 4; // "Mal estado en almacén"
-    const DEPARTAMENTO_ALMACEN_ID = 11; // ID del departamento "Almacén"
-
     useEffect(() => {
         if (show) {
-            // Reiniciar formData cada vez que el modal se abre
             setFormData({
                 pre_ndo: '',
                 pre_tip: 'Oficio',
@@ -41,53 +38,51 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                 bienesSeleccionados: [],
             });
             setErrorMessage('');
+            setAlertMessage('');
             setShowAlert(false);
-
-            // Cargar datos al abrir el modal
+            setLoading(false);
             fetchInitialData();
         }
     }, [show]);
 
-    // Cargar departamentos, condiciones físicas y todos los bienes
     const fetchInitialData = async () => {
         try {
-            const [depRes, condRes, bienesRes] = await Promise.all([
+            const [depRes, bienesRes] = await Promise.all([
                 fetch('/api/departamentos', { credentials: 'include' }),
-                fetch('/api/condiciones-fisicas', { credentials: 'include' }),
                 fetch('/api/bienes/all?inc=1', { credentials: 'include' }),
             ]);
 
-            if (!depRes.ok || !condRes.ok || !bienesRes.ok) {
-                throw new Error('Error al cargar datos iniciales.');
-            }
+            if (!depRes.ok || !bienesRes.ok) throw new Error('Error al cargar datos iniciales.');
 
             const depData = await depRes.json();
-            const condData = await condRes.json();
             const bienesData = await bienesRes.json();
 
-            setDepartamentos(depData || []);
-            // Filtrar condición física 4 ("Mal estado en almacén")
-            setCondicionesFisicas(condData.filter(cond => cond.con_ide !== CONDICION_FISICA_EXCLUIDA) || []);
-            setBienesDisponibles(bienesData || []);
-            // No filtramos initialBienes aquí, se hace en el useEffect para dep_origen_ide
-            setFilteredBienes([]); // Reset filteredBienes when modal opens
+            setDepartamentos(Array.isArray(depData) ? depData : (depData.data || []));
+            setBienesDisponibles(Array.isArray(bienesData) ? bienesData : (bienesData.data || []));
+            setFilteredBienes([]); 
         } catch (error) {
             console.error('Error fetching initial data:', error);
-            setErrorMessage('No se pudieron cargar los datos necesarios para el formulario.');
+            setErrorMessage('No se pudieron cargar los datos necesarios.');
             setShowAlert(true);
         }
     };
 
-    // Filtrar bienes por departamento de origen seleccionado y exclusiones
+    // --- LÓGICA DE FILTRADO (Simplificada) ---
     useEffect(() => {
         if (formData.dep_origen_ide) {
             const depOrigenId = parseInt(formData.dep_origen_ide);
+            
             const bienesFiltrados = bienesDisponibles.filter(bien =>
-                bien.dep_ide === depOrigenId && // Bienes que pertenecen al departamento de origen seleccionado
-                bien.con_ide !== CONDICION_FISICA_EXCLUIDA // No "Mal estado en almacén"
+                bien.dep_ide === depOrigenId && // Solo bienes del origen seleccionado
+                // Validar que NO estén ya en almacén (por seguridad lógica)
+                bien.dep_ide !== DEP_ALMACEN_03 && 
+                bien.dep_ide !== DEP_ALMACEN_04
+                // ELIMINADO: bien.con_ide !== CONDICION_FISICA_EXCLUIDA -> Ahora se permiten todos los estados
             );
+
             setFilteredBienes(bienesFiltrados);
-            // Si los bienes seleccionados ya no están en el filteredBienes, removerlos
+
+            // Limpiar selección si los items ya no coinciden
             setFormData(prev => ({
                 ...prev,
                 bienesSeleccionados: prev.bienesSeleccionados.filter(bienId =>
@@ -96,38 +91,23 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             }));
         } else {
             setFilteredBienes([]);
-            setFormData(prev => ({
-                ...prev,
-                bienesSeleccionados: [],
-            }));
+            setFormData(prev => ({ ...prev, bienesSeleccionados: [] }));
         }
     }, [formData.dep_origen_ide, bienesDisponibles]);
 
     const handleSinNumeroChange = (e) => {
         const isChecked = e.target.checked;
         setSinNumero(isChecked);
-
         if (isChecked) {
-            setFormData(prev => ({
-                ...prev,
-                pre_ndo: 'Sin Numero',
-                pre_fec: null, // Limpiar la fecha
-            }));
+            setFormData(prev => ({ ...prev, pre_ndo: 'Sin Numero', pre_fec: null }));
         } else {
-            setFormData(prev => ({
-                ...prev,
-                pre_ndo: '', // Limpiar el número de oficio para que el usuario pueda escribir
-                pre_fec: new Date().toISOString().slice(0, 10), // Restaurar fecha actual
-            }));
+            setFormData(prev => ({ ...prev, pre_ndo: '', pre_fec: new Date().toISOString().slice(0, 10) }));
         }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value,
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleBienSelectChange = (selectedOptions) => {
@@ -141,25 +121,35 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
         e.preventDefault();
         setShowAlert(false);
         setErrorMessage('');
+        setLoading(true);
 
         // Validaciones previas
         if (!formData.pre_ndo || !formData.dep_origen_ide || !formData.dep_ide) {
             setErrorMessage('Por favor, complete todos los campos obligatorios.');
             setShowAlert(true);
+            setLoading(false);
             return;
         }
 
         if (formData.dep_origen_ide === formData.dep_ide) {
-            setErrorMessage('El Departamento de Origen y el Departamento de Destino no pueden ser el mismo.');
+            setErrorMessage('El origen y el destino no pueden ser el mismo.');
             setShowAlert(true);
+            setLoading(false);
             return;
         }
+        
+        // Validación: Evitar usar este modal para enviar a Almacén (usar el otro modal)
+        if (parseInt(formData.dep_ide) === DEP_ALMACEN_03 || parseInt(formData.dep_ide) === DEP_ALMACEN_04) {
+             setErrorMessage('Para enviar bienes al Almacén, utilice la opción "Ingresar a Almacén".');
+             setShowAlert(true);
+             setLoading(false);
+             return;
+        }
 
-        const bienesParaEnviar = formData.bienesSeleccionados;
-
-        if (bienesParaEnviar.length === 0) {
-            setErrorMessage('Debe seleccionar al menos un bien para el préstamo.');
+        if (formData.bienesSeleccionados.length === 0) {
+            setErrorMessage('Debe seleccionar al menos un bien.');
             setShowAlert(true);
+            setLoading(false);
             return;
         }
 
@@ -169,56 +159,55 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             pre_fec: formData.pre_fec,
             dep_origen_ide: parseInt(formData.dep_origen_ide),
             dep_ide: parseInt(formData.dep_ide),
-            bienes: bienesParaEnviar, // IDs de los bienes
+            bienes: formData.bienesSeleccionados,
+            
+            // --- CAMBIO IMPORTANTE ---
+            pre_cla: 'P' // Clasificación: 'P' para Préstamo Normal
         };
 
-        console.log(payload)
-
         try {
-            const response = await fetch('/api/prestamos', { // Endpoint para crear un nuevo préstamo
+            const response = await fetch('/api/prestamos', { 
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
 
             const responseData = await response.json();
 
             if (response.ok) {
-                setFormEnviado(true);
                 setAlertMessage('Préstamo registrado con éxito.');
                 setShowAlert(true);
                 setTimeout(() => {
                     handleClose();
                     if (onSuccess) onSuccess();
-                }, 1500); // Dar tiempo para ver el mensaje de éxito
+                }, 1500); 
             } else {
                 throw new Error(responseData.error || 'Error al registrar el préstamo.');
             }
         } catch (error) {
-            setFormEnviado(false);
             setErrorMessage(error.message);
             setShowAlert(true);
-            console.error('Error al registrar el préstamo:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
     // Opciones para react-select
     const bienOptions = filteredBienes.map(bien => ({
         value: bien.bim_ide,
-        label: `${bien.bim_ide} - ${bien.bim_des}`,
+        // Mostramos el estado en el label para información del usuario
+        label: `${bien.bim_ide} - ${bien.bim_des} (${bien.condicion_nombre || 'Estado desconocido'})`,
     }));
 
     return (
-        <Modal show={show} onHide={handleClose} size="lg">
+        <Modal show={show} onHide={handleClose} size="lg" centered>
             <Modal.Header closeButton>
-                <Modal.Title>Registrar Nuevo Préstamo Normal</Modal.Title>
+                <Modal.Title>Registrar Nuevo Préstamo</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 {showAlert && (
-                    <Alert variant={formEnviado ? 'success' : 'danger'} onClose={() => setShowAlert(false)} dismissible>
-                        {formEnviado ? alertMessage : errorMessage}
+                    <Alert variant={errorMessage ? 'danger' : 'success'} onClose={() => setShowAlert(false)} dismissible>
+                        {errorMessage || alertMessage}
                     </Alert>
                 )}
                 <Form onSubmit={handleSubmit}>
@@ -229,6 +218,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                 <Form.Control as="select" name="pre_tip" value={formData.pre_tip} onChange={handleChange} required>
                                     <option value="Oficio">Oficio</option>
                                     <option value="Transferencia">Transferencia</option>
+                                    <option value="Asignacion">Asignación Personal</option>
                                 </Form.Control>
                             </Form.Group>
                         </Col>
@@ -236,8 +226,8 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                              <Form.Group>
                                 <Form.Check
                                     type="switch"
-                                    id="sin-numero-switch"
-                                    label="Préstamo sin Número / Fecha"
+                                    id="sin-numero-switch-prestamo"
+                                    label="Sin Número de Documento / Fecha"
                                     checked={sinNumero}
                                     onChange={handleSinNumeroChange}
                                 />
@@ -247,15 +237,15 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                     <Row>
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label>Número de Oficio</Form.Label>
+                                <Form.Label>Número de Documento</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="pre_ndo"
                                     value={formData.pre_ndo}
                                     onChange={handleChange}
-                                    placeholder="Ingrese el número de oficio"
+                                    placeholder="Ej. OFICIO-RRHH-001"
                                     required
-                                    disabled={sinNumero} // Deshabilitado si el switch está activo
+                                    disabled={sinNumero}
                                 />
                             </Form.Group>
                         </Col>
@@ -268,7 +258,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                     value={sinNumero ? 'S/N' : formData.pre_fec}
                                     onChange={handleChange}
                                     required
-                                    disabled={sinNumero} // Deshabilitado si el switch está activo
+                                    disabled={sinNumero}
                                 />
                             </Form.Group>
                         </Col>
@@ -279,14 +269,14 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                             <Form.Group className="mb-3">
                                 <Form.Label>Departamento de Origen</Form.Label>
                                 <Form.Control as="select" name="dep_origen_ide" value={formData.dep_origen_ide} onChange={handleChange} required >
-                                    <option value="">Seleccione un departamento</option>
+                                    <option value="">Seleccione origen...</option>
                                     {departamentos
+                                        // Excluir almacenes como origen si se desea, o permitirlo si se prestan cosas desde el almacén
+                                        // Aquí permitimos todo excepto el destino actual
                                         .filter(dep => dep.dep_ide !== parseInt(formData.dep_ide))
                                         .map(dep => (
-                                            <option key={dep.dep_ide} value={dep.dep_ide}>
-                                                {dep.dep_nom}
-                                            </option>
-                                        ))}
+                                            <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
+                                    ))}
                                 </Form.Control>
                             </Form.Group>
                         </Col>
@@ -294,15 +284,18 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                             <Form.Group className="mb-3">
                                 <Form.Label>Departamento de Destino</Form.Label>
                                 <Form.Control as="select" name="dep_ide" value={formData.dep_ide} onChange={handleChange} required>
-                                    <option value="">Seleccione un departamento</option>
+                                    <option value="">Seleccione destino...</option>
                                     {departamentos
                                         .filter(dep => dep.dep_ide !== parseInt(formData.dep_origen_ide))
+                                        // Filtramos los almacenes para que no aparezcan aquí (opcional pero recomendado)
+                                        .filter(dep => dep.dep_ide !== DEP_ALMACEN_03 && dep.dep_ide !== DEP_ALMACEN_04)
                                         .map(dep => (
-                                            <option key={dep.dep_ide} value={dep.dep_ide}>
-                                                {dep.dep_nom}
-                                            </option>
-                                        ))}
+                                            <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
+                                    ))}
                                 </Form.Control>
+                                <Form.Text className="text-muted">
+                                    Si desea enviar al Almacén, use la opción "Ingreso a Almacén" en el menú principal.
+                                </Form.Text>
                             </Form.Group>
                         </Col>
                     </Row>
@@ -317,21 +310,22 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                             classNamePrefix="select"
                             onChange={handleBienSelectChange}
                             value={bienOptions.filter(option => formData.bienesSeleccionados.includes(option.value))}
-                            placeholder="Seleccione los bienes a prestar"
-                            noOptionsMessage={() => "No hay bienes disponibles o no se ha seleccionado departamento de origen."}
+                            placeholder={formData.dep_origen_ide ? "Busque y seleccione bienes..." : "Primero seleccione origen"}
+                            noOptionsMessage={() => "No hay bienes disponibles en el origen."}
+                            isDisabled={loading || !formData.dep_origen_ide}
                         />
                         <Form.Text className="text-muted">
-                            Solo se muestran bienes del departamento de origen seleccionado que no están en mal estado.
+                            Se muestran todos los bienes disponibles del departamento de origen.
                         </Form.Text>
                     </Form.Group>
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
+                <Button variant="secondary" onClick={handleClose} disabled={loading}>
                     Cancelar
                 </Button>
-                <Button variant="primary" onClick={handleSubmit}>
-                    Registrar Préstamo
+                <Button variant="primary" onClick={handleSubmit} disabled={loading}>
+                    {loading ? <><Spinner as="span" animation="border" size="sm" className="me-1"/> Guardando...</> : 'Registrar Préstamo'}
                 </Button>
             </Modal.Footer>
         </Modal>

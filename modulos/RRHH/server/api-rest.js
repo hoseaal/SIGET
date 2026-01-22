@@ -19,7 +19,9 @@ import nivelAntiguoRouter from './src/routes/nivelSalarialAntiguo.routes.js'
 import antiguedadRouter from './src/routes/antiguedad.routes.js'
 import hijoRouter from './src/routes/hijo.routes.js'
 import antiguedadRegistroRouter from './src/routes/antiguedadRegistro.routes.js'
-import sueldoPensionadoRouter from './routes/sueldoPensionado.routes.js'
+import sueldoPensionadoRouter from './src/routes/sueldoPensionado.routes.js'
+import jubiladoRouter from './src/routes/jubilado.routes.js'
+import permisoRouter from './src/routes/permiso.routes.js'
 
 import historialSalarioRouter from './src/routes/historialSalario.routes.js'
 
@@ -78,6 +80,8 @@ app.use('/api/antiguedad', antiguedadRouter)
 app.use('/api/hijos', hijoRouter)
 app.use('/api/registros-antiguedad', antiguedadRegistroRouter)
 app.use('/api/sueldo-pensionado', sueldoPensionadoRouter)
+app.use('/api/jubilados', jubiladoRouter)
+app.use('/api/permisos', permisoRouter)
 
 
 app.use('/api/historial-salarios', historialSalarioRouter)

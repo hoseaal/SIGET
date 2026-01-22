@@ -5,6 +5,8 @@ import pool from '../utils/database.js'
 const DEP_ALMACEN_03 = 11
 const DEP_ALMACEN_04 = 9
 const CON_MAL_ESTADO_ID = 4
+const TIPO_PRESTAMO = 'P';
+const TIPO_ALMACEN = 'A';
 
 export class PrestamoModel {
   /**
@@ -17,16 +19,16 @@ export class PrestamoModel {
    * @param {string[]} data.bienes - Array de bim_ide de los bienes prestados.
    * @returns {Promise<object>} Objeto del préstamo creado.
    */
-  static async create ({ pre_fec, pre_tip, pre_ndo, dep_ide, dep_origen_ide, bienes }) {
+  static async create ({ pre_fec, pre_cla, pre_tip, pre_ndo, dep_ide, dep_origen_ide, bienes }) {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
 
       // Insertar el préstamo principal
       const [resultPrestamo] = await connection.query(
-        'INSERT INTO ttrpre (pre_fec, pre_tip, pre_ndo, dep_ide, dep_origen_ide) VALUES (?, ?, ?, ?, ?)',
-        [pre_fec, pre_tip, pre_ndo, dep_ide, dep_origen_ide]
-      )
+        'INSERT INTO ttrpre (pre_fec, pre_cla, pre_ndo, dep_ide, dep_origen_ide) VALUES (?, ?, ?, ?, ?)',
+        [pre_fec, pre_cla || TIPO_PRESTAMO, pre_ndo, dep_ide, dep_origen_ide]
+    )
       const pre_ide = resultPrestamo.insertId
 
       // Insertar los detalles de los bienes prestados
@@ -91,15 +93,9 @@ export class PrestamoModel {
     // Esto requiere un subquery o JOIN adicional para verificar la condición de los bienes asociados.
     // Una forma simple es verificar si ALGÚN BIEN de este préstamo cumple la condición de exclusión.
     whereClauses.push(`
-      NOT EXISTS (
-        SELECT 1 FROM ttrdpr tdd_excl
-        JOIN tmab_m tmab_excl ON tdd_excl.bim_ide = tmab_excl.bim_ide
-        WHERE tdd_excl.pre_ide = tp.pre_ide
-          AND tmab_excl.con_ide = ?
-          AND (tp.dep_ide = ? || tp.dep_ide = ?)
-      )
+      tp.pre_cla = ?
     `)
-    params.push(CON_MAL_ESTADO_ID, DEP_ALMACEN_03, DEP_ALMACEN_04)
+    params.push(TIPO_PRESTAMO)
 
     // Filtros opcionales
     if (filters.pre_ndo) {
@@ -159,11 +155,10 @@ export class PrestamoModel {
       INNER JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
       INNER JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
       WHERE tp.pre_est = 1
-        AND (tp.dep_ide = ? || tp.dep_ide = ?)
-        AND tm.con_ide = ?
+        AND tp.pre_cla = ?
     `
 
-    const params = [DEP_ALMACEN_03, DEP_ALMACEN_04, CON_MAL_ESTADO_ID]
+    const params = [TIPO_ALMACEN]
 
     if (filters.pre_ndo) {
       query += ' AND tp.pre_ndo LIKE ?'
