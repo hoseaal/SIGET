@@ -84,14 +84,13 @@ async function fetchApiData (endpoint, token) {
   try {
     const response = await fetch(url, options)
     if (!response.ok) {
-        // Manejo silencioso de 404 para arrays vacíos
         if (response.status === 404) return []
         throw new Error(`Error en la petición a ${url}: ${response.statusText}`)
     }
     return await response.json()
   } catch (error) {
     console.error(`Error al hacer fetch a ${url}:`, error)
-    return [] // Retornar array vacío en error para no romper Promise.all
+    return [] 
   }
 }
 
@@ -115,6 +114,17 @@ function limpiarTexto (texto) {
   return texto.replace(/\s+/g, ' ').trim()
 }
 
+// --- NUEVA FUNCIÓN PARA ORDENAR IDs ---
+function obtenerIdsOrdenados(listaBienes) {
+  if (!listaBienes || listaBienes.length === 0) return '';
+  
+  return listaBienes
+    .map(b => b.bim_ide)
+    // Ordenar numéricamente (ej: 1, 2, 10 en vez de 1, 10, 2)
+    .sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }))
+    .join(', ');
+}
+
 export const generarActaVerificacionService = (datosPost, accessToken) => {
   return new Promise(async (resolve, reject) => {
     const { dep_ide, departamento_nombre } = datosPost
@@ -125,14 +135,12 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
     }
 
     try {
-      // 1. OBTENER DATOS CONCURRENTE (Lógica actualizada)
       const [
         bienesData,
-        bienesEnAlmacenData,  // Endpoint: prestamos/almacen (Reemplaza malEstadoData)
+        bienesEnAlmacenData,  // Endpoint: prestamos/almacen 
         prestadosAOtroData,   // Endpoint: prestamos/normales (salientes)
         prestadosDeOtroData,  // Endpoint: prestamos/normales (entrantes)
-        // Ya no necesitamos buscar específicamente "con=4" porque el almacen lo define el endpoint
-        bienesMalEstadoEnDepartamentoData // Mantenemos esto por si quieres listar rotos que NO están en almacén
+        bienesMalEstadoEnDepartamentoData // Bienes rotos en el sitio
       ] = await Promise.all([
         fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1`, accessToken),
         fetchApiData(`/api/prestamos/almacen?dep_origen_id=${dep_ide}`, accessToken),
@@ -143,12 +151,10 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
 
       const todosLosBienes = Array.isArray(bienesData) ? bienesData : (bienesData?.data || [])
       
-      // Filtros básicos
       const bienesFaltantes = todosLosBienes.filter(b => b.est_ide === 3)
       const bienesSinEtiqueta = todosLosBienes.filter(b => b.est_ide === 1)
       const bienesMalEstadoEnDepartamento = bienesMalEstadoEnDepartamentoData || []
 
-      // Función auxiliar para aplanar
       const extraerBienesPrestamo = (data) => {
         return (data || []).flatMap(prestamo => {
           try {
@@ -177,23 +183,25 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       const bienesPrestadosAOtro = extraerBienesPrestamo(prestadosAOtroData)
       const bienesPrestadosDeOtro = extraerBienesPrestamo(prestadosDeOtroData)
 
-      // Filtrar bienes que están "rotos" (con=4) en el sistema pero que NO han sido enviados al almacén (siguen físicos aquí)
+      // Filtrar bienes que están "rotos" en el sistema pero que NO han sido enviados al almacén (siguen físicos aquí)
       const bienesMalEstadoSoloEnDepartamento = bienesMalEstadoEnDepartamento.filter(b =>
         !bienesEnviadosAlmacen.some(m => m.bim_ide === b.bim_ide)
       )
 
-      // Calcular totales
+      // --- CÁLCULO DE TOTALES (Lógica Original Restablecida) ---
       const countFaltantes = bienesFaltantes.length
-      // Nota: En tu lógica anterior "Mal Estado" sumaba Almacén + RotosLocales. Mantenemos esa lógica de conteo.
-      const countEnAlmacen = bienesEnviadosAlmacen.length + bienesMalEstadoSoloEnDepartamento.length
+      
+      // Aquí sumamos ALMACÉN + LOCALES (Como pediste)
+      const countMalEstado = bienesEnviadosAlmacen.length + bienesMalEstadoSoloEnDepartamento.length
+      
       const countPrestadosAOtro = bienesPrestadosAOtro.length
       const countPrestadosDeOtro = bienesPrestadosDeOtro.length
       
-      // En servicio = Total - (Faltantes + Prestados + EnAlmacen/Rotos)
-      const countEnServicio = todosLosBienes.length - countFaltantes - countPrestadosAOtro - countEnAlmacen
+      // En servicio = Total - (Faltantes + Prestados + MalEstadoTotal)
+      const countEnServicio = todosLosBienes.length - countFaltantes - countPrestadosAOtro - countMalEstado
 
-      // TOTAL GLOBAL (Suma de todo lo propio)
-      const totalBienesTabla = countEnServicio + countFaltantes + countEnAlmacen + countPrestadosAOtro + countPrestadosDeOtro
+      // Total Global
+      const totalBienesTabla = countEnServicio + countFaltantes + countMalEstado + countPrestadosAOtro + countPrestadosDeOtro
 
       const { day, month, yearInWords, fechacorta } = formatCurrentDateTime()
 
@@ -225,8 +233,8 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       doc.text(parrafo, { align: 'justify' })
       doc.moveDown(2)
 
-      // Tabla de resumen
-      // Re-verificamos la lista de "En Servicio" asegurando que no incluya los otros estados
+      // --- TABLA DE RESUMEN (Con función de ordenamiento aplicada) ---
+      // Filtramos bienes en servicio
       const bienesEnServicio = todosLosBienes.filter(b =>
         b.est_ide !== 3 &&
         !bienesPrestadosAOtro.some(p => p.bim_ide === b.bim_ide) &&
@@ -238,28 +246,28 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         {
           label: 'Bienes en Servicio en la dirección:',
           total: countEnServicio,
-          obs: ''
+          obs: '' // Si quisieras ordenar esto también: obtenerIdsOrdenados(bienesEnServicio)
         },
         {
           label: 'Bienes Faltantes:',
           total: countFaltantes,
-          obs: bienesFaltantes.map(b => b.bim_ide).join(', ')
+          obs: obtenerIdsOrdenados(bienesFaltantes) // <-- ORDENADO
         },
         {
-          // MANTENEMOS LA ETIQUETA "Mal Estado" VISUALMENTE COMO PEDISTE
           label: 'Bienes en Mal Estado:',
-          total: countEnAlmacen,
-          obs: [...bienesEnviadosAlmacen, ...bienesMalEstadoSoloEnDepartamento].map(b => b.bim_ide).join(', ')
+          total: countMalEstado, // Suma de Almacén + Locales
+          // Concatenamos ambas listas y las ordenamos juntas
+          obs: obtenerIdsOrdenados([...bienesEnviadosAlmacen, ...bienesMalEstadoSoloEnDepartamento]) // <-- ORDENADO
         },
         {
           label: 'Bienes en Préstamo a otras direcciones:',
           total: countPrestadosAOtro,
-          obs: bienesPrestadosAOtro.map(b => b.bim_ide).join(', ')
+          obs: obtenerIdsOrdenados(bienesPrestadosAOtro) // <-- ORDENADO
         },
         {
           label: 'Bienes en préstamo de otras direcciones a esta dirección:',
           total: countPrestadosDeOtro,
-          obs: bienesPrestadosDeOtro.map(b => b.bim_ide).join(', ')
+          obs: obtenerIdsOrdenados(bienesPrestadosDeOtro) // <-- ORDENADO
         }
       ]
 
@@ -282,12 +290,16 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
           })
           doc.moveDown(0.5)
           doc.font('Helvetica').fontSize(10)
-          items.forEach(item => doc.text(formatter(item), {
-            indent: 15,
-            paragraphGap: 4,
-            align: 'left',
-            x: doc.page.margins.left
-          }))
+          
+          // También ordenamos la lista detallada para que sea consistente con el cuadro de arriba
+          items
+            .sort((a, b) => String(a.bim_ide).localeCompare(String(b.bim_ide), undefined, { numeric: true }))
+            .forEach(item => doc.text(formatter(item), {
+              indent: 15,
+              paragraphGap: 4,
+              align: 'left',
+              x: doc.page.margins.left
+            }))
           doc.moveDown()
         }
       }
@@ -299,8 +311,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         b => `EL BIEN Nº${b.bim_ide}: ${b.bim_des} SE DIO EN CALIDAD DE PRÉSTAMO DESDE ${b.departamento_origen_nombre} SEGÚN ${b.pre_tip} ${b.pre_ndo || ''}${b.pre_fec ? ` FECHA ${formatFullDate(b.pre_fec)}` : ''}.`
       )
 
-      // 2. Bienes en Almacén (Visualmente "Mal Estado Trasladados")
-      // Separamos por destino (Piso 3 u otros)
+      // 2. Bienes en Almacén
       const bienesPiso3 = bienesEnviadosAlmacen.filter(b => b.dep_ide === 11);
       const bienesPiso4 = bienesEnviadosAlmacen.filter(b => b.dep_ide === 9);
 
@@ -320,14 +331,14 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         );
       }
 
-      // 3. Bienes en mal estado (Físicos en el departamento, no enviados)
+      // 3. Bienes en mal estado locales
       drawSection(
         `BIENES EN MAL ESTADO DENTRO DE ${departamentoNombreUpper}:`,
         bienesMalEstadoSoloEnDepartamento,
         b => `${b.bim_ide}: ${b.bim_des}`
       )
 
-      // 4. Bienes prestados a otras direcciones (agrupados por oficio)
+      // 4. Bienes prestados a otros
       if (bienesPrestadosAOtro.length > 0) {
         const prestamosAgrupados = {}
         bienesPrestadosAOtro.forEach(b => {
@@ -354,34 +365,37 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
           doc.moveDown(0.5)
           doc.font('Helvetica').fontSize(10)
 
-          grupo.bienes.forEach(b => {
-            doc.text(`${b.bim_ide}: ${b.bim_des}`, {
-              indent: 15,
-              paragraphGap: 4,
-              align: 'left',
-              x: doc.page.margins.left
+          // Ordenamos también los bienes dentro del detalle de oficio
+          grupo.bienes
+            .sort((a, b) => String(a.bim_ide).localeCompare(String(b.bim_ide), undefined, { numeric: true }))
+            .forEach(b => {
+              doc.text(`${b.bim_ide}: ${b.bim_des}`, {
+                indent: 15,
+                paragraphGap: 4,
+                align: 'left',
+                x: doc.page.margins.left
+              })
             })
-          })
 
           doc.moveDown()
         })
       }
 
-      // 5. Bienes sin etiqueta
+      // 5. Sin etiqueta
       drawSection(
         `BIENES QUE SE ENCUENTRAN SIN ETIQUETA EN ${departamentoNombreUpper}:`,
         bienesSinEtiqueta,
         b => `${b.bim_ide}: ${b.bim_des}`
       )
 
-      // 6. Bienes faltantes
+      // 6. Faltantes
       drawSection(
         'REPORTE DE BIENES FALTANTES:',
         bienesFaltantes,
         b => `${b.bim_ide}: ${b.bim_des}`
       )
 
-      // --- FIRMAS ---
+      // Firmas
       let finalY = doc.y
       if (finalY > 600) {
         doc.addPage()
