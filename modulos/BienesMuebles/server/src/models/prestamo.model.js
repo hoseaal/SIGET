@@ -26,8 +26,8 @@ export class PrestamoModel {
 
       // Insertar el préstamo principal
       const [resultPrestamo] = await connection.query(
-        'INSERT INTO ttrpre (pre_fec, pre_cla, pre_ndo, dep_ide, dep_origen_ide) VALUES (?, ?, ?, ?, ?)',
-        [pre_fec, pre_cla || TIPO_PRESTAMO, pre_ndo, dep_ide, dep_origen_ide]
+        'INSERT INTO ttrpre (pre_fec, pre_tip, pre_cla, pre_ndo, dep_ide, dep_origen_ide) VALUES (?, ?, ?, ?, ?, ?)',
+        [pre_fec, pre_tip, pre_cla || TIPO_PRESTAMO, pre_ndo, dep_ide, dep_origen_ide]
     )
       const pre_ide = resultPrestamo.insertId
 
@@ -41,7 +41,7 @@ export class PrestamoModel {
       }
 
       await connection.commit()
-      return { pre_ide, pre_fec, pre_ndo, dep_ide, dep_origen_ide, bienes }
+      return { pre_ide, pre_fec, pre_tip, pre_cla, pre_ndo, dep_ide, dep_origen_ide, bienes }
     } catch (error) {
       await connection.rollback()
       throw error
