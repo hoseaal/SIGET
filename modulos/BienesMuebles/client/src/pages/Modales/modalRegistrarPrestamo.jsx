@@ -137,14 +137,6 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             setLoading(false);
             return;
         }
-        
-        // Validación: Evitar usar este modal para enviar a Almacén (usar el otro modal)
-        if (parseInt(formData.dep_ide) === DEP_ALMACEN_03 || parseInt(formData.dep_ide) === DEP_ALMACEN_04) {
-             setErrorMessage('Para enviar bienes al Almacén, utilice la opción "Ingresar a Almacén".');
-             setShowAlert(true);
-             setLoading(false);
-             return;
-        }
 
         if (formData.bienesSeleccionados.length === 0) {
             setErrorMessage('Debe seleccionar al menos un bien.');
@@ -218,7 +210,6 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                 <Form.Control as="select" name="pre_tip" value={formData.pre_tip} onChange={handleChange} required>
                                     <option value="Oficio">Oficio</option>
                                     <option value="Transferencia">Transferencia</option>
-                                    <option value="Asignacion">Asignación Personal</option>
                                 </Form.Control>
                             </Form.Group>
                         </Col>
