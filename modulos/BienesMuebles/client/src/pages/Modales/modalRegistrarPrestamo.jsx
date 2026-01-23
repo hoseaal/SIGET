@@ -287,8 +287,6 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
                                     <option value="">Seleccione destino...</option>
                                     {departamentos
                                         .filter(dep => dep.dep_ide !== parseInt(formData.dep_origen_ide))
-                                        // Filtramos los almacenes para que no aparezcan aquí (opcional pero recomendado)
-                                        .filter(dep => dep.dep_ide !== DEP_ALMACEN_03 && dep.dep_ide !== DEP_ALMACEN_04)
                                         .map(dep => (
                                             <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
                                     ))}
