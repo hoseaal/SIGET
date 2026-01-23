@@ -114,13 +114,12 @@ function limpiarTexto (texto) {
   return texto.replace(/\s+/g, ' ').trim()
 }
 
-// --- NUEVA FUNCIÓN PARA ORDENAR IDs ---
+// --- FUNCIÓN PARA ORDENAR IDs ---
 function obtenerIdsOrdenados(listaBienes) {
   if (!listaBienes || listaBienes.length === 0) return '';
   
   return listaBienes
     .map(b => b.bim_ide)
-    // Ordenar numéricamente (ej: 1, 2, 10 en vez de 1, 10, 2)
     .sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }))
     .join(', ');
 }
@@ -135,19 +134,35 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
     }
 
     try {
-      const [
-        bienesData,
-        bienesEnAlmacenData,  // Endpoint: prestamos/almacen 
-        prestadosAOtroData,   // Endpoint: prestamos/normales (salientes)
-        prestadosDeOtroData,  // Endpoint: prestamos/normales (entrantes)
-        bienesMalEstadoEnDepartamentoData // Bienes rotos en el sitio
-      ] = await Promise.all([
+      // 1. Obtener datos
+      const promises = [
         fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1`, accessToken),
         fetchApiData(`/api/prestamos/almacen?dep_origen_id=${dep_ide}`, accessToken),
         fetchApiData(`/api/prestamos/normales?dep_origen_id=${dep_ide}`, accessToken),
         fetchApiData(`/api/prestamos/normales?dep_destino_id=${dep_ide}`, accessToken),
         fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1&con=4`, accessToken)
-      ])
+      ];
+
+      // --- CAMBIO: Si es Almacén (9 u 11), buscar bienes de terceros resguardados aquí ---
+      const esAlmacenPiso4 = Number(dep_ide) === 9;
+      const esAlmacenPiso3 = Number(dep_ide) === 11;
+      const esDepartamentoAlmacen = esAlmacenPiso4 || esAlmacenPiso3;
+
+      if (esDepartamentoAlmacen) {
+        // Agregamos la petición para buscar bienes donde el destino sea ESTE departamento y sea tipo Almacén
+        promises.push(fetchApiData(`/api/prestamos/almacen?dep_destino_id=${dep_ide}`, accessToken));
+      }
+
+      const results = await Promise.all(promises);
+
+      const [
+        bienesData,
+        bienesEnAlmacenData,  
+        prestadosAOtroData,   
+        prestadosDeOtroData,  
+        bienesMalEstadoEnDepartamentoData,
+        tercerosEnMiAlmacenData // Este será undefined si no es departamento almacén
+      ] = results;
 
       const todosLosBienes = Array.isArray(bienesData) ? bienesData : (bienesData?.data || [])
       
@@ -178,29 +193,36 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         })
       }
 
-      // Procesar listas
+      // Procesar listas normales
       const bienesEnviadosAlmacen = extraerBienesPrestamo(bienesEnAlmacenData)
       const bienesPrestadosAOtro = extraerBienesPrestamo(prestadosAOtroData)
       const bienesPrestadosDeOtro = extraerBienesPrestamo(prestadosDeOtroData)
+      
+      // Procesar lista especial de Terceros en Almacén (si aplica)
+      const bienesTercerosEnMiAlmacen = esDepartamentoAlmacen 
+        ? extraerBienesPrestamo(tercerosEnMiAlmacenData) 
+        : [];
 
-      // Filtrar bienes que están "rotos" en el sistema pero que NO han sido enviados al almacén (siguen físicos aquí)
+      // Filtrar bienes rotos LOCALES (excluyendo los que ya se enviaron a almacén)
       const bienesMalEstadoSoloEnDepartamento = bienesMalEstadoEnDepartamento.filter(b =>
         !bienesEnviadosAlmacen.some(m => m.bim_ide === b.bim_ide)
       )
 
-      // --- CÁLCULO DE TOTALES (Lógica Original Restablecida) ---
+      // --- CÁLCULO DE TOTALES ---
       const countFaltantes = bienesFaltantes.length
       
-      // Aquí sumamos ALMACÉN + LOCALES (Como pediste)
-      const countMalEstado = bienesEnviadosAlmacen.length + bienesMalEstadoSoloEnDepartamento.length
+      // SUMA ESPECIAL PARA MAL ESTADO:
+      // 1. Enviados a otro almacén (si este dep fuera normal)
+      // 2. Rotos locales
+      // 3. (NUEVO) Bienes de terceros resguardados aquí (si este dep es almacén)
+      const countMalEstado = bienesEnviadosAlmacen.length + bienesMalEstadoSoloEnDepartamento.length + bienesTercerosEnMiAlmacen.length
       
       const countPrestadosAOtro = bienesPrestadosAOtro.length
       const countPrestadosDeOtro = bienesPrestadosDeOtro.length
       
-      // En servicio = Total - (Faltantes + Prestados + MalEstadoTotal)
-      const countEnServicio = todosLosBienes.length - countFaltantes - countPrestadosAOtro - countMalEstado
+      const countEnServicio = todosLosBienes.length - countFaltantes - countPrestadosAOtro - (bienesEnviadosAlmacen.length + bienesMalEstadoSoloEnDepartamento.length)
 
-      // Total Global
+      // Total Global (Nota: bienesTercerosEnMiAlmacen se suman al total de la tabla física)
       const totalBienesTabla = countEnServicio + countFaltantes + countMalEstado + countPrestadosAOtro + countPrestadosDeOtro
 
       const { day, month, yearInWords, fechacorta } = formatCurrentDateTime()
@@ -227,47 +249,40 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
       doc.fontSize(14).text('ACTA DE VERIFICACION DEL INVENTARIO DE BIENES MUEBLES', { align: 'center' })
       doc.moveDown(2)
 
-      // Párrafo introductorio
+      // Párrafo
       doc.font('Helvetica').fontSize(12)
       const parrafo = `En la ciudad de San Cristóbal a los ${day} días del mes de ${month} del año ${yearInWords} reunidos en la dirección de ${departamentoNombreUpper} los Ciudadanos: ${datosPost.director_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.director_cedula || 'N/A'} (${datosPost.director_cargo || 'N/A'}) y Lcda. ${datosPost.analista_nombre || 'N/A'}, titular de la cédula de identidad N° ${datosPost.analista_cedula || 'N/A'} (Analista de Bienes e Inventarios I), para dejar constancia de la verificación por percepción directa del inventario físico al ${fechacorta}, fecha del reporte BM1 bienes adscritos a la Unidad antes mencionada, los cuales ascienden a un total de ${totalBienesTabla} bienes, según la relación de bienes muebles formulario BM-1.`
       doc.text(parrafo, { align: 'justify' })
       doc.moveDown(2)
 
-      // --- TABLA DE RESUMEN (Con función de ordenamiento aplicada) ---
-      // Filtramos bienes en servicio
-      const bienesEnServicio = todosLosBienes.filter(b =>
-        b.est_ide !== 3 &&
-        !bienesPrestadosAOtro.some(p => p.bim_ide === b.bim_ide) &&
-        !bienesEnviadosAlmacen.some(m => m.bim_ide === b.bim_ide) &&
-        !bienesMalEstadoSoloEnDepartamento.some(m => m.bim_ide === b.bim_ide)
-      )
-
+      // --- TABLA DE RESUMEN ---
+      
       const tableData = [
         {
           label: 'Bienes en Servicio en la dirección:',
           total: countEnServicio,
-          obs: '' // Si quisieras ordenar esto también: obtenerIdsOrdenados(bienesEnServicio)
+          obs: '' 
         },
         {
           label: 'Bienes Faltantes:',
           total: countFaltantes,
-          obs: obtenerIdsOrdenados(bienesFaltantes) // <-- ORDENADO
+          obs: obtenerIdsOrdenados(bienesFaltantes) 
         },
         {
           label: 'Bienes en Mal Estado:',
-          total: countMalEstado, // Suma de Almacén + Locales
-          // Concatenamos ambas listas y las ordenamos juntas
-          obs: obtenerIdsOrdenados([...bienesEnviadosAlmacen, ...bienesMalEstadoSoloEnDepartamento]) // <-- ORDENADO
+          total: countMalEstado, 
+          // CONCATENAMOS: Almacen Saliente + Locales + (Terceros en mi Almacén si soy 9/11)
+          obs: obtenerIdsOrdenados([...bienesEnviadosAlmacen, ...bienesMalEstadoSoloEnDepartamento, ...bienesTercerosEnMiAlmacen]) 
         },
         {
           label: 'Bienes en Préstamo a otras direcciones:',
           total: countPrestadosAOtro,
-          obs: obtenerIdsOrdenados(bienesPrestadosAOtro) // <-- ORDENADO
+          obs: obtenerIdsOrdenados(bienesPrestadosAOtro) 
         },
         {
           label: 'Bienes en préstamo de otras direcciones a esta dirección:',
           total: countPrestadosDeOtro,
-          obs: obtenerIdsOrdenados(bienesPrestadosDeOtro) // <-- ORDENADO
+          obs: obtenerIdsOrdenados(bienesPrestadosDeOtro) 
         }
       ]
 
@@ -291,7 +306,6 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
           doc.moveDown(0.5)
           doc.font('Helvetica').fontSize(10)
           
-          // También ordenamos la lista detallada para que sea consistente con el cuadro de arriba
           items
             .sort((a, b) => String(a.bim_ide).localeCompare(String(b.bim_ide), undefined, { numeric: true }))
             .forEach(item => doc.text(formatter(item), {
@@ -304,14 +318,14 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         }
       }
 
-      // 1. Bienes prestados de otras direcciones
+      // 1. Bienes prestados de otras direcciones (Entrantes normales)
       drawSection(
         'Observación: Los siguientes bienes se prestan de otras direcciones:',
         bienesPrestadosDeOtro,
         b => `EL BIEN Nº${b.bim_ide}: ${b.bim_des} SE DIO EN CALIDAD DE PRÉSTAMO DESDE ${b.departamento_origen_nombre} SEGÚN ${b.pre_tip} ${b.pre_ndo || ''}${b.pre_fec ? ` FECHA ${formatFullDate(b.pre_fec)}` : ''}.`
       )
 
-      // 2. Bienes en Almacén
+      // 2. Bienes que YO envié a almacén
       const bienesPiso3 = bienesEnviadosAlmacen.filter(b => b.dep_ide === 11);
       const bienesPiso4 = bienesEnviadosAlmacen.filter(b => b.dep_ide === 9);
 
@@ -331,12 +345,23 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         );
       }
 
-      // 3. Bienes en mal estado locales
+      // 3. Bienes en mal estado locales (Míos, rotos, aquí)
       drawSection(
         `BIENES EN MAL ESTADO DENTRO DE ${departamentoNombreUpper}:`,
         bienesMalEstadoSoloEnDepartamento,
         b => `${b.bim_ide}: ${b.bim_des}`
       )
+
+      // --- SECCIÓN NUEVA: Bienes de TERCEROS en MI Almacén (Solo para dep 9 y 11) ---
+      if (esDepartamentoAlmacen && bienesTercerosEnMiAlmacen.length > 0) {
+        const pisoTexto = esAlmacenPiso3 ? '3' : '4';
+        drawSection(
+          `BIENES PERTENECIENTES A OTRAS DIRECCIONES PERO ESTÁN RESGUARDADOS EN ALMACÉN PISO ${pisoTexto}:`,
+          bienesTercerosEnMiAlmacen,
+          // Formato personalizado solicitado
+          b => `${b.bim_ide}: ${b.bim_des} (PERTENECE A: ${b.departamento_origen_nombre})`
+        );
+      }
 
       // 4. Bienes prestados a otros
       if (bienesPrestadosAOtro.length > 0) {
