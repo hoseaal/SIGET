@@ -153,7 +153,12 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `Acta_de_Entrega_${datosReporte.numeroReporte}.pdf`);
+
+            // 1. Sanitizar el nombre: Reemplaza '/' y otros caracteres prohibidos por '-'
+            const numeroLimpio = (datosReporte.numeroReporte || 'SN').replace(/[\/\\:*?"<>|]/g, '-');
+
+            link.setAttribute('download', `Acta_de_Entrega_${numeroLimpio}.pdf`);
+
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
