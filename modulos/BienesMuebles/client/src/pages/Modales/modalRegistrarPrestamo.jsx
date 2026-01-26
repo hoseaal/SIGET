@@ -73,11 +73,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
             const depOrigenId = parseInt(formData.dep_origen_ide);
             
             const bienesFiltrados = bienesDisponibles.filter(bien =>
-                bien.dep_ide === depOrigenId && // Solo bienes del origen seleccionado
-                // Validar que NO estén ya en almacén (por seguridad lógica)
-                bien.dep_ide !== DEP_ALMACEN_03 && 
-                bien.dep_ide !== DEP_ALMACEN_04
-                // ELIMINADO: bien.con_ide !== CONDICION_FISICA_EXCLUIDA -> Ahora se permiten todos los estados
+                bien.dep_ide === depOrigenId // Solo bienes del origen seleccionado
             );
 
             setFilteredBienes(bienesFiltrados);

@@ -403,6 +403,10 @@ ADD CONSTRAINT fk_ttrpre_dep_origen FOREIGN KEY (dep_origen_ide) REFERENCES tesd
 ALTER TABLE ttrpre
 ADD COLUMN pre_tip VARCHAR(20) NOT NULL COMMENT 'Tipo de préstamo (oficio, transferencia)';
 
+ALTER TABLE ttrpre 
+ADD COLUMN pre_cla CHAR(1) NOT NULL DEFAULT 'P' 
+COMMENT 'Clasificación: P = Prestamo Normal, A = Ingreso Almacén/Inventario';
+
 
 CREATE TABLE rep_mensual (
     id INT PRIMARY KEY AUTO_INCREMENT COMMENT "Identificador único del registro.",
