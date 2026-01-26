@@ -4,6 +4,24 @@ import fs from 'fs';
 import path from 'path';
 
 /**
+ * Función auxiliar para formatear fechas
+ */
+const formatearFecha = (fechaRaw) => {
+    if (!fechaRaw) return 'Sin Fecha';
+    try {
+        const date = new Date(fechaRaw);
+        // Ajusta esto según el formato que prefieras (ej: 'es-VE')
+        return date.toLocaleDateString('es-VE', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+        });
+    } catch (e) {
+        return fechaRaw;
+    }
+};
+
+/**
  * Dibuja una fila de la tabla, ajustando la altura dinámicamente.
  * @param {PDFDocument} doc - La instancia del documento PDF.
  * @param {number} y - La posición Y inicial de la fila.
@@ -53,20 +71,23 @@ export const generarActaDeEntrega = (datosReporte) => {
             margins: { top: 40, bottom: 40, left: 50, right: 50 }
         });
 
-        const outputPath = path.join(process.cwd(), 'temp', `Acta_de_Entrega_${datosReporte.numeroReporte}.pdf`);
+        // 1. Sanitizar el número
+        const numeroLimpio = (datosReporte.numeroReporte || 'SN').replace(/[\/\\:*?"<>|]/g, '-');
+
+        // 2. Usar el número limpio en la ruta
+        const outputPath = path.join(process.cwd(), 'temp', `Acta_de_Entrega_${numeroLimpio}.pdf`);
+
         const stream = fs.createWriteStream(outputPath);
         doc.pipe(stream);
 
         try {
             // --- Encabezado ---
-           // Company Logo (Top-Left)
-                 const logoPath = path.join(process.cwd(), 'public', 'img', 'logo-contraloria-home1.png')
-                 // Ensure the logo file exists before attempting to load it
-                 if (fs.existsSync(logoPath)) {
-                   doc.image(logoPath, doc.page.margins.left, doc.page.margins.top, { width: 70 })
-                 } else {
-                   console.warn(`Logo not found at ${logoPath}. Skipping logo.`)
-                 }
+            const logoPath = path.join(process.cwd(), 'public', 'img', 'logo-contraloria-home1.png')
+            if (fs.existsSync(logoPath)) {
+                doc.image(logoPath, doc.page.margins.left, doc.page.margins.top, { width: 70 })
+            } else {
+                console.warn(`Logo not found at ${logoPath}. Skipping logo.`)
+            }
 
             doc.font('Helvetica-Bold').fontSize(10);
             doc.text(datosReporte.numeroReporte || 'Nº', doc.page.margins.left, doc.page.margins.top + 50, { align: 'left' });
@@ -80,9 +101,13 @@ export const generarActaDeEntrega = (datosReporte) => {
             // --- Sección de Información ---
             doc.font('Helvetica').fontSize(10);
             const infoX = doc.page.margins.left;
+            
+            // CORRECCIÓN 1: Formato de Fecha limpio
+            const fechaFormateada = formatearFecha(datosReporte.fechaReporte);
+
             doc.text(`Unidad Ejecutora: Contraloría del Estado Táchira`, infoX);
             doc.text(`Dirección o Unidad Administrativa: Dirección de Administracion`, infoX);
-            doc.text(`Fecha del Reporte: ${datosReporte.fechaReporte || 'Sin Fecha'}`, infoX);
+            doc.text(`Fecha del Reporte: ${fechaFormateada}`, infoX);
             doc.moveDown(2);
 
             // --- Sección de la Tabla ---
@@ -109,7 +134,7 @@ export const generarActaDeEntrega = (datosReporte) => {
             doc.font('Helvetica').fontSize(8);
             datosReporte.bienes.forEach(item => {
                 // Si la siguiente fila no cabe, crea una nueva página
-                if (currentY > doc.page.height - doc.page.margins.bottom - 50) { // 50 de margen para la firma
+                if (currentY > doc.page.height - doc.page.margins.bottom - 50) { 
                     doc.addPage();
                     currentY = doc.page.margins.top;
                     // Redibujar cabeceras en la nueva página
@@ -132,25 +157,25 @@ export const generarActaDeEntrega = (datosReporte) => {
             
             doc.y = currentY; // Actualizar la posición Y del documento
             doc.moveDown(5);
-
-            doc.moveDown(6) // Space for the signatures to breathe, then move to the center signature
+            doc.moveDown(6) 
             
-            // --- Sección de Firmas ---
+            // --- Sección de Firmas (CORREGIDA) ---
             doc.font('Helvetica').fontSize(10);
             const signatureY = doc.y;
             const leftColumnX = doc.page.margins.left + 20;
             const rightColumnX = doc.page.width / 2 + 20;
             const signatureWidth = (doc.page.width / 2) - doc.page.margins.left - 10;
-            const columnWidth = (doc.page.width - doc.page.margins.left - doc.page.margins.right) / 2
             
-            // Firma Izquierda
+            // CORRECCIÓN 2: Firma Izquierda (Director de ORIGEN / Egresa)
             doc.text('_________________________', leftColumnX, signatureY, { width: signatureWidth, align: 'center' });
             doc.moveDown(0.5);
-            doc.font('Helvetica-Bold').text(datosReporte.nombreDirectorAdmin || 'Nombre Director Admin', leftColumnX, doc.y, { width: signatureWidth, align: 'center' });
-            doc.font('Helvetica').text('Director(a) de Administración', leftColumnX, doc.y, { width: signatureWidth, align: 'center' });
+            // Se asume que datosReporte tiene 'nombreDirectorOrigen' o similar. 
+            // Si no, ajusta el nombre de la propiedad según venga en 'datosReporte'.
+            doc.font('Helvetica-Bold').text(datosReporte.nombreDirectorAdmin || 'Director de Origen', leftColumnX, doc.y, { width: signatureWidth, align: 'center' });
+            doc.font('Helvetica').text(`Director(a) de ${datosReporte.departamentoOrigen}`, leftColumnX, doc.y, { width: signatureWidth, align: 'center' });
 
-            // Firma Derecha
-            doc.y = signatureY; // Reset Y a la misma altura que la firma izquierda
+            // CORRECCIÓN 2: Firma Derecha (Jefe de Compras - Fijo)
+            doc.y = signatureY; // Reset Y a la misma altura
             doc.text('_________________________', rightColumnX, signatureY, { width: signatureWidth, align: 'center' });
             doc.moveDown(0.5);
             doc.font('Helvetica-Bold').text(datosReporte.nombreJefeCompras || 'Nombre Jefe Compras', rightColumnX, doc.y, { width: signatureWidth, align: 'center' });
@@ -158,7 +183,7 @@ export const generarActaDeEntrega = (datosReporte) => {
             
             doc.moveDown(4);
 
-            // Center Signature:
+            // CORRECCIÓN 2: Firma Centro (Director de DESTINO / Ingresa)
             doc.font('Helvetica-Bold').fontSize(10)
             doc.text(`Por ${datosReporte.departamentoDestino}`, doc.page.margins.left, doc.y, {
                 width: doc.page.width - doc.page.margins.left - doc.page.margins.right,

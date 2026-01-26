@@ -322,7 +322,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                     <Row>
                                         <Col md={12}>
                                             <Form.Group className="mb-3" controlId="formDirectorAdmin">
-                                                <Form.Label>Nombre Director(a) de Administración</Form.Label>
+                                                <Form.Label>Nombre Director(a) del Depto. Origen</Form.Label>
                                                 <Form.Control
                                                     type="text"
                                                     placeholder="Ej: Lcda. Ruth Apolinar"
@@ -346,7 +346,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                                         </Col>
                                         <Col md={12}>
                                             <Form.Group className="mb-3" controlId="formJefeDestino">
-                                                <Form.Label>Nombre Jefe(a) del Depto. Destino</Form.Label>
+                                                <Form.Label>Nombre Director(a) del Depto. Destino</Form.Label>
                                                 <Form.Control
                                                     type="text"
                                                     placeholder="Ej: Abg. José Alexander Pernía"
