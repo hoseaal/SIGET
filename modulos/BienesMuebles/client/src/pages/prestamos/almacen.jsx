@@ -269,7 +269,7 @@ const [userType, setUserType] = useState(null);
                                                 <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
                                                 {/* Se asume que el destino es el almacén, por lo que no se muestra */}
                                                 <td>{getEstadoPrestamoBadge(prestamo.pre_est)}</td>
-                                                {hasPermission(userType, ACTIONS.JEFE_AREA) && (
+                                                {hasPermission(userType, ACTIONS.VIEW_LOAN_DETAILS) && (
                                                     <td>
                                                     <Dropdown>
                                                         <Dropdown.Toggle variant="secondary" id={`dropdown-${prestamo.pre_ide}`} className="nav-dropdown-dark-example">
