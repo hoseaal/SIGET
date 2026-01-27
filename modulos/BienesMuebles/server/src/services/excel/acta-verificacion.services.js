@@ -38,7 +38,6 @@ const extraerBienesPrestamo = (data) => {
 
   return data.flatMap(prestamo => {
     try {
-      // Manejo robusto del JSON de detalles
       const detalles = typeof prestamo.bienes_detalles === 'string' 
         ? JSON.parse(prestamo.bienes_detalles) 
         : (prestamo.bienes_detalles || [])
@@ -67,12 +66,11 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     const { dep_ide, departamento_nombre } = datos
 
     // 1. --- OBTENER TODOS LOS DATOS ---
-    // Usamos los endpoints separados: 'normales' para préstamos y 'almacen' para inventario
     const [
       bienesAllData,
-      prestamosSalientesData, // Préstamos normales salientes
-      prestamosEntrantesData, // Préstamos normales entrantes
-      bienesEnAlmacenData     // Bienes enviados al almacén (pre_cla = 'A')
+      prestamosSalientesData,
+      prestamosEntrantesData,
+      bienesEnAlmacenData    
     ] = await Promise.all([
       fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1`, accessToken),
       fetchApiData(`/api/prestamos/normales?dep_origen_id=${dep_ide}`, accessToken),
@@ -81,43 +79,35 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     ])
 
     // 2. --- PROCESAR Y ESTRUCTURAR LOS DATOS ---
-    // Aseguramos que sea array
     const bienesDelDepartamento = Array.isArray(bienesAllData) ? bienesAllData : (bienesAllData.data || [])
     
     const prestamosSalientes = extraerBienesPrestamo(prestamosSalientesData)
     const prestamosEntrantes = extraerBienesPrestamo(prestamosEntrantesData)
     const bienesEnAlmacen = extraerBienesPrestamo(bienesEnAlmacenData)
 
-    // Maps para búsqueda rápida
     const salientesMap = new Map(prestamosSalientes.map(b => [b.bim_ide, b]))
-    const almacenMap = new Map(bienesEnAlmacen.map(b => [b.bim_ide, b])) // Mapa unificado de almacén
+    const almacenMap = new Map(bienesEnAlmacen.map(b => [b.bim_ide, b])) 
 
     // 3. --- CONSOLIDAR LA LISTA DE BIENES Y ASIGNAR OBSERVACIONES ---
     const excelRows = []
-    let counter = 1
+    // ELIMINADO: let counter = 1 (Ya no lo usamos aquí para evitar el desorden)
 
-    // A) Procesar la lista principal de bienes que pertenecen al departamento
+    // A) Procesar la lista principal
     bienesDelDepartamento.forEach(bien => {
       let observacion = bien.bim_obs || '' 
       const direccion = toUpperCase(departamento_nombre) 
 
-      // LÓGICA CORREGIDA:
-      
-      // 1. Si está prestado (Préstamo Normal)
       if (salientesMap.has(bien.bim_ide)) {
         const prestamo = salientesMap.get(bien.bim_ide)
         observacion = `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
       }
-      // 2. Si está en Almacén (Ya no validamos "Mal estado", solo si está en la lista de almacén)
       else if (almacenMap.has(bien.bim_ide)) {
         const itemAlmacen = almacenMap.get(bien.bim_ide)
-        // Mantenemos el formato de texto similar, pero quitamos "Mal estado" obligatorio
-        // Usamos el nombre del destino (Piso 3 o Piso 4) dinámicamente
         observacion = `Ubicado en ${itemAlmacen.departamento_destino_nombre} para su resguardo`
       }
 
       excelRows.push({
-        num: counter++,
+        // num: counter++, // <--- ELIMINADO AQUÍ. Esto causaba el error.
         bim_ide: bien.bim_ide,
         bim_des: bien.bim_des,
         direccion,
@@ -125,10 +115,10 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       })
     })
 
-    // B) Añadir los bienes que están prestados EN ESTE departamento (vienen de otros)
+    // B) Añadir los bienes prestados EN ESTE departamento
     prestamosEntrantes.forEach(prestamoBien => {
       excelRows.push({
-        num: counter++,
+        // num: counter++, // <--- ELIMINADO AQUÍ
         bim_ide: prestamoBien.bim_ide,
         bim_des: prestamoBien.bim_des,
         direccion: toUpperCase(prestamoBien.departamento_origen_nombre),
@@ -136,25 +126,23 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       })
     })
 
-    // C) Si el departamento actual ES un Almacén (11 o 9), listar lo que tienen guardado
+    // C) Si es Almacén, listar resguardados
     if (dep_ide === 11 || dep_ide === 9) {
-      // Buscamos lo que está destinado a ESTE almacén específico
       const todosEnAlmacenData = await fetchApiData(`/api/prestamos/almacen?dep_destino_id=${dep_ide}`, accessToken)
       const bienesResguardados = extraerBienesPrestamo(todosEnAlmacenData)
 
       bienesResguardados.forEach(prestamoBien => {
         excelRows.push({
-          num: counter++,
+          // num: counter++, // <--- ELIMINADO AQUÍ
           bim_ide: prestamoBien.bim_ide,
           bim_des: prestamoBien.bim_des,
           direccion: prestamoBien.departamento_origen_nombre,
-          // Ajustamos el texto para que coincida con tu formato pero sea lógico
           observacion: `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} se encuentra en ${prestamoBien.departamento_destino_nombre} para su resguardo`
         })
       })
     }
 
-    // 4. --- CREACIÓN DEL DOCUMENTO EXCEL (MANTENIENDO FORMATO EXACTO) ---
+    // 4. --- CREACIÓN DEL DOCUMENTO EXCEL ---
     const workbook = new ExcelJS.Workbook()
     workbook.creator = 'Contraloría del Estado Táchira'
     workbook.lastModifiedBy = 'Sistema de Bienes Nacionales'
@@ -180,7 +168,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       console.warn('Advertencia: No se pudo procesar el logo.', logoError.message)
     }
 
-    // --- Encabezado principal (TEXTO ORIGINAL) ---
+    // --- Encabezado principal ---
     worksheet.mergeCells('C1:E8')
     const headerCell = worksheet.getCell('C1')
     headerCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
@@ -192,7 +180,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     const headerText = [
       'REPORTE DE VERIFICACIÓN DEL INVENTARIO DE BIENES MUEBLES',
       'UNIDAD EJECUTORA: CONTRALORÍA DEL ESTADO TÁCHIRA',
-      'DIRECCION O UNIDAD ADMINISTRATIVA: DIRECCIÓN DE ADMINISTRACIÓN', // Ojo: ¿Esto es fijo o dinámico? Lo dejé fijo como estaba
+      'DIRECCION O UNIDAD ADMINISTRATIVA: DIRECCIÓN DE ADMINISTRACIÓN',
       `FECHA DEL REPORTE: ${formattedDate}`,
       `${toUpperCase(departamento_nombre)}`,
       ' '
@@ -212,23 +200,30 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
     })
 
-    // --- Poblar las filas ---
+    // --- ORDENAR Y POBLAR LAS FILAS ---
+    
+    // 1. Ordenamos el array completo por ID del bien (bim_ide)
+    // Usamos localeCompare con numeric: true para que ordene bien "2" antes de "10"
     excelRows.sort((a, b) => {
-      if (a.bim_ide < b.bim_ide) return -1;
-      if (a.bim_ide > b.bim_ide) return 1;
-      return 0;
+      return String(a.bim_ide).localeCompare(String(b.bim_ide), undefined, { numeric: true });
     });
 
+    // 2. Ahora escribimos las filas y asignamos el número secuencial (index + 1)
     const startDataRow = columnHeaderRowNumber + 1
+    
     excelRows.forEach((rowData, index) => {
       const row = worksheet.getRow(startDataRow + index)
+      
+      // AQUÍ ESTÁ LA SOLUCIÓN: Usamos (index + 1) como el número de lista.
+      // Como 'excelRows' ya está ordenado, el índice 0 será el bien más bajo y tendrá el Nº 1.
       row.values = [
-        rowData.num,
+        index + 1, // <--- NÚMERO GENERADO AL FINAL
         rowData.bim_ide,
         rowData.bim_des,
         rowData.direccion,
         rowData.observacion
       ]
+      
       row.eachCell((cell) => {
         cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true }
         cell.font = { name: 'Arial', size: 10 }
@@ -245,7 +240,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       { key: 'observacion', width: 45 }
     ]
 
-    // --- Firmas al final del documento (MANTENIDO) ---
+    // --- Firmas al final del documento ---
     const lastRow = worksheet.lastRow.number
     const firmaRow1 = worksheet.getRow(lastRow + 4)
     worksheet.mergeCells(`B${firmaRow1.number}:C${firmaRow1.number}`)
