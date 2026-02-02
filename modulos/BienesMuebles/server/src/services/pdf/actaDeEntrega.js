@@ -67,7 +67,7 @@ const drawTableRow = (doc, y, rowData, columnWidths) => {
 export const generarActaDeEntrega = (datosReporte) => {
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument({
-            size: 'A4',
+            size: 'LEGAL',
             margins: { top: 40, bottom: 40, left: 50, right: 50 }
         });
 
@@ -91,7 +91,7 @@ export const generarActaDeEntrega = (datosReporte) => {
 
             doc.font('Helvetica-Bold').fontSize(10);
             doc.text(datosReporte.numeroReporte || 'Nº', doc.page.margins.left, doc.page.margins.top + 50, { align: 'left' });
-            doc.moveDown(4);
+            doc.moveDown(2);
 
             // --- Título Principal ---
             doc.font('Helvetica-Bold').fontSize(14);
