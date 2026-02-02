@@ -115,11 +115,11 @@ export const generarActaDeEntrega = (datosReporte) => {
             const tableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
             
             const columnWidths = [
-                tableWidth * 0.12, // Nº DE BIEN
-                tableWidth * 0.38, // DESCRIPCION DEL BIEN
+                tableWidth * 0.10, // Nº DE BIEN
+                tableWidth * 0.30, // DESCRIPCION DEL BIEN
                 tableWidth * 0.15, // EGRESA DE
                 tableWidth * 0.15, // INGRESA EN
-                tableWidth * 0.20  // OBSERVACIONES
+                tableWidth * 0.30  // OBSERVACIONES
             ];
 
             let currentY = doc.y;
