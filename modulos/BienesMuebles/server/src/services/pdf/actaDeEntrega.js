@@ -1,213 +1,204 @@
-/* eslint-disable no-unused-vars */
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 
-/**
- * Función auxiliar para formatear fechas
- */
+// ... (tu función formatearFecha se queda igual) ...
 const formatearFecha = (fechaRaw) => {
     if (!fechaRaw) return 'Sin Fecha';
     try {
         const date = new Date(fechaRaw);
-        // Ajusta esto según el formato que prefieras (ej: 'es-VE')
         return date.toLocaleDateString('es-VE', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric' 
+            day: '2-digit', month: '2-digit', year: 'numeric' 
         });
-    } catch (e) {
-        return fechaRaw;
-    }
+    } catch (e) { return fechaRaw; }
 };
 
 /**
- * Dibuja una fila de la tabla, ajustando la altura dinámicamente.
- * @param {PDFDocument} doc - La instancia del documento PDF.
- * @param {number} y - La posición Y inicial de la fila.
- * @param {Array<string>} rowData - Los datos de la fila.
- * @param {Array<number>} columnWidths - Los anchos de las columnas.
- * @returns {number} La altura de la fila dibujada.
+ * NUEVA FUNCIÓN: Solo calcula la altura, no dibuja nada.
  */
-const drawTableRow = (doc, y, rowData, columnWidths) => {
-    const startX = doc.page.margins.left;
-    let currentX = startX;
-    const padding = 5;
+const calcularAlturaFila = (doc, rowData, columnWidths, padding) => {
     let maxHeight = 0;
-
-    // 1. Calcular la altura máxima necesaria para esta fila
     rowData.forEach((cellText, i) => {
         const textHeight = doc.heightOfString(cellText, {
             width: columnWidths[i] - (padding * 2),
+            align: 'left'
         });
-        if (textHeight > maxHeight) {
-            maxHeight = textHeight;
-        }
+        if (textHeight > maxHeight) maxHeight = textHeight;
     });
+    return maxHeight + (padding * 2);
+};
 
-    // Añadimos un poco de padding vertical
-    const rowHeight = maxHeight + (padding * 2);
+/**
+ * Función modificada: Ahora recibe la altura ya calculada para asegurar consistencia
+ */
+const drawTableRow = (doc, y, rowData, columnWidths, rowHeight) => {
+    const startX = doc.page.margins.left;
+    let currentX = startX;
+    const padding = 5;
 
-    // 2. Dibujar las celdas y el texto
     rowData.forEach((cellText, i) => {
-        // Dibujar el borde de la celda
+        // Dibujar borde
         doc.rect(currentX, y, columnWidths[i], rowHeight).stroke();
-        // Dibujar el texto centrado verticalmente
+        
+        // Dibujar texto (limitando altura para que no desborde el cuadro si pdfkit calcula diferente por decimales)
         doc.text(cellText, currentX + padding, y + padding, {
             width: columnWidths[i] - (padding * 2),
+            height: rowHeight - (padding * 2), 
             align: 'left',
+            lineBreak: true 
         });
         currentX += columnWidths[i];
     });
-
-    return rowHeight; // Devolvemos la altura de la fila para la siguiente posición
 };
-
 
 export const generarActaDeEntrega = (datosReporte) => {
     return new Promise((resolve, reject) => {
+        // Aumenté un poco el margen inferior para seguridad
         const doc = new PDFDocument({
             size: 'A4',
-            margins: { top: 40, bottom: 40, left: 50, right: 50 }
+            margins: { top: 40, bottom: 60, left: 50, right: 50 }, 
+            autoFirstPage: true
         });
 
-        // 1. Sanitizar el número
         const numeroLimpio = (datosReporte.numeroReporte || 'SN').replace(/[\/\\:*?"<>|]/g, '-');
-
-        // 2. Usar el número limpio en la ruta
         const outputPath = path.join(process.cwd(), 'temp', `Acta_de_Entrega_${numeroLimpio}.pdf`);
-
         const stream = fs.createWriteStream(outputPath);
         doc.pipe(stream);
 
         try {
             // --- Encabezado ---
-            const logoPath = path.join(process.cwd(), 'public', 'img', 'logo-contraloria-home1.png')
+            const logoPath = path.join(process.cwd(), 'public', 'img', 'logo-contraloria-home1.png');
             if (fs.existsSync(logoPath)) {
-                doc.image(logoPath, doc.page.margins.left, doc.page.margins.top, { width: 70 })
-            } else {
-                console.warn(`Logo not found at ${logoPath}. Skipping logo.`)
+                doc.image(logoPath, 50, 40, { width: 70 });
             }
 
             doc.font('Helvetica-Bold').fontSize(10);
-            doc.text(datosReporte.numeroReporte || 'Nº', doc.page.margins.left, doc.page.margins.top + 50, { align: 'left' });
+            doc.text(datosReporte.numeroReporte || 'Nº', 50, 90);
             doc.moveDown(2);
 
-            // --- Título Principal ---
             doc.font('Helvetica-Bold').fontSize(14);
             doc.text('REPORTE DE MOVIMIENTO DE BIENES MUEBLES', { align: 'center' });
-            doc.moveDown(2);
+            doc.moveDown(1.5);
 
-            // --- Sección de Información ---
+            // --- Información ---
             doc.font('Helvetica').fontSize(10);
-            const infoX = doc.page.margins.left;
-            
-            // CORRECCIÓN 1: Formato de Fecha limpio
             const fechaFormateada = formatearFecha(datosReporte.fechaReporte);
-
-            doc.text(`Unidad Ejecutora: Contraloría del Estado Táchira`, infoX);
-            doc.text(`Dirección o Unidad Administrativa: Dirección de Administracion`, infoX);
-            doc.text(`Fecha del Reporte: ${fechaFormateada}`, infoX);
-            doc.moveDown(2);
-
-            // --- Sección de la Tabla ---
-            const tableHeaders = ['Nº DE BIEN', 'DESCRIPCION DEL BIEN', 'EGRESA DE', 'INGRESA EN', 'OBSERVACIONES'];
-            const tableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
             
+            // Usamos doc.text continuos para mantener el flujo
+            doc.text(`Unidad Ejecutora: Contraloría del Estado Táchira`);
+            doc.text(`Dirección o Unidad Administrativa: Dirección de Administracion`);
+            doc.text(`Fecha del Reporte: ${fechaFormateada}`);
+            doc.moveDown(1);
+
+            // --- Configuración de Tabla ---
+            const tableHeaders = ['Nº DE BIEN', 'DESCRIPCION DEL BIEN', 'EGRESA DE', 'INGRESA EN', 'OBSERVACIONES'];
+            const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
             const columnWidths = [
-                tableWidth * 0.10, // Nº DE BIEN
-                tableWidth * 0.30, // DESCRIPCION DEL BIEN
-                tableWidth * 0.15, // EGRESA DE
-                tableWidth * 0.15, // INGRESA EN
-                tableWidth * 0.30  // OBSERVACIONES
+                pageWidth * 0.10, 
+                pageWidth * 0.30, 
+                pageWidth * 0.15, 
+                pageWidth * 0.15, 
+                pageWidth * 0.30  
             ];
 
-            let currentY = doc.y;
-            const startX = doc.page.margins.left;
+            let currentY = doc.y + 10;
+            // Definimos el límite seguro antes del margen inferior
+            const pageBottomLimit = doc.page.height - doc.page.margins.bottom;
 
-            // Dibujar cabeceras
-            doc.font('Helvetica-Bold').fontSize(8);
-            const headerHeight = drawTableRow(doc, currentY, tableHeaders, columnWidths);
+            // Función para pintar cabecera
+            const drawHeader = (yPos) => {
+                doc.font('Helvetica-Bold').fontSize(8);
+                // La cabecera tiene altura fija aprox o calculada pequeña
+                const headerHeight = calcularAlturaFila(doc, tableHeaders, columnWidths, 5);
+                drawTableRow(doc, yPos, tableHeaders, columnWidths, headerHeight);
+                return headerHeight;
+            }
+
+            // Pintar primera cabecera
+            let headerHeight = drawHeader(currentY);
             currentY += headerHeight;
 
-            // Dibujar filas de datos
+            // --- Loop de Bienes (Lógica Corregida) ---
             doc.font('Helvetica').fontSize(8);
+            
             datosReporte.bienes.forEach(item => {
-                // Si la siguiente fila no cabe, crea una nueva página
-                if (currentY > doc.page.height - doc.page.margins.bottom - 50) { 
-                    doc.addPage();
-                    currentY = doc.page.margins.top;
-                    // Redibujar cabeceras en la nueva página
-                    doc.font('Helvetica-Bold').fontSize(8);
-                    const newHeaderHeight = drawTableRow(doc, currentY, tableHeaders, columnWidths);
-                    currentY += newHeaderHeight;
-                    doc.font('Helvetica').fontSize(8);
-                }
-
                 const rowData = [
                     item.bim_ide || '-',
-                    item.bim_des || '-',
+                    item.bim_des || '-', // Descripción larga
                     datosReporte.departamentoOrigen || '-',
                     datosReporte.departamentoDestino || '-',
                     item.observacion || '-',
                 ];
-                const rowHeight = drawTableRow(doc, currentY, rowData, columnWidths);
+
+                // 1. PRE-CALCULAR altura necesaria
+                const rowHeight = calcularAlturaFila(doc, rowData, columnWidths, 5);
+
+                // 2. VERIFICAR espacio disponible
+                // Si la posición actual + la altura de la fila supera el límite...
+                if (currentY + rowHeight > pageBottomLimit) {
+                    doc.addPage(); // Nueva página
+                    currentY = doc.page.margins.top; // Reset Y
+                    
+                    // Repintar cabecera en nueva página
+                    headerHeight = drawHeader(currentY);
+                    currentY += headerHeight;
+                    
+                    doc.font('Helvetica').fontSize(8); // Restaurar fuente normal
+                }
+
+                // 3. DIBUJAR con seguridad
+                drawTableRow(doc, currentY, rowData, columnWidths, rowHeight);
                 currentY += rowHeight;
             });
+
+            // --- Sección de Firmas (Bloque protegido) ---
             
-            doc.y = currentY; // Actualizar la posición Y del documento
-            doc.moveDown(5);
-            doc.moveDown(6) 
+            // Calculamos cuanto espacio necesitan las firmas (aprox 150-180 puntos)
+            const alturaNecesariaFirmas = 200; 
             
-            // --- Sección de Firmas (CORREGIDA) ---
+            // Si no hay espacio suficiente para TODAS las firmas, saltamos pagina
+            if (currentY + alturaNecesariaFirmas > pageBottomLimit) {
+                doc.addPage();
+                currentY = doc.page.margins.top + 20;
+            } else {
+                currentY += 40; // Espacio de separación con la tabla
+            }
+
+            doc.y = currentY; // Sincronizar el cursor interno de pdfkit
+
+            // Configuración de columnas para firmas
+            const leftX = doc.page.margins.left + 10;
+            const rightX = (doc.page.width / 2) + 10;
+            const signatureWidth = (doc.page.width / 2) - doc.page.margins.left - 20;
+
             doc.font('Helvetica').fontSize(10);
-            const signatureY = doc.y;
-            const leftColumnX = doc.page.margins.left + 20;
-            const rightColumnX = doc.page.width / 2 + 20;
-            const signatureWidth = (doc.page.width / 2) - doc.page.margins.left - 10;
             
-            // CORRECCIÓN 2: Firma Izquierda (Director de ORIGEN / Egresa)
-            doc.text('_________________________', leftColumnX, signatureY, { width: signatureWidth, align: 'center' });
-            doc.moveDown(0.5);
-            // Se asume que datosReporte tiene 'nombreDirectorOrigen' o similar. 
-            // Si no, ajusta el nombre de la propiedad según venga en 'datosReporte'.
-            doc.font('Helvetica-Bold').text(datosReporte.nombreDirectorAdmin || 'Director de Origen', leftColumnX, doc.y, { width: signatureWidth, align: 'center' });
-            doc.font('Helvetica').text(`Director(a) de ${datosReporte.departamentoOrigen}`, leftColumnX, doc.y, { width: signatureWidth, align: 'center' });
+            // Guardamos la Y inicial de las firmas para alinearlas
+            const firmaY = doc.y;
 
-            // CORRECCIÓN 2: Firma Derecha (Jefe de Compras - Fijo)
-            doc.y = signatureY; // Reset Y a la misma altura
-            doc.text('_________________________', rightColumnX, signatureY, { width: signatureWidth, align: 'center' });
-            doc.moveDown(0.5);
-            doc.font('Helvetica-Bold').text(datosReporte.nombreJefeCompras || 'Nombre Jefe Compras', rightColumnX, doc.y, { width: signatureWidth, align: 'center' });
-            doc.font('Helvetica').text('Jefe de Compras Bienes, e inventarios', rightColumnX, doc.y, { width: signatureWidth, align: 'center' });
-            
-            doc.moveDown(4);
+            // -- Firma Izquierda --
+            doc.text('_________________________', leftX, firmaY, { width: signatureWidth, align: 'center' });
+            doc.font('Helvetica-Bold').text(datosReporte.nombreDirectorAdmin || 'Director Origen', leftX, doc.y + 5, { width: signatureWidth, align: 'center' });
+            doc.font('Helvetica').text(`Director(a) de ${datosReporte.departamentoOrigen}`, leftX, doc.y, { width: signatureWidth, align: 'center' });
 
-            // CORRECCIÓN 2: Firma Centro (Director de DESTINO / Ingresa)
-            doc.font('Helvetica-Bold').fontSize(10)
-            doc.text(`Por ${datosReporte.departamentoDestino}`, doc.page.margins.left, doc.y, {
-                width: doc.page.width - doc.page.margins.left - doc.page.margins.right,
-                align: 'center'
-            })
-            doc.moveDown(4);
-            doc.font('Helvetica').fontSize(10)
-            doc.text('_________________________', doc.page.margins.left, doc.y, {
-                width: doc.page.width - doc.page.margins.left - doc.page.margins.right,
-                align: 'center'
-            })
-            doc.moveDown(0.1);
-            doc.font('Helvetica-Bold').fontSize(10)
-            doc.text(`${datosReporte.nombreJefeDestino}`, doc.page.margins.left, doc.y, {
-                width: doc.page.width - doc.page.margins.left - doc.page.margins.right,
-                align: 'center'
-            })
-            doc.font('Helvetica').fontSize(10)
-            doc.text(`Director(a) de ${datosReporte.departamentoDestino}`, doc.page.margins.left, doc.y, {
-                width: doc.page.width - doc.page.margins.left - doc.page.margins.right,
-                align: 'center'
-            })
+            // -- Firma Derecha --
+            // Reseteamos Y para que queden alineadas horizontalmente
+            doc.y = firmaY; 
+            doc.text('_________________________', rightX, firmaY, { width: signatureWidth, align: 'center' });
+            doc.font('Helvetica-Bold').text(datosReporte.nombreJefeCompras || 'Jefe Compras', rightX, doc.y + 5, { width: signatureWidth, align: 'center' });
+            doc.font('Helvetica').text('Jefe de Compras Bienes e Inventarios', rightX, doc.y, { width: signatureWidth, align: 'center' });
 
-            // Finalizar el archivo PDF
+            // -- Firma Central (Abajo) --
+            doc.moveDown(4); // Espacio vertical
+            const centerX = doc.page.margins.left;
+            const centerWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+
+            doc.font('Helvetica-Bold').text(`Por ${datosReporte.departamentoDestino}`, centerX, doc.y, { width: centerWidth, align: 'center' });
+            doc.moveDown(3);
+            doc.font('Helvetica').text('_________________________', centerX, doc.y, { width: centerWidth, align: 'center' });
+            doc.font('Helvetica-Bold').text(datosReporte.nombreJefeDestino || 'Director Destino', centerX, doc.y + 5, { width: centerWidth, align: 'center' });
+            doc.font('Helvetica').text(`Director(a) de ${datosReporte.departamentoDestino}`, centerX, doc.y, { width: centerWidth, align: 'center' });
+
             doc.end();
 
         } catch (error) {
