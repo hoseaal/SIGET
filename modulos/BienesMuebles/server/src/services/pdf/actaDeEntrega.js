@@ -67,7 +67,7 @@ const drawTableRow = (doc, y, rowData, columnWidths) => {
 export const generarActaDeEntrega = (datosReporte) => {
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument({
-            size: 'LEGAL',
+            size: 'A4',
             margins: { top: 40, bottom: 40, left: 50, right: 50 }
         });
 
