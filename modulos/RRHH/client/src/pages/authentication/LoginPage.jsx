@@ -69,7 +69,7 @@ export const LoginPage = () => {
         };
     return (
         <AuthWrapper>
-            <h4 className="mb-2">Bienvenido al modulo de Gestion de Bienes Muebles! 👋</h4>
+            <h4 className="mb-2">Bienvenido al modulo de Gestion de Recursos Humanos! 👋</h4>
             <p className="mb-4">Porfavor ingresa tus datos para acceder. </p>
 
             <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>

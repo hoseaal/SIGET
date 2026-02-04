@@ -466,3 +466,22 @@ ALTER TABLE `tesusu`
 --
 ALTER TABLE `tesusu`
   ADD CONSTRAINT `fk_tesusu_accesos` FOREIGN KEY (`usu_mod`) REFERENCES `tesacc` (`usu_mod`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+
+/* VOLCADO DE LA BASE DE DATOS */
+
+-- TABLA TESTIP
+
+INSERT INTO `testip` (`tip_nom`) VALUES
+('Visualizador'),
+('Temporal'),
+('Trabajador'),
+('Jefe de Area'),
+('Administrador');
+
+-- TABLA TESACC
+
+INSERT INTO `tesacc` (`acc_nom`) VALUES
+('Acceso Global'),
+('Módulo de Recursos Humanos'),
+('Módulo de Bienes');

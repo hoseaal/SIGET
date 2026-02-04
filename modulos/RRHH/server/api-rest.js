@@ -22,6 +22,7 @@ import antiguedadRegistroRouter from './src/routes/antiguedadRegistro.routes.js'
 import sueldoPensionadoRouter from './src/routes/sueldoPensionado.routes.js'
 import jubiladoRouter from './src/routes/jubilado.routes.js'
 import permisoRouter from './src/routes/permiso.routes.js'
+import condicionLaboralRouter from './src/routes/condicionLaboral.routes.js'
 
 import historialSalarioRouter from './src/routes/historialSalario.routes.js'
 
@@ -75,6 +76,7 @@ app.use('/api/primas-profesionalizacion', primaProfRouter)
 app.use('/api/niveles-salariales', nivelSalarialRouter)
 app.use('/api/niveles-salariales-antiguos', nivelAntiguoRouter)
 app.use('/api/antiguedad', antiguedadRouter)
+app.use('/api/condiciones-laborales', condicionLaboralRouter)
 
 
 app.use('/api/hijos', hijoRouter)

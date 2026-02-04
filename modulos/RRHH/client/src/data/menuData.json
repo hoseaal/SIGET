@@ -11,33 +11,23 @@
         ]
     },
     {
-        "header": "Gestion de Bienes",
+        "header": "Gestion de Funcionarios",
         "items": [
             {
-                "text": "Formularios de Bienes Muebles",
+                "text": "Personal",
                 "icon": "bx bx-cabinet",
                 "available": true,  
                 "link": "",
                 "submenu": [
                     {
-                        "text": "BM-1",
+                        "text": "Funcionarios Activos",
                         "available": true,
-                        "link": "/BM/BM-1"
+                        "link": "/Personal/FuncionariosActivos"
                     },
                     {
-                        "text": "BM-2",
+                        "text": "Registrar Nuevo Funcionario",
                         "available": true,
-                        "link": "/BM/BM-2"
-                    },
-                    {
-                        "text": "BM-3",
-                        "available": true,
-                        "link": "/BM/BM-3"
-                    },
-                    {
-                        "text": "BM-4",
-                        "available": true,
-                        "link": "/BM/BM-4"
+                        "link": "/Personal/RegistrarFuncionario"
                     }
                 ]
             },

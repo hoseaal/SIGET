@@ -16,10 +16,8 @@ export const menuPermissions = {
     "/Dashboard": [1, 2, 3, 4, 5],
 
     // Formularios BM
-    "/BM/BM-1": [1, 2, 3, 4, 5],
-    "/BM/BM-2": [2, 3, 4, 5],
-    "/BM/BM-3": [1, 2, 3, 4, 5],
-    "/BM/BM-4": [1, 2, 3, 4, 5],
+    "/Personal/FuncionariosActivos": [1, 2, 3, 4, 5],
+    "/Personal/RegistrarFuncionario": [2, 3, 4, 5],
 
     // Gestión de Movimientos
     "/Almacen": [1, 2, 3, 4, 5],

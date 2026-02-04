@@ -4,7 +4,9 @@ import {
   obtenerFuncionario,
   crearFuncionarioCompleto,
   actualizarFuncionarioCompleto,
-  eliminarFuncionario
+  eliminarFuncionario,
+  asignarEncargo,
+  finalizarEncargo
 } from '../controllers/funcionario.controller.js'
 
 const router = express.Router()

@@ -3,10 +3,8 @@ import ProtectedRoute from "./ProtectedRoutes";
 import { LoginPage } from "../pages/authentication/LoginPage";
 import { RegisterPage } from "../pages/authentication/RegisterPage";
 
-import { Bm2 } from "../pages/formularios/BM-2";
-import { Bm1 } from "../pages/formularios/BM-1";
-import { Bm3 } from "../pages/formularios/BM-3";
-import { Bm4 } from "../pages/formularios/BM-4";
+import { RegistrarFuncionario } from "../pages/formularios/RegistrarFuncionario.jsx";
+import { FuncionariosActivos } from "../pages/formularios/FuncionariosActivos.jsx";
 
 import { Reportes } from "../pages/formularios/reportes"
 
@@ -66,29 +64,18 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/BM/BM-2" element={
+            <Route path="/Personal/RegistrarFuncionario" element={
                 <ProtectedRoute>
-                    <Bm2 />
+                    <RegistrarFuncionario />
                 </ProtectedRoute>
             } />
 
-            <Route path="/BM/BM-1" element={
+            <Route path="/Personal/FuncionariosActivos" element={
                 <ProtectedRoute>
-                    <Bm1 />
+                    <FuncionariosActivos />
                 </ProtectedRoute>
             } />
 
-            <Route path="/BM/BM-3" element={
-                <ProtectedRoute>
-                    <Bm3 />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/BM/BM-4" element={
-                <ProtectedRoute>
-                    <Bm4 />
-                </ProtectedRoute>
-            } />
 
             <Route path="/Reportes" element={
                 <ProtectedRoute>
