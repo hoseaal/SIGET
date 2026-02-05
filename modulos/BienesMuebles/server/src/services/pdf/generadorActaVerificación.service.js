@@ -408,9 +408,9 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
 
       // 5. Sin etiqueta
       drawSection(
-        `BIENES QUE SE ENCUENTRAN SIN ETIQUETA EN ${departamentoNombreUpper}:`,
+        `REPORTE DE BIENES MUEBLES QUE NO SE ENCUENTRAN ETIQUETADOS:`,
         bienesSinEtiqueta,
-        b => `${b.bim_ide}: ${b.bim_des}`
+        b => `• ${b.bim_des}`
       )
 
       // 6. Faltantes

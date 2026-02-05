@@ -90,24 +90,28 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
 
     // 3. --- CONSOLIDAR LA LISTA DE BIENES Y ASIGNAR OBSERVACIONES ---
     const excelRows = []
-    // ELIMINADO: let counter = 1 (Ya no lo usamos aquí para evitar el desorden)
 
     // A) Procesar la lista principal
     bienesDelDepartamento.forEach(bien => {
+      
+      if (Number(bien.est_ide) === 1) {
+        return; 
+      }
+      // -----------------------------------------------------------
+
       let observacion = bien.bim_obs || '' 
       const direccion = toUpperCase(departamento_nombre) 
 
       if (salientesMap.has(bien.bim_ide)) {
         const prestamo = salientesMap.get(bien.bim_ide)
-        observacion = `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
+        observacion =  bien.bim_obs || `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
       }
       else if (almacenMap.has(bien.bim_ide)) {
         const itemAlmacen = almacenMap.get(bien.bim_ide)
-        observacion = `Ubicado en ${itemAlmacen.departamento_destino_nombre} para su resguardo`
+        observacion =  bien.bim_obs || `Ubicado en ${itemAlmacen.departamento_destino_nombre} para su resguardo`
       }
 
       excelRows.push({
-        // num: counter++, // <--- ELIMINADO AQUÍ. Esto causaba el error.
         bim_ide: bien.bim_ide,
         bim_des: bien.bim_des,
         direccion,
@@ -118,11 +122,10 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     // B) Añadir los bienes prestados EN ESTE departamento
     prestamosEntrantes.forEach(prestamoBien => {
       excelRows.push({
-        // num: counter++, // <--- ELIMINADO AQUÍ
         bim_ide: prestamoBien.bim_ide,
         bim_des: prestamoBien.bim_des,
         direccion: toUpperCase(prestamoBien.departamento_origen_nombre),
-        observacion: `Este bien pertenece a ${prestamoBien.departamento_origen_nombre} y se encuentra en calidad de préstamo en esta dirección.`
+        observacion: prestamoBien.bim_obs || `Este bien pertenece a ${prestamoBien.departamento_origen_nombre} y se encuentra en calidad de préstamo en esta dirección.`
       })
     })
 
@@ -133,11 +136,10 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
 
       bienesResguardados.forEach(prestamoBien => {
         excelRows.push({
-          // num: counter++, // <--- ELIMINADO AQUÍ
           bim_ide: prestamoBien.bim_ide,
           bim_des: prestamoBien.bim_des,
           direccion: prestamoBien.departamento_origen_nombre,
-          observacion: `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} se encuentra en ${prestamoBien.departamento_destino_nombre} para su resguardo`
+          observacion:  prestamoBien.bim_obs ||`Bien perteneciente a ${prestamoBien.departamento_origen_nombre} se encuentra en ${prestamoBien.departamento_destino_nombre} para su resguardo`
         })
       })
     }
@@ -203,7 +205,6 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     // --- ORDENAR Y POBLAR LAS FILAS ---
     
     // 1. Ordenamos el array completo por ID del bien (bim_ide)
-    // Usamos localeCompare con numeric: true para que ordene bien "2" antes de "10"
     excelRows.sort((a, b) => {
       return String(a.bim_ide).localeCompare(String(b.bim_ide), undefined, { numeric: true });
     });
@@ -214,10 +215,8 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     excelRows.forEach((rowData, index) => {
       const row = worksheet.getRow(startDataRow + index)
       
-      // AQUÍ ESTÁ LA SOLUCIÓN: Usamos (index + 1) como el número de lista.
-      // Como 'excelRows' ya está ordenado, el índice 0 será el bien más bajo y tendrá el Nº 1.
       row.values = [
-        index + 1, // <--- NÚMERO GENERADO AL FINAL
+        index + 1, // Número secuencial generado aquí
         rowData.bim_ide,
         rowData.bim_des,
         rowData.direccion,
