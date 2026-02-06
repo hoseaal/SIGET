@@ -52,8 +52,11 @@ class BienService {
         }
       })
 
+      
+    const bienesFiltrados = bienes.filter(bien => Number(bien.est_ide) !== 1);
+
       // Añadir datos
-      bienes.forEach(bien => {
+      bienesFiltrados.forEach(bien => {
         worksheet.addRow({
           bim_sede: bien.bim_sede,
           departamento: bien.departamento,
