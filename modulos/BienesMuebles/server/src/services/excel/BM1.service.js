@@ -84,8 +84,6 @@ class ExcelService {
     ]
 
     // Establecer las propiedades de las columnas (anchos y mapeo de keys)
-    // NOTA IMPORTANTE: Esto NO imprime los headers en la hoja directamente.
-    // Solo configura la estructura de las columnas para las filas de datos.
     worksheet.columns = columnDefinitions.map(col => ({
       key: col.key, // Solo la clave para mapear los datos
       width: col.width // El ancho
@@ -112,9 +110,12 @@ class ExcelService {
     // --- Datos de la Base de Datos (a partir de la fila 10) ---
     const bienes = await BienModel.getBM1ForExcel()
 
+    const bienesFiltrados = bienes.filter(bien => Number(bien.est_ide) !== 1);
+
     let totalValor = 0
 
-    bienes.forEach(bien => {
+    // Iteramos sobre la lista filtrada
+    bienesFiltrados.forEach(bien => {
       totalValor += Number(bien.bim_val) || 0
 
       worksheet.addRow({
@@ -163,7 +164,10 @@ class ExcelService {
 
     // Añadir la cantidad total de bienes en la columna 'Cantidad' (D)
     const totalCountCell = totalRow.getCell('D')
-    totalCountCell.value = bienes.length // Total de filas generadas
+    
+    // --- CORRECCIÓN: Usamos la longitud del array filtrado ---
+    totalCountCell.value = bienesFiltrados.length 
+    
     totalCountCell.font = { name: 'Arial', size: 12, bold: true }
     totalCountCell.alignment = { vertical: 'middle', horizontal: 'center' }
     totalCountCell.numFmt = '0'

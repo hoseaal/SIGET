@@ -73,7 +73,8 @@ export class PrestamoModel {
             'bim_ide', tdd.bim_ide,
             'bim_des', tm.bim_des,
             'dpr_est', tdd.dpr_est,
-            'con_ide', tm.con_ide
+            'con_ide', tm.con_ide,
+            'bim_obs', tm.bim_obs
         )), 
         ']') AS bienes_detalles
       FROM ttrpre tp
