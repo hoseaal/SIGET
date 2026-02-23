@@ -94,6 +94,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     // A) Procesar la lista principal
     bienesDelDepartamento.forEach(bien => {
       
+      //bienes sin etiqueta se omiten del acta de verificación
       if (Number(bien.est_ide) === 1) {
         return; 
       }

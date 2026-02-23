@@ -29,11 +29,17 @@ export const RegistrarFuncionario = () => {
         fun_est: 'Soltero', // Valor por defecto
         fun_san: '',
         fun_dir: '',
+        fun_tel: '',
         fun_cel: '',
         fun_ema1: '',
+        fun_ema2: '',
         fun_fing: new Date().toISOString().split('T')[0], // Fecha actual por defecto
         fun_emer1: '',
         fun_teme1: '',
+        fun_emer2: '',
+        fun_teme2: '',
+        fun_dep: '',
+        fun_cul: '',
         
         // Tablas Maestras Personales
         pro_ide: '',
@@ -44,7 +50,7 @@ export const RegistrarFuncionario = () => {
         ona_ide: '',
         niv_ide: '',
         col_ide: '',
-        uni_ide: '' // Al enviar Unidad, el backend calcula Dir y Div
+        dir_ide: '' // Al enviar Dirección, el backend calcula División
     });
 
     // Estados para los Selectores (Catalogos)
@@ -55,7 +61,7 @@ export const RegistrarFuncionario = () => {
         cargosONAPRE: [],
         niveles: [],
         condiciones: [],
-        unidades: []
+        direcciones: []
     });
 
     console.log("Catalogos:", catalogos);
@@ -65,13 +71,13 @@ export const RegistrarFuncionario = () => {
         const fetchCatalogos = async () => {
             try {
                 // Aquí asumimos que existen estos endpoints basados en tu estructura
-                const [proRes, estRes, cetRes, onaRes, colRes, uniRes] = await Promise.all([
+                const [proRes, estRes, cetRes, onaRes, colRes, dirRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/estatus'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/condiciones-laborales'), // tmacol
-                    fetch('/api/unidades') // tesuni
+                    fetch('/api/direcciones')
                 ]);
 
                 setCatalogos({
@@ -80,7 +86,7 @@ export const RegistrarFuncionario = () => {
                     cargosCET: await cetRes.json(),
                     cargosONAPRE: await onaRes.json(),
                     condiciones: await colRes.json(),
-                    unidades: await uniRes.json(),
+                    direcciones: await dirRes.json(),
                     niveles: [] // Se cargan dinámicamente según ONAPRE
                 });
 
@@ -130,7 +136,7 @@ export const RegistrarFuncionario = () => {
             fun_san: '', fun_dir: '', fun_cel: '', fun_ema1: '',
             fun_fing: new Date().toISOString().split('T')[0],
             fun_emer1: '', fun_teme1: '', pro_ide: '', est_ide: 1,
-            cet_ide: '', ona_ide: '', niv_ide: '', col_ide: '', uni_ide: ''
+            cet_ide: '', ona_ide: '', niv_ide: '', col_ide: '', dir_ide: ''
         });
         setErrorMessage('');
         setMensajeMostrado(false);
@@ -140,8 +146,8 @@ export const RegistrarFuncionario = () => {
         e.preventDefault();
 
         // Validaciones básicas antes de enviar
-        if (!formData.fun_ced || !formData.fun_nom || !formData.fun_ape || !formData.uni_ide) {
-            setErrorMessage('Por favor complete Cédula, Nombres, Apellidos y Unidad de Adscripción.');
+        if (!formData.fun_ced || !formData.fun_nom || !formData.fun_ape || !formData.dir_ide) {
+            setErrorMessage('Por favor complete Cédula, Nombres, Apellidos y Dirección de Adscripción.');
             setMensajeMostrado(true);
             setTimeout(() => setMensajeMostrado(false), 3000);
             return;
@@ -277,18 +283,57 @@ export const RegistrarFuncionario = () => {
                                         </Form.Group>
                                     </div>
                                 </div>
-
+                                <div className="mb-3">
+                                    <Form.Group>
+                                        <Form.Label>Lugar de Nacimiento</Form.Label>
+                                        <Form.Control as="textarea" rows={2} name="fun_lna" value={formData.fun_lna} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
                                 <div className="row mb-3">
-                                    <div className="col-md-6">
+                                    <div className="col-md-4">
                                         <Form.Group className="mb-3">
-                                            <Form.Label>Teléfono Celular</Form.Label>
-                                            <Form.Control type="text" name="fun_cel" value={formData.fun_cel} onChange={handleChange} />
+                                            <Form.Label>Tipo de Sangre</Form.Label>
+                                            <Form.Control type="text" name="fun_san" value={formData.fun_san} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
+                                    <div className="col-md-4">
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>Numero de Telefono Residencial</Form.Label>
+                                            <Form.Control type="text" name="fun_tel" placeholder="0276-0000000" value={formData.fun_tel} onChange={handleChange} />
+                                        </Form.Group>
+                                    </div>
+                                    <div className="col-md-4">
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>Numero de Celular</Form.Label>
+                                            <Form.Control type="text" name="fun_cel" placeholder="0426-0000000" value={formData.fun_cel} onChange={handleChange} />
+                                        </Form.Group>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Correo Electrónico</Form.Label>
                                             <Form.Control type="email" name="fun_ema1" value={formData.fun_ema1} onChange={handleChange} />
+                                        </Form.Group>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>Correo Electrónico Secundario</Form.Label>
+                                            <Form.Control type="email" name="fun_ema2" value={formData.fun_ema2} onChange={handleChange} />
+                                        </Form.Group>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
+                                    <div className="col-md-6">
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>Actividades Culturales</Form.Label>
+                                            <Form.Control type="text" name="fun_cul" value={formData.fun_cul} onChange={handleChange} />
+                                        </Form.Group>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>Deportes que practica</Form.Label>
+                                            <Form.Control type="text" name="fun_dep" value={formData.fun_dep} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                 </div>
@@ -297,6 +342,36 @@ export const RegistrarFuncionario = () => {
                                         <Form.Label>Dirección de Habitación</Form.Label>
                                         <Form.Control as="textarea" rows={2} name="fun_dir" value={formData.fun_dir} onChange={handleChange} />
                                     </Form.Group>
+                                </div>
+
+                                <div className="row mb-3">
+                                    <h6 className="mt-2 mb-3 text-primary">En caso de emergencia avisar a:</h6>
+                                    <div className="col-md-6">
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>1. Nombres Y Apellidos</Form.Label>
+                                            <Form.Control type="text" name="fun_emer1" value={formData.fun_emer1} onChange={handleChange} />
+                                        </Form.Group>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>1. Teléfono de Emergencia</Form.Label>
+                                            <Form.Control type="text" name="fun_teme1" value={formData.fun_teme1} onChange={handleChange} />
+                                        </Form.Group>
+                                    </div>
+                                </div>
+                                <div className="row mb-3">
+                                    <div className="col-md-6">
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>2. Nombres Y Apellidos</Form.Label>
+                                            <Form.Control type="text" name="fun_emer2" value={formData.fun_emer2} onChange={handleChange} />
+                                        </Form.Group>
+                                    </div>
+                                    <div className="col-md-6">
+                                        <Form.Group className="mb-3">
+                                            <Form.Label>2. Teléfono de Emergencia</Form.Label>
+                                            <Form.Control type="text" name="fun_teme2" value={formData.fun_teme2} onChange={handleChange} />
+                                        </Form.Group>
+                                    </div>
                                 </div>
 
                                 <hr className="my-4" />
@@ -390,15 +465,15 @@ export const RegistrarFuncionario = () => {
 
                                 <div className="mb-3">
                                     <Form.Group>
-                                        <Form.Label>Unidad de Adscripción *</Form.Label>
-                                        <Form.Select name="uni_ide" value={formData.uni_ide} onChange={handleChange} required>
-                                            <option value="">Seleccione la Unidad</option>
-                                            {catalogos.unidades.map(u => (
-                                                <option key={u.uni_ide} value={u.uni_ide}>{u.uni_nom}</option>
+                                        <Form.Label>Dirección de Adscripción *</Form.Label>
+                                        <Form.Select name="dir_ide" value={formData.dir_ide} onChange={handleChange} required>
+                                            <option value="">Seleccione la Dirección</option>
+                                            {catalogos.direcciones.map(d => (
+                                                <option key={d.dir_ide} value={d.dir_ide}>{d.dir_nom}</option>
                                             ))}
                                         </Form.Select>
                                         <Form.Text className="text-muted">
-                                            Al seleccionar la unidad, el sistema asignará automáticamente la División y Dirección correspondientes.
+                                            Al seleccionar la dirección, el sistema asignará automáticamente la División y Dirección correspondientes.
                                         </Form.Text>
                                     </Form.Group>
                                 </div>
