@@ -133,9 +133,9 @@ export const RegistrarFuncionario = () => {
         setFormData({
             fun_ced: '', fun_nom: '', fun_ape: '', fun_rif: '',
             fun_fna: '', fun_lna: '', fun_gen: '', fun_est: 'Soltero',
-            fun_san: '', fun_dir: '', fun_cel: '', fun_ema1: '',
+            fun_san: '', fun_dir: '', fun_cel: '', fun_ema1: '', fun_ema2: '',
             fun_fing: new Date().toISOString().split('T')[0],
-            fun_emer1: '', fun_teme1: '', pro_ide: '', est_ide: 1,
+            fun_emer1: '', fun_teme1: '', fun_emer2: '', fun_teme2: '', pro_ide: '', est_ide: 1,
             cet_ide: '', ona_ide: '', niv_ide: '', col_ide: '', dir_ide: ''
         });
         setErrorMessage('');
@@ -174,11 +174,11 @@ export const RegistrarFuncionario = () => {
             // Éxito
             setFormEnviado(true);
             setMensajeMostrado(true);
-            limpiarFormulario();
-            
+
             setTimeout(() => {
                 setMensajeMostrado(false);
                 setFormEnviado(false);
+                limpiarFormulario();
             }, 3000);
 
         } catch (error) {
