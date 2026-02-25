@@ -50,7 +50,9 @@ export const RegistrarFuncionario = () => {
         ona_ide: '',
         niv_ide: '',
         col_ide: '',
-        dir_ide: '' // Al enviar Dirección, el backend calcula División
+        dir_ide: '', // Nivel 1
+        div_ide: '', // Nivel 2
+        uni_ide: ''  // Nivel 3
     });
 
     // Estados para los Selectores (Catalogos)
@@ -61,10 +63,10 @@ export const RegistrarFuncionario = () => {
         cargosONAPRE: [],
         niveles: [],
         condiciones: [],
-        direcciones: []
+        direcciones: [],
+        divisiones: [], 
+        unidades: []    
     });
-
-    console.log("Catalogos:", catalogos);
 
     // Cargar catalogos al montar el componente
     useEffect(() => {
@@ -99,6 +101,43 @@ export const RegistrarFuncionario = () => {
         fetchCatalogos();
     }, []);
 
+    useEffect(() => {
+        const fetchDivisiones = async () => {
+            if (!formData.dir_ide) {
+                setCatalogos(prev => ({ ...prev, divisiones: [], unidades: [] }));
+                return;
+            }
+            try {
+                // Endpoint hipotético que trae divisiones por ID de dirección
+                const res = await fetch(`/api/divisiones?dir_ide=${formData.dir_ide}`);
+                const data = await res.json();
+                setCatalogos(prev => ({ ...prev, divisiones: data, unidades: [] })); // Limpiamos unidades por si cambia de dirección
+            } catch (error) {
+                console.error("Error cargando divisiones:", error);
+            }
+        };
+        fetchDivisiones();
+    }, [formData.dir_ide]);
+
+    // Efecto Cascada 2: Cargar Unidades cuando cambia la División (div_ide)
+    useEffect(() => {
+        const fetchUnidades = async () => {
+            if (!formData.div_ide) {
+                setCatalogos(prev => ({ ...prev, unidades: [] }));
+                return;
+            }
+            try {
+                // Endpoint hipotético que trae unidades por ID de división
+                const res = await fetch(`/api/unidades?div_ide=${formData.div_ide}`);
+                const data = await res.json();
+                setCatalogos(prev => ({ ...prev, unidades: data }));
+            } catch (error) {
+                console.error("Error cargando unidades:", error);
+            }
+        };
+        fetchUnidades();
+    }, [formData.div_ide]);
+
     // Efecto: Cargar Niveles cuando cambia el Cargo ONAPRE (ona_ide)
     useEffect(() => {
         const fetchNiveles = async () => {
@@ -123,10 +162,19 @@ export const RegistrarFuncionario = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+            
+            // Lógica de limpieza en cascada
+            if (name === 'dir_ide') {
+                newData.div_ide = '';
+                newData.uni_ide = ''; 
+            } else if (name === 'div_ide') {
+                newData.uni_ide = ''; 
+            }
+            
+            return newData;
+        });
     };
 
     const limpiarFormulario = () => {
@@ -463,19 +511,61 @@ export const RegistrarFuncionario = () => {
                                     </div>
                                 </div>
 
-                                <div className="mb-3">
-                                    <Form.Group>
-                                        <Form.Label>Dirección de Adscripción *</Form.Label>
-                                        <Form.Select name="dir_ide" value={formData.dir_ide} onChange={handleChange} required>
-                                            <option value="">Seleccione la Dirección</option>
-                                            {catalogos.direcciones.map(d => (
-                                                <option key={d.dir_ide} value={d.dir_ide}>{d.dir_nom}</option>
-                                            ))}
-                                        </Form.Select>
+                                {/* SECCIÓN: UBICACIÓN ORGANIZACIONAL */}
+                                <h6 className="mt-4 mb-3 text-primary">Ubicación Organizacional</h6>
+                                <div className="row mb-4">
+                                    <div className="col-md-4">
+                                        <Form.Group>
+                                            <Form.Label>Dirección *</Form.Label>
+                                            <Form.Select name="dir_ide" value={formData.dir_ide} onChange={handleChange} required>
+                                                <option value="">Seleccione la Dirección</option>
+                                                {catalogos.direcciones.map(d => (
+                                                    <option key={d.dir_ide} value={d.dir_ide}>{d.dir_nom}</option>
+                                                ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </div>
+                                    
+                                    <div className="col-md-4">
+                                        <Form.Group>
+                                            <Form.Label>División (Opcional)</Form.Label>
+                                            <Form.Select 
+                                                name="div_ide" 
+                                                value={formData.div_ide} 
+                                                onChange={handleChange} 
+                                                disabled={!formData.dir_ide || catalogos.divisiones?.length === 0}
+                                            >
+                                                <option value="">-- Directo a la Dirección --</option>
+                                                {catalogos.divisiones?.map(d => (
+                                                    <option key={d.div_ide} value={d.div_ide}>{d.div_nom}</option>
+                                                ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </div>
+
+                                    <div className="col-md-4">
+                                        <Form.Group>
+                                            <Form.Label>Unidad (Opcional)</Form.Label>
+                                            <Form.Select 
+                                                name="uni_ide" 
+                                                value={formData.uni_ide} 
+                                                onChange={handleChange} 
+                                                disabled={!formData.div_ide || catalogos.unidades?.length === 0}
+                                            >
+                                                <option value="">-- Directo a la División --</option>
+                                                {catalogos.unidades?.map(u => (
+                                                    <option key={u.uni_ide} value={u.uni_ide}>{u.uni_nom}</option>
+                                                ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </div>
+                                    
+                                    <div className="col-12 mt-2">
                                         <Form.Text className="text-muted">
-                                            Al seleccionar la dirección, el sistema asignará automáticamente la División y Dirección correspondientes.
+                                            <i className="bx bx-info-circle me-1"></i>
+                                            Seleccione el nivel más profundo al que pertenece el funcionario. Si no pertenece a ninguna Unidad o División específica, deje la opción en "-- Directo a la... --".
                                         </Form.Text>
-                                    </Form.Group>
+                                    </div>
                                 </div>
 
                                 {/* BOTONES DE ACCIÓN */}

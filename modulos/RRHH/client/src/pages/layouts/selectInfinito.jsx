@@ -116,56 +116,13 @@ const InfiniteSelect = ({ options, value, onChange, direction = 'right', onToggl
   );
 };
 
-// Componente para el filtro de tipo
-const EstadoDeUsoSelect = ({ tipoBien, value, onChange }) => {
-  // Preparar opciones
-  const options = [
-    { value: null, label: 'Condicion fisica' },
-    ...tipoBien.map(item => ({
-      value: item.con_ide,
-      label: item.con_con
-    }))
-  ];
-
-  return (
-    <InfiniteSelect
-      options={options}
-      value={value}
-      onChange={onChange}
-      placeholder="Condición física"
-    />
-  );
-};
-
-const EstadoSelect = ({ tipoBien, value, onChange, onToggle }) => {
-  // Preparar opciones
-  const options = [
-    { value: null, label: 'Estado' },
-    ...tipoBien.map(item => ({
-      value: item.est_ide,
-      label: item.est_est
-    }))
-  ];
-
-  return (
-    <InfiniteSelect
-      options={options}
-      value={value}
-      onChange={onChange}
-      placeholder="Estados"
-      direction= "left"
-      onToggle={onToggle}
-    />
-  );
-};
-
 const DepartamentoSelect = ({ tipoBien, value, onChange, onToggle }) => {
   // Preparar opciones
   const options = [
-    { value: null, label: 'Departamento' },
+    { value: null, label: 'Direccion' },
     ...tipoBien.map(item => ({
-      value: item.dep_ide,
-      label: item.dep_nom
+      value: item.dir_ide,
+      label: item.dir_nom
     }))
   ];
 
@@ -174,11 +131,11 @@ const DepartamentoSelect = ({ tipoBien, value, onChange, onToggle }) => {
       options={options}
       value={value}
       onChange={onChange}
-      placeholder="Departamentos"
+      placeholder="Direcciones"
       direction= "left"
       onToggle={onToggle}
     />
   );
 };
 
-export {EstadoSelect, EstadoDeUsoSelect, DepartamentoSelect};
+export {DepartamentoSelect};
