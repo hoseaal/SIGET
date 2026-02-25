@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown } from 'react-bootstrap';
-// import { hasPermission, ACTIONS } from '../../data/dataPermissions'; // Descomenta si usas tu sistema de permisos
-
+ import { hasPermission, ACTIONS } from '../../data/dataPermissions';
+import { DepartamentoSelect} from '../layouts/selectInfinito';
 export const FuncionariosActivos = () => {
     const [data, setData] = useState([]);
     const [meta, setMeta] = useState({});
@@ -12,8 +12,15 @@ export const FuncionariosActivos = () => {
     const [page, setPage] = useState(1);
     const limit = 20;
 
+    const [filtros, setFiltros] = useState({
+        departamento: null
+    });
+
     // Estado de Autenticación (Mantenido de tu diseño original)
     const [userType, setUserType] = useState(null);
+
+    //Estados para filtros
+    const [direccion, setDireccion] = useState([]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -43,6 +50,10 @@ export const FuncionariosActivos = () => {
                 
                 if (searchQuery) {
                     url += `&search=${encodeURIComponent(searchQuery)}`;
+                }else{
+                    if (filtros.departamento) {
+                        url += `&dep=${filtros.departamento}`;
+                    }
                 }
                 
                 const response = await fetch(url);
@@ -64,7 +75,16 @@ export const FuncionariosActivos = () => {
         };
         
         loadData();
-    }, [page, searchQuery]);
+    }, [page, searchQuery, filtros.departamento]);
+
+    useEffect(() => {
+            const fetchAllData = async () => {
+                const DepRes = await fetch('/api/direcciones');
+                const DepData = await DepRes.json();
+                setDireccion(DepData || []);
+            };
+            fetchAllData();
+        }, []);
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
@@ -109,6 +129,12 @@ export const FuncionariosActivos = () => {
                                 Limpiar
                             </button>
                         )}
+
+                            <DepartamentoSelect
+                                tipoBien={direccion}
+                                value={filtros.departamento}
+                                onChange={(depId) => setFiltros(prev => ({ ...prev, departamento: depId }))}
+                            />
                     </form>
 
                     {/* TABLA DE FUNCIONARIOS */}

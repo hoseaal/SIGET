@@ -15,10 +15,16 @@ export class FuncionarioModel {
       params.push(like, like, like)
     }
 
-    // Filtros específicos (deben mapearse con alias 't.' o 'c.')
+    // Filtros específicos de la tabla personal
     if (filters.pro_ide) { where.push('t.pro_ide = ?'); params.push(filters.pro_ide) }
     if (filters.est_ide) { where.push('t.est_ide = ?'); params.push(filters.est_ide) }
     if (filters.fun_gen) { where.push('t.fun_gen = ?'); params.push(filters.fun_gen) }
+    if (filters.dep) {
+      where.push('EXISTS (SELECT 1 FROM tesfun contrato WHERE contrato.fun_ide = t.fun_ide AND contrato.dir_ide = ?)')
+      params.push(filters.dep)
+    }
+    //Esto porque el departamento no está en la tabla personal, sino en tesfun (contrato), entonces hacemos un subquery para filtrar por ese campo específico de contrato.
+    //De lo contrario si hubiéramos puesto un simple 't.dir_ide = ?' no funcionaría porque no existe ese campo en tmafun, sino en tesfun, entonces con el EXISTS hacemos esa validación de que exista un contrato con ese departamento para ese funcionario.
 
     // Rango de edad (calculado en SQL)
     if (filters.edad_min) {
