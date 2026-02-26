@@ -74,24 +74,19 @@
                 "link": "",
                 "submenu": [
                     {
-                        "text": "Categorías",
+                        "text": "Estructura Organizacional",
                         "available": true,
-                        "link": "/Configuracion/Categorias"
+                        "link": "/Configuracion/EstructuraOrganizacional"
                     },
                     {
-                        "text": "Modelos y Marcas",
+                        "text": "Tablas de Salarios",
                         "available": true,
-                        "link": "/Configuracion/ModelosyMarcas"
+                        "link": "/Configuracion/TablaSalarios"
                     },
                     {
-                        "text": "Conceptos de Movimiento",
+                        "text": "Clasificación y Cargos",
                         "available": true,
-                        "link": "/Configuracion/ConceptoMovimiento"
-                    },
-                    {
-                        "text": "Condicines Fisicas",
-                        "available": true,
-                        "link": " "
+                        "link": "/Configuracion/Cargos"
                     }
                 ]
             },

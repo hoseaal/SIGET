@@ -12,13 +12,9 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
     const [foreignTable, setForeignTable] = useState([]);
 
     const endpointMap = {
-        tmacat: '/api/categorias',
-        tessca: '/api/subcategorias',
-        tescae: '/api/categorias-especificas',
-        tmamar: '/api/marcas',
-        tesmod: '/api/modelos',
-        tmab_m: '/api/bienes',
-        tmacom: '/api/conceptos-movimiento',
+        tmadir: '/api/direcciones',
+        tesdiv: '/api/divisiones',
+        tesuni: '/api/unidades',
     };
 
     const handleChange = (e) => {
@@ -30,7 +26,7 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
     };
 
     useEffect(() => {
-        if (foreign === 'tmamar' && show ) {
+        if (foreign === 'tmamar' && show) {
             const fetchForeign = async () => {
                 try {
                     const res = await fetch(`/api/marcas/alfabeticamente`);
@@ -81,6 +77,8 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
                 setTimeout(() => {
                     handleClose();
                     setMensajeMostrado(false);
+                    // Limpiar el formulario tras guardar con éxito
+                    setFormData({}); 
                     if (onSuccess) onSuccess();
                 }, 1000);
             } else {
@@ -89,10 +87,10 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
         } catch (error) {
             setFormEnviado(false);
             setMensajeMostrado(true);
-             const errorMsg = error.response?.data?.error || error.message;
+            const errorMsg = error.response?.data?.error || error.message;
 
             if (errorMsg.includes("Duplicate entry")) {
-                setErrorMessage("Esta Codigo ya Existe");
+                setErrorMessage("Este registro ya existe");
             } else {
                 setErrorMessage(errorMsg);
             }
@@ -107,75 +105,82 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
-                <Modal.Title>Insertar</Modal.Title>
+                <Modal.Title>Insertar Nuevo Registro</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-            <Form onSubmit={handleSubmit}>
+                <Form id="insertForm" onSubmit={handleSubmit}>
                     {columns && columns.map((column, index) => {
                         const isPrimaryKey = Boolean(column.isPrimaryKey === true || column.isPrimaryKey === "true" || column.isPrimaryKey === 1 || column.isPrimaryKey === "1");
 
-                        // Detectar si es clave foránea
-                        const isForeignKey = column.originalName.endsWith('ide') &&
-                                            !isPrimaryKey && // Esto evita que se confunda con PK
-                                            foreignTable.length > 0;
+                        // 1. SI ES PRIMARY KEY, LA OMITIMOS (Retornamos null)
+                        if (isPrimaryKey) {
+                            return null;
+                        }
 
-                        // SELECT para FK
+                        // 2. Detectar si es clave foránea
+                        const isForeignKey = column.originalName.endsWith('ide') && foreignTable.length > 0;
+
+                        // 3. RENDERIZAR SELECT PARA CLAVE FORÁNEA
                         if (isForeignKey) {
                             const firstItem = foreignTable[0];
                             const ideField = Object.keys(firstItem).find(key => key.endsWith('_ide'));
                             const displayField = Object.keys(firstItem).find(key => key !== ideField);
 
                             return (
-                            <Form.Group key={index} className="mb-3">
-                                <Form.Label>{column.displayName}</Form.Label>
-                                <Form.Select
-                                name={column.originalName}
-                                value={formData[column.originalName] || ''}
-                                onChange={handleChange}
-                                >
-                                <option value="">Seleccione una opción</option>
-                                {foreignTable.map((item) => (
-                                    <option
-                                    key={item[ideField]}
-                                    value={item[ideField]}
+                                <Form.Group key={index} className="mb-3">
+                                    <Form.Label>{column.displayName}</Form.Label>
+                                    <Form.Select
+                                        name={column.originalName}
+                                        value={formData[column.originalName] || ''}
+                                        onChange={handleChange}
+                                        required
                                     >
-                                    {item[displayField]}
-                                    </option>
-                                ))}
-                                </Form.Select>
-                            </Form.Group>
+                                        <option value="">Seleccione una opción</option>
+                                        {foreignTable.map((item) => (
+                                            <option
+                                                key={item[ideField]}
+                                                value={item[ideField]}
+                                            >
+                                                {item[displayField]}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                </Form.Group>
                             );
                         }
 
-                        // INPUT para PK o campos normales
+                        // 4. RENDERIZAR INPUT PARA CAMPOS NORMALES
                         return (
                             <Form.Group key={index} className="mb-3">
-                            <Form.Label>{column.displayName}</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name={column.originalName}
-                                value={formData[column.originalName] || ''}
-                                onChange={handleChange}
-                                placeholder={`Ingrese ${column.displayName}`}
-                                required={isPrimaryKey}
-                            />
+                                <Form.Label>{column.displayName}</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name={column.originalName}
+                                    value={formData[column.originalName] || ''}
+                                    onChange={handleChange}
+                                    placeholder={`Ingrese ${column.displayName}`}
+                                    required // Hacemos requerido el campo por defecto
+                                />
                             </Form.Group>
                         );
-                        })}
+                    })}
                 </Form>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>
                     Cerrar
                 </Button>
-                <Button variant="primary" onClick={handleSubmit}>
+                {/* Cambiamos onClick al botón por type="submit" referenciando al form para que valide los "required" */}
+                <Button variant="primary" type="submit" form="insertForm">
                     Guardar Cambios
                 </Button>
             </Modal.Footer>
             {mensajeMostrado && (
-                <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
-                    {formEnviado ? 'Insertado con éxito' : `${errorMessage}`}
-                </Alert>
+                <div className="p-3">
+                    <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
+                        {formEnviado ? 'Insertado con éxito' : `${errorMessage}`}
+                    </Alert>
+                </div>
             )}
         </Modal>
     );

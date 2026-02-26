@@ -2,6 +2,7 @@ import express from 'express'
 import { connectDB } from './src/utils/database.js'
 import cookieParser from 'cookie-parser'
 import authRouter from './src/auth/auth.routes.js'
+import metaRouter from './src/routes/meta.routes.js'
 import userRoutes from './src/routes/user.routes.js'
 import direccionRouter from './src/routes/direccion.routes.js'
 import divisionRouter from './src/routes/division.routes.js'
@@ -55,6 +56,7 @@ app.use(cors({
 }))
 
 app.use('/api/auth', authRouter)
+app.use('/api/meta', metaRouter)
 
 app.use('/api/user', userRoutes)
 
