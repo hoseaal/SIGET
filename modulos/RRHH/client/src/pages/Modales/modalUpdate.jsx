@@ -50,14 +50,9 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
             ];
 
     const endpointMap = {
-        tmacat: '/api/categorias',
-        tessca: '/api/subcategorias',
-        tescae: '/api/categorias-especificas',
-        tmamar: '/api/marcas',
-        tesmod: '/api/modelos',
-        tmab_m: '/api/bienes',
-        tesusu: '/api/user',
-        tmacom: '/api/conceptos-movimiento',
+       tmadir: '/api/direcciones',
+        tesdiv: '/api/divisiones',
+        tesuni: '/api/unidades',
     };
 
     if (tableName === 'tesusu' ) {

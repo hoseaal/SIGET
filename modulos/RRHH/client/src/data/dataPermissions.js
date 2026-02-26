@@ -27,9 +27,9 @@ export const menuPermissions = {
     "/Reportes": [2, 3, 4, 5],
 
     // Configuración General
-    "/Configuracion/Categorias": [3, 4, 5],
-    "/Configuracion/ModelosyMarcas": [3, 4, 5],
-    "/Configuracion/ConceptoMovimiento": [3, 4, 5],
+    "/Configuracion/EstructuraOrganizacional": [3, 4, 5],
+    "/Configuracion/TablaSalarios": [3, 4, 5],
+    "/Configuracion/Cargos": [3, 4, 5],
 
     // Gestión de Usuarios
     "/Configuracion/NuevoUsuario": [5],

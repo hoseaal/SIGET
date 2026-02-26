@@ -11,9 +11,9 @@ import { Reportes } from "../pages/formularios/reportes"
 import { Prestamos } from "../pages/prestamos/prestamos";
 import { Almacen } from "../pages/prestamos/almacen.jsx"
 
-import { Categorias } from "../pages/configuracion/categorias";
-import { ModelosyMarcas } from "../pages/configuracion/modelosymarcas"
-import { ConceptoMovimiento } from "../pages/configuracion/conceptoMovimiento.jsx";
+import { ClasificacionyCargos } from "../pages/configuracion/ClasificacionyCargos";
+import { TablaSalarios } from "../pages/configuracion/tablaSalarios"
+import { EstructuraOrganizacional } from "../pages/configuracion/EstructuraOrganizacional.jsx";
 import { Bitacora } from "../pages/configuracion/bitacora.jsx";
 
 import { DashboardPage } from "../pages/DashboardPage";
@@ -34,21 +34,21 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/Configuracion/Categorias" element={
+            <Route path="/Configuracion/Cargos" element={
                 <ProtectedRoute>
-                    <Categorias/>
+                    <ClasificacionyCargos/>
                 </ProtectedRoute>
             } />
 
-            <Route path="/Configuracion/ModelosyMarcas" element={
+            <Route path="/Configuracion/TablaSalarios" element={
                 <ProtectedRoute>
-                    <ModelosyMarcas/>
+                    <TablaSalarios/>
                 </ProtectedRoute>
             } />
 
-            <Route path="/Configuracion/ConceptoMovimiento" element={
+            <Route path="/Configuracion/EstructuraOrganizacional" element={
                 <ProtectedRoute>
-                    <ConceptoMovimiento/>
+                    <EstructuraOrganizacional/>
                 </ProtectedRoute>
             } />
 

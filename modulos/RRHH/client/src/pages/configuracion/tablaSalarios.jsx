@@ -6,7 +6,7 @@ import ModalUpdate from '../Modales/modalUpdate';
 import ModalDelete from '../Modales/modalDelete';
 
 
-export const ModelosyMarcas = () => {
+export const TablaSalarios = () => {
     // Estado para Marcas
     const [columns, setColumns] = useState([]);
     const [idColumn, setIdColumn] = useState(null);
