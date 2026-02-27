@@ -11,84 +11,52 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
     const [errorMessage, setErrorMessage] = useState(''); 
     const [foreignTable, setForeignTable] = useState([]);
 
-    const tipo = [
-                {
-                    "usu_tip": 1,
-                    "tipo": "Visualizador"
-                },
-                {
-                    "usu_tip": 2,
-                    "tipo": "Temporal"
-                },
-                {
-                    "usu_tip": 3,
-                    "tipo": "Trabajador"
-                },
-                {
-                    "usu_tip": 4,
-                    "tipo": "Jefe de area"
-                },
-                {
-                    "usu_tip": 5,
-                    "tipo": "Administrador"
-                }
-            ];
-
-            const modulos = [
-                {
-                    "usu_mod": 1,
-                    "mod": "Acceso Global"
-                },
-                {
-                    "usu_mod": 2,
-                    "mod": "Modulo de Recursos Humanos"
-                },
-                {
-                    "usu_mod": 3,
-                    "mod": "Modulo de Bienes Muebles"
-                }
-            ];
-
+    // MAPA UNIVERSAL DE ENDPOINTS (Sistema RRHH)
     const endpointMap = {
-       tmadir: '/api/direcciones',
+        // Estructura Organizacional
+        tmadir: '/api/direcciones',
         tesdiv: '/api/divisiones',
         tesuni: '/api/unidades',
+        
+        // Clasificación y Cargos
+        tmaona: '/api/cargos-onapre',
+        tmacet: '/api/cargos-cet',
+        tmacol: '/api/condiciones-laborales',
+        tmapro: '/api/profesiones',
+        
+        // Tablas Salariales y Deducciones
+        tesniv: '/api/niveles-salariales',
+        tmapri: '/api/primas',
+        tmaprf: '/api/primas-profesionalizacion',
+        tmaant: '/api/antiguedad',
+        tmade: '/api/deducciones'
     };
 
-    if (tableName === 'tesusu' ) {
-        columns = columns.filter(col => col.originalName !== 'usu_tip' && col.originalName !== 'usu_mod');
-    }
-
+    // Al abrir el modal, cargamos los datos de la fila a editar
     useEffect(() => {
         if (show && rowData) {
             setFormData(rowData);
         }
     }, [show, rowData]);
 
+    // Efecto para buscar los datos de la llave foránea (si existe)
     useEffect(() => {
-        if (foreign === 'tmamar' && show ) {
+        if (show && foreign) {
             const fetchForeignData = async () => {
-                try {
-                    const response = await fetch(`/api/marcas/alfabeticamente`);
-                    if (!response.ok) throw new Error('Error al obtener datos');
-                    const data = await response.json();
-                    setForeignTable(data);
-                } catch (error) {
-                    console.error(`Error al obtener datos de ${foreign}:`, error);
-                    setErrorMessage(`Error al cargar datos de ${foreign}`);
+                const endpoint = endpointMap[foreign];
+                if (!endpoint) {
+                    console.warn(`No se encontró endpoint configurado para la tabla foránea: ${foreign}`);
+                    return;
                 }
-            };
-            fetchForeignData();
-        } else if (show && foreign) {
-            const fetchForeignData = async () => {
+
                 try {
-                    const response = await fetch(`${endpointMap[foreign]}`);
-                    if (!response.ok) throw new Error('Error al obtener datos');
+                    const response = await fetch(endpoint);
+                    if (!response.ok) throw new Error('Error al obtener datos foráneos');
                     const data = await response.json();
                     setForeignTable(data);
                 } catch (error) {
                     console.error(`Error al obtener datos de ${foreign}:`, error);
-                    setErrorMessage(`Error al cargar datos de ${foreign}`);
+                    setErrorMessage(`Error al cargar lista desplegable de ${foreign}`);
                 }
             };
             fetchForeignData();
@@ -110,13 +78,20 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
 
         const rowId = rowData[idColumn];
         if (!rowId) {
-            setErrorMessage('Error: No se encontró el ID del registro');
+            setErrorMessage('Error: No se encontró el ID del registro a actualizar');
+            setMensajeMostrado(true);
+            return;
+        }
+
+        const endpoint = endpointMap[tableName];
+        if (!endpoint) {
+            setErrorMessage(`Falta configurar endpointMap para la tabla ${tableName}`);
             setMensajeMostrado(true);
             return;
         }
 
         try {
-            const response = await fetch(`${endpointMap[tableName]}/${rowId}`, {
+            const response = await fetch(`${endpoint}/${rowId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -126,7 +101,7 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
 
             if (!response.ok) {
                 const err = await response.json();
-                throw new Error(err.error || 'Error desconocido');
+                throw new Error(err.error || 'Error al actualizar el registro');
             }
 
             setFormEnviado(true);
@@ -140,7 +115,13 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
         } catch (error) {
             setFormEnviado(false);
             setMensajeMostrado(true);
-            setErrorMessage(error.message || 'Error desconocido');
+            
+            const errorMsg = error.message;
+            if (errorMsg.includes("Duplicate entry")) {
+                setErrorMessage("Este registro ya existe (Dato duplicado).");
+            } else {
+                setErrorMessage(errorMsg);
+            }
 
             setTimeout(() => {
                 setMensajeMostrado(false);
@@ -148,26 +129,44 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
         }
     };
 
+    // Función para bloquear la edición de la llave primaria
     const isFieldDisabled = (column) => {
-        return column.isPrimaryKey; // Solo la PK se desactiva
+        return Boolean(column.isPrimaryKey === true || column.isPrimaryKey === "true" || column.isPrimaryKey === 1 || column.isPrimaryKey === "1");
     };
 
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
-                <Modal.Title>Actualizar registro</Modal.Title>
+                <Modal.Title>Actualizar Registro</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Form onSubmit={handleSubmit}>
+                <Form id="updateForm" onSubmit={handleSubmit}>
                     {columns && columns.map((column, index) => {
-                        const isForeignKey = column.originalName.slice(-3) === 'ide' &&
-                                             tableName.slice(0, 3) === 'tes' &&
-                                             !column.isPrimaryKey;
+                        
+                        // 1. SI ES PRIMARY KEY, la mostramos deshabilitada para referencia, pero no la enviamos vacía
+                        if (isFieldDisabled(column)) {
+                            return (
+                                <Form.Group key={index} className="mb-3">
+                                    <Form.Label>{column.displayName} (Identificador)</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name={column.originalName}
+                                        value={formData[column.originalName] || ''}
+                                        disabled={true}
+                                        readOnly
+                                    />
+                                </Form.Group>
+                            );
+                        }
 
-                        if (isForeignKey && foreignTable.length > 0) {
+                        // 2. Detectar si es clave foránea (termina en _ide)
+                        const isForeignKey = column.originalName.endsWith('ide') && foreignTable.length > 0;
+
+                        // 3. RENDERIZAR SELECT PARA CLAVE FORÁNEA
+                        if (isForeignKey) {
                             const firstItem = foreignTable[0];
                             const ideField = Object.keys(firstItem).find(key => key.endsWith('_ide'));
-                            const displayField = Object.keys(firstItem).find(key => !key.endsWith('_ide'));
+                            const displayField = Object.keys(firstItem).find(key => key !== ideField);
 
                             return (
                                 <Form.Group key={index} className="mb-3">
@@ -176,6 +175,7 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
                                         name={column.originalName}
                                         value={formData[column.originalName] || ''}
                                         onChange={handleChange}
+                                        required
                                     >
                                         <option value="">Seleccione una opción</option>
                                         {foreignTable.map((item) => (
@@ -186,88 +186,51 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
                                                 {displayField ? item[displayField] : item[ideField]}
                                             </option>
                                         ))}
-                                    
                                     </Form.Select>
                                 </Form.Group>
                             );
                         }
 
+                        // 4. RENDERIZAR INPUT PARA CAMPOS NORMALES
+                        // (Si el nombre de la columna sugiere un número o porcentaje, lo tratamos como "number")
+                        const isNumberField = ['por', 'val', 'sal', 'ani'].some(suffix => column.originalName.endsWith(suffix));
+
                         return (
-                            
                             <Form.Group key={index} className="mb-3">
                                 <Form.Label>{column.displayName}</Form.Label>
                                 <Form.Control
-                                    type="text"
+                                    type={isNumberField ? "number" : "text"}
+                                    step={isNumberField ? "0.01" : undefined}
                                     name={column.originalName}
                                     value={formData[column.originalName] || ''}
                                     onChange={handleChange}
                                     placeholder={`Ingrese ${column.displayName}`}
-                                    required={column.isPrimaryKey}
-                                    disabled={isFieldDisabled(column)}
+                                    required
                                 />
-                                
                             </Form.Group>
                         );          
                     })}
-                    {tableName === 'tesusu' && (
-                        <>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Tipo de Usuario</Form.Label>
-                                <Form.Select
-                                    name="usu_tip"
-                                    value={formData.usu_tip || ''}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">Seleccione una opción</option>
-                                    {tipo.map((item) => (
-                                        <option 
-                                            key={item.usu_tip} 
-                                            value={item.usu_tip}
-                                        >
-                                            {item.tipo}
-                                        </option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Label>Módulo de Usuario</Form.Label>
-                                <Form.Select
-                                    name="usu_mod"
-                                    value={formData.usu_mod || ''}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">Seleccione una opción</option>
-                                    {modulos.map((item) => (
-                                        <option 
-                                            key={item.usu_mod} 
-                                            value={item.usu_mod}
-                                        >
-                                            {item.mod}
-                                        </option>
-                                    ))}
-                                </Form.Select>
-                            </Form.Group>
-                        </>
-                    )}
-                   
                 </Form>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>
                     Cancelar
                 </Button>
-                <Button variant="primary" onClick={handleSubmit}>
+                {/* Cambiado type="submit" referenciando al form */}
+                <Button variant="primary" type="submit" form="updateForm">
                     Guardar Cambios
                 </Button>
             </Modal.Footer>
 
             {mensajeMostrado && (
-                <Alert 
-                    key={formEnviado ? 'success' : 'danger'} 
-                    type={formEnviado ? 'success' : 'danger'}
-                >
-                    {formEnviado ? '✓ Actualizado correctamente' : `✗ ${errorMessage}`}
-                </Alert>
+                <div className="p-3 pb-0">
+                    <Alert 
+                        key={formEnviado ? 'success' : 'danger'} 
+                        type={formEnviado ? 'success' : 'danger'}
+                    >
+                        {formEnviado ? '✓ Actualizado correctamente' : `✗ ${errorMessage}`}
+                    </Alert>
+                </div>
             )}
         </Modal>
     );

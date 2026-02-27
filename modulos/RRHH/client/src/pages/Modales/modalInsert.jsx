@@ -11,10 +11,25 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
     const [errorMessage, setErrorMessage] = useState(false);
     const [foreignTable, setForeignTable] = useState([]);
 
+    // MAPA UNIVERSAL DE ENDPOINTS (Sistema RRHH)
     const endpointMap = {
+        // Estructura Organizacional
         tmadir: '/api/direcciones',
         tesdiv: '/api/divisiones',
         tesuni: '/api/unidades',
+        
+        // Clasificación y Cargos
+        tmaona: '/api/cargos-onapre',
+        tmacet: '/api/cargos-cet',
+        tmacol: '/api/condiciones-laborales',
+        tmapro: '/api/profesiones',
+        
+        // Tablas Salariales y Deducciones
+        tesniv: '/api/niveles-salariales',
+        tmapri: '/api/primas',
+        tmaprf: '/api/primas-profesionalizacion',
+        tmaant: '/api/antiguedad',
+        tmade: '/api/deducciones'
     };
 
     const handleChange = (e) => {
@@ -25,22 +40,18 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
         }));
     };
 
+    // Efecto para buscar los datos de la llave foránea (si existe)
     useEffect(() => {
-        if (foreign === 'tmamar' && show) {
+        if (foreign && show) { 
             const fetchForeign = async () => {
-                try {
-                    const res = await fetch(`/api/marcas/alfabeticamente`);
-                    const data = await res.json();
-                    setForeignTable(data);
-                } catch (error) {
-                    console.error('Error al obtener datos foráneos:', error);
+                const endpoint = endpointMap[foreign];
+                if (!endpoint) {
+                    console.warn(`No se encontró endpoint configurado para la tabla foránea: ${foreign}`);
+                    return;
                 }
-            };
-            fetchForeign();
-        } else if (foreign && show) { 
-            const fetchForeign = async () => {
+
                 try {
-                    const res = await fetch(`${endpointMap[foreign]}`);
+                    const res = await fetch(endpoint);
                     const data = await res.json();
                     setForeignTable(data);
                 } catch (error) {
@@ -56,7 +67,9 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
 
         const endpoint = endpointMap[tableName];
         if (!endpoint) {
-            console.error('No se encontró endpoint para la tabla:', tableName);
+            console.error('No se encontró endpoint POST para la tabla:', tableName);
+            setErrorMessage(`Falta configurar endpointMap para ${tableName}`);
+            setMensajeMostrado(true);
             return;
         }
 
@@ -90,7 +103,7 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
             const errorMsg = error.response?.data?.error || error.message;
 
             if (errorMsg.includes("Duplicate entry")) {
-                setErrorMessage("Este registro ya existe");
+                setErrorMessage("Este registro ya existe (Dato duplicado).");
             } else {
                 setErrorMessage(errorMsg);
             }
@@ -98,7 +111,7 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
             console.error('Error al insertar:', error);
             setTimeout(() => {
                 setMensajeMostrado(false);
-            }, 3000);
+            }, 4000);
         }
     };
 
@@ -112,12 +125,12 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
                     {columns && columns.map((column, index) => {
                         const isPrimaryKey = Boolean(column.isPrimaryKey === true || column.isPrimaryKey === "true" || column.isPrimaryKey === 1 || column.isPrimaryKey === "1");
 
-                        // 1. SI ES PRIMARY KEY, LA OMITIMOS (Retornamos null)
+                        // 1. SI ES PRIMARY KEY, LA OMITIMOS (Retornamos null por AUTO_INCREMENT)
                         if (isPrimaryKey) {
                             return null;
                         }
 
-                        // 2. Detectar si es clave foránea
+                        // 2. Detectar si es clave foránea (termina en _ide)
                         const isForeignKey = column.originalName.endsWith('ide') && foreignTable.length > 0;
 
                         // 3. RENDERIZAR SELECT PARA CLAVE FORÁNEA
@@ -150,16 +163,20 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
                         }
 
                         // 4. RENDERIZAR INPUT PARA CAMPOS NORMALES
+                        // (Si el nombre de la columna sugiere un número o porcentaje, lo tratamos como "number")
+                        const isNumberField = ['por', 'val', 'sal', 'ani'].some(suffix => column.originalName.endsWith(suffix));
+
                         return (
                             <Form.Group key={index} className="mb-3">
                                 <Form.Label>{column.displayName}</Form.Label>
                                 <Form.Control
-                                    type="text"
+                                    type={isNumberField ? "number" : "text"}
+                                    step={isNumberField ? "0.01" : undefined}
                                     name={column.originalName}
                                     value={formData[column.originalName] || ''}
                                     onChange={handleChange}
                                     placeholder={`Ingrese ${column.displayName}`}
-                                    required // Hacemos requerido el campo por defecto
+                                    required
                                 />
                             </Form.Group>
                         );
@@ -170,7 +187,6 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
                 <Button variant="secondary" onClick={handleClose}>
                     Cerrar
                 </Button>
-                {/* Cambiamos onClick al botón por type="submit" referenciando al form para que valide los "required" */}
                 <Button variant="primary" type="submit" form="insertForm">
                     Guardar Cambios
                 </Button>
