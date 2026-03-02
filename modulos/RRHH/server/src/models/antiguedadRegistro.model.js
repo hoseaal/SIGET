@@ -8,10 +8,13 @@ export class AntiguedadRegistroModel {
     // Si ant_ffen es NULL, usa CURDATE() (Fecha actual).
     const sql = `
       SELECT *, 
-             TIMESTAMPDIFF(YEAR, ant_fin, COALESCE(ant_ffen, CURDATE())) as anios
-      FROM tesant
-      WHERE fun_ide = ?
-      ORDER BY ant_fin ASC
+    TIMESTAMPDIFF(YEAR, ant_fin, COALESCE(ant_ffen, CURDATE())) AS anios,
+    TIMESTAMPDIFF(MONTH, ant_fin, COALESCE(ant_ffen, CURDATE())) % 12 AS meses,
+    DATEDIFF(
+        COALESCE(ant_ffen, CURDATE()), 
+        ant_fin + INTERVAL TIMESTAMPDIFF(MONTH, ant_fin, COALESCE(ant_ffen, CURDATE())) MONTH
+    ) AS dias
+FROM tesant;
     `
     const [rows] = await pool.query(sql, [fun_ide])
     return rows
