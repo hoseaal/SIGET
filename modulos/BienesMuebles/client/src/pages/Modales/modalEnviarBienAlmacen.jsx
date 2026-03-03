@@ -131,12 +131,6 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
             return;
         }
 
-        if (parseInt(formData.dep_origen_ide) === DEP_ALMACEN_03 || parseInt(formData.dep_origen_ide) === DEP_ALMACEN_04) {
-             setErrorMessage('El origen no puede ser un Almacén.');
-             setShowAlert(true);
-             setLoading(false);
-             return;
-        }
 
         if (formData.bienesSeleccionados.length === 0) {
             setErrorMessage('Debe seleccionar al menos un bien.');
@@ -268,7 +262,6 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                                 >
                                     <option value="">Seleccione origen...</option>
                                     {departamentos
-                                        .filter(dep => dep.dep_ide !== DEP_ALMACEN_03 && dep.dep_ide !== DEP_ALMACEN_04)
                                         .map(dep => (
                                             <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
                                     ))}
