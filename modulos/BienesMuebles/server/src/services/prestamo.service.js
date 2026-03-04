@@ -36,7 +36,7 @@ export class PrestamoService {
         throw new Error(`El bien con ID '${bim_ide}' ya está prestado activamente en un préstamo normal (Oficio: ${activeNormalLoan.pre_ndo}, Destino: ${activeNormalLoan.departamento_destino_nombre}).`)
       }
 
-      const inWarehouseMalEstado = await PrestamoModel.checkBienEnAlmacenMalEstado(bim_ide)
+      const inWarehouseMalEstado = await PrestamoModel.checkBienEnAlmacen(bim_ide)
       if (inWarehouseMalEstado) {
         throw new Error(`El bien con ID '${bim_ide}' ya está registrado como en almacén por mal estado (Oficio: ${inWarehouseMalEstado.pre_ndo}).`)
       }
