@@ -128,8 +128,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     setOriginalData(bien);
                     setFormData(bien);
 
-                    // --- Carga de información de préstamo ---
-                    // Nota: Asumimos que el endpoint devuelve info si está prestado O en almacén
+                    // --- Carga de información de préstamo --
                     const prestamoRes = await fetch(`/api/prestamos/estado-bien/${BienId}`);
                     if (!prestamoRes.ok) {
                         if (prestamoRes.status === 404) {

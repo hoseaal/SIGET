@@ -116,7 +116,7 @@ export class PrestamoService {
     const normalLoan = await PrestamoModel.checkBienPrestadoActiveNormalLoan(bim_ide)
     if (normalLoan) return { type: 'normal_loan', ...normalLoan }
 
-    const warehouseItem = await PrestamoModel.checkBienEnAlmacenMalEstado(bim_ide)
+    const warehouseItem = await PrestamoModel.checkBienEnAlmacen(bim_ide)
     if (warehouseItem) return { type: 'warehouse_mal_estado', ...warehouseItem }
 
     return null
