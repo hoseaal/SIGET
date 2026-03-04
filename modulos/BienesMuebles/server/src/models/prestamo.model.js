@@ -291,13 +291,19 @@ export class PrestamoModel {
    * @param {string} bim_ide - ID del bien.
    * @returns {Promise<object|null>} Información del préstamo activo si existe y es un préstamo normal, o null.
    */
-  static async checkBienPrestadoActiveNormalLoan (bim_ide) {
+  /**
+   * Verifica si un bien está prestado activamente como un PRÉSTAMO NORMAL.
+   * @param {string} bim_ide - ID del bien.
+   * @returns {Promise<object|null>} Información del préstamo si existe, o null.
+   */
+  static async checkBienPrestadoActiveNormalLoan(bim_ide) {
     const [rows] = await pool.query(`
       SELECT
         tp.pre_ide,
         tp.pre_fec,
         tp.pre_ndo,
         tp.pre_est,
+        tp.pre_cla,
         tdd.dpr_est, -- ¡Importante! Estado del detalle del bien
         td_destino.dep_nom AS departamento_destino_nombre,
         td_origen.dep_nom AS departamento_origen_nombre,
@@ -312,23 +318,27 @@ export class PrestamoModel {
       WHERE tdd.bim_ide = ?
         AND tdd.dpr_est = 1 -- El detalle del bien está activo (prestado)
         AND tp.pre_est = 1  -- El préstamo principal está activo
-        AND NOT ((tp.dep_ide = ? || tp.dep_ide = ?) AND tmab.con_ide = ?) -- NO es un préstamo a almacén por mal estado
-    `, [bim_ide, DEP_ALMACEN_03, DEP_ALMACEN_04, CON_MAL_ESTADO_ID])
-    return rows[0] || null
+        AND tp.pre_cla = 'P' -- Exclusivo para Préstamos Normales
+    `, [bim_ide]);
+    
+    return rows[0] || null;
   }
 
   /**
-   * Verifica si un bien está prestado activamente como ITEM EN ALMACEN (mal estado).
+   * Verifica si un bien está ingresado activamente en el ALMACÉN.
+   * (Nota: Se le puede cambiar el nombre a la función ya que ahora abarca cualquier ingreso a almacén, no solo mal estado).
    * @param {string} bim_ide - ID del bien.
    * @returns {Promise<object|null>} Información del item en almacén si existe, o null.
    */
-  static async checkBienEnAlmacenMalEstado (bim_ide) {
+  static async checkBienEnAlmacen(bim_ide) {
     const [rows] = await pool.query(`
       SELECT
         tp.pre_ide,
         tp.pre_fec,
         tp.pre_ndo,
         tp.pre_est,
+        tp.pre_cla,
+        tdd.dpr_est,
         td_destino.dep_nom AS departamento_destino_nombre,
         td_origen.dep_nom AS departamento_origen_nombre,
         tmab.con_ide,
@@ -340,10 +350,11 @@ export class PrestamoModel {
       JOIN tmab_m tmab ON tdd.bim_ide = tmab.bim_ide
       LEFT JOIN tmacon tc ON tmab.con_ide = tc.con_ide
       WHERE tdd.bim_ide = ?
+        AND tdd.dpr_est = 1 -- Añadido por seguridad: verifica que el bien siga activo en ese movimiento
         AND tp.pre_est = 1
-        AND (tp.dep_ide = ? || tp.dep_ide = ?)
-        AND tmab.con_ide = ?
-    `, [bim_ide, DEP_ALMACEN_03, DEP_ALMACEN_04, CON_MAL_ESTADO_ID])
-    return rows[0] || null
+        AND tp.pre_cla = 'A' -- Exclusivo para Almacén
+    `, [bim_ide]);
+    
+    return rows[0] || null;
   }
 }

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Dropdown } from 'react-bootstrap';
  import { hasPermission, ACTIONS } from '../../data/dataPermissions';
 import { DepartamentoSelect} from '../layouts/selectInfinito';
+import  ModalAntiguedades  from '../Modales/ModalAntiguedades';
+
 export const FuncionariosActivos = () => {
     const [data, setData] = useState([]);
     const [meta, setMeta] = useState({});
@@ -11,6 +13,10 @@ export const FuncionariosActivos = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
     const limit = 20;
+
+    //Modales
+    const [antItem, setAntItem] = useState(null);
+    const [showAnt, setShowAnt] = useState(false);
 
     const [filtros, setFiltros] = useState({
         departamento: null
@@ -172,9 +178,16 @@ export const FuncionariosActivos = () => {
                                                         <Dropdown.Item href="#">
                                                             <i className="bx bx-show me-1"></i> Ver Perfil
                                                         </Dropdown.Item>
+                                                        <Dropdown.Item href="#" onClick={() => {
+                                                                setAntItem(item);
+                                                                setShowAnt(true);
+                                                            }}>
+                                                            <i className="bx bx-calendar me-1" ></i> Registro de Antiguedades
+                                                        </Dropdown.Item>
                                                         <Dropdown.Item href="#">
                                                             <i className="bx bx-edit-alt me-1"></i> Editar
                                                         </Dropdown.Item>
+
                                                     </Dropdown.Menu>
                                                 </Dropdown>
                                             </td>
@@ -187,6 +200,8 @@ export const FuncionariosActivos = () => {
                                         </td>
                                     </tr>
                                 )}
+
+                                
                             </tbody>
                         </table>
                     </div>
@@ -219,7 +234,14 @@ export const FuncionariosActivos = () => {
                         </>
                     )}
                 </div>
+                <ModalAntiguedades
+                show={showAnt}
+                handleClose={() => setShowAnt(false)}
+                fun_ide={antItem?.fun_ide}
+            />
             </div>
+
+            
         </>
     );
 }
