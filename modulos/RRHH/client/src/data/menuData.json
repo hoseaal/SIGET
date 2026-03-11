@@ -15,7 +15,7 @@
         "items": [
             {
                 "text": "Personal",
-                "icon": "bx bx-cabinet",
+                "icon": "bx bx-group",
                 "available": true,  
                 "link": "",
                 "submenu": [
@@ -28,37 +28,6 @@
                         "text": "Registrar Nuevo Funcionario",
                         "available": true,
                         "link": "/Personal/RegistrarFuncionario"
-                    }
-                ]
-            },
-            {
-                "text": "Gestion de Movimientos",
-                "icon": "bx bx-transfer",
-                "available": true,  
-                "link": "",
-                "submenu": [
-                    {
-                        "text": "Bienes en Almacen",
-                        "available": true,
-                        "link": "/Almacen"
-                    },
-                    {
-                        "text": "Préstamos",
-                        "available": true,
-                        "link": "/Prestamos"
-                    }
-                ]
-            },
-            {
-                "text": "Gestion de Archivos",
-                "icon": "bx bx-spreadsheet",
-                "available": true,  
-                "link": "",
-                "submenu": [
-                    {
-                        "text": "Reportes de Bienes",
-                        "available": true,
-                        "link": "/Reportes"
                     }
                 ]
             }

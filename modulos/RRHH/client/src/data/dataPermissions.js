@@ -19,13 +19,6 @@ export const menuPermissions = {
     "/Personal/FuncionariosActivos": [1, 2, 3, 4, 5],
     "/Personal/RegistrarFuncionario": [2, 3, 4, 5],
 
-    // Gestión de Movimientos
-    "/Almacen": [1, 2, 3, 4, 5],
-    "/Prestamos": [1, 2, 3, 4, 5],
-
-    // Gestión de Archivos
-    "/Reportes": [2, 3, 4, 5],
-
     // Configuración General
     "/Configuracion/EstructuraOrganizacional": [3, 4, 5],
     "/Configuracion/TablaSalarios": [3, 4, 5],
