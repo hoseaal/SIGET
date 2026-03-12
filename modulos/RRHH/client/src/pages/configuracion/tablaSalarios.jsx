@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Dropdown } from 'react-bootstrap';
+import { Dropdown, Form, Modal, Button } from 'react-bootstrap';
 import { getTableMetadata } from '../../data/fetchData';
 import ModalInsert from '../Modales/modalInsert';
 import ModalUpdate from '../Modales/modalUpdate';
 import ModalDelete from '../Modales/modalDelete';
+import { ModalInsertNivelSalarial } from '../Modales/modalInsertNivelSalarial';
 
 export const TablaSalarios = () => {
     const [refreshKey, setRefreshKey] = useState(0);
@@ -11,7 +12,7 @@ export const TablaSalarios = () => {
     const [deleteItem, setDeleteItem] = useState(null);
 
     const handleSuccess = () => {
-        setRefreshKey(prev => prev + 1); // Fuerza recarga de todos los useEffect
+        setRefreshKey(prev => prev + 1);
     };
 
     // ==========================================
@@ -21,13 +22,33 @@ export const TablaSalarios = () => {
     const [dataNiv, setDataNiv] = useState([]);
     const [columnsNiv, setColumnsNiv] = useState([]);
     const [idColumnNiv, setIdColumnNiv] = useState(null);
-    // Cambiamos Insert por Update para los niveles
-    const [showNivUpModal, setShowNivUpModal] = useState(false); 
+    
+    // Estados para los modales de Nivel Salarial
+    const [showNivModal, setShowNivModal] = useState(false); // Para insertar (Nuevo Custom)
+    const [showNivUpModal, setShowNivUpModal] = useState(false); // Para actualizar
 
     const columnAliasNiv = {
         'niv_ide': 'Código',
         'niv_nom': 'Nivel',
         'niv_sal': 'Salario (Bs)',
+        'ona_ide': 'Cargo ONAPRE'
+    };
+
+    // ==========================================
+    // ESTADOS: MATRIZ ONAPRE Y NIVELES ANTIGUOS(tesnivant)
+    // ==========================================
+    const [dataNivAnt, setDataNivAnt] = useState([]);
+    const [columnsNivAnt, setColumnsNivAnt] = useState([]);
+    const [idColumnNivAnt, setIdColumnNivAnt] = useState(null);
+    
+    // Estados para los modales de Nivel Salarial
+    const [showNivAntModal, setShowNivAntModal] = useState(false); // Para insertar (Nuevo Custom)
+    const [showNivAntUpModal, setShowNivAntUpModal] = useState(false); // Para actualizar
+
+    const columnAliasNivAnt = {
+        'nivant_ide': 'Código',
+        'nivant_nom': 'Nivel',
+        'nivant_sal': 'Salario (Bs)',
         'ona_ide': 'Cargo ONAPRE'
     };
 
@@ -102,7 +123,6 @@ export const TablaSalarios = () => {
     // EFECTOS (CARGA DE DATOS)
     // ==========================================
 
-    // 1. Cargar ONAPRE y Niveles para la Matriz
     useEffect(() => {
         const loadMatrizData = async () => {
             try {
@@ -125,7 +145,24 @@ export const TablaSalarios = () => {
         loadMatrizData();
     }, [refreshKey]);
 
-    // 2. Cargar Primas
+    useEffect(() => {
+        const loadMatrizAntData = async () => {
+            try {
+                const { columns, primaryKey } = await getTableMetadata('tesnivant');
+                setColumnsNivAnt(columns.map(col => ({
+                    originalName: col.name,
+                    displayName: columnAliasNivAnt[col.name] || col.name,
+                    isPrimaryKey: col.name === primaryKey
+                })));
+                setIdColumnNivAnt(primaryKey);
+
+                const resNivAnt = await fetch('/api/niveles-salariales-antiguos', { credentials: 'include' });
+                setDataNivAnt(await resNivAnt.json());
+            } catch (error) { console.error('Error cargando Matriz ONAPRE:', error); }
+        };
+        loadMatrizAntData();
+    }, [refreshKey]);
+
     useEffect(() => {
         const loadPriData = async () => {
             try {
@@ -139,7 +176,6 @@ export const TablaSalarios = () => {
         loadPriData();
     }, [refreshKey]);
 
-    // 3. Cargar Profesionalización
     useEffect(() => {
         const loadPrfData = async () => {
             try {
@@ -153,7 +189,6 @@ export const TablaSalarios = () => {
         loadPrfData();
     }, [refreshKey]);
 
-    // 4. Cargar Antigüedad
     useEffect(() => {
         const loadAntData = async () => {
             try {
@@ -167,7 +202,6 @@ export const TablaSalarios = () => {
         loadAntData();
     }, [refreshKey]);
 
-    // 5. Cargar Deducciones
     useEffect(() => {
         const loadDeData = async () => {
             try {
@@ -185,23 +219,36 @@ export const TablaSalarios = () => {
     // LÓGICA DE PROCESAMIENTO MATRIZ DINÁMICA
     // ==========================================
     
-    // Extraer valores únicos de niv_nom dinámicamente de la base de datos
     const ordenRomanos = { 'I':1, 'II':2, 'III':3, 'IV':4, 'V':5, 'VI':6, 'VII':7, 'VIII':8, 'IX':9, 'X':10 };
     const nivelesDinamicos = [...new Set(dataNiv.map(n => n.niv_nom))]
         .sort((a, b) => (ordenRomanos[a] || 99) - (ordenRomanos[b] || 99));
 
-    // Si la BD está vacía, mostrar los básicos por defecto para que la tabla no se rompa
     const niveles = nivelesDinamicos.length > 0 ? nivelesDinamicos : ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
-    // Agrupamos los niveles por ona_ide
     const matrizNiveles = dataNiv.reduce((acc, curr) => {
         if (!acc[curr.ona_ide]) acc[curr.ona_ide] = {};
         acc[curr.ona_ide][curr.niv_nom] = curr;
         return acc;
     }, {});
 
-    // Filtramos las columnas del modal de edición para que SOLO pida el salario
     const columnasNivelEditables = columnsNiv.filter(col => col.originalName === 'niv_sal');
+
+    // ==========================================
+    // LÓGICA DE PROCESAMIENTO MATRIZ DINÁMICA ANTIGUA
+    // ==========================================
+    
+    const nivelesAntDinamicos = [...new Set(dataNivAnt?.map(n => n.nivant_nom))]
+        .sort((a, b) => (ordenRomanos[a] || 99) - (ordenRomanos[b] || 99));
+
+    const nivelesAnt = nivelesAntDinamicos.length > 0 ? nivelesAntDinamicos : ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+
+    const matrizNivelesAnt = dataNivAnt.reduce((acc, curr) => {
+        if (!acc[curr.ona_ide]) acc[curr.ona_ide] = {};
+        acc[curr.ona_ide][curr.nivant_nom] = curr;
+        return acc;
+    }, {});
+
+    const columnasNivelAntEditables = columnsNivAnt.filter(col => col.originalName === 'nivant_sal');
 
     return (
         <div>
@@ -212,8 +259,13 @@ export const TablaSalarios = () => {
             {/* ========================================== */}
             <div className="card mb-4">
                 <div className="card-header d-flex justify-content-between align-items-center">
-                    <h5 className="mb-0">NIVELES O RANGOS DE SUELDOS MENSUALES</h5>
-                    <small className="text-muted">Haga clic sobre un monto para editar el salario del nivel correspondiente.</small>
+                    <div>
+                        <h5 className="mb-0">Tabulador Salarial (ONAPRE)</h5>
+                        <small className="text-muted">Haga clic sobre un monto para editar el salario correspondiente.</small>
+                    </div>
+                    <button type="button" className="btn btn-primary" onClick={() => setShowNivModal(true)}>
+                        <i className="bx bx-plus me-1"></i> Agregar Nivel Salarial
+                    </button>
                 </div>
 
                 <div className="table-responsive text-nowrap p-3">
@@ -261,15 +313,107 @@ export const TablaSalarios = () => {
                     </table>
                 </div>
 
-                {/* Modal de Update Específico para el Nivel (Solo muestra el Salario) */}
+                {/* MODAL CUSTOM PARA INSERTAR (Maneja las reglas de I-VII y Cupos llenos) */}
+                <ModalInsertNivelSalarial 
+                    show={showNivModal} 
+                    handleClose={() => setShowNivModal(false)}
+                    dataOna={dataOna}
+                    matrizNiveles={matrizNiveles}
+                    onSuccess={handleSuccess} 
+                />
+
+                {/* MODAL UPDATE GENÉRICO (Solo expone 'niv_sal') */}
                 <ModalUpdate 
                     show={showNivUpModal} 
                     handleClose={() => setShowNivUpModal(false)} 
-                    columns={columnasNivelEditables} // ¡Magia! Solo le pasamos el salario
+                    columns={columnasNivelEditables}
                     tableName='tesniv' 
                     rowData={editingItem} 
                     onSuccess={handleSuccess} 
                     idColumn={idColumnNiv} 
+                />
+            </div>
+
+            <hr className="my-5" />
+
+            {/* ========================================== */}
+            {/* 2. MATRIZ: TABULADOR ONAPRE ANTIGUO*/}
+            {/* ========================================== */}
+            <div className="card mb-4">
+                <div className="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 className="mb-0">Tabulador Salarial ANTIGUO (ONAPRE)</h5>
+                        <small className="text-muted">Haga clic sobre un monto para editar el salario correspondiente.</small>
+                    </div>
+                    <button type="button" className="btn btn-primary" onClick={() => setShowNivAntModal(true)}>
+                        <i className="bx bx-plus me-1"></i> Agregar Nivel Salarial
+                    </button>
+                </div>
+
+                <div className="table-responsive text-nowrap p-3">
+                    <table className="table table-bordered table-hover">
+                        <thead className="table-light text-center">
+                            <tr>
+                                <th rowSpan="2" className="align-middle bg-primary text-white">GRUPOS O CLASES DE CARGOS</th>
+                                <th colSpan={nivelesAnt.length} className="bg-secondary text-white">NIVELES O RANGOS DE SUELDOS MENSUALES</th>
+                            </tr>
+                            <tr>
+                                {nivelesAnt.map(lvl => <th key={lvl} className="bg-light">{lvl}</th>)}
+                            </tr>
+                        </thead>
+                        <tbody className="table-border-bottom-0">
+                            {dataOna.map((ona) => {
+                                const nivelesCargo = matrizNivelesAnt[ona.ona_ide] || {};
+                                return (
+                                    <tr key={ona.ona_ide}>
+                                        <td className="fw-bold text-center align-middle">{ona.ona_nom}</td>
+                                        {nivelesAnt.map(lvl => {
+                                            const nivelData = nivelesCargo[lvl];
+                                            return (
+                                                <td key={lvl} className="text-center align-middle">
+                                                    {nivelData ? (
+                                                        <button 
+                                                            className="btn btn-sm btn-link text-decoration-none text-dark fw-semibold"
+                                                            title={`Editar Nivel ${lvl} (${ona.ona_nom})`}
+                                                            onClick={() => {
+                                                                setEditingItem(nivelData);
+                                                                setShowNivAntUpModal(true);
+                                                            }}
+                                                        >
+                                                            {Number(nivelData.nivant_sal).toFixed(2)}
+                                                        </button>
+                                                    ) : (
+                                                        <span className="text-muted">---</span>
+                                                    )}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* MODAL CUSTOM PARA INSERTAR (Maneja las reglas de I-VII y Cupos llenos) */}
+                <ModalInsertNivelSalarial 
+                    show={showNivAntModal} 
+                    handleClose={() => setShowNivAntModal(false)}
+                    dataOna={dataOna}
+                    matrizNiveles={matrizNivelesAnt}
+                    tableName="tesnivant"
+                    onSuccess={handleSuccess} 
+                />
+
+                {/* MODAL UPDATE GENÉRICO (Solo expone 'niv_sal') */}
+                <ModalUpdate 
+                    show={showNivAntUpModal} 
+                    handleClose={() => setShowNivAntUpModal(false)} 
+                    columns={columnasNivelAntEditables}
+                    tableName='tesnivant' 
+                    rowData={editingItem} 
+                    onSuccess={handleSuccess} 
+                    idColumn={idColumnNivAnt} 
                 />
             </div>
 
@@ -430,7 +574,6 @@ export const TablaSalarios = () => {
                 <ModalUpdate show={showDeUpModal} handleClose={() => setShowDeUpModal(false)} columns={columnsDe} tableName='tmade' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnDe} />
                 <ModalDelete show={showDeDelModal} handleClose={() => setShowDeDelModal(false)} tableName="tmade" rowId={deleteItem} idColumn={idColumnDe} onSuccess={handleSuccess} />
             </div>
-
         </div>
     );
 };

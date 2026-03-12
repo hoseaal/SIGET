@@ -6,7 +6,7 @@ import { NivelSalarialAntiguoService } from '../services/nivelSalarialAntiguo.se
  */
 export const obtenerNivelesAntiguos = async (req, res) => {
   try {
-    const niveles = await NivelSalarialAntiguoService.obtenerTodos()
+    const niveles = await NivelSalarialAntiguoService.obtenerTodas()
     res.json(niveles)
   } catch (error) {
     res.status(500).json({ error: error.message })
