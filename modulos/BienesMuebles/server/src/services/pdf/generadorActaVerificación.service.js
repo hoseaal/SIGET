@@ -280,7 +280,7 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
           obs: obtenerIdsOrdenados(bienesPrestadosAOtro) 
         },
         {
-          label: 'Bienes en préstamo de otras direcciones a esta dirección:',
+          label: 'Bienes en préstamo de otras direcciones a esta dirección:             ',
           total: countPrestadosDeOtro,
           obs: obtenerIdsOrdenados(bienesPrestadosDeOtro) 
         }
@@ -434,8 +434,8 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
         doc.font('Helvetica').text(cargo, x, doc.y, { width, align: 'center' })
       }
 
-      drawSignature(`Lcda. ${datosPost.analista_nombre || 'N/A'}`, 'Analista de Bienes e Inventarios I', doc.page.margins.left, 250)
-      drawSignature(`${datosPost.director_nombre || 'N/A'}`, datosPost.director_cargo || 'N/A', doc.page.width - 250 - doc.page.margins.right, 250)
+      drawSignature(`Lcda. ${datosPost.analista_nombre || 'N/A'}`, 'Analista de Bienes e Inventarios I', doc.page.margins.left, 200)
+      drawSignature(`${datosPost.director_nombre || 'N/A'}`, datosPost.director_cargo || 'N/A', doc.page.width - 250 - doc.page.margins.right, 200)
 
       doc.end()
 
@@ -448,59 +448,142 @@ export const generarActaVerificacionService = (datosPost, accessToken) => {
 }
 
 function drawTable (doc, data, totalBienesTabla) {
-  const startY = doc.y
   const startX = doc.page.margins.left
   const tableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
   const col1Width = tableWidth * 0.35
   const col2Width = tableWidth * 0.15
   const col3Width = tableWidth * 0.50
 
-  // Línea superior
-  doc.moveTo(startX, startY).lineTo(startX + tableWidth, startY).stroke()
-
-  // Cabecera
-  doc.font('Helvetica-Bold').fontSize(10)
-  const headers = ['Estatus del Bien Mueble', 'Total', 'Observaciones (Códigos)']
-  const headerHeight = doc.heightOfString(headers[0], { width: col1Width })
-
-  doc.text(headers[0], startX, startY, { width: col1Width, align: 'center' })
-  doc.text(headers[1], startX + col1Width, startY, { width: col2Width, align: 'center' })
-  doc.text(headers[2], startX + col1Width + col2Width, startY, { width: col3Width, align: 'center' })
-
-  const currentY = startY + headerHeight + 5
-  doc.moveTo(startX, currentY).lineTo(startX + tableWidth, currentY).stroke()
-  doc.y = currentY
-
-  // Filas
-  doc.font('Helvetica').fontSize(9)
-  data.forEach(row => {
-    const rowY = doc.y + 5
-    const obsText = row.obs || ' '
-    const labelHeight = doc.heightOfString(row.label, { width: col1Width - 10 })
-    const obsHeight = doc.heightOfString(obsText, { width: col3Width - 10 })
-    const rowHeight = Math.max(labelHeight, obsHeight) + 10
-
-    doc.text(row.label, startX + 5, rowY, { width: col1Width - 10 })
-    doc.text(row.total.toString(), startX + col1Width, rowY, { width: col2Width, align: 'center' })
-    doc.text(obsText, startX + col1Width + col2Width + 5, rowY, { width: col3Width - 10 })
-
-    doc.y = rowY + rowHeight
-    doc.moveTo(startX, doc.y).lineTo(startX + tableWidth, doc.y).stroke()
-  })
-
-  // Total
-  const totalY = doc.y + 5
-  doc.font('Helvetica-Bold').fontSize(10)
-  doc.text('TOTAL:', startX + 5, totalY, { width: col1Width - 10, align: 'right' })
-  doc.text(totalBienesTabla.toString(), startX + col1Width, totalY, { width: col2Width, align: 'center' })
-  doc.y = totalY + doc.heightOfString('TOTAL:') + 5
+  // Línea superior inicial
   doc.moveTo(startX, doc.y).lineTo(startX + tableWidth, doc.y).stroke()
 
-  // Bordes verticales
-  const tableBottomY = doc.y
-  doc.moveTo(startX, startY).lineTo(startX, tableBottomY).stroke()
-  doc.moveTo(startX + col1Width, startY).lineTo(startX + col1Width, tableBottomY).stroke()
-  doc.moveTo(startX + col1Width + col2Width, startY).lineTo(startX + col1Width + col2Width, tableBottomY).stroke()
-  doc.moveTo(startX + tableWidth, startY).lineTo(startX + tableWidth, tableBottomY).stroke()
-  doc.y = tableBottomY
+  // --- CABECERA ---
+  doc.font('Helvetica-Bold').fontSize(10)
+  const headers = ['Estatus del Bien Mueble', 'Total', 'Observaciones (Códigos)']
+  const headerHeight = doc.heightOfString(headers[0], { width: col1Width }) + 10
+
+  // Si la cabecera no cabe, saltamos de página
+  if (doc.y + headerHeight > doc.page.height - doc.page.margins.bottom) {
+    doc.addPage()
+    doc.moveTo(startX, doc.y).lineTo(startX + tableWidth, doc.y).stroke()
+  }
+
+  let currentY = doc.y
+  doc.text(headers[0], startX, currentY + 5, { width: col1Width, align: 'center' })
+  doc.text(headers[1], startX + col1Width, currentY + 5, { width: col2Width, align: 'center' })
+  doc.text(headers[2], startX + col1Width + col2Width, currentY + 5, { width: col3Width, align: 'center' })
+
+  // Líneas verticales de la cabecera
+  doc.moveTo(startX, currentY).lineTo(startX, currentY + headerHeight).stroke()
+  doc.moveTo(startX + col1Width, currentY).lineTo(startX + col1Width, currentY + headerHeight).stroke()
+  doc.moveTo(startX + col1Width + col2Width, currentY).lineTo(startX + col1Width + col2Width, currentY + headerHeight).stroke()
+  doc.moveTo(startX + tableWidth, currentY).lineTo(startX + tableWidth, currentY + headerHeight).stroke()
+
+  doc.y = currentY + headerHeight
+  doc.moveTo(startX, doc.y).lineTo(startX + tableWidth, doc.y).stroke()
+
+  // --- FILAS ---
+  doc.font('Helvetica').fontSize(9)
+  
+  data.forEach(row => {
+    const obsText = row.obs || ' '
+    
+    // 1. Asegurar que las columnas cortas quepan en la página actual
+    const labelHeight = doc.heightOfString(row.label, { width: col1Width - 10 })
+    const totalHeight = doc.heightOfString(row.total.toString(), { width: col2Width })
+    const maxShortHeight = Math.max(labelHeight, totalHeight) + 10
+
+    if (doc.y + maxShortHeight > doc.page.height - doc.page.margins.bottom) {
+      doc.addPage()
+      doc.moveTo(startX, doc.y).lineTo(startX + tableWidth, doc.y).stroke()
+    }
+
+    // 2. Guardamos la página y posición de inicio de la fila
+    let startPage = doc.bufferedPageRange().count - 1
+    let startY = doc.y
+
+    // 3. Dibujamos Columna 1 y 2 (Las que nunca desbordan la página)
+    doc.text(row.label, startX + 5, startY + 5, { width: col1Width - 10 })
+    let yAfterCol1 = doc.y // Guardamos dónde terminó el texto de la Columna 1
+    
+    doc.switchToPage(startPage)
+    doc.y = startY
+    doc.text(row.total.toString(), startX + col1Width, startY + 5, { width: col2Width, align: 'center' })
+    let yAfterCol2 = doc.y // Guardamos dónde terminó el texto de la Columna 2
+
+    // 4. Dibujamos Columna 3 (La que puede abarcar múltiples páginas)
+    doc.switchToPage(startPage)
+    doc.y = startY
+    doc.text(obsText, startX + col1Width + col2Width + 5, startY + 5, { width: col3Width - 10, align: 'left' })
+    let yAfterCol3 = doc.y // Guardamos dónde terminó el texto de la Columna 3
+
+    // 5. Registramos dónde terminó la fila
+    let endPage = doc.bufferedPageRange().count - 1
+    let endY;
+
+    // 👇 AQUÍ MODIFICAS LA ALTURA MÍNIMA / ESPACIADO INFERIOR
+    // Cambia este número (ej. a 15 o 20) si quieres que las filas de 1 sola línea se vean más altas
+    const paddingInferior = 8; 
+
+    if (endPage === startPage) {
+      // Si todo quedó en una sola página, buscamos cuál columna fue la más alta para no cortar texto
+      endY = Math.max(yAfterCol1, yAfterCol2, yAfterCol3) + paddingInferior;
+    } else {
+      // Si saltó de página, la columna 3 fue la más larga obligatoriamente
+      endY = yAfterCol3 + paddingInferior; 
+    }
+
+    // 6. Dibujar las líneas verticales (y horizontales de cierre/apertura) iterando por TODAS las páginas
+    for (let p = startPage; p <= endPage; p++) {
+      doc.switchToPage(p)
+      
+      let topY = (p === startPage) ? startY : doc.page.margins.top
+      let bottomY = (p === endPage) ? endY : (doc.page.height - doc.page.margins.bottom)
+
+      // Dibujar las líneas verticales
+      doc.moveTo(startX, topY).lineTo(startX, bottomY).stroke()
+      doc.moveTo(startX + col1Width, topY).lineTo(startX + col1Width, bottomY).stroke()
+      doc.moveTo(startX + col1Width + col2Width, topY).lineTo(startX + col1Width + col2Width, bottomY).stroke()
+      doc.moveTo(startX + tableWidth, topY).lineTo(startX + tableWidth, bottomY).stroke()
+
+      // --- NUEVO: CERRAR Y ABRIR LA TABLA EN LOS SALTOS DE PÁGINA ---
+      
+      // Si NO estamos en la última página de la fila, cerramos la tabla por abajo
+      if (p !== endPage) {
+        doc.moveTo(startX, bottomY).lineTo(startX + tableWidth, bottomY).stroke()
+      }
+      
+      // Si NO estamos en la primera página de la fila, abrimos la tabla por arriba
+      if (p !== startPage) {
+        doc.moveTo(startX, topY).lineTo(startX + tableWidth, topY).stroke()
+      }
+    }
+
+    // 7. Trazar la línea horizontal inferior en la última página de la fila
+    doc.switchToPage(endPage)
+    doc.moveTo(startX, endY ).lineTo(startX + tableWidth, endY).stroke()
+    doc.y = endY
+  })
+
+  // --- FILA DE TOTAL ---
+  doc.font('Helvetica-Bold').fontSize(10)
+  const footerHeight = doc.heightOfString('TOTAL:') + 10
+  
+  if (doc.y + footerHeight > doc.page.height - doc.page.margins.bottom) {
+    doc.addPage()
+    doc.moveTo(startX, doc.y).lineTo(startX + tableWidth, doc.y).stroke()
+  }
+
+  let currentYTotal = doc.y
+  doc.text('TOTAL:', startX + 5, currentYTotal + 5, { width: col1Width - 10, align: 'right' })
+  doc.text(totalBienesTabla.toString(), startX + col1Width, currentYTotal + 5, { width: col2Width, align: 'center' })
+
+  // Líneas verticales del total
+  doc.moveTo(startX, currentYTotal).lineTo(startX, currentYTotal + footerHeight).stroke()
+  doc.moveTo(startX + col1Width, currentYTotal).lineTo(startX + col1Width, currentYTotal + footerHeight).stroke()
+  doc.moveTo(startX + col1Width + col2Width, currentYTotal).lineTo(startX + col1Width + col2Width, currentYTotal + footerHeight).stroke()
+  doc.moveTo(startX + tableWidth, currentYTotal).lineTo(startX + tableWidth, currentYTotal + footerHeight).stroke()
+
+  doc.y = currentYTotal + footerHeight
+  doc.moveTo(startX, doc.y).lineTo(startX + tableWidth, doc.y).stroke()
 }
