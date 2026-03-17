@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PlusCircle, Search, Edit2, Trash2, X, Save, RefreshCw } from 'lucide-react';
 
-const API_URL = 'http://localhost:5003/api/equipos';
+const API_URL = '/api/equipos';
 
 const initialFormState = {
   nro_bien: '', nombre_equipo: '', direccion_oficina: '', tipo_equipo: '',
