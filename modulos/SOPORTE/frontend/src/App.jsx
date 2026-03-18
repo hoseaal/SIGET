@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PlusCircle, Search, Edit2, Trash2, X, Save, RefreshCw } from 'lucide-react';
 
-const API_URL = 'http://localhost:5003/api/equipos';
+const API_URL = '/api/equipos';
 
 const initialFormState = {
   nro_bien: '', nombre_equipo: '', dir_ide: '', tipo_equipo: '',
@@ -25,7 +25,7 @@ function App() {
   useEffect(() => {
     const fetchDirecciones = async () => {
       try {
-        const res = await fetch('http://localhost:5003/api/direcciones');
+        const res = await fetch('/api/direcciones');
         if (!res.ok) throw new Error('Error al cargar direcciones');
         const data = await res.json();
         setDirecciones(data);
