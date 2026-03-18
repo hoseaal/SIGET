@@ -98,7 +98,8 @@ export class PrestamoService {
     }
     console.log(dpr_est)
     const loanDetail = await PrestamoModel.checkBienPrestadoActiveNormalLoan(bim_ide)
-    if (!loanDetail || loanDetail.length === 0) {
+    const warehouseItem = await PrestamoModel.checkBienEnAlmacen(bim_ide)
+    if (!loanDetail || loanDetail.length === 0 || !warehouseItem || warehouseItem.length === 0) {
       throw new Error('El bien no pertenece a este préstamo.')
     }
     if (loanDetail.dpr_est === dpr_est) {
