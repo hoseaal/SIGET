@@ -4,6 +4,7 @@ import cors from 'cors'
 import morgan from 'morgan'
 
 import equipoRouter from './src/routes/equipo.routes.js'
+import direccionRouter from './src/routes/direccion.routes.js'
 
 const app = express()
 
@@ -29,6 +30,7 @@ app.use(cors({
 
 // Rutas
 app.use('/api/equipos', equipoRouter)
+app.use('/api/direcciones', direccionRouter)
 
 const PORT = process.env.PORT || 5003
 app.listen(PORT, () => {
