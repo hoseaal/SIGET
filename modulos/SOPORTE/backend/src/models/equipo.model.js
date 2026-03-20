@@ -17,7 +17,7 @@ export class EquipoModel {
 
   static async create (data) {
     const {
-      nro_bien, nombre_equipo, direccion_oficina, tipo_equipo, puerto_switch,
+      nro_bien, nombre_equipo, dir_ide, tipo_equipo, puerto_switch,
       mobo_marca, mobo_modelo, mobo_serial, disco_marca, disco_serial,
       disco_capacidad_gb, ram_marca, ram_tipo, ram_capacidad_gb, ram_serial,
       fuente_marca, fuente_vatios, fuente_serial, fuente_bien_mueble,
@@ -27,7 +27,7 @@ export class EquipoModel {
 
     const query = `
       INSERT INTO equipos_computo (
-        nro_bien, nombre_equipo, direccion_oficina, tipo_equipo, puerto_switch,
+        nro_bien, nombre_equipo, dir_ide, tipo_equipo, puerto_switch,
         mobo_marca, mobo_modelo, mobo_serial, disco_marca, disco_serial,
         disco_capacidad_gb, ram_marca, ram_tipo, ram_capacidad_gb, ram_serial,
         fuente_marca, fuente_vatios, fuente_serial, fuente_bien_mueble,
@@ -37,7 +37,7 @@ export class EquipoModel {
     `
 
     const values = [
-      nro_bien, nombre_equipo, direccion_oficina, tipo_equipo, puerto_switch,
+      nro_bien, nombre_equipo, dir_ide, tipo_equipo, puerto_switch,
       mobo_marca, mobo_modelo, mobo_serial, disco_marca, disco_serial,
       disco_capacidad_gb, ram_marca, ram_tipo, ram_capacidad_gb, ram_serial,
       fuente_marca, fuente_vatios, fuente_serial, fuente_bien_mueble,

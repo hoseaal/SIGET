@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { PlusCircle, Search, Edit2, Trash2, X, Save, RefreshCw } from 'lucide-react';
 
-const API_URL = 'http://localhost:5003/api/equipos';
+const API_URL = '/api/equipos';
 
 const initialFormState = {
-  nro_bien: '', nombre_equipo: '', direccion_oficina: '', tipo_equipo: '',
+  nro_bien: '', nombre_equipo: '', dir_ide: '', tipo_equipo: '',
   puerto_switch: '', mobo_marca: '', mobo_modelo: '', mobo_serial: '',
   disco_marca: '', disco_serial: '', disco_capacidad_gb: '', ram_marca: '',
   ram_tipo: '', ram_capacidad_gb: '', ram_serial: '', fuente_marca: '',
@@ -20,6 +20,22 @@ function App() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState(initialFormState);
   const [editingId, setEditingId] = useState(null);
+  const [direcciones, setDirecciones] = useState([]);
+
+  useEffect(() => {
+    const fetchDirecciones = async () => {
+      try {
+        const res = await fetch('/api/direcciones');
+        if (!res.ok) throw new Error('Error al cargar direcciones');
+        const data = await res.json();
+        setDirecciones(data);
+      } catch (err) {
+        console.error("Error catálogos:", err);
+      }
+    };
+    fetchDirecciones();
+    fetchEquipos();
+  }, []);
 
   // Traer los datos que ya están en la base de datos
   const fetchEquipos = async () => {
@@ -167,8 +183,19 @@ function App() {
                   <input name="nombre_equipo" value={formData.nombre_equipo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-sm outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Dirección Oficina</label>
-                  <input name="direccion_oficina" value={formData.direccion_oficina} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-sm outline-none transition-all" />
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Dirección Oficina *</label>
+                  <select 
+                    required 
+                    name="dir_ide" 
+                    value={formData.dir_ide} 
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border rounded-md bg-white text-sm"
+                  >
+                    <option value="">Seleccione una dirección...</option>
+                    {direcciones.map(dir => (
+                      <option key={dir.dir_ide} value={dir.dir_ide}>{dir.dir_nom}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Tipo Equipo</label>
