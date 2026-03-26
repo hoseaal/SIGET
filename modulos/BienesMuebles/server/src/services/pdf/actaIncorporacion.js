@@ -51,32 +51,6 @@ function numberToWords (num) {
   return result.trim()
 }
 
-function formatCurrentDateTime () {
-  const now = new Date()
-  const day = now.getDate()
-  const monthNames = [
-    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-  ]
-  const month = monthNames[now.getMonth()]
-  const year = now.getFullYear()
-  const yearInWords = numberToWords(year)
-
-  let hours = now.getHours()
-  const minutes = now.getMinutes()
-  const ampm = hours >= 12 ? 'p.m.' : 'a.m.'
-  hours = hours % 12
-  hours = hours || 12 // the hour '0' should be '12'
-  const strMinutes = minutes < 10 ? '0' + minutes : minutes
-
-  return {
-    day,
-    month,
-    yearInWords,
-    time: `${hours}:${strMinutes} ${ampm}`
-  }
-}
-
 function toUpperCase (str) {
   return str ? String(str).toUpperCase() : 'N/A'
 }
@@ -97,7 +71,11 @@ export const generarActaIncorporacion = (datos) => {
     doc.pipe(stream)
 
     // Current date and time for the document
-    const { day, month, yearInWords, time } = formatCurrentDateTime()
+    const day = datos.dia || 'XX';
+    const month = datos.mes || 'XXXXXX';
+    const yearNumber = parseInt(datos.anio) || 2026;
+    const yearInWords = numberToWords(yearNumber);
+    const time = datos.hora || '--:--'; // Hora del cliente recibida
 
     // Ensure all string variables are uppercase and cleaned
     const nombreDirectorAdmin = toUpperCase(datos.nombreDirectorAdmin)
@@ -110,6 +88,7 @@ export const generarActaIncorporacion = (datos) => {
     const nombreAnalistaBienes = toUpperCase(datos.nombreAnalistaBienes)
     const ciAnalistaBienes = datos.ciAnalistaBienes || 'N/A'
     const codigoBien = datos.codigoBien || 'N/A'
+    const descripcionIncorporacion = datos.descripcionIncorporacion || 'N/A'
     const unidadDestino = toUpperCase(datos.unidadDestino)
     const numeroActa = datos.numeroActa || 'N/A'
     const nombreFuncionarioElabora = toUpperCase(datos.nombreFuncionarioElabora)
@@ -136,8 +115,8 @@ export const generarActaIncorporacion = (datos) => {
     const introText = `En la ciudad de San Cristóbal a los ${day} días del mes de ${month} del año ${yearInWords} siendo las ${time} reunidos en la sede de la Contraloría del Estado Táchira, Municipio San Cristóbal, Parroquia La Concordia, en la Dirección de Administración, los abajo firmantes: ${nombreDirectorAdmin} titular de la cédula de identidad No. ${ciDirectorAdmin} Director(a) de Administración; ${nombreDirectorAsignacion} titular de la Cédula de Identidad No. ${ciDirectorAsignacion} Director(a) de ${unidadAsignacion}, ${nombreJefeCompras} titular de la Cédula de Identidad No.${ciJefeCompras} Jefe de la División de Compras, Bienes e Inventarios, ${nombreAnalistaBienes} titular de la cédula de identidad N°${ciAnalistaBienes} Analista de Bienes e Inventarios IV, para dejar constancia por medio de la presente acta de la `
 
     doc.text(introText, { align: 'justify', continued: true }) // Use continued to flow into bold text
-    doc.font('Helvetica-Bold').text('INCORPORACIÓN', { continued: true })
-    doc.font('Helvetica').text(` del bien que se detalla a continuación: Código. ${codigoBien} Se incorpora el anterior bien a la ${unidadDestino}.`)
+    doc.font('Helvetica-Bold').text('INCORPORACIÓN ', { continued: true })
+    doc.font('Helvetica').text(` del bien que se detalla a continuación: ${codigoBien}: ${descripcionIncorporacion} Se incorpora el anterior bien a la ${unidadDestino}.`)
     doc.moveDown(1)
     doc.text('En fe de lo expuesto, se elaboran tres ejemplares a un solo tenor y un mismo efecto y en conformidad firman:')
     doc.moveDown(3) // Space before signatures

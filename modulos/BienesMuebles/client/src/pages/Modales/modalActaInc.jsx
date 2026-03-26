@@ -174,14 +174,19 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
   const handleSubmit = async () => {
     if (!bienData) return;
 
+  const now = new Date();
+  const horaCliente = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  const fechaInc = bienData.bim_fec ? new Date(bienData.bim_fec) : new Date();
+
     const datosActa = {
       fechaActualizacion: 'DICIEMBRE 2015',
       numeroActa: formData.numeroActa,
       ciudad: 'San Cristóbal',
-      dia,
-      mes,
-      anio,
-      hora,
+      dia: (fechaInc.getDate() + 1).toString(), // +1 si hay desfase por zona horaria en strings ISO
+      mes: fechaInc.toLocaleString('es-ES', { month: 'long' }),
+      anio: fechaInc.getFullYear().toString(),
+      hora: horaCliente, // Enviamos la hora del cliente
       nombreDirectorAdmin: formData.nombreDirectorAdmin,
       ciDirectorAdmin: formData.ciDirectorAdmin,
       nombreDirectorAsignacion: formData.nombreDirectorAsignacion,
@@ -200,10 +205,10 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
     const datosActaCET = {
       numeroActa: formData.numeroActa,
       ciudad: 'San Cristóbal',
-      dia,
-      mes,
-      anio,
-      hora,
+      dia: (fechaInc.getDate() + 1).toString(), // +1 si hay desfase por zona horaria en strings ISO
+      mes: fechaInc.toLocaleString('es-ES', { month: 'long' }),
+      anio: fechaInc.getFullYear().toString(),
+      hora: horaCliente, // Enviamos la hora del cliente
       nombreDirectorAdmin: formData.nombreDirectorAdmin,
       ciDirectorAdmin: formData.ciDirectorAdmin,
       nombreDirectorAsignacion: formData.nombreDirectorAsignacion,

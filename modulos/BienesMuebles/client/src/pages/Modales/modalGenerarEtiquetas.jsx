@@ -85,6 +85,7 @@ const ModalGenerarEtiquetas = ({ show, handleClose }) => {
           const bienesFormateados = data.map(bien => ({
             bim_ide: bien.bim_ide,
             departamento: bien.departamento,
+            descripcion: bien.bim_des || 'N/A',
             bim_fec: new Date(bien.bim_fec).toLocaleDateString('es-ES') // Formato DD/MM/YYYY
           }));
           
@@ -134,6 +135,7 @@ const ModalGenerarEtiquetas = ({ show, handleClose }) => {
       const bienFormateado = {
         bim_ide: data.bim_ide,
         departamento: data.departamento,
+        descripcion: data.bim_des,
         bim_fec: new Date(data.bim_fec).toLocaleDateString('es-ES')
       };
 
