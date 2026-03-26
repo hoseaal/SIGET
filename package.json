@@ -4,6 +4,8 @@
     "devv": "cd modulos/RRHH/server && npm run dev",
     "start": "cd modulos/BienesMuebles/client && npm run dev",
     "startt": "cd modulos/RRHH/client && npm run dev",
+    "devvv": "cd modulos/SOPORTE/backend && npm run dev",
+    "startvv": "cd modulos/SOPORTE/frontend && npm run dev",
     "fullstack": "concurrently \"npm run start\" \"npm run dev\""
   },
   "dependencies": {
@@ -13,7 +15,10 @@
     "react-select": "^5.10.1"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.2.1",
     "concurrently": "^9.1.2",
-    "standard": "^17.1.2"
+    "lucide-react": "^0.577.0",
+    "standard": "^17.1.2",
+    "tailwindcss": "^4.2.1"
   }
 }
