@@ -12,7 +12,7 @@ export class CargoOnapreService {
   }
 
   static async crear (datos) {
-    if (!datos.ona_nom) throw new Error('El nombre del cargo ONAPRE es requerido')
+    if (!datos.nombre) throw new Error('El nombre del cargo ONAPRE es requerido')
     return await CargoOnapreModel.create(datos)
   }
 
@@ -20,7 +20,7 @@ export class CargoOnapreService {
     const existe = await CargoOnapreModel.getById(id)
     if (!existe) throw new Error('Cargo ONAPRE no existe')
     
-    if (!datos.ona_nom) throw new Error('El nombre es requerido para actualizar')
+    if (!datos.nombre) throw new Error('El nombre es requerido para actualizar')
 
     return await CargoOnapreModel.update(id, datos)
   }

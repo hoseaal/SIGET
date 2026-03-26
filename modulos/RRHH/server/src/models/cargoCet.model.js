@@ -3,33 +3,33 @@ import pool from '../utils/database.js'
 
 export class CargoCetModel {
   static async getAll () {
-    const [rows] = await pool.query('SELECT * FROM tmacet')
+    const [rows] = await pool.query('SELECT * FROM cargos_cet')
     return rows
   }
 
   static async getById (id) {
-    const [rows] = await pool.query('SELECT * FROM tmacet WHERE cet_ide = ?', [id])
+    const [rows] = await pool.query('SELECT * FROM cargos_cet WHERE cargo_cet_id = ?', [id])
     return rows[0] || null
   }
 
-  static async create ({ cet_nom }) {
+  static async create ({ nombre }) {
     const [result] = await pool.query(
-      'INSERT INTO tmacet (cet_nom) VALUES (?)',
-      [cet_nom]
+      'INSERT INTO cargos_cet (nombre) VALUES (?)',
+      [nombre]
     )
-    return { cet_ide: result.insertId, cet_nom }
+    return { cargo_cet_id: result.insertId, nombre }
   }
 
-  static async update (id, { cet_nom }) {
+  static async update (id, { nombre }) {
     const [result] = await pool.query(
-      'UPDATE tmacet SET cet_nom = ? WHERE cet_ide = ?',
-      [cet_nom, id]
+      'UPDATE cargos_cet SET nombre = ? WHERE cargo_cet_id = ?',
+      [nombre, id]
     )
     return result.affectedRows > 0
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tmacet WHERE cet_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM cargos_cet WHERE cargo_cet_id = ?', [id])
     return result.affectedRows > 0
   }
 }

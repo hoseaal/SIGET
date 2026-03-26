@@ -44,7 +44,7 @@ const [userType, setUserType] = useState(null);
                     const userDataResult = await userRes.json();
                     if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
                     
-                    const currentUserType = userDataResult.user.usu_tip;
+                    const currentUserType = userDataResult.user.rol_id;
                     setUserType(currentUserType);
                     setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
                 } catch (error) {

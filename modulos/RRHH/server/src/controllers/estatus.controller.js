@@ -15,7 +15,7 @@ export const obtenerListaEstatus = async (req, res) => {
 
 /**
  * Busca un estatus específico por su ID.
- * @param {number} req.params.id - Identificador único (est_ide).
+ * @param {number} req.params.id - Identificador único (estatus_id).
  * @returns {Promise<object>} Objeto con los datos del estatus.
  */
 export const obtenerEstatus = async (req, res) => {
@@ -31,7 +31,7 @@ export const obtenerEstatus = async (req, res) => {
 /**
  * Crea un nuevo estatus para funcionarios.
  * @param {object} req.body - Datos del estatus.
- * @param {string} req.body.est_nom - Nombre o descripción (Ej: "Activo", "Vacaciones").
+ * @param {string} req.body.nombre - Nombre o descripción (Ej: "Activo", "Vacaciones").
  * @returns {Promise<object>} El estatus creado.
  */
 export const crearEstatus = async (req, res) => {
@@ -47,7 +47,7 @@ export const crearEstatus = async (req, res) => {
  * Actualiza la descripción de un estatus existente.
  * @param {number} req.params.id - ID del estatus a modificar.
  * @param {object} req.body - Datos nuevos.
- * @param {string} req.body.est_nom - Nuevo nombre del estatus.
+ * @param {string} req.body.nombre - Nuevo nombre del estatus.
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarEstatus = async (req, res) => {

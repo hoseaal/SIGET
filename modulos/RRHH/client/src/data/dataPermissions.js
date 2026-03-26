@@ -1,10 +1,10 @@
 /**
  * Define los permisos para cada elemento del menú según el tipo de usuario.
  * La clave es el 'link' del elemento del menú y el valor es un array con los
- * 'usu_tip' que tienen permiso. Un array vacío [] significa que nadie tiene acceso,
+ * 'rol_id' que tienen permiso. Un array vacío [] significa que nadie tiene acceso,
  * mientras que si una ruta no está en esta lista, se asume que es pública o
  * se manejará con una lógica por defecto.
- * * Asumamos los siguientes tipos de usuario (usu_tip):
+ * * Asumamos los siguientes tipos de usuario (rol_id):
  * 1: Visualizador
  * 2: Temporal
  * 3: Trabajador

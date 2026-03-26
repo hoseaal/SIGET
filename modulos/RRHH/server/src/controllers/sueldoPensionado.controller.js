@@ -16,7 +16,7 @@ export const obtenerSueldoActual = async (req, res) => {
 /**
  * Guarda (Sobrescribe) el sueldo base.
  * Elimina cualquier registro previo para garantizar que solo haya uno.
- * @param {number} req.body.sup_sal - Monto del salario.
+ * @param {number} req.body.salario_base - Monto del salario.
  */
 export const guardarSueldo = async (req, res) => {
   try {

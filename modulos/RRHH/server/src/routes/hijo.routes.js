@@ -10,7 +10,7 @@ import {
 const router = express.Router()
 
 // GET: Traer todos los hijos de un funcionario especifico
-router.get('/funcionario/:fun_ide', obtenerHijosPorFuncionario)
+router.get('/funcionario/:empleado_id', obtenerHijosPorFuncionario)
 
 // CRUD Individual (Por ID del hijo)
 router.get('/:id', obtenerHijo)

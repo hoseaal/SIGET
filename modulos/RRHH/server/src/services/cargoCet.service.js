@@ -12,7 +12,7 @@ export class CargoCetService {
   }
 
   static async crear (datos) {
-    if (!datos.cet_nom) throw new Error('El nombre del cargo CET es requerido')
+    if (!datos.nombre) throw new Error('El nombre del cargo CET es requerido')
     return await CargoCetModel.create(datos)
   }
 
@@ -20,7 +20,7 @@ export class CargoCetService {
     const existe = await CargoCetModel.getById(id)
     if (!existe) throw new Error('Cargo CET no existe')
     
-    if (!datos.cet_nom) throw new Error('El nombre es requerido para actualizar')
+    if (!datos.nombre) throw new Error('El nombre es requerido para actualizar')
 
     return await CargoCetModel.update(id, datos)
   }

@@ -10,29 +10,29 @@ export class FuncionarioModel {
 
     // Filtro global de búsqueda
     if (filters.search) {
-      where.push('(t.fun_nom LIKE ? OR t.fun_ape LIKE ? OR t.fun_ced LIKE ?)')
+      where.push('(t.nombres LIKE ? OR t.apellidos LIKE ? OR t.cedula LIKE ?)')
       const like = `%${filters.search}%`
       params.push(like, like, like)
     }
 
     // Filtros específicos de la tabla personal
-    if (filters.pro_ide) { where.push('t.pro_ide = ?'); params.push(filters.pro_ide) }
-    if (filters.est_ide) { where.push('t.est_ide = ?'); params.push(filters.est_ide) }
-    if (filters.fun_gen) { where.push('t.fun_gen = ?'); params.push(filters.fun_gen) }
+    if (filters.profesion_id) { where.push('t.profesion_id = ?'); params.push(filters.profesion_id) }
+    if (filters.estatus_id) { where.push('t.estatus_id = ?'); params.push(filters.estatus_id) }
+    if (filters.genero) { where.push('t.genero = ?'); params.push(filters.genero) }
     if (filters.dep) {
-      where.push('EXISTS (SELECT 1 FROM tesfun contrato WHERE contrato.fun_ide = t.fun_ide AND contrato.dir_ide = ?)')
+      where.push('EXISTS (SELECT 1 FROM datos_laborales contrato WHERE contrato.empleado_id = t.empleado_id AND contrato.direccion_id = ?)')
       params.push(filters.dep)
     }
-    //Esto porque el departamento no está en la tabla personal, sino en tesfun (contrato), entonces hacemos un subquery para filtrar por ese campo específico de contrato.
-    //De lo contrario si hubiéramos puesto un simple 't.dir_ide = ?' no funcionaría porque no existe ese campo en tmafun, sino en tesfun, entonces con el EXISTS hacemos esa validación de que exista un contrato con ese departamento para ese funcionario.
+    //Esto porque el departamento no está en la tabla personal, sino en datos_laborales (contrato), entonces hacemos un subquery para filtrar por ese campo específico de contrato.
+    //De lo contrario si hubiéramos puesto un simple 't.direccion_id = ?' no funcionaría porque no existe ese campo en empleados, sino en datos_laborales, entonces con el EXISTS hacemos esa validación de que exista un contrato con ese departamento para ese funcionario.
 
     // Rango de edad (calculado en SQL)
     if (filters.edad_min) {
-      where.push('TIMESTAMPDIFF(YEAR, t.fun_fna, CURDATE()) >= ?')
+      where.push('TIMESTAMPDIFF(YEAR, t.fecha_nacimiento, CURDATE()) >= ?')
       params.push(filters.edad_min)
     }
     if (filters.edad_max) {
-      where.push('TIMESTAMPDIFF(YEAR, t.fun_fna, CURDATE()) <= ?')
+      where.push('TIMESTAMPDIFF(YEAR, t.fecha_nacimiento, CURDATE()) <= ?')
       params.push(filters.edad_max)
     }
 
@@ -51,27 +51,27 @@ export class FuncionarioModel {
     if (includeContract) {
       sql = `
         SELECT t.*, 
-               TIMESTAMPDIFF(YEAR, t.fun_fna, CURDATE()) as edad,
-               c.cet_ide, c.ona_ide, c.niv_ide, c.col_ide, c.uni_ide, c.div_ide, c.dir_ide,
-               cet.cet_nom, ona.ona_nom, niv.niv_sal, dir.dir_nom, uni.uni_nom, divi.div_nom
-        FROM tmafun t
-        LEFT JOIN tesfun c ON t.fun_ide = c.fun_ide
-        LEFT JOIN tmacet cet ON c.cet_ide = cet.cet_ide
-        LEFT JOIN tmaona ona ON c.ona_ide = ona.ona_ide
-        LEFT JOIN tesniv niv ON c.niv_ide = niv.niv_ide
-        LEFT JOIN tmadir dir ON c.dir_ide = dir.dir_ide
-        LEFT JOIN tesdiv divi ON c.div_ide = divi.div_ide
-        LEFT JOIN tesuni uni ON c.uni_ide = uni.uni_ide
+               TIMESTAMPDIFF(YEAR, t.fecha_nacimiento, CURDATE()) as edad,
+               c.cargo_cet_id, c.cargo_onapre_id, c.nivel_salarial_id, c.condicion_laboral_id, c.unidad_id, c.division_id, c.direccion_id,
+               cet.nombre, ona.nombre, niv.salario_base, dir.nombre, uni.nombre, divi.nombre
+        FROM empleados t
+        LEFT JOIN datos_laborales c ON t.empleado_id = c.empleado_id
+        LEFT JOIN cargos_cet cet ON c.cargo_cet_id = cet.cargo_cet_id
+        LEFT JOIN cargos_onapre ona ON c.cargo_onapre_id = ona.cargo_onapre_id
+        LEFT JOIN niveles_salariales niv ON c.nivel_salarial_id = niv.nivel_salarial_id
+        LEFT JOIN direcciones dir ON c.direccion_id = dir.direccion_id
+        LEFT JOIN divisiones divi ON c.division_id = divi.division_id
+        LEFT JOIN unidades uni ON c.unidad_id = uni.unidad_id
         ${whereClause}
-        ORDER BY t.fun_ape ASC
+        ORDER BY t.apellidos ASC
       `
     } else {
       // Solo tabla personal
       sql = `
-        SELECT *, TIMESTAMPDIFF(YEAR, fun_fna, CURDATE()) as edad 
-        FROM tmafun t 
+        SELECT *, TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) as edad 
+        FROM empleados t 
         ${whereClause} 
-        ORDER BY fun_ape ASC
+        ORDER BY apellidos ASC
       `
     }
 
@@ -87,7 +87,7 @@ export class FuncionarioModel {
 
   static async countFiltered (filters) {
     const { whereClause, params } = this._buildWhere(filters)
-    const sql = `SELECT COUNT(*) as total FROM tmafun t ${whereClause}`
+    const sql = `SELECT COUNT(*) as total FROM empleados t ${whereClause}`
     const [rows] = await pool.query(sql, params)
     return rows[0].total
   }
@@ -98,39 +98,39 @@ export class FuncionarioModel {
       // AQUÍ AGREGAMOS LA LÓGICA DEL ENCARGO ACTIVO
       sql = `
         SELECT t.*, 
-               TIMESTAMPDIFF(YEAR, t.fun_fna, CURDATE()) as edad,
+               TIMESTAMPDIFF(YEAR, t.fecha_nacimiento, CURDATE()) as edad,
                
                -- Datos Contrato Base (Alias normales)
                c.*, 
-               cet.cet_nom, ona.ona_nom, niv.niv_sal, dir.dir_nom, uni.uni_nom,
+               cet.nombre, ona.nombre, niv.salario_base, dir.nombre, uni.nombre,
 
                -- Datos Encargo Activo (Alias con prefijo 'enc_')
-               e.enc_ide as enc_id, e.enc_ini,
-               ecet.cet_nom as enc_cargo,
-               eniv.niv_sal as enc_salario,
-               edir.dir_nom as enc_direccion,
-               euni.uni_nom as enc_unidad
+               e.encargo_id as enc_id, e.fecha_inicio,
+               ecet.nombre as enc_cargo,
+               eniv.salario_base as enc_salario,
+               edir.nombre as enc_direccion,
+               euni.nombre as enc_unidad
 
-        FROM tmafun t 
+        FROM empleados t 
         -- Joins Contrato Base
-        LEFT JOIN tesfun c ON t.fun_ide = c.fun_ide 
-        LEFT JOIN tmacet cet ON c.cet_ide = cet.cet_ide
-        LEFT JOIN tmaona ona ON c.ona_ide = ona.ona_ide
-        LEFT JOIN tesniv niv ON c.niv_ide = niv.niv_ide
-        LEFT JOIN tmadir dir ON c.dir_ide = dir.dir_ide
-        LEFT JOIN tesuni uni ON c.uni_ide = uni.uni_ide
+        LEFT JOIN datos_laborales c ON t.empleado_id = c.empleado_id 
+        LEFT JOIN cargos_cet cet ON c.cargo_cet_id = cet.cargo_cet_id
+        LEFT JOIN cargos_onapre ona ON c.cargo_onapre_id = ona.cargo_onapre_id
+        LEFT JOIN niveles_salariales niv ON c.nivel_salarial_id = niv.nivel_salarial_id
+        LEFT JOIN direcciones dir ON c.direccion_id = dir.direccion_id
+        LEFT JOIN unidades uni ON c.unidad_id = uni.unidad_id
         
         -- Joins Encargo (Solo si es activo est=1)
-        LEFT JOIN tesenc e ON t.fun_ide = e.fun_ide AND e.enc_est = 1
-        LEFT JOIN tmacet ecet ON e.cet_ide = ecet.cet_ide
-        LEFT JOIN tesniv eniv ON e.niv_ide = eniv.niv_ide
-        LEFT JOIN tmadir edir ON e.dir_ide = edir.dir_ide
-        LEFT JOIN tesuni euni ON e.uni_ide = euni.uni_ide
+        LEFT JOIN encargos_temporales e ON t.empleado_id = e.empleado_id AND e.estatus_encargo = 1
+        LEFT JOIN cargos_cet ecet ON e.cargo_cet_id = ecet.cargo_cet_id
+        LEFT JOIN niveles_salariales eniv ON e.nivel_salarial_id = eniv.nivel_salarial_id
+        LEFT JOIN direcciones edir ON e.direccion_id = edir.direccion_id
+        LEFT JOIN unidades euni ON e.unidad_id = euni.unidad_id
 
-        WHERE t.fun_ide = ?
+        WHERE t.empleado_id = ?
       `
     } else {
-      sql = 'SELECT *, TIMESTAMPDIFF(YEAR, fun_fna, CURDATE()) as edad FROM tmafun WHERE fun_ide = ?'
+      sql = 'SELECT *, TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) as edad FROM empleados WHERE empleado_id = ?'
     }
     const [rows] = await pool.query(sql, [id])
     return rows[0] || null
@@ -142,18 +142,18 @@ export class FuncionarioModel {
     try {
       await connection.beginTransaction()
 
-      // 1. Insert tmafun
-      const [resFun] = await connection.query('INSERT INTO tmafun SET ?', [personalData])
+      // 1. Insert empleados
+      const [resFun] = await connection.query('INSERT INTO empleados SET ?', [personalData])
       const funId = resFun.insertId
 
-      // 2. Insert tesfun (si existe)
+      // 2. Insert datos_laborales (si existe)
       if (contractData && Object.keys(contractData).length > 0) {
-        const contractPayload = { ...contractData, fun_ide: funId }
-        await connection.query('INSERT INTO tesfun SET ?', [contractPayload])
+        const contractPayload = { ...contractData, empleado_id: funId }
+        await connection.query('INSERT INTO datos_laborales SET ?', [contractPayload])
       }
 
       await connection.commit()
-      return { fun_ide: funId, ...personalData, contrato: contractData }
+      return { empleado_id: funId, ...personalData, contrato: contractData }
 
     } catch (error) {
       await connection.rollback()
@@ -169,18 +169,18 @@ export class FuncionarioModel {
     try {
       await connection.beginTransaction()
 
-      // 1. Update tmafun
+      // 1. Update empleados
       if (personalData && Object.keys(personalData).length > 0) {
-        await connection.query('UPDATE tmafun SET ? WHERE fun_ide = ?', [personalData, id])
+        await connection.query('UPDATE empleados SET ? WHERE empleado_id = ?', [personalData, id])
       }
 
-      // 2. Upsert tesfun
+      // 2. Upsert datos_laborales
       if (contractData && Object.keys(contractData).length > 0) {
-        const [rows] = await connection.query('SELECT fun_ide FROM tesfun WHERE fun_ide = ?', [id])
+        const [rows] = await connection.query('SELECT empleado_id FROM datos_laborales WHERE empleado_id = ?', [id])
         if (rows.length > 0) {
-          await connection.query('UPDATE tesfun SET ? WHERE fun_ide = ?', [contractData, id])
+          await connection.query('UPDATE datos_laborales SET ? WHERE empleado_id = ?', [contractData, id])
         } else {
-          await connection.query('INSERT INTO tesfun SET ?', [{ ...contractData, fun_ide: id }])
+          await connection.query('INSERT INTO datos_laborales SET ?', [{ ...contractData, empleado_id: id }])
         }
       }
 
@@ -195,30 +195,30 @@ export class FuncionarioModel {
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tmafun WHERE fun_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM empleados WHERE empleado_id = ?', [id])
     return result.affectedRows > 0
   }
 
   static async createEncargo (data) {
     // Validamos si ya tiene uno activo para evitar duplicidad lógica
-    const [activos] = await pool.query('SELECT enc_ide FROM tesenc WHERE fun_ide = ? AND enc_est = 1', [data.fun_ide])
+    const [activos] = await pool.query('SELECT encargo_id FROM encargos_temporales WHERE empleado_id = ? AND estatus_encargo = 1', [data.empleado_id])
     if (activos.length > 0) {
       throw new Error('El funcionario ya tiene un encargo activo. Debe finalizarlo primero.')
     }
     
-    const sql = `INSERT INTO tesenc SET ?`
+    const sql = `INSERT INTO encargos_temporales SET ?`
     const [result] = await pool.query(sql, data)
     return result.insertId
   }
 
-  static async deactivateEncargo (fun_ide) {
+  static async deactivateEncargo (empleado_id) {
     // Actualizamos el encargo activo, poniendo fecha fin HOY (CURDATE) y estatus 0
     const sql = `
-      UPDATE tesenc 
-      SET enc_est = 0, enc_fin = CURDATE() 
-      WHERE fun_ide = ? AND enc_est = 1
+      UPDATE encargos_temporales 
+      SET estatus_encargo = 0, fecha_fin = CURDATE() 
+      WHERE empleado_id = ? AND estatus_encargo = 1
     `
-    const [result] = await pool.query(sql, [fun_ide])
+    const [result] = await pool.query(sql, [empleado_id])
     return result.affectedRows > 0
   }
 }

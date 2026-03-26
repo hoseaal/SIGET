@@ -15,7 +15,7 @@ export const obtenerAntiguedades = async (req, res) => {
 
 /**
  * Busca un registro de antigüedad por ID.
- * @param {number} req.params.id - Identificador único (ant_ide).
+ * @param {number} req.params.id - Identificador único (antiguedad_id).
  * @returns {Promise<object>} Objeto con los datos.
  */
 export const obtenerAntiguedad = async (req, res) => {
@@ -31,7 +31,7 @@ export const obtenerAntiguedad = async (req, res) => {
 /**
  * Crea un nuevo escalafón de antigüedad.
  * @param {object} req.body - Datos del registro.
- * @param {number} req.body.ant_ani - Años de servicio (Debe ser único).
+ * @param {number} req.body.anios_cumplidos - Años de servicio (Debe ser único).
  * @param {number} req.body.ant_act - Porcentaje a aplicar.
  * @returns {Promise<object>} Registro creado.
  */

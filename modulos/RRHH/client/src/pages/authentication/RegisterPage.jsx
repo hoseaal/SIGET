@@ -12,47 +12,47 @@ export const RegisterPage = () => {
         ced: '',
         password1: '',
         password2: '',
-        usu_usu: '',
+        username: '',
         nombre: '',
         ape: '',
-        usu_tip: '',
-        usu_mod: ''
+        rol_id: '',
+        modulo_id: ''
     });
 
     const tipo = [
                 {
-                    "usu_tip": 1,
+                    "rol_id": 1,
                     "tipo": "Visualizador"
                 },
                 {
-                    "usu_tip": 2,
+                    "rol_id": 2,
                     "tipo": "Temporal"
                 },
                 {
-                    "usu_tip": 3,
+                    "rol_id": 3,
                     "tipo": "Trabajador"
                 },
                 {
-                    "usu_tip": 4,
+                    "rol_id": 4,
                     "tipo": "Jefe de area"
                 },
                 {
-                    "usu_tip": 5,
+                    "rol_id": 5,
                     "tipo": "Administrador"
                 }
             ];
 
             const modulos = [
                 {
-                    "usu_mod": 1,
+                    "modulo_id": 1,
                     "mod": "Acceso Global"
                 },
                 {
-                    "usu_mod": 2,
+                    "modulo_id": 2,
                     "mod": "Modulo de Recursos Humanos"
                 },
                 {
-                    "usu_mod": 3,
+                    "modulo_id": 3,
                     "mod": "Modulo de Bienes Muebles"
                 }
             ];
@@ -185,13 +185,13 @@ export const RegisterPage = () => {
                                             <Form.Group >
                                                 <Form.Select 
                                                 className="form-control"
-                                                    name='usu_tip'
-                                                    value={formData.usu_tip}
+                                                    name='rol_id'
+                                                    value={formData.rol_id}
                                                     onChange={handleChange}
                                                 >
                                                     <option value="">Seleccedone una opción</option>
                                                 {tipo.map((item) => (
-                                                    <option key={item.usu_tip} value={item.usu_tip}>
+                                                    <option key={item.rol_id} value={item.rol_id}>
                                                         {item.tipo}
                                                     </option>
                                                 ))}
@@ -210,13 +210,13 @@ export const RegisterPage = () => {
                                             <Form.Group >
                                                 <Form.Select 
                                                 className="form-control"
-                                                    name='usu_mod'
-                                                    value={formData.usu_mod}
+                                                    name='modulo_id'
+                                                    value={formData.modulo_id}
                                                     onChange={handleChange}
                                                 >
                                                     <option value="">Seleccedone una opción</option>
                                                     {modulos.map((item) => (
-                                                    <option key={item.usu_mod} value={item.usu_mod}>
+                                                    <option key={item.modulo_id} value={item.modulo_id}>
                                                         {item.mod}
                                                     </option>
                                                 ))}
@@ -235,10 +235,10 @@ export const RegisterPage = () => {
                                             <input
                                                 type="text"
                                                 className="form-control"
-                                                id="usu_usu"
-                                                value={formData.usu_usu}
+                                                id="username"
+                                                value={formData.username}
                                                 onChange={handleChange}
-                                                name="usu_usu"
+                                                name="username"
                                                 placeholder="Ingresa el usuario"
                                                 autoFocus />
                                         </div>

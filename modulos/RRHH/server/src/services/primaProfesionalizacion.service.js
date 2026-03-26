@@ -13,10 +13,10 @@ export class PrimaProfesionalizacionService {
 
   static async crear (datos) {
     // Validaciones
-    if (!datos.prf_nom) throw new Error('La descripción de la prima es requerida')
+    if (!datos.descripcion) throw new Error('La descripción de la prima es requerida')
     
-    // Validar que prf_act venga definido y sea número
-    if (datos.prf_act === undefined || datos.prf_act === null) {
+    // Validar que porcentaje_actual venga definido y sea número
+    if (datos.porcentaje_actual === undefined || datos.porcentaje_actual === null) {
       throw new Error('El porcentaje actual es requerido')
     }
 
@@ -27,7 +27,7 @@ export class PrimaProfesionalizacionService {
     const existe = await PrimaProfesionalizacionModel.getById(id)
     if (!existe) throw new Error('Registro no existe')
     
-    if (!datos.prf_nom || datos.prf_act === undefined) {
+    if (!datos.descripcion || datos.porcentaje_actual === undefined) {
       throw new Error('Descripción y Porcentaje Actual son requeridos para actualizar')
     }
 

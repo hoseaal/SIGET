@@ -32,7 +32,7 @@ export const authenticate = (req, res, next) => {
 }
 
 export const checkRole = (rolesPermitidos) => (req, res, next) => {
-  if (!rolesPermitidos.includes(req.user.usu_tip)) {
+  if (!rolesPermitidos.includes(req.user.rol_id)) {
     return res.status(403).json({ error: 'Acceso prohibido' })
   }
   next()

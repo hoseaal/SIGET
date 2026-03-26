@@ -15,7 +15,7 @@ export const obtenerCargosCet = async (req, res) => {
 
 /**
  * Busca un Cargo CET específico por su ID.
- * @param {number} req.params.id - Identificador único (cet_ide).
+ * @param {number} req.params.id - Identificador único (cargo_cet_id).
  * @returns {Promise<object>} Objeto con los datos del cargo.
  */
 export const obtenerCargoCet = async (req, res) => {
@@ -31,7 +31,7 @@ export const obtenerCargoCet = async (req, res) => {
 /**
  * Crea un nuevo Cargo CET.
  * @param {object} req.body - Datos del cargo.
- * @param {string} req.body.cet_nom - Nombre del cargo (Requerido).
+ * @param {string} req.body.nombre - Nombre del cargo (Requerido).
  * @returns {Promise<object>} El cargo creado con su ID.
  */
 export const crearCargoCet = async (req, res) => {
@@ -47,7 +47,7 @@ export const crearCargoCet = async (req, res) => {
  * Actualiza la descripción de un Cargo CET existente.
  * @param {number} req.params.id - ID del cargo a modificar.
  * @param {object} req.body - Datos nuevos.
- * @param {string} req.body.cet_nom - Nuevo nombre del cargo.
+ * @param {string} req.body.nombre - Nuevo nombre del cargo.
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarCargoCet = async (req, res) => {

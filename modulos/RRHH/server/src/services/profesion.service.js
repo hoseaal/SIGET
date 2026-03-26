@@ -12,7 +12,7 @@ export class ProfesionService {
   }
 
   static async crear (datos) {
-    if (!datos.pro_nom) throw new Error('El nombre de la profesión es requerido')
+    if (!datos.nombre) throw new Error('El nombre de la profesión es requerido')
     return await ProfesionModel.create(datos)
   }
 
@@ -20,7 +20,7 @@ export class ProfesionService {
     const existe = await ProfesionModel.getById(id)
     if (!existe) throw new Error('Profesión no existe')
     
-    if (!datos.pro_nom) throw new Error('El nombre es requerido para actualizar')
+    if (!datos.nombre) throw new Error('El nombre es requerido para actualizar')
 
     return await ProfesionModel.update(id, datos)
   }

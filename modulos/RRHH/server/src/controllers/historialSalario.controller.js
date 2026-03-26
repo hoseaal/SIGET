@@ -2,7 +2,7 @@ import { HistorialSalarioService } from '../services/historialSalario.service.js
 
 /**
  * Obtiene el historial de pagos de un funcionario con filtros avanzados.
- * @param {number} req.params.fun_ide - ID del funcionario.
+ * @param {number} req.params.empleado_id - ID del funcionario.
  * @param {string} [req.query.fecha_inicio] - Filtro fecha desde (YYYY-MM-DD).
  * @param {string} [req.query.fecha_fin] - Filtro fecha hasta (YYYY-MM-DD).
  * @param {number} [req.query.page=1] - Página.
@@ -11,10 +11,10 @@ import { HistorialSalarioService } from '../services/historialSalario.service.js
  */
 export const obtenerHistorialFuncionario = async (req, res) => {
   try {
-    const { fun_ide } = req.params
+    const { empleado_id } = req.params
     const filtros = req.query
     
-    const resultado = await HistorialSalarioService.obtenerHistorial(fun_ide, filtros)
+    const resultado = await HistorialSalarioService.obtenerHistorial(empleado_id, filtros)
     res.json(resultado)
   } catch (error) {
     res.status(500).json({ error: error.message })

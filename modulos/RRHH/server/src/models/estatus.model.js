@@ -3,33 +3,33 @@ import pool from '../utils/database.js'
 
 export class EstatusModel {
   static async getAll () {
-    const [rows] = await pool.query('SELECT * FROM tmaest')
+    const [rows] = await pool.query('SELECT * FROM estatus_funcionarios')
     return rows
   }
 
   static async getById (id) {
-    const [rows] = await pool.query('SELECT * FROM tmaest WHERE est_ide = ?', [id])
+    const [rows] = await pool.query('SELECT * FROM estatus_funcionarios WHERE estatus_id = ?', [id])
     return rows[0] || null
   }
 
-  static async create ({ est_nom }) {
+  static async create ({ nombre }) {
     const [result] = await pool.query(
-      'INSERT INTO tmaest (est_nom) VALUES (?)',
-      [est_nom]
+      'INSERT INTO estatus_funcionarios (nombre) VALUES (?)',
+      [nombre]
     )
-    return { est_ide: result.insertId, est_nom }
+    return { estatus_id: result.insertId, nombre }
   }
 
-  static async update (id, { est_nom }) {
+  static async update (id, { nombre }) {
     const [result] = await pool.query(
-      'UPDATE tmaest SET est_nom = ? WHERE est_ide = ?',
-      [est_nom, id]
+      'UPDATE estatus_funcionarios SET nombre = ? WHERE estatus_id = ?',
+      [nombre, id]
     )
     return result.affectedRows > 0
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tmaest WHERE est_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM estatus_funcionarios WHERE estatus_id = ?', [id])
     return result.affectedRows > 0
   }
 }

@@ -15,7 +15,7 @@ export const obtenerCargosOnapre = async (req, res) => {
 
 /**
  * Busca un Cargo ONAPRE específico por su ID.
- * @param {number} req.params.id - Identificador único (ona_ide).
+ * @param {number} req.params.id - Identificador único (cargo_onapre_id).
  * @returns {Promise<object>} Objeto con los datos del cargo.
  */
 export const obtenerCargoOnapre = async (req, res) => {
@@ -31,7 +31,7 @@ export const obtenerCargoOnapre = async (req, res) => {
 /**
  * Crea un nuevo Cargo ONAPRE en el sistema.
  * @param {object} req.body - Datos del cargo.
- * @param {string} req.body.ona_nom - Nombre del cargo (Ej: "Analista I", "Jefe de División").
+ * @param {string} req.body.nombre - Nombre del cargo (Ej: "Analista I", "Jefe de División").
  * @returns {Promise<object>} El cargo creado con su ID.
  */
 export const crearCargoOnapre = async (req, res) => {
@@ -47,7 +47,7 @@ export const crearCargoOnapre = async (req, res) => {
  * Actualiza la denominación de un Cargo ONAPRE.
  * @param {number} req.params.id - ID del cargo a modificar.
  * @param {object} req.body - Datos nuevos.
- * @param {string} req.body.ona_nom - Nuevo nombre del cargo.
+ * @param {string} req.body.nombre - Nuevo nombre del cargo.
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarCargoOnapre = async (req, res) => {

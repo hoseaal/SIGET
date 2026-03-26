@@ -13,8 +13,8 @@ export class AntiguedadService {
 
   static async crear (datos) {
     // Validaciones
-    if (datos.ant_ani === undefined || datos.ant_ani === null) {
-      throw new Error('La cantidad de años (ant_ani) es requerida')
+    if (datos.anios_cumplidos === undefined || datos.anios_cumplidos === null) {
+      throw new Error('La cantidad de años (anios_cumplidos) es requerida')
     }
     if (datos.ant_act === undefined || datos.ant_act === null) {
       throw new Error('El porcentaje actual (ant_act) es requerido')
@@ -28,7 +28,7 @@ export class AntiguedadService {
     if (!existe) throw new Error('Registro no existe')
     
     // Al actualizar, también validamos que no manden nulls si intentan actualizar esos campos
-    if (datos.ant_ani === null || datos.ant_act === null) {
+    if (datos.anios_cumplidos === null || datos.ant_act === null) {
       throw new Error('Años y Porcentaje no pueden ser vacíos')
     }
 

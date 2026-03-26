@@ -12,7 +12,7 @@ const router = express.Router()
 
 // GET: Permisos de un funcionario específico
 // Acepta query param ?estado=0 (opcional para filtrar pendientes)
-router.get('/funcionario/:fun_ide', obtenerPermisosPorFuncionario)
+router.get('/funcionario/:empleado_id', obtenerPermisosPorFuncionario)
 
 // GET: Permiso individual (Detalle)
 router.get('/:id', obtenerPermiso)

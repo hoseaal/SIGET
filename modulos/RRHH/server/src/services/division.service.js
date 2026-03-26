@@ -13,8 +13,8 @@ export class DivisionService {
 
   static async crear (datos) {
     // Validar campos obligatorios según la tabla SQL
-    if (!datos.div_nom) throw new Error('El nombre de la división es requerido')
-    if (!datos.dir_ide) throw new Error('El ID de la dirección es requerido')
+    if (!datos.nombre) throw new Error('El nombre de la división es requerido')
+    if (!datos.direccion_id) throw new Error('El ID de la dirección es requerido')
 
     return await DivisionModel.create(datos)
   }
@@ -24,7 +24,7 @@ export class DivisionService {
     if (!existe) throw new Error('División no existe')
     
     // Validamos que se envíen datos para actualizar
-    if (!datos.div_nom || !datos.dir_ide) {
+    if (!datos.nombre || !datos.direccion_id) {
       throw new Error('Nombre y Dirección son requeridos para actualizar')
     }
 

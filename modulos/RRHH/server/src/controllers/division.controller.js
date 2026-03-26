@@ -15,7 +15,7 @@ export const obtenerDivisiones = async (req, res) => {
 
 /**
  * Busca una división específica por su ID.
- * @param {number} req.params.id - Identificador único de la división (div_ide).
+ * @param {number} req.params.id - Identificador único de la división (division_id).
  * @returns {Promise<object>} Objeto con los datos de la división encontrada.
  */
 export const obtenerDivision = async (req, res) => {
@@ -31,8 +31,8 @@ export const obtenerDivision = async (req, res) => {
 /**
  * Crea una nueva división vinculada a una dirección.
  * @param {object} req.body - Cuerpo de la petición.
- * @param {string} req.body.div_nom - Nombre de la división.
- * @param {number} req.body.dir_ide - ID de la Dirección (tmadir) a la que pertenece.
+ * @param {string} req.body.nombre - Nombre de la división.
+ * @param {number} req.body.direccion_id - ID de la Dirección (direcciones) a la que pertenece.
  * @returns {Promise<object>} Objeto de la división creada.
  */
 export const crearDivision = async (req, res) => {
@@ -49,8 +49,8 @@ export const crearDivision = async (req, res) => {
  * Actualiza los datos de una división existente.
  * @param {number} req.params.id - ID de la división a modificar.
  * @param {object} req.body - Datos a actualizar.
- * @param {string} req.body.div_nom - Nuevo nombre de la división.
- * @param {number} req.body.dir_ide - Nuevo ID de dirección (opcional/requerido según lógica).
+ * @param {string} req.body.nombre - Nuevo nombre de la división.
+ * @param {number} req.body.direccion_id - Nuevo ID de dirección (opcional/requerido según lógica).
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarDivision = async (req, res) => {

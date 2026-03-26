@@ -13,7 +13,7 @@ export class DireccionService {
 
   static async crear (datos) {
     // Validación básica
-    if (!datos.dir_nom) throw new Error('El nombre de la dirección es requerido')
+    if (!datos.nombre) throw new Error('El nombre de la dirección es requerido')
     
     return await DireccionModel.create(datos)
   }
@@ -23,7 +23,7 @@ export class DireccionService {
     if (!existe) throw new Error('Dirección no existe')
     
     // Validación opcional: asegurar que envíen el nombre si es el único campo
-    if (!datos.dir_nom) throw new Error('El nombre de la dirección es requerido para actualizar')
+    if (!datos.nombre) throw new Error('El nombre de la dirección es requerido para actualizar')
 
     return await DireccionModel.update(id, datos)
   }

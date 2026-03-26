@@ -12,7 +12,7 @@ const router = express.Router()
 // GET: Lista de jubilados (con datos personales)
 router.get('/', obtenerJubilados)
 
-// GET: Jubilado por ID (jub_ide)
+// GET: Jubilado por ID (jubilado_id)
 router.get('/:id', obtenerJubilado)
 
 // POST: Registrar jubilación y cambiar estatus a 3

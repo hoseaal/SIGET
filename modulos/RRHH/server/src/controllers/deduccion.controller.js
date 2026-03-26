@@ -15,7 +15,7 @@ export const obtenerDeducciones = async (req, res) => {
 
 /**
  * Busca una deducción por su ID.
- * @param {number} req.params.id - Identificador único (ded_ide).
+ * @param {number} req.params.id - Identificador único (deduccion_id).
  * @returns {Promise<object>} Objeto con los datos de la deducción.
  */
 export const obtenerDeduccion = async (req, res) => {
@@ -31,8 +31,8 @@ export const obtenerDeduccion = async (req, res) => {
 /**
  * Crea una nueva deducción.
  * @param {object} req.body - Datos de la deducción.
- * @param {string} req.body.ded_nom - Nombre de la deducción (Ej: "Seguro Social").
- * @param {number} req.body.ded_por - Porcentaje a aplicar (Ej: 4.00).
+ * @param {string} req.body.nombre - Nombre de la deducción (Ej: "Seguro Social").
+ * @param {number} req.body.porcentaje - Porcentaje a aplicar (Ej: 4.00).
  * @returns {Promise<object>} La deducción creada.
  */
 export const crearDeduccion = async (req, res) => {
@@ -48,8 +48,8 @@ export const crearDeduccion = async (req, res) => {
  * Actualiza una deducción existente.
  * @param {number} req.params.id - ID de la deducción a modificar.
  * @param {object} req.body - Datos nuevos.
- * @param {string} req.body.ded_nom - Nuevo nombre.
- * @param {number} req.body.ded_por - Nuevo porcentaje.
+ * @param {string} req.body.nombre - Nuevo nombre.
+ * @param {number} req.body.porcentaje - Nuevo porcentaje.
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarDeduccion = async (req, res) => {

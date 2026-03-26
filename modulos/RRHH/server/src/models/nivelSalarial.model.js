@@ -3,33 +3,33 @@ import pool from '../utils/database.js'
 
 export class NivelSalarialModel {
   static async getAll () {
-    const [rows] = await pool.query('SELECT * FROM tesniv')
+    const [rows] = await pool.query('SELECT * FROM niveles_salariales')
     return rows
   }
 
   static async getById (id) {
-    const [rows] = await pool.query('SELECT * FROM tesniv WHERE niv_ide = ?', [id])
+    const [rows] = await pool.query('SELECT * FROM niveles_salariales WHERE nivel_salarial_id = ?', [id])
     return rows[0] || null
   }
 
-  static async create ({ niv_nom, niv_sal, ona_ide }) {
+  static async create ({ niv_nom, salario_base, cargo_onapre_id }) {
     const [result] = await pool.query(
-      'INSERT INTO tesniv (niv_nom, niv_sal, ona_ide) VALUES (?, ?, ?)',
-      [niv_nom, niv_sal, ona_ide]
+      'INSERT INTO niveles_salariales (niv_nom, salario_base, cargo_onapre_id) VALUES (?, ?, ?)',
+      [niv_nom, salario_base, cargo_onapre_id]
     )
-    return { niv_ide: result.insertId, niv_nom, niv_sal, ona_ide }
+    return { nivel_salarial_id: result.insertId, niv_nom, salario_base, cargo_onapre_id }
   }
 
-  static async update (id, { niv_nom, niv_sal, ona_ide }) {
+  static async update (id, { niv_nom, salario_base, cargo_onapre_id }) {
     const [result] = await pool.query(
-      'UPDATE tesniv SET niv_nom = ?, niv_sal = ?, ona_ide = ? WHERE niv_ide = ?',
-      [niv_nom, niv_sal, ona_ide, id]
+      'UPDATE niveles_salariales SET niv_nom = ?, salario_base = ?, cargo_onapre_id = ? WHERE nivel_salarial_id = ?',
+      [niv_nom, salario_base, cargo_onapre_id, id]
     )
     return result.affectedRows > 0
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tesniv WHERE niv_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM niveles_salariales WHERE nivel_salarial_id = ?', [id])
     return result.affectedRows > 0
   }
 }

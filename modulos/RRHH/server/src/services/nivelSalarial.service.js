@@ -14,8 +14,8 @@ export class NivelSalarialService {
   static async crear (datos) {
     // Validaciones de campos obligatorios
     if (!datos.niv_nom) throw new Error('El nombre del nivel es requerido')
-    if (!datos.niv_sal) throw new Error('El salario base es requerido')
-    if (!datos.ona_ide) throw new Error('El ID del cargo ONAPRE es requerido')
+    if (!datos.salario_base) throw new Error('El salario base es requerido')
+    if (!datos.cargo_onapre_id) throw new Error('El ID del cargo ONAPRE es requerido')
 
     return await NivelSalarialModel.create(datos)
   }
@@ -24,7 +24,7 @@ export class NivelSalarialService {
     const existe = await NivelSalarialModel.getById(id)
     if (!existe) throw new Error('Nivel salarial no existe')
     
-    if (!datos.niv_nom || !datos.niv_sal || !datos.ona_ide) {
+    if (!datos.niv_nom || !datos.salario_base || !datos.cargo_onapre_id) {
       throw new Error('Nombre, Salario y Cargo ONAPRE son requeridos para actualizar')
     }
 

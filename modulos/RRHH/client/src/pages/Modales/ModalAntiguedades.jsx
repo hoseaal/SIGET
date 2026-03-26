@@ -6,13 +6,13 @@ import Table from 'react-bootstrap/Table';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from '../../components/atoms/Alert';
 
-function ModalAntiguedades({ show, handleClose, fun_ide }) {
+function ModalAntiguedades({ show, handleClose, empleado_id }) {
     const [funcionario, setFuncionario] = useState(null);
     const [registros, setRegistros] = useState([]);
     const [totalAnios, setTotalAnios] = useState(0);
     
     // Estados del formulario y UI
-    const [formData, setFormData] = useState({ ant_fin: '', ant_ffen: '' });
+    const [formData, setFormData] = useState({ fecha_inicio: '', fecha_fin: '' });
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -29,14 +29,14 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
 
     // Función para cargar los datos del funcionario y su historial
     const cargarDatos = async () => {
-        if (!fun_ide) return;
+        if (!empleado_id) return;
         
         setLoading(true);
         setError('');
         
         try {
             // 1. Obtener datos básicos del funcionario para el título
-            const resFun = await fetch(`/api/funcionarios/${fun_ide}`);
+            const resFun = await fetch(`/api/funcionarios/${empleado_id}`);
             if (resFun.ok) {
                 const dataFun = await resFun.json();
                 // Si el backend devuelve el JSON anidado (type=full), o plano:
@@ -45,7 +45,7 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
             }
 
             // 2. Obtener el historial de antigüedad
-            const resAnt = await fetch(`/api/registros-antiguedad/funcionario/${fun_ide}`);
+            const resAnt = await fetch(`/api/registros-antiguedad/funcionario/${empleado_id}`);
             if (resAnt.ok) {
                 const dataAnt = await resAnt.json();
                 
@@ -72,14 +72,14 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
 
     // Efecto que se dispara al abrir el modal o cambiar el funcionario
     useEffect(() => {
-        if (show && fun_ide) {
+        if (show && empleado_id) {
             // Limpiar estados previos
-            setFormData({ ant_fin: '', ant_ffen: '' });
+            setFormData({ fecha_inicio: '', fecha_fin: '' });
             setSuccessMsg('');
             setError('');
             cargarDatos();
         }
-    }, [show, fun_ide]);
+    }, [show, empleado_id]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -92,13 +92,13 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
         setSuccessMsg('');
 
         // Validaciones locales
-        if (!formData.ant_fin) {
+        if (!formData.fecha_inicio) {
             setError('La fecha de inicio es obligatoria.');
             return;
         }
 
-        if (formData.ant_fin && formData.ant_ffen) {
-            if (new Date(formData.ant_fin) > new Date(formData.ant_ffen)) {
+        if (formData.fecha_inicio && formData.fecha_fin) {
+            if (new Date(formData.fecha_inicio) > new Date(formData.fecha_fin)) {
                 setError('La fecha de fin no puede ser anterior a la fecha de inicio.');
                 return;
             }
@@ -107,9 +107,9 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
         setSaving(true);
         try {
             const payload = {
-                fun_ide: fun_ide,
-                ant_fin: formData.ant_fin,
-                ant_ffen: formData.ant_ffen || null // Si está vacío enviamos null
+                empleado_id: empleado_id,
+                fecha_inicio: formData.fecha_inicio,
+                fecha_fin: formData.fecha_fin || null // Si está vacío enviamos null
             };
 
             const response = await fetch('/api/registros-antiguedad', {
@@ -124,7 +124,7 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
             }
 
             setSuccessMsg('Registro agregado exitosamente.');
-            setFormData({ ant_fin: '', ant_ffen: '' }); // Limpiar formulario
+            setFormData({ fecha_inicio: '', fecha_fin: '' }); // Limpiar formulario
             
             // Recargar la tabla
             cargarDatos();
@@ -139,14 +139,14 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
         }
     };
 
-    const handleDelete = async (ant_ide) => {
+    const handleDelete = async (antiguedad_id) => {
         if (!window.confirm('¿Está seguro de eliminar este registro de antigüedad? Esto podría afectar el cálculo de nómina.')) {
             return;
         }
 
         setError('');
         try {
-            const response = await fetch(`/api/registros-antiguedad/${ant_ide}`, {
+            const response = await fetch(`/api/registros-antiguedad/${antiguedad_id}`, {
                 method: 'DELETE'
             });
 
@@ -167,7 +167,7 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
         <Modal show={show} onHide={handleClose} size="lg" centered backdrop="static">
             <Modal.Header closeButton>
                 <Modal.Title>
-                    Gestión de Antigüedad - {funcionario ? `${funcionario.fun_nom} ${funcionario.fun_ape}` : 'Cargando...'}
+                    Gestión de Antigüedad - {funcionario ? `${funcionario.nombres} ${funcionario.apellidos}` : 'Cargando...'}
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
@@ -193,8 +193,8 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
                                             <Form.Label className="small fw-bold text-muted">Fecha de Inicio *</Form.Label>
                                             <Form.Control
                                                 type="date"
-                                                name="ant_fin"
-                                                value={formData.ant_fin}
+                                                name="fecha_inicio"
+                                                value={formData.fecha_inicio}
                                                 onChange={handleChange}
                                                 required
                                             />
@@ -205,8 +205,8 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
                                             <Form.Label className="small fw-bold text-muted">Fecha de Fin (Opcional)</Form.Label>
                                             <Form.Control
                                                 type="date"
-                                                name="ant_ffen"
-                                                value={formData.ant_ffen}
+                                                name="fecha_fin"
+                                                value={formData.fecha_fin}
                                                 onChange={handleChange}
                                             />
                                         </Form.Group>
@@ -241,10 +241,10 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
                             <tbody>
                                 {registros.length > 0 ? (
                                     registros.map((reg) => (
-                                        <tr key={reg.ant_ide}>
-                                            <td>{formatearFecha(reg.ant_fin)}</td>
+                                        <tr key={reg.antiguedad_id}>
+                                            <td>{formatearFecha(reg.fecha_inicio)}</td>
                                             <td>
-                                                {reg.ant_ffen ? formatearFecha(reg.ant_ffen) : (
+                                                {reg.fecha_fin ? formatearFecha(reg.fecha_fin) : (
                                                     <span className="badge bg-success bg-opacity-10 text-success">Vigente</span>
                                                 )}
                                             </td>
@@ -253,7 +253,7 @@ function ModalAntiguedades({ show, handleClose, fun_ide }) {
                                                 <button 
                                                     className="btn btn-sm btn-outline-danger" 
                                                     title="Eliminar registro"
-                                                    onClick={() => handleDelete(reg.ant_ide)}
+                                                    onClick={() => handleDelete(reg.antiguedad_id)}
                                                 >
                                                     <i className="bx bx-trash"></i>
                                                 </button>

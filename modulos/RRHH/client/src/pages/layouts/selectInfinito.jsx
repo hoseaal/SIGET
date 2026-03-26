@@ -121,8 +121,8 @@ const DepartamentoSelect = ({ tipoBien, value, onChange, onToggle }) => {
   const options = [
     { value: null, label: 'Direccion' },
     ...tipoBien.map(item => ({
-      value: item.dir_ide,
-      label: item.dir_nom
+      value: item.direccion_id,
+      label: item.nombre
     }))
   ];
 

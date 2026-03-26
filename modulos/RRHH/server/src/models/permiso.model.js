@@ -7,22 +7,22 @@ export class PermisoModel {
     return `
       SELECT p.*, 
              -- Cálculo automático de días de duración
-             DATEDIFF(COALESCE(p.per_ffe, p.per_fin), p.per_fin) + 1 as dias_duracion
-      FROM tesperm p
+             DATEDIFF(COALESCE(p.fecha_fin, p.fecha_inicio), p.fecha_inicio) + 1 as dias_duracion
+      FROM permisos_remunerados p
     `
   }
 
-  static async getByFuncionarioId (fun_ide, estado) {
-    let sql = `${this._baseQuery()} WHERE p.fun_ide = ?`
-    const params = [fun_ide]
+  static async getByFuncionarioId (empleado_id, estado) {
+    let sql = `${this._baseQuery()} WHERE p.empleado_id = ?`
+    const params = [empleado_id]
 
     // Si envían estado (0 o 1), filtramos también por eso
     if (estado !== undefined) {
-      sql += ' AND p.per_apr = ?'
+      sql += ' AND p.esta_aprobado = ?'
       params.push(estado)
     }
 
-    sql += ' ORDER BY p.per_fsol DESC' // Lo más reciente primero
+    sql += ' ORDER BY p.fecha_solicitud DESC' // Lo más reciente primero
 
     const [rows] = await pool.query(sql, params)
     return rows
@@ -31,34 +31,34 @@ export class PermisoModel {
   static async getById (id) {
     // Aquí sí hacemos JOIN para ver el nombre del funcionario en el detalle individual si se requiere
     const sql = `
-      SELECT p.*, f.fun_nom, f.fun_ape, f.fun_ced,
-             DATEDIFF(COALESCE(p.per_ffe, p.per_fin), p.per_fin) + 1 as dias_duracion
-      FROM tesperm p
-      JOIN tmafun f ON p.fun_ide = f.fun_ide
-      WHERE p.per_ide = ?
+      SELECT p.*, f.nombres, f.apellidos, f.cedula,
+             DATEDIFF(COALESCE(p.fecha_fin, p.fecha_inicio), p.fecha_inicio) + 1 as dias_duracion
+      FROM permisos_remunerados p
+      JOIN empleados f ON p.empleado_id = f.empleado_id
+      WHERE p.permiso_id = ?
     `
     const [rows] = await pool.query(sql, [id])
     return rows[0] || null
   }
 
   static async create (data) {
-    const { fun_ide, per_mot, per_jus, per_fsol, per_fin, per_ffe, per_apr } = data
-    const aprobado = per_apr !== undefined ? per_apr : 0
+    const { empleado_id, motivo, requiere_justificativo, fecha_solicitud, fecha_inicio, fecha_fin, esta_aprobado } = data
+    const aprobado = esta_aprobado !== undefined ? esta_aprobado : 0
 
     const [result] = await pool.query(
-      'INSERT INTO tesperm (fun_ide, per_mot, per_jus, per_fsol, per_fin, per_ffe, per_apr) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [fun_ide, per_mot, per_jus || 0, per_fsol, per_fin, per_ffe || null, aprobado]
+      'INSERT INTO permisos_remunerados (empleado_id, motivo, requiere_justificativo, fecha_solicitud, fecha_inicio, fecha_fin, esta_aprobado) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [empleado_id, motivo, requiere_justificativo || 0, fecha_solicitud, fecha_inicio, fecha_fin || null, aprobado]
     )
-    return { per_ide: result.insertId, ...data }
+    return { permiso_id: result.insertId, ...data }
   }
 
   static async update (id, data) {
-    const [result] = await pool.query('UPDATE tesperm SET ? WHERE per_ide = ?', [data, id])
+    const [result] = await pool.query('UPDATE permisos_remunerados SET ? WHERE permiso_id = ?', [data, id])
     return result.affectedRows > 0
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tesperm WHERE per_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM permisos_remunerados WHERE permiso_id = ?', [id])
     return result.affectedRows > 0
   }
 }

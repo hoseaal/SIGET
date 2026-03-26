@@ -27,7 +27,7 @@ export const obtenerJubilado = async (req, res) => {
 
 /**
  * Registra a un funcionario como jubilado.
- * Automáticamente cambia su estatus (est_ide) a 3 en tmafun.
+ * Automáticamente cambia su estatus (estatus_id) a 3 en empleados.
  */
 export const crearJubilado = async (req, res) => {
   try {
@@ -38,7 +38,7 @@ export const crearJubilado = async (req, res) => {
       data: nuevo
     })
   } catch (error) {
-    // Error de llave única (El funcionario ya está en la tabla tesjub)
+    // Error de llave única (El funcionario ya está en la tabla jubilados)
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: 'Este funcionario ya se encuentra registrado como jubilado.' })
     }

@@ -18,13 +18,13 @@ export const Usuarios = () => {
 
 
     const columnAliasUser = {
-        'usu_ide': 'Código',
-        'usu_usu': 'Usuario',
-        'nom_ced': 'Numero de Cedula',
-        'usu_nom': 'Nombre de Usuario',
-        'usu_ape': 'Apellido del Usuario',
-        'usu_tip': 'Tipo de Usuario',
-        'usu_mod': 'Modulo de Acceso',
+        'usuario_id': 'Código',
+        'username': 'Usuario',
+        'cedula_referencia': 'Numero de Cedula',
+        'nombres': 'Nombre de Usuario',
+        'apellidos': 'Apellido del Usuario',
+        'rol_id': 'Tipo de Usuario',
+        'modulo_id': 'Modulo de Acceso',
     };
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -40,8 +40,8 @@ export const Usuarios = () => {
     useEffect(() => {
         const loadCatData = async () => {
           try {
-            const { columns, primaryKey } = await getTableMetadata('tesusu');
-             const filteredColumns = columns.filter(col => col.name !== 'usu_con'); 
+            const { columns, primaryKey } = await getTableMetadata('usuarios');
+             const filteredColumns = columns.filter(col => col.name !== 'password_hash'); 
 
             setColumns(filteredColumns.map(col => ({
                 originalName: col.name,
@@ -72,7 +72,7 @@ export const Usuarios = () => {
                     show={showUserModal}
                     handleClose={() => setShowUserModal(false)}
                     columns={columns}
-                    tableName="tesusu"
+                    tableName="usuarios"
                     onSuccess={handleSuccess}
                 />
                 <div className="table-responsive text-nowrap">
@@ -114,7 +114,7 @@ export const Usuarios = () => {
                                     <i className="bx bx-edit-alt me-1"></i> Cambiar Contraseña
                                 </Dropdown.Item>
                                 <Dropdown.Item href="#" onClick={() => {
-                                    setDeleteItem(item.usu_ide)
+                                    setDeleteItem(item.usuario_id)
                                     setShowUserDelModal(true); // Abre el modal
                                 }}>
                                     <i className="bx bx-trash me-1"></i> Delete
@@ -130,7 +130,7 @@ export const Usuarios = () => {
                     show={showUserUpModal}
                     handleClose={() => setShowUserUpModal(false)}
                     columns={columns}
-                    tableName='tesusu'
+                    tableName='usuarios'
                     rowData={editingItem} 
                     onSuccess={handleSuccess}
                     idColumn={idColumn}
@@ -138,7 +138,7 @@ export const Usuarios = () => {
                 <ModalDelete 
                     show={showUserDelModal}
                     handleClose={() => setShowUserDelModal(false)}
-                    tableName="tesusu"
+                    tableName="usuarios"
                     rowId={deleteItem} 
                     idColumn={idColumn} 
                     onSuccess={handleSuccess} 

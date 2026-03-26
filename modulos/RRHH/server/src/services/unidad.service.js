@@ -12,8 +12,8 @@ export class UnidadService {
   }
 
   static async crear (datos) {
-    if (!datos.uni_nom) throw new Error('El nombre de la unidad es requerido')
-    if (!datos.div_ide) throw new Error('El ID de la división es requerido')
+    if (!datos.nombre) throw new Error('El nombre de la unidad es requerido')
+    if (!datos.division_id) throw new Error('El ID de la división es requerido')
 
     return await UnidadModel.create(datos)
   }
@@ -22,7 +22,7 @@ export class UnidadService {
     const existe = await UnidadModel.getById(id)
     if (!existe) throw new Error('Unidad no existe')
 
-    if (!datos.uni_nom || !datos.div_ide) {
+    if (!datos.nombre || !datos.division_id) {
       throw new Error('Nombre y División son requeridos para actualizar')
     }
 
