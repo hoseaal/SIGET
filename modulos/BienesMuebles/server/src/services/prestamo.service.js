@@ -96,15 +96,30 @@ export class PrestamoService {
     if (!bim_ide || (dpr_est !== 0 && dpr_est !== 1) || !pre_ide) {
       throw new Error('ID de bien, estado válido (0 o 1) e ID de préstamo son requeridos.')
     }
-    console.log(dpr_est)
+    
+    // 1. Buscamos dónde está activo el bien actualmente (Préstamo o Almacén)
     const loanDetail = await PrestamoModel.checkBienPrestadoActiveNormalLoan(bim_ide)
     const warehouseItem = await PrestamoModel.checkBienEnAlmacen(bim_ide)
-    if (!loanDetail || loanDetail.length === 0 || !warehouseItem || warehouseItem.length === 0) {
-      throw new Error('El bien no pertenece a este préstamo.')
+
+    // El registro activo será uno o el otro
+    const activeRecord = loanDetail || warehouseItem;
+
+    // 2. Si no hay ningún registro activo en ninguno de los dos lados
+    if (!activeRecord) {
+      throw new Error('El bien no se encuentra activo en ningún préstamo o almacén.');
     }
-    if (loanDetail.dpr_est === dpr_est) {
-      return true
+
+    // 3. Validación CRÍTICA: ¿El préstamo donde está activo es el mismo desde donde lo intentan devolver?
+    if (activeRecord.pre_ide !== pre_ide) {
+      throw new Error('El bien no pertenece a este préstamo específico.');
     }
+
+    // 4. Si ya está en el estado que queremos, no hacemos nada
+    if (activeRecord.dpr_est === dpr_est) {
+      return true 
+    }
+
+    // 5. Finalmente, ejecutamos la actualización en la BD
     return await PrestamoModel.updateStatusBien(bim_ide, dpr_est, pre_ide)
   }
 
