@@ -205,7 +205,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
     const datosActaCET = {
       numeroActa: formData.numeroActa,
       ciudad: 'San Cristóbal',
-      dia: (fechaInc.getDate() + 1).toString(), // +1 si hay desfase por zona horaria en strings ISO
+      dia: (fechaInc.getDate()).toString(),
       mes: fechaInc.toLocaleString('es-ES', { month: 'long' }),
       anio: fechaInc.getFullYear().toString(),
       hora: horaCliente, // Enviamos la hora del cliente
