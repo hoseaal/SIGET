@@ -3,16 +3,12 @@ import Form from 'react-bootstrap/Form';
 import Button from '../../components/atoms/Buttons'; // Asegúrate de que la ruta sea correcta
 import Alert from "../../components/atoms/Alert";   // Asegúrate de que la ruta sea correcta
 import Spinner from 'react-bootstrap/Spinner';
+import Modal from 'react-bootstrap/Modal';
 // import { hasPermission, ACTIONS } from '../../data/dataPermissions' // Descomentar si usas permisos
 
-export const RegistrarFuncionario = () => {
-    // Estado para verificar permisos (opcional, basado en tu código anterior)
+export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd }) => {
+    const [paso, setPaso] = useState(1);
     const [userType, setUserType] = useState(null);
-    
-    // Estados de carga y alertas
-    const [isSaving, setIsSaving] = useState(false);
-    const [savingMessage, setSavingMessage] = useState('');
-    const [formEnviado, setFormEnviado] = useState(false);
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -188,21 +184,39 @@ export const RegistrarFuncionario = () => {
         });
         setErrorMessage('');
         setMensajeMostrado(false);
+        setPaso(1);
+    };
+
+    const handleSiguiente = () => {
+        if (!formData.cedula || !formData.nombres || !formData.apellidos) {
+            setErrorMessage('Por favor complete Cédula, Nombres, y Apellidos requeridos.');
+            setMensajeMostrado(true);
+            setTimeout(() => setMensajeMostrado(false), 3000);
+            return;
+        }
+        setErrorMessage('');
+        setMensajeMostrado(false);
+        setPaso(2);
+    };
+
+    const handleAtras = () => {
+        setErrorMessage('');
+        setMensajeMostrado(false);
+        setPaso(1);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Validaciones básicas antes de enviar
-        if (!formData.cedula || !formData.nombres || !formData.apellidos || !formData.direccion_id) {
-            setErrorMessage('Por favor complete Cédula, Nombres, Apellidos y Dirección de Adscripción.');
+        if (!formData.direccion_id) {
+            setErrorMessage('Por favor complete la Dirección de Adscripción.');
             setMensajeMostrado(true);
             setTimeout(() => setMensajeMostrado(false), 3000);
             return;
         }
 
-        setIsSaving(true);
-        setSavingMessage('Guardando Funcionario...');
+        if (onSaveStart) onSaveStart();
 
         try {
             const response = await fetch('/api/funcionarios', {
@@ -220,45 +234,38 @@ export const RegistrarFuncionario = () => {
             }
 
             // Éxito
-            setFormEnviado(true);
-            setMensajeMostrado(true);
-
-            setTimeout(() => {
-                setMensajeMostrado(false);
-                setFormEnviado(false);
-                limpiarFormulario();
-            }, 3000);
+            limpiarFormulario();
+            if (onSaveEnd) onSaveEnd(true, 'Funcionario registrado exitosamente.');
 
         } catch (error) {
             console.error('Error:', error);
-            setFormEnviado(false);
-            setErrorMessage(error.message);
-            setMensajeMostrado(true);
-            setTimeout(() => setMensajeMostrado(false), 4000);
-        } finally {
-            setIsSaving(false);
+            if (onSaveEnd) onSaveEnd(false, error.message);
         }
     };
 
     return (
-        <>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4 className="py-3 mb-4"><span className="text-muted fw-light">RRHH /</span> Registrar Nuevo Funcionario</h4>
-            </div>
-            
-            <div className="row">
-                <div className="col-xxl">
-                    <div className="card mb-4">
-                        <div className="card-header d-flex align-items-center justify-content-between">
-                            <h5 className="mb-0">Ficha de Ingreso</h5>
-                            <small className="text-muted float-end">* Campos obligatorios</small>
-                        </div>
-                        
-                        <div className="card-body">
-                            <form onSubmit={handleSubmit}>
-                                
-                                {/* SECCIÓN 1: DATOS PERSONALES */}
-                                <h6 className="mt-2 mb-3 text-primary">1. Datos Personales</h6>
+        <Modal show={show} onHide={handleClose} size="xl" backdrop="static">
+            <Modal.Header closeButton>
+                <Modal.Title>
+                    {paso === 1 ? 'Registrar Funcionario - Datos Personales' : 'Registrar Funcionario - Datos Laborales'}
+                </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {/* MENSAJES DE ALERTA DE VALIDACIÓN */}
+                {mensajeMostrado && 
+                    <Alert key="danger" type="danger">
+                        {errorMessage}
+                    </Alert>
+                }
+                
+                <form onSubmit={handleSubmit}>
+                    {paso === 1 && (
+                        <>
+                            {/* SECCIÓN 1: DATOS PERSONALES */}
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <h6 className="mt-2 text-primary mb-0">1. Datos Personales</h6>
+                                <small className="text-muted">* Campos obligatorios</small>
+                            </div>
                                 <div className="row mb-3">
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
@@ -391,12 +398,16 @@ export const RegistrarFuncionario = () => {
                                         <Form.Control as="textarea" rows={2} name="direccion_habitacion" value={formData.direccion_habitacion} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
+                        </>
+                    )}
 
-                                <div className="row mb-3">
-                                    <h6 className="mt-2 mb-3 text-primary">En caso de emergencia avisar a:</h6>
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>1. Nombres Y Apellidos</Form.Label>
+                    {paso === 2 && (
+                        <>
+                            <div className="row mb-3">
+                                <h6 className="mt-2 mb-3 text-primary">En caso de emergencia avisar a:</h6>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>1. Nombres Y Apellidos</Form.Label>
                                             <Form.Control type="text" name="contacto_emergencia_1" value={formData.contacto_emergencia_1} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
@@ -422,10 +433,11 @@ export const RegistrarFuncionario = () => {
                                     </div>
                                 </div>
 
-                                <hr className="my-4" />
-
-                                {/* SECCIÓN 2: DATOS CONTRACTUALES */}
-                                <h6 className="mb-3 text-primary">2. Datos Laborales y Contractuales</h6>
+                            {/* SECCIÓN 2: DATOS CONTRACTUALES */}
+                            <div className="d-flex justify-content-between align-items-center mb-3 mt-4">
+                                <h6 className="text-primary mb-0">2. Datos Laborales y Contractuales</h6>
+                                <small className="text-muted">* Campos obligatorios</small>
+                            </div>
 
                                 <div className="row mb-3">
                                     <div className="col-md-4">
@@ -511,95 +523,78 @@ export const RegistrarFuncionario = () => {
                                     </div>
                                 </div>
 
-                                {/* SECCIÓN: UBICACIÓN ORGANIZACIONAL */}
-                                <h6 className="mt-4 mb-3 text-primary">Ubicación Organizacional</h6>
-                                <div className="row mb-4">
-                                    <div className="col-md-4">
-                                        <Form.Group>
-                                            <Form.Label>Dirección *</Form.Label>
-                                            <Form.Select name="direccion_id" value={formData.direccion_id} onChange={handleChange} required>
-                                                <option value="">Seleccione la Dirección</option>
-                                                {catalogos.direcciones.map(d => (
-                                                    <option key={d.direccion_id} value={d.direccion_id}>{d.nombre}</option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
-                                    
-                                    <div className="col-md-4">
-                                        <Form.Group>
-                                            <Form.Label>División (Opcional)</Form.Label>
-                                            <Form.Select 
-                                                name="division_id" 
-                                                value={formData.division_id} 
-                                                onChange={handleChange} 
-                                                disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}
-                                            >
-                                                <option value="">-- Directo a la Dirección --</option>
-                                                {catalogos.divisiones?.map(d => (
-                                                    <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
-
-                                    <div className="col-md-4">
-                                        <Form.Group>
-                                            <Form.Label>Unidad (Opcional)</Form.Label>
-                                            <Form.Select 
-                                                name="unidad_id" 
-                                                value={formData.unidad_id} 
-                                                onChange={handleChange} 
-                                                disabled={!formData.division_id || catalogos.unidades?.length === 0}
-                                            >
-                                                <option value="">-- Directo a la División --</option>
-                                                {catalogos.unidades?.map(u => (
-                                                    <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
-                                    
-                                    <div className="col-12 mt-2">
-                                        <Form.Text className="text-muted">
-                                            <i className="bx bx-info-circle me-1"></i>
-                                            Seleccione el nivel más profundo al que pertenece el funcionario. Si no pertenece a ninguna Unidad o División específica, deje la opción en "-- Directo a la... --".
-                                        </Form.Text>
-                                    </div>
+                            {/* SECCIÓN: UBICACIÓN ORGANIZACIONAL */}
+                            <h6 className="mt-4 mb-3 text-primary">Ubicación Organizacional</h6>
+                            <div className="row mb-4">
+                                <div className="col-md-4">
+                                    <Form.Group>
+                                        <Form.Label>Dirección *</Form.Label>
+                                        <Form.Select name="direccion_id" value={formData.direccion_id} onChange={handleChange} required>
+                                            <option value="">Seleccione la Dirección</option>
+                                            {catalogos.direcciones.map(d => (
+                                                <option key={d.direccion_id} value={d.direccion_id}>{d.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                                
+                                <div className="col-md-4">
+                                    <Form.Group>
+                                        <Form.Label>División (Opcional)</Form.Label>
+                                        <Form.Select 
+                                            name="division_id" 
+                                            value={formData.division_id} 
+                                            onChange={handleChange} 
+                                            disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}
+                                        >
+                                            <option value="">-- Directo a la Dirección --</option>
+                                            {catalogos.divisiones?.map(d => (
+                                                <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
                                 </div>
 
-                                {/* BOTONES DE ACCIÓN */}
-                                <div className="row justify-content-end mt-4">
-                                    <div className="col-auto">
-                                        <Button type='secondary' className="me-2" onClick={limpiarFormulario}>Limpiar</Button>
-                                        <Button type='primary' size='lg' onClick={handleSubmit} disabled={isSaving}>
-                                            {isSaving ? 'Guardando...' : 'Registrar Funcionario'}
-                                        </Button>
-                                    </div>
+                                <div className="col-md-4">
+                                    <Form.Group>
+                                        <Form.Label>Unidad (Opcional)</Form.Label>
+                                        <Form.Select 
+                                            name="unidad_id" 
+                                            value={formData.unidad_id} 
+                                            onChange={handleChange} 
+                                            disabled={!formData.division_id || catalogos.unidades?.length === 0}
+                                        >
+                                            <option value="">-- Directo a la División --</option>
+                                            {catalogos.unidades?.map(u => (
+                                                <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
                                 </div>
-
-                                {/* MENSAJES DE ALERTA */}
-                                <div className="mt-3">
-                                    {mensajeMostrado && 
-                                        <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
-                                            {formEnviado ? 'Funcionario registrado exitosamente.' : errorMessage}
-                                        </Alert>
-                                    }
-                                    {isSaving && (
-                                        <div className="text-center mt-3">
-                                            <Spinner animation="border" role="status">
-                                                <span className="visually-hidden">{savingMessage}</span>
-                                            </Spinner>
-                                            <p className="mt-2 text-muted">{savingMessage}</p>
-                                        </div>
-                                    )}
+                                
+                                <div className="col-12 mt-2">
+                                    <Form.Text className="text-muted">
+                                        <i className="bx bx-info-circle me-1"></i>
+                                        Seleccione el nivel más profundo al que pertenece el funcionario. Si no pertenece a ninguna Unidad o División específica, deje la opción en "-- Directo a la... --".
+                                    </Form.Text>
                                 </div>
-
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
+                            </div>
+                        </>
+                    )}
+                </form>
+            </Modal.Body>
+            <Modal.Footer>
+                {paso === 1 && (
+                    <Button type='primary' onClick={handleSiguiente}>Siguiente</Button>
+                )}
+                {paso === 2 && (
+                    <>
+                        <Button type='secondary' className="me-2" onClick={handleAtras}>Atrás</Button>
+                        <Button type='secondary' className="me-2" onClick={limpiarFormulario}>Limpiar</Button>
+                        <Button type='primary' onClick={handleSubmit}>Registrar Funcionario</Button>
+                    </>
+                )}
+            </Modal.Footer>
+        </Modal>
     );
 };

@@ -28,10 +28,16 @@ export class FuncionarioService {
     let hayDatosContrato = false
 
     Object.keys(datosSucios).forEach(key => {
+      // Forzar null para strings vacíos o "null" u strings con espacios
+      let val = datosSucios[key]
+      if (val === '' || val === ' ' || val === 'null' || val === undefined) {
+        val = null
+      }
+
       if (camposPersonal.includes(key)) {
-        datosPersonalClean[key] = datosSucios[key]
+        datosPersonalClean[key] = val
       } else if (camposContrato.includes(key)) {
-        datosContratoClean[key] = datosSucios[key]
+        datosContratoClean[key] = val
         hayDatosContrato = true
       }
     })
@@ -111,32 +117,10 @@ export class FuncionarioService {
     // Si no se pidieron datos completos, devolvemos tal cual
     if (!includeContract) return rawData
 
-    // Si es FULL, estructuramos el JSON para mejor UX/UI
-    // Separamos en Datos Personales, Contrato Base y Encargo Activo
+    // Si es FULL, estructuramos el JSON manteniendo todos los datos intactos
     const respuesta = {
-      datos_personales: {
-        empleado_id: rawData.empleado_id,
-        cedula: rawData.cedula,
-        nombres: rawData.nombres,
-        apellidos: rawData.apellidos,
-        rif: rawData.rif,
-        edad: rawData.edad,
-        genero: rawData.genero,
-        fecha_ingreso: rawData.fecha_ingreso,
-        celular: rawData.celular,
-        correo_principal: rawData.correo_principal,
-        direccion_habitacion: rawData.direccion_habitacion,
-        // ...puedes agregar más campos personales aquí si lo necesitas
-        estatus_id: rawData.estatus_id
-      },
-      contrato_base: {
-        nombre: rawData.nombre, // Nombre Cargo Base
-        nombre: rawData.nombre,
-        salario_base: rawData.salario_base, // Salario Base
-        nombre: rawData.nombre,
-        nombre: rawData.nombre,
-        nombre: rawData.nombre
-      },
+      ...rawData,
+      
       // Objeto de Encargo (Solo si enc_id existe, sino null)
       encargo_activo: rawData.enc_id ? {
         id: rawData.enc_id,
@@ -144,9 +128,9 @@ export class FuncionarioService {
         salario: rawData.enc_salario, // Salario Encargado
         direccion: rawData.enc_direccion,
         unidad: rawData.enc_unidad,
-        fecha_inicio: rawData.fecha_inicio,
+        fecha_inicio: rawData.enc_fecha_inicio,
         // Calculamos diferencia salarial para el frontend
-        diferencia_salarial: (Number(rawData.enc_salario) - Number(rawData.salario_base)).toFixed(2)
+        diferencia_salarial: (Number(rawData.enc_salario) - Number(rawData.salario_base || 0)).toFixed(2)
       } : null
     }
 
@@ -196,6 +180,10 @@ export class FuncionarioService {
          datosContratoClean = { ...datosContratoClean, ...jerarquia }
       }
     }
+    
+    console.log('--- ACTUALIZANDO FUNCIONARIO ID:', id)
+    console.log('PAYLOAD PERSONAL:', datosPersonalClean)
+    console.log('PAYLOAD CONTRATO:', datosContratoClean)
 
     return await FuncionarioModel.updateTransactional(id, datosPersonalClean, datosContratoClean)
   }

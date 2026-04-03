@@ -24,6 +24,7 @@ import sueldoPensionadoRouter from './src/routes/sueldoPensionado.routes.js'
 import jubiladoRouter from './src/routes/jubilado.routes.js'
 import permisoRouter from './src/routes/permiso.routes.js'
 import condicionLaboralRouter from './src/routes/condicionLaboral.routes.js'
+import obreroRouter from './src/routes/obrero.routes.js'
 
 import historialSalarioRouter from './src/routes/historialSalario.routes.js'
 
@@ -89,6 +90,7 @@ app.use('/api/permisos', permisoRouter)
 
 
 app.use('/api/historial-salarios', historialSalarioRouter)
+app.use('/api/obreros', obreroRouter)
 
 const PORT = 5002
 app.listen(PORT, () => {

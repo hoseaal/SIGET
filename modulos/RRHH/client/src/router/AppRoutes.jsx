@@ -3,10 +3,11 @@ import ProtectedRoute from "./ProtectedRoutes";
 import { LoginPage } from "../pages/authentication/LoginPage";
 import { RegisterPage } from "../pages/authentication/RegisterPage";
 
-import { RegistrarFuncionario } from "../pages/formularios/RegistrarFuncionario.jsx";
-import { FuncionariosActivos } from "../pages/formularios/FuncionariosActivos.jsx";
+import { RegistrarFuncionario } from "../pages/FuncionariosActivos/RegistrarFuncionario.jsx";
+import { FuncionariosActivos } from "../pages/FuncionariosActivos/FuncionariosActivos.jsx";
 
-import { Reportes } from "../pages/formularios/reportes"
+import { Reportes } from "../pages/FuncionariosActivos/reportes"
+import { ObrerosFijos } from "../pages/ObrerosFijos/ObrerosFijos.jsx";
 
 import { Prestamos } from "../pages/prestamos/prestamos";
 import { Almacen } from "../pages/prestamos/almacen.jsx"
@@ -36,19 +37,19 @@ const AppRoutes = () => {
 
             <Route path="/Configuracion/Cargos" element={
                 <ProtectedRoute>
-                    <ClasificacionyCargos/>
+                    <ClasificacionyCargos />
                 </ProtectedRoute>
             } />
 
             <Route path="/Configuracion/TablaSalarios" element={
                 <ProtectedRoute>
-                    <TablaSalarios/>
+                    <TablaSalarios />
                 </ProtectedRoute>
             } />
 
             <Route path="/Configuracion/EstructuraOrganizacional" element={
                 <ProtectedRoute>
-                    <EstructuraOrganizacional/>
+                    <EstructuraOrganizacional />
                 </ProtectedRoute>
             } />
 
@@ -75,6 +76,13 @@ const AppRoutes = () => {
                     <FuncionariosActivos />
                 </ProtectedRoute>
             } />
+
+            <Route path="/Personal/ObrerosFijos" element={
+                <ProtectedRoute>
+                    <ObrerosFijos />
+                </ProtectedRoute>
+            } />
+
 
 
             <Route path="/Reportes" element={

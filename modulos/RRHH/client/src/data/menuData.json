@@ -16,7 +16,7 @@
             {
                 "text": "Personal",
                 "icon": "bx bx-group",
-                "available": true,  
+                "available": true,
                 "link": "",
                 "submenu": [
                     {
@@ -25,9 +25,9 @@
                         "link": "/Personal/FuncionariosActivos"
                     },
                     {
-                        "text": "Registrar Nuevo Funcionario",
+                        "text": "Obreros Fijos",
                         "available": true,
-                        "link": "/Personal/RegistrarFuncionario"
+                        "link": "/Personal/ObrerosFijos"
                     }
                 ]
             }
@@ -39,7 +39,7 @@
             {
                 "text": "Configuración General",
                 "icon": "bx bx-cog",
-                "available": true,  
+                "available": true,
                 "link": "",
                 "submenu": [
                     {
@@ -62,7 +62,7 @@
             {
                 "text": "Usuarios",
                 "icon": "bx bx-user-plus",
-                "available": true,  
+                "available": true,
                 "link": "",
                 "submenu": [
                     {

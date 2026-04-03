@@ -1,10 +1,10 @@
-/* eslint-disable camelcase */
+
 import pool from '../utils/database.js'
 
 export class FuncionarioModel {
 
   // Construye la cláusula WHERE dinámicamente
-  static _buildWhere (filters) {
+  static _buildWhere(filters) {
     const where = []
     const params = []
 
@@ -42,18 +42,18 @@ export class FuncionarioModel {
     }
   }
 
-  static async getFiltered ({ limit, offset, includeContract, ...filters }) {
+  static async getFiltered({ limit, offset, includeContract, ...filters }) {
     const { whereClause, params } = this._buildWhere(filters)
-    
+
     let sql = ''
-    
-    // Query condicional (FULL JOIN vs SIMPLE)
+
+    // Query condicional 
     if (includeContract) {
       sql = `
         SELECT t.*, 
                TIMESTAMPDIFF(YEAR, t.fecha_nacimiento, CURDATE()) as edad,
                c.cargo_cet_id, c.cargo_onapre_id, c.nivel_salarial_id, c.condicion_laboral_id, c.unidad_id, c.division_id, c.direccion_id,
-               cet.nombre, ona.nombre, niv.salario_base, dir.nombre, uni.nombre, divi.nombre
+               cet.nombre AS cargo_cet_nombre, ona.nombre AS cargo_onapre_nombre, niv.salario_base, dir.nombre AS direccion_nombre, divi.nombre AS division_nombre, uni.nombre AS unidad_nombre
         FROM empleados t
         LEFT JOIN datos_laborales c ON t.empleado_id = c.empleado_id
         LEFT JOIN cargos_cet cet ON c.cargo_cet_id = cet.cargo_cet_id
@@ -85,14 +85,14 @@ export class FuncionarioModel {
     return rows
   }
 
-  static async countFiltered (filters) {
+  static async countFiltered(filters) {
     const { whereClause, params } = this._buildWhere(filters)
     const sql = `SELECT COUNT(*) as total FROM empleados t ${whereClause}`
     const [rows] = await pool.query(sql, params)
     return rows[0].total
   }
 
-  static async getById (id, includeContract) {
+  static async getById(id, includeContract) {
     let sql = ''
     if (includeContract) {
       // AQUÍ AGREGAMOS LA LÓGICA DEL ENCARGO ACTIVO
@@ -102,10 +102,10 @@ export class FuncionarioModel {
                
                -- Datos Contrato Base (Alias normales)
                c.*, 
-               cet.nombre, ona.nombre, niv.salario_base, dir.nombre, uni.nombre,
+               cet.nombre AS cargo_cet_nombre, ona.nombre AS cargo_onapre_nombre, niv.salario_base, dir.nombre AS direccion_nombre, divi.nombre AS division_nombre, uni.nombre AS unidad_nombre,
 
                -- Datos Encargo Activo (Alias con prefijo 'enc_')
-               e.encargo_id as enc_id, e.fecha_inicio,
+               e.encargo_id as enc_id, e.fecha_inicio as enc_fecha_inicio,
                ecet.nombre as enc_cargo,
                eniv.salario_base as enc_salario,
                edir.nombre as enc_direccion,
@@ -118,6 +118,7 @@ export class FuncionarioModel {
         LEFT JOIN cargos_onapre ona ON c.cargo_onapre_id = ona.cargo_onapre_id
         LEFT JOIN niveles_salariales niv ON c.nivel_salarial_id = niv.nivel_salarial_id
         LEFT JOIN direcciones dir ON c.direccion_id = dir.direccion_id
+        LEFT JOIN divisiones divi ON c.division_id = divi.division_id
         LEFT JOIN unidades uni ON c.unidad_id = uni.unidad_id
         
         -- Joins Encargo (Solo si es activo est=1)
@@ -137,7 +138,7 @@ export class FuncionarioModel {
   }
 
   // --- TRANSACCIÓN: CREATE ---
-  static async createTransactional (personalData, contractData) {
+  static async createTransactional(personalData, contractData) {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
@@ -164,7 +165,7 @@ export class FuncionarioModel {
   }
 
   // --- TRANSACCIÓN: UPDATE ---
-  static async updateTransactional (id, personalData, contractData) {
+  static async updateTransactional(id, personalData, contractData) {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
@@ -194,24 +195,24 @@ export class FuncionarioModel {
     }
   }
 
-  static async delete (id) {
+  static async delete(id) {
     const [result] = await pool.query('DELETE FROM empleados WHERE empleado_id = ?', [id])
     return result.affectedRows > 0
   }
 
-  static async createEncargo (data) {
+  static async createEncargo(data) {
     // Validamos si ya tiene uno activo para evitar duplicidad lógica
     const [activos] = await pool.query('SELECT encargo_id FROM encargos_temporales WHERE empleado_id = ? AND estatus_encargo = 1', [data.empleado_id])
     if (activos.length > 0) {
       throw new Error('El funcionario ya tiene un encargo activo. Debe finalizarlo primero.')
     }
-    
+
     const sql = `INSERT INTO encargos_temporales SET ?`
     const [result] = await pool.query(sql, data)
     return result.insertId
   }
 
-  static async deactivateEncargo (empleado_id) {
+  static async deactivateEncargo(empleado_id) {
     // Actualizamos el encargo activo, poniendo fecha fin HOY (CURDATE) y estatus 0
     const sql = `
       UPDATE encargos_temporales 

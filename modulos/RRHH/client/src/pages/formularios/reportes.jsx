@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import ModalActaVerificacion from '../Modales/modalActaVerificacion'; // Asegúrate de que esta ruta sea correcta
-import { Container, Row, Col, Card, Button } from 'react-bootstrap'; // Importa los componentes de React-Bootstrap
+import ModalActaVerificacion from '../Modales/modalActaVerificacion';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import ModalGenerarEtiquetas from '../Modales/modalGenerarEtiquetas';
 
 export const Reportes = () => {
@@ -13,7 +13,7 @@ export const Reportes = () => {
     const handleCloseEtiquetasModal = () => setShowEtiquetasModal(false);
 
     const handleOpenModal = () => setShowVeriModal(true);
-    
+
     const handleCloseModal = () => {
         console.log("Cerrando modal...", showVeriModal);
         setShowVeriModal(false);
@@ -42,10 +42,10 @@ export const Reportes = () => {
                                     <Card.Text>
                                         Genera un acta detallada para la verificación de inventario de Cada Departamento
                                     </Card.Text>
-                                    <Button 
-                                        variant="primary" 
-                                        size="lg" 
-                                        onClick={handleOpenModal} 
+                                    <Button
+                                        variant="primary"
+                                        size="lg"
+                                        onClick={handleOpenModal}
                                         className="w-100 mt-auto" // Botón al final de la tarjeta
                                     >
                                         <i className="bx bxs-file-pdf me-2"></i> Generar Acta de Verificación
@@ -60,9 +60,9 @@ export const Reportes = () => {
                                     <Card.Text>
                                         Imprime etiquetas de inventario para identificar los bienes muebles de forma rápida y eficiente.
                                     </Card.Text>
-                                    <Button 
-                                        variant="secondary" 
-                                        size="lg" 
+                                    <Button
+                                        variant="secondary"
+                                        size="lg"
                                         // Aquí puedes añadir la función onClick para generar etiquetas
                                         onClick={handleOpenEtiquetasModal}
                                         className="w-100 mt-auto"

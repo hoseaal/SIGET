@@ -17,7 +17,7 @@ export const menuPermissions = {
 
     // Formularios BM
     "/Personal/FuncionariosActivos": [1, 2, 3, 4, 5],
-    "/Personal/RegistrarFuncionario": [2, 3, 4, 5],
+    "/Personal/ObrerosFijos": [1, 2, 3, 4, 5],
 
     // Configuración General
     "/Configuracion/EstructuraOrganizacional": [3, 4, 5],
@@ -41,7 +41,7 @@ export const ACTIONS = {
 // Mapeamos cada acción a los tipos de usuario que tienen permiso.
 const permissions = {
 
-    [ACTIONS.VIEW_LOAN_DETAILS]: [2, 3, 4, 5], 
+    [ACTIONS.VIEW_LOAN_DETAILS]: [2, 3, 4, 5],
 
     [ACTIONS.JEFE_AREA]: [4, 5]
 };
