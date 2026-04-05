@@ -18,13 +18,13 @@ import primaProfRouter from './src/routes/primaProfesionalizacion.routes.js'
 import nivelSalarialRouter from './src/routes/nivelSalarial.routes.js'
 import nivelAntiguoRouter from './src/routes/nivelSalarialAntiguo.routes.js'
 import antiguedadRouter from './src/routes/antiguedad.routes.js'
-import hijoRouter from './src/routes/hijo.routes.js'
 import antiguedadRegistroRouter from './src/routes/antiguedadRegistro.routes.js'
 import sueldoPensionadoRouter from './src/routes/sueldoPensionado.routes.js'
 import jubiladoRouter from './src/routes/jubilado.routes.js'
 import permisoRouter from './src/routes/permiso.routes.js'
 import condicionLaboralRouter from './src/routes/condicionLaboral.routes.js'
 import obreroRouter from './src/routes/obrero.routes.js'
+import cargaFamiliarRouter from './src/routes/cargaFamiliar.routes.js'
 
 import historialSalarioRouter from './src/routes/historialSalario.routes.js'
 
@@ -81,8 +81,6 @@ app.use('/api/niveles-salariales-antiguos', nivelAntiguoRouter)
 app.use('/api/antiguedad', antiguedadRouter)
 app.use('/api/condiciones-laborales', condicionLaboralRouter)
 
-
-app.use('/api/hijos', hijoRouter)
 app.use('/api/registros-antiguedad', antiguedadRegistroRouter)
 app.use('/api/sueldo-pensionado', sueldoPensionadoRouter)
 app.use('/api/jubilados', jubiladoRouter)
@@ -91,6 +89,7 @@ app.use('/api/permisos', permisoRouter)
 
 app.use('/api/historial-salarios', historialSalarioRouter)
 app.use('/api/obreros', obreroRouter)
+app.use('/api/carga-familiar', cargaFamiliarRouter)
 
 const PORT = 5002
 app.listen(PORT, () => {

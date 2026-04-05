@@ -28,6 +28,21 @@
                         "text": "Obreros Fijos",
                         "available": true,
                         "link": "/Personal/ObrerosFijos"
+                    },
+                    {
+                        "text": "Jubilados",
+                        "available": true,
+                        "link": "/Personal/Jubilados"
+                    },
+                    {
+                        "text": "Pensionados",
+                        "available": true,
+                        "link": "/Personal/Pensionados"
+                    },
+                    {
+                        "text": "Sobrevivientes",
+                        "available": true,
+                        "link": "/Personal/Sobrevivientes"
                     }
                 ]
             }

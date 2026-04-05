@@ -5,7 +5,8 @@ import { DepartamentoSelect } from '../layouts/selectInfinito';
 import ModalAntiguedades from '../Modales/ModalAntiguedades';
 import { RegistrarFuncionario } from './RegistrarFuncionario';
 import { EditarFuncionario } from './EditarFuncionario';
-import ModalVerPerfil from './ModalVerPerfil';
+import ModalVerPerfil from '../Modales/ModalVerPerfil';
+import ModalCargaFamiliar from '../Modales/modalCargaFamiliar';
 
 export const FuncionariosActivos = () => {
     const [data, setData] = useState([]);
@@ -25,6 +26,8 @@ export const FuncionariosActivos = () => {
     const [showRegistro, setShowRegistro] = useState(false);
     const [showPerfil, setShowPerfil] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
+    const [showCarga, setShowCarga] = useState(false);
+    const [cargaItem, setCargaItem] = useState(null);
 
     // Estado para recargar los datos
     const [refreshKey, setRefreshKey] = useState(0);
@@ -218,6 +221,13 @@ export const FuncionariosActivos = () => {
                                                         </Dropdown.Item>
                                                         <Dropdown.Item href="#" onClick={(e) => {
                                                             e.preventDefault();
+                                                            setCargaItem(item.empleado_id);
+                                                            setShowCarga(true);
+                                                        }}>
+                                                            <i className="bx bx-group me-1"></i> Carga Familiar
+                                                        </Dropdown.Item>
+                                                        <Dropdown.Item href="#" onClick={(e) => {
+                                                            e.preventDefault();
                                                             setEditItem(item.empleado_id);
                                                             setShowEdit(true);
                                                         }}>
@@ -279,6 +289,12 @@ export const FuncionariosActivos = () => {
                     show={showPerfil}
                     handleClose={() => setShowPerfil(false)}
                     empleado_id={perfilItem}
+                    tipo="funcionario"
+                />
+                <ModalCargaFamiliar
+                    show={showCarga}
+                    handleClose={() => setShowCarga(false)}
+                    empleado_id={cargaItem}
                 />
                 <RegistrarFuncionario 
                 show={showRegistro} 

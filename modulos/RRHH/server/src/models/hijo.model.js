@@ -4,6 +4,13 @@ import pool from '../utils/database.js'
 export class HijoModel {
   
   static async getByFuncionarioId (empleado_id) {
+    // Desactivar automáticamente a los hijos que tienen 18 años o más
+    await pool.query(`
+      UPDATE hijos_empleados
+      SET estatus = 0
+      WHERE empleado_id = ? AND TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) >= 18 AND estatus = 1
+    `, [empleado_id]);
+
     // Calculamos la edad al vuelo
     const sql = `
       SELECT *, TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) as edad

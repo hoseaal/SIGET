@@ -4,7 +4,8 @@ import { DepartamentoSelect } from '../layouts/selectInfinito';
 import ModalAntiguedades from '../Modales/ModalAntiguedades';
 import { RegistrarObrero } from './RegistrarObrero';
 import { EditarObrero } from './EditarObrero';
-import ModalVerPerfil from './MovalVerPerfil';
+import ModalVerPerfil from '../Modales/ModalVerPerfil';
+import ModalCargaFamiliar from '../Modales/modalCargaFamiliar';
 
 export const ObrerosFijos = () => {
     const [data, setData] = useState([]);
@@ -23,6 +24,8 @@ export const ObrerosFijos = () => {
     const [showRegistro, setShowRegistro] = useState(false);
     const [showPerfil, setShowPerfil] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
+    const [showCarga, setShowCarga] = useState(false);
+    const [cargaItem, setCargaItem] = useState(null);
 
     const [refreshKey, setRefreshKey] = useState(0);
     const [isRegistering, setIsRegistering] = useState(false);
@@ -188,6 +191,13 @@ export const ObrerosFijos = () => {
                                                         </Dropdown.Item>
                                                         <Dropdown.Item href="#" onClick={(e) => {
                                                             e.preventDefault();
+                                                            setCargaItem(item.empleado_id);
+                                                            setShowCarga(true);
+                                                        }}>
+                                                            <i className="bx bx-group me-1"></i> Carga Familiar
+                                                        </Dropdown.Item>
+                                                        <Dropdown.Item href="#" onClick={(e) => {
+                                                            e.preventDefault();
                                                             setEditItem(item.empleado_id);
                                                             setShowEdit(true);
                                                         }}>
@@ -245,6 +255,12 @@ export const ObrerosFijos = () => {
                     show={showPerfil}
                     handleClose={() => setShowPerfil(false)}
                     empleado_id={perfilItem}
+                    tipo="obrero"
+                />
+                <ModalCargaFamiliar
+                    show={showCarga}
+                    handleClose={() => setShowCarga(false)}
+                    empleado_id={cargaItem}
                 />
                 <RegistrarObrero
                     show={showRegistro}
