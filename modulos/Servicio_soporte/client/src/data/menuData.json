@@ -1,0 +1,87 @@
+[
+    {
+        "header": "",
+        "items": [
+            {
+                "text": "Dashboard",
+                "icon": "bx bx-home",
+                "available": true,
+                "link": "/Dashboard"
+            }
+        ]
+    },
+    {
+        "header": "Gestion de Funcionarios",
+        "items": [
+            {
+                "text": "Personal",
+                "icon": "bx bx-group",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Funcionarios Activos",
+                        "available": true,
+                        "link": "/Personal/FuncionariosActivos"
+                    },
+                    {
+                        "text": "Registrar Nuevo Funcionario",
+                        "available": true,
+                        "link": "/Personal/RegistrarFuncionario"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "header": "Configuración",
+        "items": [
+            {
+                "text": "Configuración General",
+                "icon": "bx bx-cog",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Estructura Organizacional",
+                        "available": true,
+                        "link": "/Configuracion/EstructuraOrganizacional"
+                    },
+                    {
+                        "text": "Tablas de Salarios",
+                        "available": true,
+                        "link": "/Configuracion/TablaSalarios"
+                    },
+                    {
+                        "text": "Clasificación y Cargos",
+                        "available": true,
+                        "link": "/Configuracion/Cargos"
+                    }
+                ]
+            },
+            {
+                "text": "Usuarios",
+                "icon": "bx bx-user-plus",
+                "available": true,  
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Registrar Nuevo Usuario",
+                        "available": true,
+                        "link": "/Configuracion/NuevoUsuario"
+                    },
+                    {
+                        "text": "Usuarios",
+                        "available": true,
+                        "link": "/Configuracion/Usuarios"
+                    },
+                    {
+                        "text": "Bitácora de Cambios",
+                        "available": true,
+                        "link": "/Configuracion/Bitacora"
+                    }
+                ]
+            }
+        ]
+    }
+]
