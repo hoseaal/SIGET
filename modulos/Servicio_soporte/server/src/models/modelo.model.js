@@ -12,7 +12,7 @@ export class ModeloModel {
     }
 
     static async getById(id) {
-        const [rows] = await pool.query('SELECT m.*, ma.nombre as marca_nombre FROM modelo m JOIN marca ma ON m.marca_id = m.id WHERE m.id=?', [id])
+        const [rows] = await pool.query('SELECT m.*, ma.nombre as marca_nombre FROM modelo m JOIN marca ma ON m.marca_id = ma.id WHERE m.id=?', [id])
         return rows[0] || null
     }
 

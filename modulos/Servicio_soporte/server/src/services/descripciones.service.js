@@ -1,5 +1,5 @@
 import { DescripcionesModel } from "../models/descripciones.model.js";
-
+import { validaciones} from "../utils/validaciones.js";
 // 400 - Bad Request: El servidor no entiende la petición.
 // 401 - Unauthorized: Requiere autenticación.
 // 403 - Forbidden: Prohibido el acceso, sin permisos.
@@ -15,6 +15,7 @@ export class DescripcionesService {
         if(!datos.nombre) {
             throw new Error('El nombre de la descripcion es requerido')
         }
+        await validaciones.string(datos.nombre)
         return await DescripcionesModel.create(datos)
     }
     static async obtenerPorId(id) {
@@ -32,6 +33,7 @@ export class DescripcionesService {
         if(!datos.nombre){
             throw new Error('El nombre de la descripcion es requerido para actualizar')
         }
+        await validaciones.string(datos.nombre)
         return await DescripcionesModel.update(id, datos)
     }
     static async eliminar(id) {

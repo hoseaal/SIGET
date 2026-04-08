@@ -1,4 +1,5 @@
 import { ModeloModel } from "../models/modelo.model.js";
+import { validaciones } from "../utils/validaciones.js";
 
 export class ModeloService {
     static async obtenerTodos() {
@@ -16,11 +17,15 @@ export class ModeloService {
         if (!datos.nombre || !datos.marca_id) {
             throw new Error('El nombre y el ID de la marca son obligatorios')
         }
+        await validaciones.number(datos.marca_id)
+        await validaciones.string(datos.nombre)
         return await ModeloModel.create(datos)
     }
 
     static async actualizar(id, datos) {
         await this.obtenerPorId(id) // Validamos que exista
+        await validaciones.number(datos.marca_id)
+        await validaciones.string(datos.nombre)
         return await ModeloModel.update(id, datos)
     }
 

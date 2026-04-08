@@ -1,4 +1,5 @@
 import { marcaModel } from "../models/marca.model.js";
+import { validaciones } from "../utils/validaciones.js";
 
 export class marcaService {
     static async obtenerTodas() { return await marcaModel.getAll() }
@@ -12,12 +13,14 @@ export class marcaService {
 
     static async crear(datos) {
         if (!datos.nombre) throw new Error('El nombre es requerido')
+        await validaciones.string(datos.nombre)
         return await marcaModel.create(datos)
     }
 
     static async actualizar(id, datos) {
         await this.obtenerPorId(id) // Validamos que exista antes de eliminar
         if (!datos.nombre) throw new Error('El nombre es requerido')
+        await validaciones.string(datos.nombre)
         return await marcaModel.update(id, datos)
     }
 

@@ -2,8 +2,8 @@ import { PanelSoportService } from '../services/panel_soport.service.js'
 
 export const getAll = async (req, res) => {
     try {
-        const paneles = await PanelSoportService.obtenerTodos()
-        res.json(paneles)
+        const filas = await PanelSoportService.obtenerTodas()
+        res.json(filas)
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
@@ -12,8 +12,11 @@ export const getAll = async (req, res) => {
 export const getById = async (req, res) => {
     try {
         const { id } = req.params
-        const panel = await PanelSoportService.obtenerPorId(id)
-        res.json({ success: panel, message: "Registro encontrado" })
+        const registro = await PanelSoportService.obtenerPorId(id)
+        res.json({ 
+            success: registro, 
+            message: "Rack obtenido con éxito" 
+        })
     } catch (error) {
         res.status(404).json({ error: error.message })
     }
@@ -22,7 +25,7 @@ export const getById = async (req, res) => {
 export const create = async (req, res) => {
     try {
         const nuevo = await PanelSoportService.crear(req.body)
-        res.status(201).json({ success: nuevo, message: "Panel de soporte registrado" })
+        res.status(201).json(nuevo)
     } catch (error) {
         res.status(400).json({ error: error.message })
     }
@@ -31,8 +34,8 @@ export const create = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const  panel= await PanelSoportService.actualizar(id, req.body)
-        res.json({ success: panel, message:"Registro actualizado con exito"})
+        const actualizado = await PanelSoportService.actualizar(id, req.body)
+        res.json({ success: true, data: actualizado })
     } catch (error) {
         res.status(400).json({ error: error.message })
     }
@@ -42,9 +45,8 @@ export const remove = async (req, res) => {
     try {
         const { id } = req.params
         await PanelSoportService.eliminar(id)
-        res.json({ message: "Panel de soporte eliminado con éxito" })
+        res.json({ message: "Rack eliminado con éxito" })
     } catch (error) {
-        // Si no existe, el servicio lanza el error y aquí lo enviamos con 404 o 400
-        res.status(404).json({ error: error.message })
+        res.status(400).json({ error: error.message })
     }
 }

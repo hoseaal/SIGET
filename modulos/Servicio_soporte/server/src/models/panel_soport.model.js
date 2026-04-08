@@ -10,6 +10,10 @@ export class PanelSoportModel {
         const [rows] = await pool.query('SELECT * FROM panel_soport WHERE id = ?', [id])
         return rows[0] || null
     }
+    static async getByNroBien(nro_bien) {
+        const [rows] = await pool.query('SELECT * FROM panel_soport WHERE nro_bien = ?', [nro_bien])
+        return rows[0] || null
+    }
 
     static async create({ nro_bien, descripcion }) {
         const [result] = await pool.query(

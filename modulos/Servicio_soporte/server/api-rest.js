@@ -10,7 +10,8 @@ import tipo_equipo from './src/routes/tipo_equipo.route.js'
 import marca from './src/routes/marca.route.js'
 import modelo from './src/routes/modelo.route.js'
 import panel_soport from './src/routes/panel_soport.route.js'
-
+import piso from './src/routes/piso.route.js'
+import puertos_panel_s  from './src/routes/puertos_panel_s.route.js'
 const app = express()
 
 app.use(express.json())
@@ -37,6 +38,8 @@ app.use('/api/tipo_equipo', tipo_equipo)
 app.use('/api/marca', marca)
 app.use('/api/modelo', modelo)
 app.use('/api/panel_soport', panel_soport)
+app.use('/api/piso', piso)
+app.use('/api/puertos_panel_s', puertos_panel_s)
 
 
 const PORT = 5002
