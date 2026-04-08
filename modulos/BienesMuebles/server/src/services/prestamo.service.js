@@ -18,7 +18,7 @@ export class PrestamoService {
    * @param {string[]} data.bienes - Array de bim_ide de los bienes prestados.
    * @returns {Promise<object>} Objeto del préstamo creado.
    */
-  static async createLoan (data) {
+  static async createLoan(data) {
     const { pre_tip, pre_fec, pre_ndo, dep_ide, dep_origen_ide, bienes } = data
 
     if (!pre_tip || !pre_ndo || !dep_ide || !dep_origen_ide || !Array.isArray(bienes) || bienes.length === 0) {
@@ -53,7 +53,7 @@ export class PrestamoService {
    * @param {object} filters - Filtros (pre_ndo, dep_origen_id, dep_destino_id).
    * @returns {Promise<Array>}
    */
-  static async getNormalLoans (filters) {
+  static async getNormalLoans(filters) {
     return await PrestamoModel.getNormalLoans(filters)
   }
 
@@ -62,8 +62,44 @@ export class PrestamoService {
    * @param {object} filters - Filtros (pre_ndo, dep_origen_id, dep_destino_id).
    * @returns {Promise<Array>}
    */
-  static async getWarehouseItems (filters) {
+  static async getWarehouseItems(filters) {
     return await PrestamoModel.getWarehouseItems(filters)
+  }
+  /**
+   * Obtiene préstamos normales paginados.
+   * @param {object} options - { page, limit, filters }
+   * @returns {Promise<{data: Array, meta: object}>}
+   */
+  static async getNormalLoansPaginated({ page = 1, limit = 10, filters = {} }) {
+    if (page < 1 || limit < 1) throw new Error('Parámetros de paginación inválidos')
+    const result = await PrestamoModel.getNormalLoansPaginated({ page, limit, filters })
+    return {
+      data: result.data,
+      meta: {
+        page: Number(page),
+        limit: Number(limit),
+        total: Number(result.total),
+        totalPages: Math.ceil(result.total / limit)
+      }
+    }
+  }
+  /**
+   * Obtiene bienes en almacén paginados.
+   * @param {object} options - { page, limit, filters }
+   * @returns {Promise<{data: Array, meta: object}>}
+   */
+  static async getWarehouseItemsPaginated({ page = 1, limit = 10, filters = {} }) {
+    if (page < 1 || limit < 1) throw new Error('Parámetros de paginación inválidos')
+    const result = await PrestamoModel.getWarehouseItemsPaginated({ page, limit, filters })
+    return {
+      data: result.data,
+      meta: {
+        page: Number(page),
+        limit: Number(limit),
+        total: Number(result.total),
+        totalPages: Math.ceil(result.total / limit)
+      }
+    }
   }
 
   /**
@@ -71,7 +107,7 @@ export class PrestamoService {
    * @param {number} id - pre_ide.
    * @returns {Promise<object|null>}
    */
-  static async getLoanById (id) {
+  static async getLoanById(id) {
     const loan = await PrestamoModel.getById(id)
     if (!loan) throw new Error('Préstamo no encontrado')
     return loan
@@ -83,7 +119,7 @@ export class PrestamoService {
    * @param {number} newStatus - Nuevo estado (0 o 1).
    * @returns {Promise<boolean>}
    */
-  static async updateLoanStatus (id, newStatus) {
+  static async updateLoanStatus(id, newStatus) {
     if (newStatus === undefined || (newStatus !== 0 && newStatus !== 1)) {
       throw new Error('El estatus de préstamo es inválido. Debe ser 0 (inactivo) o 1 (activo).')
     }
@@ -92,11 +128,11 @@ export class PrestamoService {
     return await PrestamoModel.updateStatus(id, newStatus)
   }
 
-  static async updateStatusBien (bim_ide, dpr_est, pre_ide) {
+  static async updateStatusBien(bim_ide, dpr_est, pre_ide) {
     if (!bim_ide || (dpr_est !== 0 && dpr_est !== 1) || !pre_ide) {
       throw new Error('ID de bien, estado válido (0 o 1) e ID de préstamo son requeridos.')
     }
-    
+
     // 1. Buscamos dónde está activo el bien actualmente (Préstamo o Almacén)
     const loanDetail = await PrestamoModel.checkBienPrestadoActiveNormalLoan(bim_ide)
     const warehouseItem = await PrestamoModel.checkBienEnAlmacen(bim_ide)
@@ -116,7 +152,7 @@ export class PrestamoService {
 
     // 4. Si ya está en el estado que queremos, no hacemos nada
     if (activeRecord.dpr_est === dpr_est) {
-      return true 
+      return true
     }
 
     // 5. Finalmente, ejecutamos la actualización en la BD
@@ -128,7 +164,7 @@ export class PrestamoService {
    * @param {string} bim_ide - ID del bien.
    * @returns {Promise<object|null>} Información del préstamo/movimiento activo si existe, o null.
    */
-  static async checkBienActivelyInvolved (bim_ide) {
+  static async checkBienActivelyInvolved(bim_ide) {
     const normalLoan = await PrestamoModel.checkBienPrestadoActiveNormalLoan(bim_ide)
     if (normalLoan) return { type: 'normal_loan', ...normalLoan }
 
@@ -136,5 +172,55 @@ export class PrestamoService {
     if (warehouseItem) return { type: 'warehouse_mal_estado', ...warehouseItem }
 
     return null
+  }
+
+  /**
+   * Agrega un bien a un préstamo existente.
+   * Valida que el préstamo esté activo, que el bien exista y no esté ya en otro préstamo activo.
+   * @param {number} pre_ide - ID del préstamo existente.
+   * @param {string} bim_ide - ID del bien a agregar.
+   * @returns {Promise<boolean>}
+   */
+  static async addBienToPrestamo(pre_ide, bim_ide) {
+    // 1. Verificar que el préstamo existe y está activo
+    const loan = await PrestamoModel.getById(pre_ide)
+    if (!loan) throw new Error('El préstamo no existe.')
+    if (loan.pre_est !== 1) throw new Error('No se puede agregar bienes a un préstamo que ya fue cerrado/devuelto.')
+
+    // 2. Verificar que el bien existe
+    const bienExists = await BienMuebleModel.getById(bim_ide)
+    if (!bienExists) throw new Error(`El bien con ID '${bim_ide}' no existe.`)
+
+    // 3. Verificar que el bien no ya está en este préstamo (activo o histórico)
+    const yaEnPrestamo = await PrestamoModel.checkBienEnPrestamo(bim_ide, pre_ide)
+    if (yaEnPrestamo) {
+      throw new Error(`El bien con ID '${bim_ide}' ya forma parte de este préstamo.`)
+    }
+
+    // 4. Verificar que el bien no está en otro préstamo activo (normal)
+    const activeNormalLoan = await PrestamoModel.checkBienPrestadoActiveNormalLoan(bim_ide)
+    if (activeNormalLoan) {
+      throw new Error(`El bien con ID '${bim_ide}' ya está prestado activamente (Oficio: ${activeNormalLoan.pre_ndo}).`)
+    }
+
+    // 5. Verificar que el bien no está en almacén activo
+    const inWarehouse = await PrestamoModel.checkBienEnAlmacen(bim_ide)
+    if (inWarehouse) {
+      throw new Error(`El bien con ID '${bim_ide}' ya está registrado en almacén (Oficio: ${inWarehouse.pre_ndo}).`)
+    }
+
+    return await PrestamoModel.addBienToPrestamo(pre_ide, bim_ide)
+  }
+
+  /**
+   * Obtiene solo los bienes activos (dpr_est = 1) de un préstamo.
+   * Usado exclusivamente para generar el Acta de Entrega PDF.
+   * @param {number} pre_ide - ID del préstamo.
+   * @returns {Promise<Array>}
+   */
+  static async getActiveBienesForLoan(pre_ide) {
+    const loan = await PrestamoModel.getById(pre_ide)
+    if (!loan) throw new Error('Préstamo no encontrado.')
+    return await PrestamoModel.getActiveBienesForLoan(pre_ide)
   }
 }

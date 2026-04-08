@@ -4,28 +4,31 @@ import ModalEnviarBienAlmacen from '../Modales/modalEnviarBienAlmacen';
 import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo'; 
 import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
+const ITEMS_PER_PAGE = 10;
+
 export const Almacen = () => {
-    const DEP_ALMACEN_03 = 11; // ID del departamento "Almacén"
-    const DEP_ALMACEN_04 = 9; // ID del departamento "Almacén"
+    const DEP_ALMACEN_03 = 11;
+    const DEP_ALMACEN_04 = 9;
 
     const [data, setData] = useState([]);
-    const [departamentos, setDepartamentos] = useState([]); // Para cargar la lista de departamentos
-    const [loading, setLoading] = useState(true); // Estado de carga
-    const [error, setError] = useState(null);    // Estado de error
+    const [departamentos, setDepartamentos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
-    const [refreshKey, setRefreshKey] = useState(0); // Para forzar una recarga de datos
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [meta, setMeta] = useState({ total: 0, totalPages: 1, page: 1 });
 
-    const [searchOficio, setSearchOficio] = useState(''); // Para el input de búsqueda de oficio
-    const [searchQueryOficio, setSearchQueryOficio] = useState(''); // Estado que dispara la búsqueda
+    const [searchOficio, setSearchOficio] = useState('');
+    const [searchQueryOficio, setSearchQueryOficio] = useState('');
     
-    // Filtros: solo necesitamos el departamento de origen para esta vista
     const [filtros, setFiltros] = useState({
-        dep_origen_id: '',   // Cadena vacía para "Todos"
+        dep_origen_id: '',
         dep_destino_id: '', 
     });
 
     const [showCreateModal, setShowCreateModal] = useState(false);
-
     const [showDetallesModal, setShowDetallesModal] = useState(false);
     const [selectedPrestamoId, setSelectedPrestamoId] = useState(null);
 
@@ -36,59 +39,45 @@ export const Almacen = () => {
 
     const handleCloseDetallesModal = () => {
         setShowDetallesModal(false);
-        setSelectedPrestamoId(null); // Limpiar el ID seleccionado al cerrar
-        setRefreshKey(prevKey => prevKey + 1); // Forzar la recarga de datos de la tabla principal si se hizo una devolución
+        setSelectedPrestamoId(null);
+        setRefreshKey(prevKey => prevKey + 1);
     };
 
-const [userType, setUserType] = useState(null);
+    const [userType, setUserType] = useState(null);
     useEffect(() => {
-            const fetchUserData = async () => {
-                try {
-                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
-                    if (!userRes.ok) throw new Error('No autorizado.');
-                    const userDataResult = await userRes.json();
-                    if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
-                    
-                    const currentUserType = userDataResult.user.usu_tip;
-                    setUserType(currentUserType);
-                    setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
-                } catch (error) {
-                    console.error('Error fetching user data:', error);
-                }
-            };
-    
-            fetchUserData();
-        }, []);
+        const fetchUserData = async () => {
+            try {
+                const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                if (!userRes.ok) throw new Error('No autorizado.');
+                const userDataResult = await userRes.json();
+                if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                setUserType(userDataResult.user.usu_tip);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+        fetchUserData();
+    }, []);
 
-    // --- Cargar datos de préstamos en almacén ---
+    // --- Cargar datos de almacén paginados ---
     useEffect(() => {
         const loadPrestamosEnAlmacen = async () => {
             setLoading(true);
             setError(null);
             try {
-                let url = `/api/prestamos/almacen?`;
+                const params = new URLSearchParams();
+                params.append('page', currentPage);
+                params.append('limit', ITEMS_PER_PAGE);
+                if (searchQueryOficio) params.append('pre_ndo', searchQueryOficio);
+                if (filtros.dep_origen_id) params.append('dep_origen_id', filtros.dep_origen_id);
+                if (filtros.dep_destino_id) params.append('dep_destino_id', filtros.dep_destino_id);
 
-                // Añadir filtros a la URL
-                if (searchQueryOficio) {
-                    url += `pre_ndo=${encodeURIComponent(searchQueryOficio)}&`;
-                }
-                if (filtros.dep_origen_id) {
-                    url += `dep_origen_id=${filtros.dep_origen_id}&`;
-                }
-                if (filtros.dep_destino_id) {
-                    url += `dep_destino_id=${filtros.dep_destino_id}&`;
-                }
-                
-                // Eliminar el último '&' si existe
-                url = url.endsWith('&') ? url.slice(0, -1) : url;
-
-                const response = await fetch(url, {credentials: 'include'}); // 'include' para enviar cookies de autenticación
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
+                const response = await fetch(`/api/prestamos/almacen/pagina?${params.toString()}`, { credentials: 'include' });
+                if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
                 const result = await response.json();
-                
-                setData(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : []); 
+
+                setData(Array.isArray(result.data) ? result.data : []);
+                setMeta(result.meta || { total: 0, totalPages: 1, page: 1 });
             } catch (err) {
                 console.error('Error al cargar bienes en almacén:', err);
                 setError('No se pudieron cargar los bienes en almacén. ' + err.message);
@@ -97,24 +86,19 @@ const [userType, setUserType] = useState(null);
                 setLoading(false);
             }
         };
-
         loadPrestamosEnAlmacen();
-    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQueryOficio, refreshKey]); // Dependencias del useEffect
+    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQueryOficio, refreshKey, currentPage]);
 
-    // --- Cargar la lista de departamentos para los filtros ---
+    // --- Cargar la lista de departamentos ---
     useEffect(() => {
         const fetchDepartamentos = async () => {
             try {
-                const response = await fetch('/api/departamentos', {credentials: 'include'});
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
+                const response = await fetch('/api/departamentos', { credentials: 'include' });
+                if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
                 const result = await response.json();
-                // Aquí también aplica el .data si tu API lo requiere
                 setDepartamentos(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : []);
             } catch (err) {
                 console.error('Error al cargar departamentos:', err);
-                // Manejar error de carga de departamentos
             }
         };
         fetchDepartamentos();
@@ -123,45 +107,77 @@ const [userType, setUserType] = useState(null);
     // --- Manejadores de eventos ---
     const handleSearchOficio = (e) => {
         e.preventDefault();
-        setSearchQueryOficio(searchOficio); // Actualiza el estado que dispara el useEffect
+        setCurrentPage(1);
+        setSearchQueryOficio(searchOficio);
     };
 
     const handleClearSearch = () => {
         setSearchOficio('');
         setSearchQueryOficio('');
+        setCurrentPage(1);
     };
 
     const handleFiltroChange = (filterName, value) => {
+        setCurrentPage(1);
         setFiltros(prev => ({ ...prev, [filterName]: value }));
     };
 
-    // --- Funciones de Utilidad para la UI ---
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= meta.totalPages) {
+            setCurrentPage(page);
+        }
+    };
+
+    // --- Funciones de Utilidad ---
     const truncateText = (text, maxLength = 30) => {
         if (!text) return 'N/A';
         if (text.length <= maxLength) return text;
-        
-        return (
-            <span title={text}>
-                {`${text.substring(0, maxLength)}...`}
-            </span>
-        );
+        return (<span title={text}>{`${text.substring(0, maxLength)}...`}</span>);
     };
 
-    // Función para obtener el badge del estado del préstamo
     const getEstadoPrestamoBadge = (pre_est) => {
         switch(pre_est) {
-            case 1:
-                return <span className="badge bg-label-success me-1">Activo</span>;
-            case 0:
-                return <span className="badge bg-label-secondary me-1">Inactivo / Devuelto</span>;
-            default:
-                return <span className="badge bg-label-dark me-1">Desconocido</span>;
+            case 1: return <span className="badge bg-label-success me-1">Activo</span>;
+            case 0: return <span className="badge bg-label-secondary me-1">Inactivo / Devuelto</span>;
+            default: return <span className="badge bg-label-dark me-1">Desconocido</span>;
         }
     };
 
     const handleCloseCreateModal = () => {
         setShowCreateModal(false);
-        setRefreshKey(prevKey => prevKey + 1); // Forzar la recarga de la tabla de préstamos
+        setCurrentPage(1);
+        setRefreshKey(prevKey => prevKey + 1);
+    };
+
+    // --- Renderizar controles de paginación ---
+    const renderPagination = () => {
+        if (!meta || meta.totalPages <= 1) return null;
+
+        const pages = [];
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(meta.totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+        for (let p = startPage; p <= endPage; p++) pages.push(p);
+
+        return (
+            <div className="d-flex justify-content-between align-items-center mt-3">
+                <small className="text-muted">
+                    Mostrando {data.length} de {meta.total} registros · Página {meta.page} de {meta.totalPages}
+                </small>
+                <Pagination size="sm" className="mb-0">
+                    <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
+                    {startPage > 1 && <><Pagination.Item onClick={() => handlePageChange(1)}>1</Pagination.Item><Pagination.Ellipsis disabled /></>}
+                    {pages.map(p => (
+                        <Pagination.Item key={p} active={p === currentPage} onClick={() => handlePageChange(p)}>{p}</Pagination.Item>
+                    ))}
+                    {endPage < meta.totalPages && <><Pagination.Ellipsis disabled /><Pagination.Item onClick={() => handlePageChange(meta.totalPages)}>{meta.totalPages}</Pagination.Item></>}
+                    <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === meta.totalPages} />
+                </Pagination>
+            </div>
+        );
     };
 
     return (
@@ -206,8 +222,6 @@ const [userType, setUserType] = useState(null);
                             >
                                 <option value="">Departamento Origen</option>
                                 {departamentos.map(dep => (
-                                    // Excluir el propio Almacén (ID 11) de la lista de origen,
-                                    // ya que el almacén no "presta" a sí mismo para esta vista.
                                     (dep.dep_ide !== 11) && ( 
                                         <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
                                     )
@@ -236,9 +250,9 @@ const [userType, setUserType] = useState(null);
                         </div>
                     </Form>
                         
-                    <hr className="my-2 w-100" /> {/* Separador visual */}
+                    <hr className="my-2 w-100" />
                         
-                    {/* Tabla de Préstamos */}
+                    {/* Tabla de Almacén */}
                     {loading ? (
                         <div className="text-center my-4">
                             <Spinner animation="border" role="status" className="me-2" />
@@ -254,7 +268,6 @@ const [userType, setUserType] = useState(null);
                                         <th>N° Oficio/Transferencia</th>
                                         <th>Fecha Préstamo</th>
                                         <th>Departamento Origen</th>
-                                        {/* La columna de Departamento Destino se elimina */}
                                         <th>Estado</th>
                                         {hasPermission(userType, ACTIONS.JEFE_AREA) && (<th>Acciones</th>)}
                                     </tr>
@@ -265,9 +278,7 @@ const [userType, setUserType] = useState(null);
                                             <tr key={prestamo.pre_ide}>
                                                 <td><strong>{truncateText(prestamo.pre_ndo)}</strong></td>
                                                 <td>{prestamo.pre_fec && new Date(prestamo.pre_fec).toLocaleDateString('es-ES') ||  'Sin fecha'}</td>
-                                                {/* Usar los nombres que vienen directamente de la API */}
                                                 <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
-                                                {/* Se asume que el destino es el almacén, por lo que no se muestra */}
                                                 <td>{getEstadoPrestamoBadge(prestamo.pre_est)}</td>
                                                 {hasPermission(userType, ACTIONS.VIEW_LOAN_DETAILS) && (
                                                     <td>
@@ -279,7 +290,6 @@ const [userType, setUserType] = useState(null);
                                                             <Dropdown.Item href="#" onClick={() => handleVerDetalles(prestamo.pre_ide)}>
                                                                 <i className="bx bx-info-circle me-1"></i> Ver Detalles y Devolver
                                                             </Dropdown.Item>
-                                                            {/* Aquí NO se permite modificar ni borrar préstamos directamente, solo ver/devolver */}
                                                         </Dropdown.Menu>
                                                     </Dropdown>
                                                 </td>) }
@@ -295,7 +305,8 @@ const [userType, setUserType] = useState(null);
                         </div>
                     )}
                     
-                    {/* Aquí iría la paginación si tu endpoint /almacen la soportara */}
+                    {/* Controles de Paginación */}
+                    {!loading && !error && renderPagination()}
                 </div>
             </div>
             <ModalEnviarBienAlmacen
@@ -307,8 +318,8 @@ const [userType, setUserType] = useState(null);
                 show={showDetallesModal}
                 handleClose={handleCloseDetallesModal}
                 prestamoId={selectedPrestamoId}
-                onSuccess={() => setRefreshKey(prevKey => prevKey + 1)} // Forzar recarga si se devuelve algo
+                onSuccess={() => setRefreshKey(prevKey => prevKey + 1)}
             />
         </>
     );
-};
+};

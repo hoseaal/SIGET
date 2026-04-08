@@ -4,26 +4,29 @@ import ModalRegistrarPrestamo from '../Modales/modalRegistrarPrestamo';
 import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo';
 import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
+const ITEMS_PER_PAGE = 10;
+
 export const Prestamos = () => {
     const [data, setData] = useState([]);
-    const [departamentos, setDepartamentos] = useState([]); // Para cargar la lista de departamentos
-    const [loading, setLoading] = useState(true); // Estado de carga
-    const [error, setError] = useState(null);     // Estado de error
+    const [departamentos, setDepartamentos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
-    const [refreshKey, setRefreshKey] = useState(0); // Para forzar una recarga de datos
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [meta, setMeta] = useState({ total: 0, totalPages: 1, page: 1 });
 
-    const [searchOficio, setSearchOficio] = useState(''); // Para el input de búsqueda de oficio
-    const [searchQueryOficio, setSearchQueryOficio] = useState(''); // Estado que dispara la búsqueda
+    const [searchOficio, setSearchOficio] = useState('');
+    const [searchQueryOficio, setSearchQueryOficio] = useState('');
     
-    // Filtros para departamento de origen y destino
     const [filtros, setFiltros] = useState({
-        dep_origen_id: '',   // Cadena vacía para "Todos"
-        dep_destino_id: '',  // Cadena vacía para "Todos"
+        dep_origen_id: '',
+        dep_destino_id: '',
     });
 
     const [showCreateModal, setShowCreateModal] = useState(false);
-
-     const [showDetallesModal, setShowDetallesModal] = useState(false);
+    const [showDetallesModal, setShowDetallesModal] = useState(false);
     const [selectedPrestamoId, setSelectedPrestamoId] = useState(null);
 
     const handleVerDetalles = (prestamoId) => {
@@ -33,58 +36,44 @@ export const Prestamos = () => {
 
     const handleCloseDetallesModal = () => {
         setShowDetallesModal(false);
-        setSelectedPrestamoId(null); // Limpiar el ID seleccionado al cerrar
+        setSelectedPrestamoId(null);
     };
-const [userType, setUserType] = useState(null);
+
+    const [userType, setUserType] = useState(null);
     useEffect(() => {
-            const fetchUserData = async () => {
-                try {
-                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
-                    if (!userRes.ok) throw new Error('No autorizado.');
-                    const userDataResult = await userRes.json();
-                    if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
-                    
-                    const currentUserType = userDataResult.user.usu_tip;
-                    setUserType(currentUserType);
-                    setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
-                } catch (error) {
-                    console.error('Error fetching user data:', error);
-                }
-            };
-    
-            fetchUserData();
-        }, []);
-    // --- Cargar datos de préstamos normales activos ---
+        const fetchUserData = async () => {
+            try {
+                const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                if (!userRes.ok) throw new Error('No autorizado.');
+                const userDataResult = await userRes.json();
+                if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
+                setUserType(userDataResult.user.usu_tip);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+        fetchUserData();
+    }, []);
+
+    // --- Cargar datos de préstamos normales paginados ---
     useEffect(() => {
         const loadPrestamos = async () => {
             setLoading(true);
             setError(null);
             try {
-                let url = `/api/prestamos/normales?`;
+                const params = new URLSearchParams();
+                params.append('page', currentPage);
+                params.append('limit', ITEMS_PER_PAGE);
+                if (searchQueryOficio) params.append('pre_ndo', searchQueryOficio);
+                if (filtros.dep_origen_id) params.append('dep_origen_id', filtros.dep_origen_id);
+                if (filtros.dep_destino_id) params.append('dep_destino_id', filtros.dep_destino_id);
 
-                // Añadir filtros a la URL
-                if (searchQueryOficio) {
-                    url += `pre_ndo=${encodeURIComponent(searchQueryOficio)}&`;
-                }
-                if (filtros.dep_origen_id) {
-                    url += `dep_origen_id=${filtros.dep_origen_id}&`;
-                }
-                if (filtros.dep_destino_id) {
-                    url += `dep_destino_id=${filtros.dep_destino_id}&`;
-                }
-                
-                // Eliminar el último '&' si existe
-                url = url.endsWith('&') ? url.slice(0, -1) : url;
-
-                const response = await fetch(url, {credentials: 'include'}); // 'include' para enviar cookies de autenticación
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
+                const response = await fetch(`/api/prestamos/normales/pagina?${params.toString()}`, { credentials: 'include' });
+                if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
                 const result = await response.json();
-                
-                // Si la API devuelve un objeto con una propiedad 'data', úsala.
-                // De lo contrario, asume que el resultado es directamente el array.
-                setData(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : []); 
+
+                setData(Array.isArray(result.data) ? result.data : []);
+                setMeta(result.meta || { total: 0, totalPages: 1, page: 1 });
             } catch (err) {
                 console.error('Error al cargar préstamos normales:', err);
                 setError('No se pudieron cargar los préstamos. ' + err.message);
@@ -93,24 +82,19 @@ const [userType, setUserType] = useState(null);
                 setLoading(false);
             }
         };
-
         loadPrestamos();
-    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQueryOficio, refreshKey, showDetallesModal]); // Dependencias del useEffect
+    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQueryOficio, refreshKey, showDetallesModal, currentPage]);
 
     // --- Cargar la lista de departamentos para los filtros ---
     useEffect(() => {
         const fetchDepartamentos = async () => {
             try {
-                const response = await fetch('/api/departamentos', {credentials: 'include'});
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
+                const response = await fetch('/api/departamentos', { credentials: 'include' });
+                if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
                 const result = await response.json();
-                // Aquí también aplica el .data si tu API lo requiere
                 setDepartamentos(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : []);
             } catch (err) {
                 console.error('Error al cargar departamentos:', err);
-                // Manejar error de carga de departamentos
             }
         };
         fetchDepartamentos();
@@ -119,59 +103,91 @@ const [userType, setUserType] = useState(null);
     // --- Manejadores de eventos ---
     const handleSearchOficio = (e) => {
         e.preventDefault();
-        setSearchQueryOficio(searchOficio); // Actualiza el estado que dispara el useEffect
+        setCurrentPage(1); // Resetear a página 1 al buscar
+        setSearchQueryOficio(searchOficio);
     };
 
     const handleClearSearch = () => {
         setSearchOficio('');
         setSearchQueryOficio('');
+        setCurrentPage(1);
     };
 
     const handleFiltroChange = (filterName, value) => {
+        setCurrentPage(1); // Resetear a página 1 al cambiar filtros
         setFiltros(prev => ({ ...prev, [filterName]: value }));
-        // No hay paginación implementada en este ejemplo, así que no se resetea la página
+    };
+
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= meta.totalPages) {
+            setCurrentPage(page);
+        }
     };
 
     // --- Funciones de Utilidad para la UI ---
     const truncateText = (text, maxLength = 30) => {
         if (!text) return 'N/A';
         if (text.length <= maxLength) return text;
-        
-        return (
-            <span title={text}>
-                {`${text.substring(0, maxLength)}...`}
-            </span>
-        );
+        return (<span title={text}>{`${text.substring(0, maxLength)}...`}</span>);
     };
 
-    // Función para obtener el badge del estado del préstamo
     const getEstadoPrestamoBadge = (pre_est) => {
         switch(pre_est) {
-            case 1:
-                return <span className="badge bg-label-success me-1">Activo</span>;
-            case 0:
-                return <span className="badge bg-label-secondary me-1">Inactivo</span>;
-            default:
-                return <span className="badge bg-label-dark me-1">Desconocido</span>;
+            case 1: return <span className="badge bg-label-success me-1">Activo</span>;
+            case 0: return <span className="badge bg-label-secondary me-1">Inactivo</span>;
+            default: return <span className="badge bg-label-dark me-1">Desconocido</span>;
         }
     };
 
     const handleCloseCreateModal = () => {
         setShowCreateModal(false);
-        setRefreshKey(prevKey => prevKey + 1); // Forzar la recarga de la tabla de préstamos
+        setCurrentPage(1);
+        setRefreshKey(prevKey => prevKey + 1);
     };
 
-    // console.log(data) // Mantener para depuración si es necesario
+    // --- Renderizar controles de paginación ---
+    const renderPagination = () => {
+        if (!meta || meta.totalPages <= 1) return null;
+
+        const pages = [];
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(meta.totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        for (let p = startPage; p <= endPage; p++) {
+            pages.push(p);
+        }
+
+        return (
+            <div className="d-flex justify-content-between align-items-center mt-3">
+                <small className="text-muted">
+                    Mostrando {data.length} de {meta.total} préstamos · Página {meta.page} de {meta.totalPages}
+                </small>
+                <Pagination size="sm" className="mb-0">
+                    <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
+                    {startPage > 1 && <><Pagination.Item onClick={() => handlePageChange(1)}>1</Pagination.Item><Pagination.Ellipsis disabled /></>}
+                    {pages.map(p => (
+                        <Pagination.Item key={p} active={p === currentPage} onClick={() => handlePageChange(p)}>{p}</Pagination.Item>
+                    ))}
+                    {endPage < meta.totalPages && <><Pagination.Ellipsis disabled /><Pagination.Item onClick={() => handlePageChange(meta.totalPages)}>{meta.totalPages}</Pagination.Item></>}
+                    <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === meta.totalPages} />
+                </Pagination>
+            </div>
+        );
+    };
 
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Gestión de Movimientos /</span> Préstamos</h4>
                 {userType !== 1 ? ( 
-                                <Button variant="primary" onClick={() => setShowCreateModal(true)}>
-                                    Registrar Nuevo Prestamo
-                                <i className="bx bx-plus-circle ms-1"></i>
-                                </Button>) : null}
+                    <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+                        Registrar Nuevo Prestamo
+                    <i className="bx bx-plus-circle ms-1"></i>
+                    </Button>) : null}
             </div>
 
             <div className="card">
@@ -205,8 +221,6 @@ const [userType, setUserType] = useState(null);
                             >
                                 <option value="">Departamento Origen</option>
                                 {departamentos.map(dep => (
-                                    // Excluir el departamento de destino de la lista de origen para la UX
-                                    // y el Almacén (ID 11) si no es relevante para el filtro de origen
                                     (dep.dep_ide !== parseInt(filtros.dep_destino_id) && dep.dep_ide !== 11) && ( 
                                         <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
                                     )
@@ -223,8 +237,6 @@ const [userType, setUserType] = useState(null);
                             >
                                 <option value="">Departamento Destino</option>
                                 {departamentos.map(dep => (
-                                    // Excluir el departamento de origen de la lista de destino para la UX
-                                    // y el Almacén (ID 11) si no es relevante para el filtro de destino
                                     (dep.dep_ide !== parseInt(filtros.dep_origen_id) && dep.dep_ide !== 11) && (
                                         <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
                                     )
@@ -234,10 +246,8 @@ const [userType, setUserType] = useState(null);
                         </div>
                     </Form>
                         
-                        <hr className="my-2 w-100" /> {/* Separador visual */}
+                        <hr className="my-2 w-100" />
                         
-                        
-
                     {/* Tabla de Préstamos */}
                     {loading ? (
                         <div className="text-center">Cargando préstamos...</div>
@@ -262,7 +272,6 @@ const [userType, setUserType] = useState(null);
                                             <tr key={prestamo.pre_ide}>
                                                 <td><strong>{truncateText(prestamo.pre_ndo)}</strong></td>
                                                 <td>{prestamo.pre_fec && new Date(prestamo.pre_fec).toLocaleDateString('es-ES') || 'Sin Fecha'}</td>
-                                                {/* Usar los nombres que vienen directamente de la API */}
                                                 <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
                                                 <td>{prestamo.departamento_destino_nombre || 'N/A'}</td> 
                                                 <td>{getEstadoPrestamoBadge(prestamo.pre_est)}</td>
@@ -291,7 +300,8 @@ const [userType, setUserType] = useState(null);
                         </div>
                     )}
                     
-                    {/* Aquí iría la paginación si tu endpoint /normales la soportara */}
+                    {/* Controles de Paginación */}
+                    {!loading && !error && renderPagination()}
                 </div>
             </div>
             <ModalRegistrarPrestamo
@@ -306,4 +316,4 @@ const [userType, setUserType] = useState(null);
             />
         </>
     );
-};
+};
