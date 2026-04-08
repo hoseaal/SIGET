@@ -185,6 +185,10 @@ const ModalVerPerfil = ({ show, handleClose, empleado_id, tipo = 'funcionario' }
                                             <span className="fw-semibold">{datos.correo_principal || '-'}</span>
                                         </div>
                                         <div className="col-sm-6 col-md-4">
+                                            <small className="text-muted d-block">Cuenta Bancaria</small>
+                                            <span className="fw-semibold">{datos.cuenta_bancaria || '-'}</span>
+                                        </div>
+                                        <div className="col-sm-6 col-md-4">
                                             <small className="text-muted d-block">Estado Civil</small>
                                             <span className="fw-semibold text-capitalize">{datos.estado_civil || '-'}</span>
                                         </div>

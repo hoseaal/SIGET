@@ -9,7 +9,7 @@ export class ObreroService {
       'genero', 'estado_civil', 'tipo_sangre', 'deportes', 'actividades_culturales', 'direccion_habitacion',
       'telefono_fijo', 'celular', 'correo_principal', 'correo_secundario', 'fecha_ingreso', 'estudios_actuales',
       'fecha_culminacion_estudios', 'contacto_emergencia_1', 'contacto_emergencia_2', 'telefono_emergencia_1', 'telefono_emergencia_2',
-      'profesion_id', 'estatus_id', 'nro_cuenta_bancaria'
+      'profesion_id', 'estatus_id', 'cuenta_bancaria'
     ]
 
     const camposContrato = [

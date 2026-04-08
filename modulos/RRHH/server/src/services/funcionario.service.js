@@ -12,7 +12,7 @@ export class FuncionarioService {
     const camposPersonal = [
       'cedula', 'nombres', 'apellidos', 'rif', 'fecha_nacimiento', 'lugar_nacimiento',
       'genero', 'estado_civil', 'tipo_sangre', 'deportes', 'actividades_culturales', 'direccion_habitacion',
-      'telefono_fijo', 'celular', 'correo_principal', 'correo_secundario', 'fecha_ingreso', 'estudios_actuales',
+      'telefono_fijo', 'celular', 'correo_principal', 'correo_secundario', 'cuenta_bancaria', 'fecha_ingreso', 'estudios_actuales',
       'fecha_culminacion_estudios', 'contacto_emergencia_1', 'contacto_emergencia_2', 'telefono_emergencia_1', 'telefono_emergencia_2',
       'profesion_id', 'estatus_id'
     ]
@@ -230,4 +230,47 @@ export class FuncionarioService {
     if (!afectado) throw new Error('El funcionario no tiene encargos activos para finalizar.')
     return true
   }
-}
+
+  static async cambiarEstatus (empleado_id, { nuevo_estatus_id, datos_adicionales }) {
+    const connection = await pool.getConnection()
+    try {
+      await connection.beginTransaction()
+
+      // 1. Validar que el empleado exista
+      const [empleado] = await connection.query('SELECT empleado_id, estatus_id FROM empleados WHERE empleado_id = ?', [empleado_id])
+      if (!empleado) throw new Error('Empleado no encontrado')
+
+      // 2. Actualizar estatus_id en tabla empleados
+      await connection.query('UPDATE empleados SET estatus_id = ? WHERE empleado_id = ?', [nuevo_estatus_id, empleado_id])
+
+      // 3. Lógica específica por tipo de estatus
+      if (Number(nuevo_estatus_id) === 3) {
+        // JUBILADO: Requiere entrada en la tabla 'jubilados'
+        const { porcentaje_jubilacion, fecha_efectiva } = datos_adicionales || {}
+        
+        // Verificar si ya existe en jubilados
+        const [existeJub] = await connection.query('SELECT jubilado_id FROM jubilados WHERE empleado_id = ?', [empleado_id])
+        
+        if (existeJub.length > 0) {
+          await connection.query(
+            'UPDATE jubilados SET porcentaje_jubilacion = ?, fecha_efectiva = ? WHERE empleado_id = ?',
+            [porcentaje_jubilacion || 0, fecha_efectiva || new Date(), empleado_id]
+          )
+        } else {
+          await connection.query(
+            'INSERT INTO jubilados (empleado_id, porcentaje_jubilacion, fecha_efectiva) VALUES (?, ?, ?)',
+            [empleado_id, porcentaje_jubilacion || 0, fecha_efectiva || new Date()]
+          )
+        }
+      }
+
+      await connection.commit()
+      return true
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
+    }
+  }
+}

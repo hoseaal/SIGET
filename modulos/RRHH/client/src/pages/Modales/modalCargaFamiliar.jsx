@@ -9,7 +9,7 @@ import Alert from '../../components/atoms/Alert';
 function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
     const [empleado, setEmpleado] = useState(null);
     const [cargas, setCargas] = useState([]);
-    
+
     // Estados del formulario y UI
     const [formData, setFormData] = useState({ nombres: '', apellidos: '', fecha_nacimiento: '' });
     const [loading, setLoading] = useState(false);
@@ -27,10 +27,10 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
 
     const cargarDatos = async () => {
         if (!empleado_id) return;
-        
+
         setLoading(true);
         setError('');
-        
+
         try {
             // Obtener empleado
             const resEmp = await fetch(`/api/funcionarios/${empleado_id}`);
@@ -53,6 +53,9 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
             if (resCarga.ok) {
                 const dataCarga = await resCarga.json();
                 setCargas(Array.isArray(dataCarga) ? dataCarga : []);
+            } else {
+                const errorText = await resCarga.text();
+                console.error('Error al cargar carga familiar:', errorText);
             }
         } catch (err) {
             console.error(err);
@@ -89,19 +92,27 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
 
         setSaving(true);
         try {
-            const payload = {
-                empleado_id: empleado_id,
-                nombres: formData.nombres,
-                apellidos: formData.apellidos,
-                fecha_nacimiento: formData.fecha_nacimiento
-            };
-
             let url = '/api/carga-familiar';
             let method = 'POST';
+            let payload;
 
             if (editId) {
+                // Para UPDATE: NO enviar empleado_id
                 url = `/api/carga-familiar/${editId}`;
                 method = 'PUT';
+                payload = {
+                    nombres: formData.nombres,
+                    apellidos: formData.apellidos,
+                    fecha_nacimiento: formData.fecha_nacimiento
+                };
+            } else {
+                // Para CREATE: enviar empleado_id
+                payload = {
+                    empleado_id: empleado_id,
+                    nombres: formData.nombres,
+                    apellidos: formData.apellidos,
+                    fecha_nacimiento: formData.fecha_nacimiento
+                };
             }
 
             const response = await fetch(url, {
@@ -118,11 +129,13 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
             setSuccessMsg(editId ? 'Registro actualizado exitosamente.' : 'Registro agregado exitosamente.');
             setFormData({ nombres: '', apellidos: '', fecha_nacimiento: '' });
             setEditId(null);
-            
-            cargarDatos();
+
+            // Recargar los datos
+            await cargarDatos();
             setTimeout(() => setSuccessMsg(''), 3000);
 
         } catch (err) {
+            console.error('Error en submit:', err);
             setError(err.message);
         } finally {
             setSaving(false);
@@ -134,7 +147,6 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
         setFormData({
             nombres: carga.nombres,
             apellidos: carga.apellidos,
-            // Al asignar fecha a un input type="date", debe ir en formato YYYY-MM-DD
             fecha_nacimiento: carga.fecha_nacimiento ? carga.fecha_nacimiento.split('T')[0] : ''
         });
     };
@@ -160,7 +172,7 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
             }
 
             setSuccessMsg('Registro eliminado correctamente.');
-            cargarDatos();
+            await cargarDatos();
             setTimeout(() => setSuccessMsg(''), 3000);
         } catch (err) {
             setError(err.message);
@@ -187,8 +199,8 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
                     <>
                         <div className="bg-light p-3 rounded mb-4 border">
                             <h6 className="text-primary mb-3">
-                                <i className={`bx ${editId ? 'bx-edit' : 'bx-user-plus'} me-1`}></i> 
-                                {editId ? 'Editar Familiar' : 'Agregar Familiar'}
+                                <i className={`bx ${editId ? 'bx-edit' : 'bx-user-plus'} me-1`}></i>
+                                {editId ? 'Editar Hijo(a)' : 'Agregar Hijo(a)'}
                             </h6>
                             <Form onSubmit={handleSubmit}>
                                 <div className="row align-items-end">
@@ -231,11 +243,11 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
                                     <div className="col-md-3 d-flex gap-2">
                                         {editId && (
                                             <Button variant="secondary" onClick={handleCancelEdit} className="w-50" disabled={saving}>
-                                                <i className="bx bx-x"></i>
+                                                <i className="bx bx-x"></i> Cancelar
                                             </Button>
                                         )}
                                         <Button variant="primary" type="submit" className={editId ? 'w-50' : 'w-100'} disabled={saving}>
-                                            {saving ? '...' : (editId ? 'Guardar' : 'Agregar')}
+                                            {saving ? 'Guardando...' : (editId ? 'Actualizar' : 'Agregar')}
                                         </Button>
                                     </div>
                                 </div>
@@ -243,7 +255,7 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
                         </div>
 
                         <div className="d-flex justify-content-between align-items-center mb-2">
-                            <h6 className="m-0 text-secondary">Familiares Registrados</h6>
+                            <h6 className="m-0 text-secondary">Hijos Registrados</h6>
                             <span className="badge bg-label-primary fs-6">
                                 Total: {cargas.length}
                             </span>
@@ -255,6 +267,7 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
                                     <th>Nombres</th>
                                     <th>Apellidos</th>
                                     <th>Fecha Nacimiento</th>
+                                    <th>Parentesco</th>
                                     <th>Estatus / Edad</th>
                                     <th style={{ width: '100px' }}>Acciones</th>
                                 </tr>
@@ -267,6 +280,11 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
                                             <td>{carga.apellidos}</td>
                                             <td>{formatearFecha(carga.fecha_nacimiento)}</td>
                                             <td>
+                                                <span className="badge bg-info">
+                                                    {carga.parentesco || 'Hijo(a)'}
+                                                </span>
+                                            </td>
+                                            <td>
                                                 {carga.estatus === 0 ? (
                                                     <span className="badge bg-danger">Inactivo ({carga.edad} años)</span>
                                                 ) : (
@@ -274,16 +292,16 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
                                                 )}
                                             </td>
                                             <td>
-                                                <button 
-                                                    className="btn btn-sm btn-outline-primary me-1" 
+                                                <button
+                                                    className="btn btn-sm btn-outline-primary me-1"
                                                     title="Editar registro"
                                                     onClick={() => handleEdit(carga)}
                                                     disabled={carga.estatus === 0}
                                                 >
                                                     <i className="bx bx-edit-alt"></i>
                                                 </button>
-                                                <button 
-                                                    className="btn btn-sm btn-outline-danger" 
+                                                <button
+                                                    className="btn btn-sm btn-outline-danger"
                                                     title="Eliminar registro"
                                                     onClick={() => handleDelete(carga.hijo_id)}
                                                 >
@@ -294,13 +312,18 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="py-4 text-muted fst-italic">
-                                            No hay familiares registrados.
+                                        <td colSpan="6" className="py-4 text-muted fst-italic">
+                                            No hay hijos registrados.
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
                         </Table>
+
+                        <div className="text-muted small mt-3">
+                            <i className="bx bx-info-circle"></i>
+                            Los hijos mayores de 18 años se desactivan automáticamente y ya no se consideran como carga familiar.
+                        </div>
                     </>
                 )}
             </Modal.Body>

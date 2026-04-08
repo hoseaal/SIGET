@@ -29,6 +29,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
         celular: '',
         correo_principal: '',
         correo_secundario: '',
+        cuenta_bancaria: '',
         fecha_ingreso: new Date().toISOString().split('T')[0], // Fecha actual por defecto
         contacto_emergencia_1: '',
         telefono_emergencia_1: '',
@@ -36,7 +37,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
         telefono_emergencia_2: '',
         deportes: '',
         actividades_culturales: '',
-        
+
         // Tablas Maestras Personales
         profesion_id: '',
         estatus_id: 1, // Por defecto Activo (asumiendo ID 1)
@@ -60,8 +61,8 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
         niveles: [],
         condiciones: [],
         direcciones: [],
-        divisiones: [], 
-        unidades: []    
+        divisiones: [],
+        unidades: []
     });
 
     // Cargar catalogos al montar el componente
@@ -157,18 +158,18 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
     // Manejador de cambios en inputs
     const handleChange = (e) => {
         const { name, value } = e.target;
-        
+
         setFormData(prev => {
             const newData = { ...prev, [name]: value };
-            
+
             // Lógica de limpieza en cascada
             if (name === 'direccion_id') {
                 newData.division_id = '';
-                newData.unidad_id = ''; 
+                newData.unidad_id = '';
             } else if (name === 'division_id') {
-                newData.unidad_id = ''; 
+                newData.unidad_id = '';
             }
-            
+
             return newData;
         });
     };
@@ -177,7 +178,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
         setFormData({
             cedula: '', nombres: '', apellidos: '', rif: '',
             fecha_nacimiento: '', lugar_nacimiento: '', genero: '', estado_civil: 'Soltero',
-            tipo_sangre: '', direccion_habitacion: '', celular: '', correo_principal: '', correo_secundario: '',
+            tipo_sangre: '', direccion_habitacion: '', celular: '', correo_principal: '', correo_secundario: '', cuenta_bancaria: '',
             fecha_ingreso: new Date().toISOString().split('T')[0],
             contacto_emergencia_1: '', telefono_emergencia_1: '', contacto_emergencia_2: '', telefono_emergencia_2: '', profesion_id: '', estatus_id: 1,
             cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '', condicion_laboral_id: '', direccion_id: ''
@@ -252,12 +253,12 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
             </Modal.Header>
             <Modal.Body>
                 {/* MENSAJES DE ALERTA DE VALIDACIÓN */}
-                {mensajeMostrado && 
+                {mensajeMostrado &&
                     <Alert key="danger" type="danger">
                         {errorMessage}
                     </Alert>
                 }
-                
+
                 <form onSubmit={handleSubmit}>
                     {paso === 1 && (
                         <>
@@ -266,138 +267,146 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                                 <h6 className="mt-2 text-primary mb-0">1. Datos Personales</h6>
                                 <small className="text-muted">* Campos obligatorios</small>
                             </div>
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Cédula de Identidad *</Form.Label>
-                                            <Form.Control 
-                                                type="text" 
-                                                name="cedula"
-                                                placeholder="Ej: V-12345678" 
-                                                value={formData.cedula} 
-                                                onChange={handleChange} 
-                                                required 
-                                            />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>RIF (Opcional)</Form.Label>
-                                            <Form.Control 
-                                                type="text" 
-                                                name="rif" 
-                                                placeholder="Ej: V123456789"
-                                                value={formData.rif} 
-                                                onChange={handleChange} 
-                                            />
-                                        </Form.Group>
-                                    </div>
-                                </div>
-
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Nombres *</Form.Label>
-                                            <Form.Control type="text" name="nombres" value={formData.nombres} onChange={handleChange} required />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Apellidos *</Form.Label>
-                                            <Form.Control type="text" name="apellidos" value={formData.apellidos} onChange={handleChange} required />
-                                        </Form.Group>
-                                    </div>
-                                </div>
-
-                                <div className="row mb-3">
-                                    <div className="col-md-4">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Fecha de Nacimiento</Form.Label>
-                                            <Form.Control type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Género</Form.Label>
-                                            <Form.Select name="genero" value={formData.genero} onChange={handleChange}>
-                                                <option value="">Seleccione</option>
-                                                <option value="M">Masculino</option>
-                                                <option value="F">Femenino</option>
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Estado Civil</Form.Label>
-                                            <Form.Select name="estado_civil" value={formData.estado_civil} onChange={handleChange}>
-                                                <option value="Soltero">Soltero(a)</option>
-                                                <option value="Casado">Casado(a)</option>
-                                                <option value="Divorciado">Divorciado(a)</option>
-                                                <option value="Viudo">Viudo(a)</option>
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
-                                </div>
-                                <div className="mb-3">
-                                    <Form.Group>
-                                        <Form.Label>Lugar de Nacimiento</Form.Label>
-                                        <Form.Control as="textarea" rows={2} name="lugar_nacimiento" value={formData.lugar_nacimiento} onChange={handleChange} />
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Cédula de Identidad *</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            name="cedula"
+                                            placeholder="Ej: V-12345678"
+                                            value={formData.cedula}
+                                            onChange={handleChange}
+                                            required
+                                        />
                                     </Form.Group>
                                 </div>
-                                <div className="row mb-3">
-                                    <div className="col-md-4">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Tipo de Sangre</Form.Label>
-                                            <Form.Control type="text" name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Numero de Telefono Residencial</Form.Label>
-                                            <Form.Control type="text" name="telefono_fijo" placeholder="0276-0000000" value={formData.telefono_fijo} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Numero de Celular</Form.Label>
-                                            <Form.Control type="text" name="celular" placeholder="0426-0000000" value={formData.celular} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                </div>
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Correo Electrónico</Form.Label>
-                                            <Form.Control type="email" name="correo_principal" value={formData.correo_principal} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Correo Electrónico Secundario</Form.Label>
-                                            <Form.Control type="email" name="correo_secundario" value={formData.correo_secundario} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                </div>
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Actividades Culturales</Form.Label>
-                                            <Form.Control type="text" name="actividades_culturales" value={formData.actividades_culturales} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Deportes que practica</Form.Label>
-                                            <Form.Control type="text" name="deportes" value={formData.deportes} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                </div>
-                                <div className="mb-3">
-                                    <Form.Group>
-                                        <Form.Label>Dirección de Habitación</Form.Label>
-                                        <Form.Control as="textarea" rows={2} name="direccion_habitacion" value={formData.direccion_habitacion} onChange={handleChange} />
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>RIF (Opcional)</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            name="rif"
+                                            placeholder="Ej: V123456789"
+                                            value={formData.rif}
+                                            onChange={handleChange}
+                                        />
                                     </Form.Group>
                                 </div>
+                            </div>
+
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Nombres *</Form.Label>
+                                        <Form.Control type="text" name="nombres" value={formData.nombres} onChange={handleChange} required />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Apellidos *</Form.Label>
+                                        <Form.Control type="text" name="apellidos" value={formData.apellidos} onChange={handleChange} required />
+                                    </Form.Group>
+                                </div>
+                            </div>
+
+                            <div className="row mb-3">
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Fecha de Nacimiento</Form.Label>
+                                        <Form.Control type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Género</Form.Label>
+                                        <Form.Select name="genero" value={formData.genero} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            <option value="M">Masculino</option>
+                                            <option value="F">Femenino</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Estado Civil</Form.Label>
+                                        <Form.Select name="estado_civil" value={formData.estado_civil} onChange={handleChange}>
+                                            <option value="Soltero">Soltero(a)</option>
+                                            <option value="Casado">Casado(a)</option>
+                                            <option value="Divorciado">Divorciado(a)</option>
+                                            <option value="Viudo">Viudo(a)</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                            </div>
+                            <div className="mb-3">
+                                <Form.Group>
+                                    <Form.Label>Lugar de Nacimiento</Form.Label>
+                                    <Form.Control as="textarea" rows={2} name="lugar_nacimiento" value={formData.lugar_nacimiento} onChange={handleChange} />
+                                </Form.Group>
+                            </div>
+                            <div className="row mb-3">
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Tipo de Sangre</Form.Label>
+                                        <Form.Control type="text" name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Numero de Telefono Residencial</Form.Label>
+                                        <Form.Control type="text" name="telefono_fijo" placeholder="0276-0000000" value={formData.telefono_fijo} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Numero de Celular</Form.Label>
+                                        <Form.Control type="text" name="celular" placeholder="0426-0000000" value={formData.celular} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                            </div>
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Correo Electrónico</Form.Label>
+                                        <Form.Control type="email" name="correo_principal" value={formData.correo_principal} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Correo Electrónico Secundario</Form.Label>
+                                        <Form.Control type="email" name="correo_secundario" value={formData.correo_secundario} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                            </div>
+                            <div className="row mb-3">
+                                <div className="col-md-12">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Número de Cuenta Bancaria</Form.Label>
+                                        <Form.Control type="text" name="cuenta_bancaria" maxLength={20} placeholder="Ej: 01020000000000000000" value={formData.cuenta_bancaria} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                            </div>
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Actividades Culturales</Form.Label>
+                                        <Form.Control type="text" name="actividades_culturales" value={formData.actividades_culturales} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Deportes que practica</Form.Label>
+                                        <Form.Control type="text" name="deportes" value={formData.deportes} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                            </div>
+                            <div className="mb-3">
+                                <Form.Group>
+                                    <Form.Label>Dirección de Habitación</Form.Label>
+                                    <Form.Control as="textarea" rows={2} name="direccion_habitacion" value={formData.direccion_habitacion} onChange={handleChange} />
+                                </Form.Group>
+                            </div>
                         </>
                     )}
 
@@ -408,30 +417,30 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                                 <div className="col-md-6">
                                     <Form.Group className="mb-3">
                                         <Form.Label>1. Nombres Y Apellidos</Form.Label>
-                                            <Form.Control type="text" name="contacto_emergencia_1" value={formData.contacto_emergencia_1} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>1. Teléfono de Emergencia</Form.Label>
-                                            <Form.Control type="text" name="telefono_emergencia_1" value={formData.telefono_emergencia_1} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
+                                        <Form.Control type="text" name="contacto_emergencia_1" value={formData.contacto_emergencia_1} onChange={handleChange} />
+                                    </Form.Group>
                                 </div>
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>2. Nombres Y Apellidos</Form.Label>
-                                            <Form.Control type="text" name="contacto_emergencia_2" value={formData.contacto_emergencia_2} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>2. Teléfono de Emergencia</Form.Label>
-                                            <Form.Control type="text" name="telefono_emergencia_2" value={formData.telefono_emergencia_2} onChange={handleChange} />
-                                        </Form.Group>
-                                    </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>1. Teléfono de Emergencia</Form.Label>
+                                        <Form.Control type="text" name="telefono_emergencia_1" value={formData.telefono_emergencia_1} onChange={handleChange} />
+                                    </Form.Group>
                                 </div>
+                            </div>
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>2. Nombres Y Apellidos</Form.Label>
+                                        <Form.Control type="text" name="contacto_emergencia_2" value={formData.contacto_emergencia_2} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>2. Teléfono de Emergencia</Form.Label>
+                                        <Form.Control type="text" name="telefono_emergencia_2" value={formData.telefono_emergencia_2} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                            </div>
 
                             {/* SECCIÓN 2: DATOS CONTRACTUALES */}
                             <div className="d-flex justify-content-between align-items-center mb-3 mt-4">
@@ -439,89 +448,89 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                                 <small className="text-muted">* Campos obligatorios</small>
                             </div>
 
-                                <div className="row mb-3">
-                                    <div className="col-md-4">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Fecha de Ingreso</Form.Label>
-                                            <Form.Control type="date" name="fecha_ingreso" value={formData.fecha_ingreso} onChange={handleChange} required />
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Estatus</Form.Label>
-                                            <Form.Select name="estatus_id" value={formData.estatus_id} onChange={handleChange}>
-                                                <option value="">Seleccione</option>
-                                                {catalogos.estatus.map(e => (
-                                                    <option key={e.estatus_id} value={e.estatus_id}>{e.nombre}</option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Profesión</Form.Label>
-                                            <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
-                                                <option value="">Seleccione</option>
-                                                {catalogos.profesiones.map(p => (
-                                                    <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
+                            <div className="row mb-3">
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Fecha de Ingreso</Form.Label>
+                                        <Form.Control type="date" name="fecha_ingreso" value={formData.fecha_ingreso} onChange={handleChange} required />
+                                    </Form.Group>
                                 </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Estatus</Form.Label>
+                                        <Form.Select name="estatus_id" value={formData.estatus_id} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            {catalogos.estatus.map(e => (
+                                                <option key={e.estatus_id} value={e.estatus_id}>{e.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Profesión</Form.Label>
+                                        <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            {catalogos.profesiones.map(p => (
+                                                <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                            </div>
 
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Cargo CET (Interno)</Form.Label>
-                                            <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
-                                                <option value="">Seleccione</option>
-                                                {catalogos.cargosCET.map(c => (
-                                                    <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Condición Laboral</Form.Label>
-                                            <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
-                                                <option value="">Seleccione</option>
-                                                {catalogos.condiciones.map(c => (
-                                                    <option key={c.condicion_laboral_id} value={c.condicion_laboral_id}>{c.nombre}</option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Cargo CET (Interno)</Form.Label>
+                                        <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            {catalogos.cargosCET.map(c => (
+                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
                                 </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Condición Laboral</Form.Label>
+                                        <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            {catalogos.condiciones.map(c => (
+                                                <option key={c.condicion_laboral_id} value={c.condicion_laboral_id}>{c.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                            </div>
 
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Clasificación ONAPRE</Form.Label>
-                                            <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
-                                                <option value="">Seleccione</option>
-                                                {catalogos.cargosONAPRE.map(o => (
-                                                    <option key={o.cargo_onapre_id} value={o.cargo_onapre_id}>{o.nombre}</option>
-                                                ))}
-                                            </Form.Select>
-                                        </Form.Group>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <Form.Group className="mb-3">
-                                            <Form.Label>Nivel Salarial</Form.Label>
-                                            <Form.Select name="nivel_salarial_id" value={formData.nivel_salarial_id} onChange={handleChange} disabled={!formData.cargo_onapre_id}>
-                                                <option value="">Seleccione</option>
-                                                {catalogos.niveles.map(n => (
-                                                    <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.niv_nom} - {n.salario_base} Bs.</option>
-                                                ))}
-                                            </Form.Select>
-                                            {catalogos.niveles.length === 0 && formData.cargo_onapre_id && (
-                                                <Form.Text className="text-muted">No hay niveles para este cargo.</Form.Text>
-                                            )}
-                                        </Form.Group>
-                                    </div>
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Clasificación ONAPRE</Form.Label>
+                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            {catalogos.cargosONAPRE.map(o => (
+                                                <option key={o.cargo_onapre_id} value={o.cargo_onapre_id}>{o.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
                                 </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Nivel Salarial</Form.Label>
+                                        <Form.Select name="nivel_salarial_id" value={formData.nivel_salarial_id} onChange={handleChange} disabled={!formData.cargo_onapre_id}>
+                                            <option value="">Seleccione</option>
+                                            {catalogos.niveles.map(n => (
+                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.niv_nom} - {n.salario_base} Bs.</option>
+                                            ))}
+                                        </Form.Select>
+                                        {catalogos.niveles.length === 0 && formData.cargo_onapre_id && (
+                                            <Form.Text className="text-muted">No hay niveles para este cargo.</Form.Text>
+                                        )}
+                                    </Form.Group>
+                                </div>
+                            </div>
 
                             {/* SECCIÓN: UBICACIÓN ORGANIZACIONAL */}
                             <h6 className="mt-4 mb-3 text-primary">Ubicación Organizacional</h6>
@@ -537,14 +546,14 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                                         </Form.Select>
                                     </Form.Group>
                                 </div>
-                                
+
                                 <div className="col-md-4">
                                     <Form.Group>
                                         <Form.Label>División (Opcional)</Form.Label>
-                                        <Form.Select 
-                                            name="division_id" 
-                                            value={formData.division_id} 
-                                            onChange={handleChange} 
+                                        <Form.Select
+                                            name="division_id"
+                                            value={formData.division_id}
+                                            onChange={handleChange}
                                             disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}
                                         >
                                             <option value="">-- Directo a la Dirección --</option>
@@ -558,10 +567,10 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                                 <div className="col-md-4">
                                     <Form.Group>
                                         <Form.Label>Unidad (Opcional)</Form.Label>
-                                        <Form.Select 
-                                            name="unidad_id" 
-                                            value={formData.unidad_id} 
-                                            onChange={handleChange} 
+                                        <Form.Select
+                                            name="unidad_id"
+                                            value={formData.unidad_id}
+                                            onChange={handleChange}
                                             disabled={!formData.division_id || catalogos.unidades?.length === 0}
                                         >
                                             <option value="">-- Directo a la División --</option>
@@ -571,7 +580,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                                         </Form.Select>
                                     </Form.Group>
                                 </div>
-                                
+
                                 <div className="col-12 mt-2">
                                     <Form.Text className="text-muted">
                                         <i className="bx bx-info-circle me-1"></i>

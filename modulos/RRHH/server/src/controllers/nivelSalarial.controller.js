@@ -6,7 +6,7 @@ import { NivelSalarialService } from '../services/nivelSalarial.service.js'
  */
 export const obtenerNiveles = async (req, res) => {
   try {
-    const niveles = await NivelSalarialService.obtenerTodos()
+    const niveles = await NivelSalarialService.obtenerTodos(req.query)
     res.json(niveles)
   } catch (error) {
     res.status(500).json({ error: error.message })

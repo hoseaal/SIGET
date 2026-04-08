@@ -100,3 +100,13 @@ export const finalizarEncargo = async (req, res) => {
     res.status(400).json({ error: error.message })
   }
 }
+
+export const cambiarEstatus = async (req, res) => {
+  try {
+    const { id } = req.params
+    const resultado = await FuncionarioService.cambiarEstatus(id, req.body)
+    res.json({ success: resultado, message: 'Estatus cambiado exitosamente' })
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
+}

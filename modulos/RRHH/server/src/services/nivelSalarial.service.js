@@ -1,8 +1,8 @@
 import { NivelSalarialModel } from '../models/nivelSalarial.model.js'
 
 export class NivelSalarialService {
-  static async obtenerTodos () {
-    return await NivelSalarialModel.getAll()
+  static async obtenerTodos (query = {}) {
+    return await NivelSalarialModel.getAll(query.cargo_onapre_id)
   }
 
   static async obtenerPorId (id) {

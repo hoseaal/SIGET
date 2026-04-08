@@ -21,6 +21,7 @@ import antiguedadRouter from './src/routes/antiguedad.routes.js'
 import antiguedadRegistroRouter from './src/routes/antiguedadRegistro.routes.js'
 import sueldoPensionadoRouter from './src/routes/sueldoPensionado.routes.js'
 import jubiladoRouter from './src/routes/jubilado.routes.js'
+import pensionadoRouter from './src/routes/pensionado.routes.js'
 import permisoRouter from './src/routes/permiso.routes.js'
 import condicionLaboralRouter from './src/routes/condicionLaboral.routes.js'
 import obreroRouter from './src/routes/obrero.routes.js'
@@ -69,6 +70,7 @@ app.use('/api/estatus', estatusRouter)
 
 
 app.use('/api/funcionarios', funcionarioRouter)
+app.use('/api/pensionados', pensionadoRouter)
 
 
 app.use('/api/cargos-cet', cargoCetRouter)

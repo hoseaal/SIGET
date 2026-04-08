@@ -21,7 +21,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
         contacto_emergencia_1: '', telefono_emergencia_1: '',
         contacto_emergencia_2: '', telefono_emergencia_2: '',
         deportes: '', actividades_culturales: '',
-        profesion_id: '', estatus_id: 1, nro_cuenta_bancaria: '',
+        profesion_id: '', estatus_id: 1, cuenta_bancaria: '',
         cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '',
         direccion_id: '', division_id: '', unidad_id: ''
     });
@@ -116,7 +116,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                     actividades_culturales: obrero.actividades_culturales || '',
                     profesion_id: obrero.profesion_id || '',
                     estatus_id: obrero.estatus_id || 1,
-                    nro_cuenta_bancaria: obrero.nro_cuenta_bancaria || '',
+                    cuenta_bancaria: obrero.cuenta_bancaria || '',
                     cargo_cet_id: obrero.cargo_cet_id || '',
                     cargo_onapre_id: obrero.cargo_onapre_id || '',
                     nivel_salarial_id: obrero.nivel_salarial_id || '',
@@ -517,7 +517,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                                                 <div className="col-md-6">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Nro. Cuenta Bancaria</Form.Label>
-                                                        <Form.Control type="text" name="nro_cuenta_bancaria" value={formData.nro_cuenta_bancaria} onChange={handleChange} />
+                                                        <Form.Control type="text" name="cuenta_bancaria" maxLength={20} value={formData.cuenta_bancaria} onChange={handleChange} />
                                                     </Form.Group>
                                                 </div>
                                             </div>

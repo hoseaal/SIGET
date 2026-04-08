@@ -36,7 +36,7 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
         actividades_culturales: '',
         profesion_id: '',
         estatus_id: 1,
-        nro_cuenta_bancaria: '',
+        cuenta_bancaria: '',
 
         // Datos Contractuales (condicion_laboral_id siempre = 1, lo maneja el backend)
         cargo_cet_id: '',
@@ -162,7 +162,7 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
             contacto_emergencia_1: '', telefono_emergencia_1: '',
             contacto_emergencia_2: '', telefono_emergencia_2: '',
             deportes: '', actividades_culturales: '', profesion_id: '', estatus_id: 1,
-            nro_cuenta_bancaria: '', cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '',
+            cuenta_bancaria: '', cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '',
             direccion_id: '', division_id: '', unidad_id: ''
         });
         setErrorMessage('');
@@ -485,7 +485,7 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                                 <div className="col-md-6">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Nro. Cuenta Bancaria</Form.Label>
-                                        <Form.Control type="text" name="nro_cuenta_bancaria" value={formData.nro_cuenta_bancaria} onChange={handleChange} />
+                                        <Form.Control type="text" name="cuenta_bancaria" maxLength={20} value={formData.cuenta_bancaria} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
                             </div>

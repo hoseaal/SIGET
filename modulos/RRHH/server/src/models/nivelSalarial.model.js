@@ -2,7 +2,11 @@
 import pool from '../utils/database.js'
 
 export class NivelSalarialModel {
-  static async getAll () {
+  static async getAll (cargo_onapre_id = null) {
+    if (cargo_onapre_id) {
+      const [rows] = await pool.query('SELECT * FROM niveles_salariales WHERE cargo_onapre_id = ?', [cargo_onapre_id])
+      return rows
+    }
     const [rows] = await pool.query('SELECT * FROM niveles_salariales')
     return rows
   }

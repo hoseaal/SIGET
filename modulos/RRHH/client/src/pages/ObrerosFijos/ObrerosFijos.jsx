@@ -6,6 +6,7 @@ import { RegistrarObrero } from './RegistrarObrero';
 import { EditarObrero } from './EditarObrero';
 import ModalVerPerfil from '../Modales/ModalVerPerfil';
 import ModalCargaFamiliar from '../Modales/modalCargaFamiliar';
+import ModalCambioEstatus from '../Modales/ModalCambioEstatus';
 
 export const ObrerosFijos = () => {
     const [data, setData] = useState([]);
@@ -26,6 +27,9 @@ export const ObrerosFijos = () => {
     const [showEdit, setShowEdit] = useState(false);
     const [showCarga, setShowCarga] = useState(false);
     const [cargaItem, setCargaItem] = useState(null);
+
+    const [showEstatus, setShowEstatus] = useState(false);
+    const [estatusItem, setEstatusItem] = useState(null);
 
     const [refreshKey, setRefreshKey] = useState(0);
     const [isRegistering, setIsRegistering] = useState(false);
@@ -203,6 +207,14 @@ export const ObrerosFijos = () => {
                                                         }}>
                                                             <i className="bx bx-edit-alt me-1"></i> Editar
                                                         </Dropdown.Item>
+
+                                                        <Dropdown.Item href="#" onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setEstatusItem(item);
+                                                            setShowEstatus(true);
+                                                        }}>
+                                                            <i className="bx bx-transfer me-1"></i> Cambiar Estatus
+                                                        </Dropdown.Item>
                                                     </Dropdown.Menu>
                                                 </Dropdown>
                                             </td>
@@ -296,7 +308,13 @@ export const ObrerosFijos = () => {
                         setTimeout(() => setRegistroStatus(prev => ({ ...prev, show: false })), 4000);
                     }}
                 />
+                <ModalCambioEstatus 
+                    show={showEstatus} 
+                    handleClose={() => setShowEstatus(false)} 
+                    empleado={estatusItem}
+                />
             </div>
+
         </>
     );
 };

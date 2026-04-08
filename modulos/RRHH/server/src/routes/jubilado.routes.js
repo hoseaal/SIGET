@@ -9,19 +9,20 @@ import {
 
 const router = express.Router()
 
-// GET: Lista de jubilados (con datos personales)
+// GET: Lista de jubilados con paginación y filtros
+// Query params: page, limit, all, search, profesion_id, genero
 router.get('/', obtenerJubilados)
 
-// GET: Jubilado por ID (jubilado_id)
+// GET: Jubilado completo por jubilado_id (datos personales + laborales + jubilación)
 router.get('/:id', obtenerJubilado)
 
-// POST: Registrar jubilación y cambiar estatus a 3
+// POST: Registrar jubilado con todos los datos personales, laborales y de jubilación
 router.post('/', crearJubilado)
 
-// PUT: Editar porcentaje o fecha
+// PUT: Actualizar datos personales, laborales y/o de jubilación por jubilado_id
 router.put('/:id', actualizarJubilado)
 
-// DELETE: Eliminar registro de jubilación
+// DELETE: Eliminar jubilado y su empleado asociado
 router.delete('/:id', eliminarJubilado)
 
 export default router

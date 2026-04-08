@@ -5,8 +5,8 @@ import { RegisterPage } from "../pages/authentication/RegisterPage";
 
 import { RegistrarFuncionario } from "../pages/FuncionariosActivos/RegistrarFuncionario.jsx";
 import { FuncionariosActivos } from "../pages/FuncionariosActivos/FuncionariosActivos.jsx";
-// import { Jubilados } from "../pages/Jubilados/Jubilados.jsx";
-// import { Pensionados } from "../pages/Pensionados/Pensionados.jsx";
+import { Jubilados } from "../pages/Jubilados/Jubilados.jsx";
+import { Pensionados } from "../pages/Pensionados/Pensionados.jsx";
 // import { Sobrevivientes } from "../pages/Sobrevivientes/Sobrevivientes.jsx";
 
 import { Reportes } from "../pages/FuncionariosActivos/reportes"
@@ -86,7 +86,7 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            {/* <Route path="/Personal/Jubilados" element={
+            <Route path="/Personal/Jubilados" element={
                 <ProtectedRoute>
                     <Jubilados />
                 </ProtectedRoute>
@@ -98,12 +98,11 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/Personal/Sobrevivientes" element={
+            {/* <Route path="/Personal/Sobrevivientes" element={
                 <ProtectedRoute>
                     <Sobrevivientes />
                 </ProtectedRoute>
-            } /> */}
-
+            } />  */}
 
 
             <Route path="/Reportes" element={
