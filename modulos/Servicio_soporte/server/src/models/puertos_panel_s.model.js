@@ -21,6 +21,11 @@ export class PuertosPanelSModel {
         return rows[0] || null
     }
 
+    static async getByRouterN(p_router, nro_puerto) {
+        const [rows] = await pool.query('SELECT * FROM puertos_panel_s WHERE p_router = ? AND nro_puerto = ?', [p_router, nro_puerto])
+        return rows[0] || null
+    }
+
     static async getByP_router(p_router) {
         const [rows] = await pool.query('SELECT * FROM puertos_panel_s WHERE p_router = ?', [p_router])
         return rows[0] || null
@@ -47,3 +52,5 @@ export class PuertosPanelSModel {
         return result.affectedRows > 0
     }
 }
+
+///acomodar validaciones 

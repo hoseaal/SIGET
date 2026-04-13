@@ -19,13 +19,11 @@ export class DescripcionesService {
         return await DescripcionesModel.create(datos)
     }
     static async obtenerPorId(id) {
-        if(!/^[0-9]+$/.test(id)) {
-            throw new Error('El ID debe ser un numero entero')
-        }
+        if(!/^[0-9]+$/.test(id)) throw new Error('El ID debe ser un numero entero')
+        
         const descripcion = await DescripcionesModel.getById(id)
-        if (!descripcion) {
-            throw new Error('Descripción no encontrada')
-        }
+        if (!descripcion) throw new Error('Descripción no encontrada')
+        
         return await DescripcionesModel.getById(id)
     }
     static async actualizar(id, datos) {

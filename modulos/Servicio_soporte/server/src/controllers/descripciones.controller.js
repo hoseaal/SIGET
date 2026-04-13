@@ -24,6 +24,11 @@ export const crearDescripcion = async (req, res) => {
         res.status(400).json({ error: error.message })
     }
 }
+/**
+ * 
+ * @param {number} req.params.id - ID de la descripcion a obtener 
+ * @returns {Promise<object[]>}
+ */
 export const getbyId = async (req, res) => {
     try {
         const { id } = req.params
@@ -33,6 +38,12 @@ export const getbyId = async (req, res) => {
         res.status(404).json({ error: error.message })
     }
 }
+
+/**
+ * 
+ * @param {number} req.params.id - ID de la descripcion a actualizar
+ * @param {object} req.body 
+ */
 export const updateDescripcion = async (req, res) => {
     try {
         const { id } = req.params
@@ -42,6 +53,9 @@ export const updateDescripcion = async (req, res) => {
         res.status(400).json({ error: error.message })
     }
 }
+/**
+ * @param {number} req.params.id - ID de la descripcion a eliminar
+ */
 export const deleteDescripcion = async (req, res) => {
     try {
         const { id } = req.params
