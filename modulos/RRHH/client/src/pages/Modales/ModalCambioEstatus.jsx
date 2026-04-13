@@ -15,7 +15,7 @@ const ModalCambioEstatus = ({ show, handleClose, empleado }) => {
     const [estatusList, setEstatusList] = useState([
         { id: 3, nombre: 'Jubilado' },
         { id: 4, nombre: 'Pensionado' },
-        // { id: 5, nombre: 'Sobreviviente' } // Commented out until backend/CRUD is confirmed
+        { id: 7, nombre: 'Sobreviviente' }
     ]);
 
     useEffect(() => {
@@ -66,8 +66,8 @@ const ModalCambioEstatus = ({ show, handleClose, empleado }) => {
                 navigate('/Personal/Jubilados');
             } else if (formData.nuevo_estatus_id == 4) {
                 navigate('/Personal/Pensionados');
-            } else if (formData.nuevo_estatus_id == 5) {
-                // navigate('/Personal/Sobrevivientes');
+            } else if (formData.nuevo_estatus_id == 7) {
+                navigate(`/Personal/Sobrevivientes?empleado_id=${empleado.empleado_id}`);
             }
 
         } catch (err) {

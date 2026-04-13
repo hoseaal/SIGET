@@ -7,7 +7,7 @@ import { RegistrarFuncionario } from "../pages/FuncionariosActivos/RegistrarFunc
 import { FuncionariosActivos } from "../pages/FuncionariosActivos/FuncionariosActivos.jsx";
 import { Jubilados } from "../pages/Jubilados/Jubilados.jsx";
 import { Pensionados } from "../pages/Pensionados/Pensionados.jsx";
-// import { Sobrevivientes } from "../pages/Sobrevivientes/Sobrevivientes.jsx";
+import { Sobrevivientes } from "../pages/Sobrevivientes/Sobrevivientes.jsx";
 
 import { Reportes } from "../pages/FuncionariosActivos/reportes"
 import { ObrerosFijos } from "../pages/ObrerosFijos/ObrerosFijos.jsx";
@@ -98,11 +98,11 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            {/* <Route path="/Personal/Sobrevivientes" element={
+            <Route path="/Personal/Sobrevivientes" element={
                 <ProtectedRoute>
                     <Sobrevivientes />
                 </ProtectedRoute>
-            } />  */}
+            } />
 
 
             <Route path="/Reportes" element={
