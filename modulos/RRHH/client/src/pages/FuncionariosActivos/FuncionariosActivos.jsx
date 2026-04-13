@@ -8,6 +8,7 @@ import { EditarFuncionario } from './EditarFuncionario';
 import ModalVerPerfil from '../Modales/ModalVerPerfil';
 import ModalCargaFamiliar from '../Modales/modalCargaFamiliar';
 import ModalCambioEstatus from '../Modales/ModalCambioEstatus';
+import ModalEncargoTemporal from '../Modales/ModalEncargoTemporal';
 
 export const FuncionariosActivos = () => {
     const [data, setData] = useState([]);
@@ -32,6 +33,9 @@ export const FuncionariosActivos = () => {
 
     const [showEstatus, setShowEstatus] = useState(false);
     const [estatusItem, setEstatusItem] = useState(null);
+
+    const [showEncargo, setShowEncargo] = useState(false);
+    const [encargoItem, setEncargoItem] = useState(null);
 
     // Estado para recargar los datos
     const [refreshKey, setRefreshKey] = useState(0);
@@ -240,6 +244,13 @@ export const FuncionariosActivos = () => {
 
                                                         <Dropdown.Item href="#" onClick={(e) => {
                                                             e.preventDefault();
+                                                            setEncargoItem(item.empleado_id);
+                                                            setShowEncargo(true);
+                                                        }}>
+                                                            <i className="bx bx-briefcase me-1"></i> Encargo Temporal
+                                                        </Dropdown.Item>
+                                                        <Dropdown.Item href="#" onClick={(e) => {
+                                                            e.preventDefault();
                                                             setEstatusItem(item);
                                                             setShowEstatus(true);
                                                         }}>
@@ -346,6 +357,11 @@ export const FuncionariosActivos = () => {
                 show={showEstatus} 
                 handleClose={() => setShowEstatus(false)} 
                 empleado={estatusItem}
+            />
+            <ModalEncargoTemporal
+                show={showEncargo}
+                handleClose={() => setShowEncargo(false)}
+                empleado_id={encargoItem}
             />
             </div>
 
