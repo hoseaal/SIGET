@@ -17,11 +17,13 @@ import panel_pared from './src/routes/panel_pared.route.js'
 import departamento from './src/routes/departamento.route.js'
 import equipo from './src/routes/equipo.route.js'
 import userRoutes from './src/routes/user.routes.js'
-import auth from '../server/auth/auth.routes.js'
+import auth from './src/auth/auth.routes.js'
+import cookieParser from 'cookie-parser';
 const app = express()
 
 app.use(express.json())
-
+app.use(cookieParser())
+app.use(morgan('dev'))
 
 // Conectar DB
 connectDB()
