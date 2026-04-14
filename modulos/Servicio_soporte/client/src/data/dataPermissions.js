@@ -15,19 +15,8 @@ export const menuPermissions = {
     // Dashboard disponible para todos
     "/Dashboard": [1, 2, 3, 4, 5],
 
-    // Formularios BM
-    "/Personal/FuncionariosActivos": [1, 2, 3, 4, 5],
-    "/Personal/RegistrarFuncionario": [2, 3, 4, 5],
-
-    // Configuración General
-    "/Configuracion/EstructuraOrganizacional": [3, 4, 5],
-    "/Configuracion/TablaSalarios": [3, 4, 5],
-    "/Configuracion/Cargos": [3, 4, 5],
-
-    // Gestión de Usuarios
-    "/Configuracion/NuevoUsuario": [5],
-    "/Configuracion/Usuarios": [5],
-    "/Configuracion/Bitacora": [4, 5],
+    // Mantenimiento
+    "/Configuracion/Maestros": [1, 2, 3, 4, 5]
 };
 
 // src/data/permissions.js
