@@ -16,7 +16,10 @@ export const menuPermissions = {
     "/Dashboard": [1, 2, 3, 4, 5],
 
     // Mantenimiento
-    "/Configuracion/Maestros": [1, 2, 3, 4, 5]
+    "/Configuracion/Maestros": [1, 2, 3, 4, 5],
+
+    // Infraestructura
+    "/Infraestructura/Red": [1, 2, 3, 4, 5]
 };
 
 // src/data/permissions.js

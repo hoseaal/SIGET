@@ -4,6 +4,7 @@ import { LoginPage } from "../pages/authentication/LoginPage";
 
 import { DashboardPage } from "../pages/DashboardPage";
 import { ConfiguracionPage } from "../pages/configuracion/ConfiguracionPage";
+import { RedesPage } from "../pages/infraestructura/redes/RedesPage";
 
 const AppRoutes = () => {
     return (
@@ -22,6 +23,12 @@ const AppRoutes = () => {
             <Route path="/Configuracion/Maestros" element={
                 <ProtectedRoute>
                     <ConfiguracionPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Infraestructura/Red" element={
+                <ProtectedRoute>
+                    <RedesPage />
                 </ProtectedRoute>
             } />
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import helpFetch from "../utils/helpFetch";
 
 export const TabModelos = () => {
     const [dataList, setDataList] = useState([]);
@@ -19,16 +20,10 @@ export const TabModelos = () => {
     const fetchDataList = async () => {
         try {
             setLoading(true);
-            const [modelosRes, marcasRes] = await Promise.all([
-                fetch("/api/modelo", { credentials: "include" }),
-                fetch("/api/marca", { credentials: "include" })
+            const [modData, marcaData] = await Promise.all([
+                helpFetch.GET("/modelo"),
+                helpFetch.GET("/marca")
             ]);
-            
-            if (!modelosRes.ok) throw new Error(`Error al obtener modelos`);
-            if (!marcasRes.ok) throw new Error(`Error al obtener marcas`);
-            
-            const modData = await modelosRes.json();
-            const marcaData = await marcasRes.json();
             
             setDataList(modData);
             setMarcas(marcaData);
@@ -69,22 +64,10 @@ export const TabModelos = () => {
         e.preventDefault();
         try {
             const isEdit = modalAction === 'editar';
-            const url = isEdit ? `/api/modelo/${currentId}` : `/api/modelo`;
+            const url = isEdit ? `/modelo/${currentId}` : `/modelo`;
             const method = isEdit ? 'PATCH' : 'POST';
 
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ nombre, marca_id: marcaId }),
-                credentials: 'include'
-            });
-
-            if (!res.ok) {
-                const errData = await res.json().catch(() => null);
-                throw new Error(errData?.error || "Ocurrió un error al guardar");
-            }
+            await helpFetch[method](url, { nombre, marca_id: marcaId });
             
             toast.success(`Modelo ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
@@ -97,14 +80,8 @@ export const TabModelos = () => {
 
     const handleDelete = async () => {
         try {
-            const res = await fetch(`/api/modelo/${currentId}`, { 
-                method: 'DELETE',
-                credentials: 'include' 
-            });
-            if (!res.ok) {
-                const errData = await res.json().catch(() => null);
-                throw new Error(errData?.error || "No se pudo eliminar");
-            }
+            const success = await helpFetch.DELETE(`/modelo/${currentId}`);
+            if (!success) throw new Error("No se pudo eliminar");
             toast.success(`Modelo eliminado con éxito`);
             setDeleteModalVisible(false);
             fetchDataList();

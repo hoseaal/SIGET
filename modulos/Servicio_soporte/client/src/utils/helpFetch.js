@@ -67,10 +67,32 @@ export async function apiDELETE(endpoint) {
   return res.ok;
 }
 
+export async function apiPATCH(endpoint, data) {
+  console.log(`🛠️ PATCH ${API_CONFIG.baseURL}${endpoint}`, data);
+  const res = await baseFetch(`${API_CONFIG.baseURL}${endpoint}`, {
+    method: 'PATCH',
+    headers: {'Content-Type': 'application/json'},
+    body: data ? JSON.stringify(data) : undefined
+  });
+  return res.json();
+}
+
+export async function apiPUT(endpoint, data) {
+  console.log(`🔄 PUT ${API_CONFIG.baseURL}${endpoint}`, data);
+  const res = await baseFetch(`${API_CONFIG.baseURL}${endpoint}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: data ? JSON.stringify(data) : undefined
+  });
+  return res.json();
+}
+
 // API simple
 export default {
   GET: apiGET,
   POST: apiPOST,
-  DELETE: apiDELETE
+  DELETE: apiDELETE,
+  PATCH: apiPATCH,
+  PUT: apiPUT
 }
 

@@ -20,5 +20,16 @@
                 "link": "/Configuracion/Maestros"
             }
         ]
+    },
+    {
+        "header": "Infraestructura",
+        "items": [
+            {
+                "text": "Lógica de Red",
+                "icon": "bx bx-network-chart",
+                "available": true,
+                "link": "/Infraestructura/Red"
+            }
+        ]
     }
 ]

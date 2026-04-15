@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import helpFetch from "../utils/helpFetch";
 
 export const TabDepartamentos = () => {
     const [dataList, setDataList] = useState([]);
@@ -19,16 +20,10 @@ export const TabDepartamentos = () => {
     const fetchDataList = async () => {
         try {
             setLoading(true);
-            const [deptRes, pisosRes] = await Promise.all([
-                fetch("/api/departamento", { credentials: "include" }),
-                fetch("/api/piso", { credentials: "include" })
+            const [deptData, pisosData] = await Promise.all([
+                helpFetch.GET("/departamento"),
+                helpFetch.GET("/piso")
             ]);
-            
-            if (!deptRes.ok) throw new Error(`Error al obtener departamentos`);
-            if (!pisosRes.ok) throw new Error(`Error al obtener pisos`);
-            
-            const deptData = await deptRes.json();
-            const pisosData = await pisosRes.json();
             
             setDataList(deptData);
             setPisos(pisosData);
@@ -69,22 +64,10 @@ export const TabDepartamentos = () => {
         e.preventDefault();
         try {
             const isEdit = modalAction === 'editar';
-            const url = isEdit ? `/api/departamento/${currentId}` : `/api/departamento`;
+            const url = isEdit ? `/departamento/${currentId}` : `/departamento`;
             const method = isEdit ? 'PATCH' : 'POST';
 
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ nombre, piso_id: pisoId }),
-                credentials: 'include'
-            });
-
-            if (!res.ok) {
-                const errData = await res.json().catch(() => null);
-                throw new Error(errData?.error || "Ocurrió un error al guardar");
-            }
+            await helpFetch[method](url, { nombre, piso_id: pisoId });
             
             toast.success(`Departamento ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
@@ -97,14 +80,8 @@ export const TabDepartamentos = () => {
 
     const handleDelete = async () => {
         try {
-            const res = await fetch(`/api/departamento/${currentId}`, { 
-                method: 'DELETE',
-                credentials: 'include' 
-            });
-            if (!res.ok) {
-                const errData = await res.json().catch(() => null);
-                throw new Error(errData?.error || "No se pudo eliminar");
-            }
+            const success = await helpFetch.DELETE(`/departamento/${currentId}`);
+            if (!success) throw new Error("No se pudo eliminar");
             toast.success(`Departamento eliminado con éxito`);
             setDeleteModalVisible(false);
             fetchDataList();

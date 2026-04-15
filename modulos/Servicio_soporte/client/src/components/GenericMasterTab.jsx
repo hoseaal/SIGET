@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import helpFetch from "../utils/helpFetch";
 
 export const GenericMasterTab = ({ endpoint, titleItem }) => {
     const [dataList, setDataList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalAction, setModalAction] = useState('crear'); // 'crear' | 'editar'
-    
+
     const [currentId, setCurrentId] = useState(null);
     const [nombre, setNombre] = useState('');
 
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    
+
     const fetchDataList = async () => {
         try {
             setLoading(true);
-            const res = await fetch(endpoint, { credentials: "include" });
-            if (!res.ok) throw new Error(`Error al obtener ${titleItem}`);
-            const data = await res.json();
+            const data = await helpFetch.GET(endpoint);
             setDataList(data);
         } catch (error) {
             console.error(error);
@@ -55,22 +54,10 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
         e.preventDefault();
         try {
             const isEdit = modalAction === 'editar';
-            const url = isEdit ? `${endpoint}/${currentId}` : endpoint;
             const method = isEdit ? 'PATCH' : 'POST';
+            const url = isEdit ? `${endpoint}/${currentId}` : endpoint;
 
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ nombre }),
-                credentials: 'include'
-            });
-
-            if (!res.ok) {
-                const errData = await res.json().catch(() => null);
-                throw new Error(errData?.error || "Ocurrió un error al guardar");
-            }
+            await helpFetch[method](url, { nombre });
             
             toast.success(`${titleItem} ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
@@ -83,14 +70,8 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
 
     const handleDelete = async () => {
         try {
-            const res = await fetch(`${endpoint}/${currentId}`, { 
-                method: 'DELETE',
-                credentials: 'include' 
-            });
-            if (!res.ok) {
-                const errData = await res.json().catch(() => null);
-                throw new Error(errData?.error || "No se pudo eliminar");
-            }
+            const success = await helpFetch.DELETE(`${endpoint}/${currentId}`);
+            if (!success) throw new Error("No se pudo eliminar");
             toast.success(`${titleItem} eliminado con éxito`);
             setDeleteModalVisible(false);
             fetchDataList();
@@ -100,7 +81,7 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
     };
 
     return (
-        <div className="pt-3">
+        <div className="pt-2">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h6 className="mb-0">Listado de {titleItem}</h6>
                 <Button variant="primary" size="sm" onClick={handleShowCreate}>
@@ -156,7 +137,7 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Nombre</Form.Label>
-                            <Form.Control 
+                            <Form.Control
                                 type="text"
                                 placeholder={`Ej. Ingrese ${titleItem.toLowerCase()}`}
                                 value={nombre}

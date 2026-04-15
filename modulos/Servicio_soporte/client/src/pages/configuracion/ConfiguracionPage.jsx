@@ -16,11 +16,11 @@ export const ConfiguracionPage = () => {
         <>
             <ToastContainer />
             <div className="container-fluid flex-grow-1 container-p-y">
-                
+
                 <h4 className="fw-bold py-3 mb-4">
                     <span className="text-muted fw-light">Mantenimiento /</span> Configuración de Maestros
                 </h4>
-                
+
                 <Card>
                     <Card.Body>
                         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
@@ -65,33 +65,33 @@ export const ConfiguracionPage = () => {
 
                             <Tab.Content className="p-0 border-0 bg-transparent">
                                 <Tab.Pane eventKey="descripciones">
-                                    <GenericMasterTab endpoint="/api/descripciones" titleItem="Descripción" />
+                                    <GenericMasterTab endpoint="/descripciones" titleItem="Descripción" />
                                 </Tab.Pane>
-                                
+
                                 <Tab.Pane eventKey="tiposActividad">
-                                    <GenericMasterTab endpoint="/api/tipo_act" titleItem="Tipo de Actividad" />
+                                    <GenericMasterTab endpoint="/tipo_act" titleItem="Tipo de Actividad" />
                                 </Tab.Pane>
-                                
+
                                 <Tab.Pane eventKey="marcas">
-                                    <GenericMasterTab endpoint="/api/marca" titleItem="Marca" />
+                                    <GenericMasterTab endpoint="/marca" titleItem="Marca" />
                                 </Tab.Pane>
-                                
+
                                 <Tab.Pane eventKey="modelos">
                                     {/* Pasamos el control al componente especializado */}
                                     <TabModelos />
                                 </Tab.Pane>
-                                
+
                                 <Tab.Pane eventKey="pisos">
-                                    <GenericMasterTab endpoint="/api/piso" titleItem="Piso" />
+                                    <GenericMasterTab endpoint="/piso" titleItem="Piso" />
                                 </Tab.Pane>
-                                
+
                                 <Tab.Pane eventKey="departamentos">
                                     {/* Pasamos el control al componente especializado */}
                                     <TabDepartamentos />
                                 </Tab.Pane>
 
                                 <Tab.Pane eventKey="tiposEquipo">
-                                    <GenericMasterTab endpoint="/api/tipo_equipo" titleItem="Tipo de Equipo" />
+                                    <GenericMasterTab endpoint="/tipo_equipo" titleItem="Tipo de Equipo" />
                                 </Tab.Pane>
                             </Tab.Content>
                         </Tab.Container>
