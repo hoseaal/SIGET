@@ -49,6 +49,44 @@
         ]
     },
     {
+        "header": "Gestion de Remuneraciones",
+        "items": [
+            {
+                "text": "Nonima",
+                "icon": "bx bx-group",
+                "available": true,
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Funcionarios Activos",
+                        "available": true,
+                        "link": "/Personal/FuncionariosActivos"
+                    },
+                    {
+                        "text": "Obreros Fijos",
+                        "available": true,
+                        "link": "/Personal/ObrerosFijos"
+                    },
+                    {
+                        "text": "Jubilados",
+                        "available": true,
+                        "link": "/Personal/Jubilados"
+                    },
+                    {
+                        "text": "Pensionados",
+                        "available": true,
+                        "link": "/Personal/Pensionados"
+                    },
+                    {
+                        "text": "Sobrevivientes",
+                        "available": true,
+                        "link": "/Personal/Sobrevivientes"
+                    }
+                ]
+            }
+        ]
+    },
+    {
         "header": "Configuración",
         "items": [
             {

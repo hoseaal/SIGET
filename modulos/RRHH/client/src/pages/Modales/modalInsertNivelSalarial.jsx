@@ -10,7 +10,7 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
     console.log('Tabla en ModalInsertNivelSalarial:', tableName);
     const isAntiguo = tableName === 'niveles_salariales_antiguos';
     const endpoint = isAntiguo ? '/api/niveles-salariales-antiguos' : '/api/niveles-salariales';
-    const fieldNom = isAntiguo ? 'nombre' : 'niv_nom';
+    const fieldNom = 'nombre';
     const fieldSal = isAntiguo ? 'salario_antiguo' : 'salario_base';
 
     // Usamos nombres genéricos en el estado para facilitar el manejo de los inputs
@@ -28,6 +28,13 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
     // Filtramos los niveles que aún están disponibles
     const nivelesDisponibles = todosLosNiveles.filter(lvl => !nivelesOcupados.includes(lvl));
     const estaLleno = formData.cargo_onapre_id !== '' && nivelesDisponibles.length === 0;
+
+    // ==========================================
+    // OBTENER NOMBRE DEL CARGO SELECCIONADO
+    // Para mostrar niveles como "Profesional I", "Profesional II", etc.
+    // ==========================================
+    const selectedCargo = dataOna.find(ona => String(ona.cargo_onapre_id) === String(formData.cargo_onapre_id));
+    const cargoNombre = selectedCargo ? selectedCargo.nombre : '';
 
     // Resetear formulario al abrir/cerrar
     useEffect(() => {
@@ -121,7 +128,9 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
                                 >
                                     <option value="">Seleccione el nivel...</option>
                                     {nivelesDisponibles.map((lvl) => (
-                                        <option key={lvl} value={lvl}>Nivel {lvl}</option>
+                                        <option key={lvl} value={lvl}>
+                                            {cargoNombre ? `${cargoNombre} ${lvl}` : `Nivel ${lvl}`}
+                                        </option>
                                     ))}
                                 </Form.Select>
                             </Form.Group>

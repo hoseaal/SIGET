@@ -112,6 +112,21 @@ export class JubiladoService {
     return { direccion_id: null, division_id: null, unidad_id: null }
   }
 
+  static async _vincularNivelesSalariales (datosContratoClean) {
+    if (datosContratoClean && datosContratoClean.nivel_salarial_id) {
+       const [oldLevelRows] = await pool.query(`
+         SELECT nsa.nivel_salarial_antiguo_id
+         FROM niveles_salariales_antiguos nsa
+         INNER JOIN niveles_salariales ns ON ns.nombre = nsa.nombre
+         WHERE ns.nivel_salarial_id = ?
+       `, [datosContratoClean.nivel_salarial_id])
+
+       if (oldLevelRows && oldLevelRows.length > 0) {
+          datosContratoClean.nivel_salarial_antiguo_id = oldLevelRows[0].nivel_salarial_antiguo_id
+       }
+    }
+  }
+
   // --- MÉTODOS PÚBLICOS ---
 
   static async obtenerConFiltros (query) {
@@ -189,6 +204,7 @@ export class JubiladoService {
         datosContratoClean.unidad_id
       )
       datosContratoClean = { ...datosContratoClean, ...jerarquia }
+      await this._vincularNivelesSalariales(datosContratoClean)
     }
 
     return await JubiladoModel.createTransactional(datosPersonalClean, datosContratoClean, datosJubilacionClean)
@@ -224,6 +240,7 @@ export class JubiladoService {
         )
         datosContratoClean = { ...datosContratoClean, ...jerarquia }
       }
+      await this._vincularNivelesSalariales(datosContratoClean)
     }
 
     console.log('--- ACTUALIZANDO JUBILADO ID:', id)

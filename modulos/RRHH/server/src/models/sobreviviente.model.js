@@ -3,6 +3,21 @@ import pool from '../utils/database.js'
 
 export class SobrevivienteModel {
 
+    static async _vincularNivelesSalariales (datosContratoClean) {
+        if (datosContratoClean && datosContratoClean.nivel_salarial_id) {
+           const [oldLevelRows] = await pool.query(`
+             SELECT nsa.nivel_salarial_antiguo_id
+             FROM niveles_salariales_antiguos nsa
+             INNER JOIN niveles_salariales ns ON ns.nombre = nsa.nombre
+             WHERE ns.nivel_salarial_id = ?
+           `, [datosContratoClean.nivel_salarial_id])
+
+           if (oldLevelRows && oldLevelRows.length > 0) {
+              datosContratoClean.nivel_salarial_antiguo_id = oldLevelRows[0].nivel_salarial_antiguo_id
+           }
+        }
+    }
+
     // --- HELPERS DE FILTRADO ---
     static _buildWhere(filters) {
         const where = []
@@ -169,6 +184,7 @@ export class SobrevivienteModel {
 
             // PASO 2: Crear datos laborales si existen
             if (laboralData && Object.keys(laboralData).length > 0) {
+                await this._vincularNivelesSalariales(laboralData)
                 const laboralPayload = { ...laboralData, empleado_id: empleadoId }
                 await connection.query('INSERT INTO datos_laborales SET ?', [laboralPayload])
             }
@@ -254,6 +270,7 @@ export class SobrevivienteModel {
             }
 
             if (laboralData && Object.keys(laboralData).length > 0) {
+                await this._vincularNivelesSalariales(laboralData)
                 const [dlRows] = await connection.query('SELECT empleado_id FROM datos_laborales WHERE empleado_id = ?', [empleadoId])
                 if (dlRows.length > 0) {
                     await connection.query('UPDATE datos_laborales SET ? WHERE empleado_id = ?', [laboralData, empleadoId])

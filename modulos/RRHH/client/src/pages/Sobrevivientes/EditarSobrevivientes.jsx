@@ -18,7 +18,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
         direccion_habitacion: '',
         profesion_id: '',
         fecha_ingreso: '',
-        cargo_cet_id: '', condicion_laboral_id: '',
+        cargo_cet_id: '', cargo_onapre_id: '', condicion_laboral_id: '',
         nivel_salarial_id: '', direccion_id: '', division_id: '', unidad_id: '',
     });
 
@@ -36,7 +36,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
     const [savingFamiliar, setSavingFamiliar] = useState(false);
 
     const [catalogos, setCatalogos] = useState({
-        profesiones: [], cargosCET: [],
+        profesiones: [], cargosCET: [], cargosONAPRE: [],
         condicionesLaborales: [], niveles: [],
         direcciones: [], divisiones: [], unidades: [],
     });
@@ -68,9 +68,10 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                const [proRes, cetRes, dirRes, condRes, sobRes] = await Promise.all([
+                const [proRes, cetRes, onaRes, dirRes, condRes, sobRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/cargos-cet'),
+                    fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
                     fetch('/api/condiciones-laborales'),
                     fetch(`/api/sobrevivientes/${sobreviviente_id}`),
@@ -78,8 +79,8 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
 
                 if (!sobRes.ok) throw new Error('Error al obtener datos del sobreviviente');
 
-                const [profesiones, cargosCET, direcciones, condicionesLaborales, sobResData] = await Promise.all([
-                    proRes.json(), cetRes.json(),
+                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, sobResData] = await Promise.all([
+                    proRes.json(), cetRes.json(), onaRes.json(),
                     dirRes.json(), condRes.json(), sobRes.json(),
                 ]);
 
@@ -87,9 +88,11 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
 
                 const dir_id = sob.direccion_id || '';
                 const div_id = sob.division_id || '';
+                const ona_id = sob.cargo_onapre_id || '';
 
                 let divisionesFetch = [];
                 let unidadesFetch = [];
+                let nivelesFetch = [];
 
                 if (dir_id) {
                     const res = await fetch(`/api/divisiones?direccion_id=${dir_id}`);
@@ -99,10 +102,14 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                     const res = await fetch(`/api/unidades?division_id=${div_id}`);
                     unidadesFetch = await res.json();
                 }
+                if (ona_id) {
+                    const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
+                    nivelesFetch = await res.json();
+                }
 
                 setCatalogos({
-                    profesiones, cargosCET, condicionesLaborales, direcciones,
-                    divisiones: divisionesFetch, unidades: unidadesFetch, niveles: [],
+                    profesiones, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
+                    divisiones: divisionesFetch, unidades: unidadesFetch, niveles: nivelesFetch,
                 });
 
                 const fmt = (s) => {
@@ -121,6 +128,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                     profesion_id: sob.profesion_id || '',
                     fecha_ingreso: fmt(sob.fecha_ingreso),
                     cargo_cet_id: sob.cargo_cet_id || '',
+                    cargo_onapre_id: sob.cargo_onapre_id || '',
                     condicion_laboral_id: sob.condicion_laboral_id || '',
                     nivel_salarial_id: sob.nivel_salarial_id || '',
                     direccion_id: sob.direccion_id || '',
@@ -152,6 +160,22 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
         setErrorMessage('');
     }, [show, sobreviviente_id]);
 
+    // Cascada: Niveles Salariales
+    useEffect(() => {
+        if (!formData.cargo_onapre_id || !show || isLoadingData) return;
+        fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
+            .then(r => r.json())
+            .then(data => {
+                const arr = data.success ? data.data : data;
+                const nivelesFormateados = Array.isArray(arr) ? arr.map(n => ({
+                    ...n,
+                    campo_completo: n.campo_completo || `${n.cargo_onapre_nombre || n.nombre} ${n.grado || ''}`.trim()
+                })) : [];
+                setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
+            })
+            .catch(console.error);
+    }, [formData.cargo_onapre_id]);
+
     // Cascadas
     useEffect(() => {
         if (!formData.direccion_id || !show || isLoadingData) return;
@@ -175,6 +199,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
             const newData = { ...prev, [name]: value };
             if (name === 'direccion_id') { newData.division_id = ''; newData.unidad_id = ''; setCatalogos(c => ({ ...c, unidades: [] })); }
             else if (name === 'division_id') { newData.unidad_id = ''; }
+            else if (name === 'cargo_onapre_id') { newData.nivel_salarial_id = ''; setCatalogos(c => ({ ...c, niveles: [] })); }
             return newData;
         });
     };
@@ -269,7 +294,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
         if (m < 0 || (m === 0 && current.getDate() < birthDate.getDate())) {
             age--;
         }
-        
+
         if (age < 18) {
             setErrorMessage('El familiar debe ser mayor o igual a 18 años.');
             setMensajeMostrado(true);
@@ -463,13 +488,40 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                             </div>
 
                                             <div className="row mb-3">
-                                                <div className="col-md-6">
+                                                <div className="col-md-4">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Cargo Interno (CET)</Form.Label>
                                                         <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
                                                             <option value="">Seleccione</option>
                                                             {catalogos.cargosCET.map(c => (
                                                                 <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Clasificación ONAPRE</Form.Label>
+                                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
+                                                            <option value="">Seleccione</option>
+                                                            {catalogos.cargosONAPRE.map(c => (
+                                                                <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Nivel Salarial</Form.Label>
+                                                        <Form.Select 
+                                                            name="nivel_salarial_id" 
+                                                            value={formData.nivel_salarial_id} 
+                                                            onChange={handleChange}
+                                                            disabled={!formData.cargo_onapre_id || catalogos.niveles.length === 0}
+                                                        >
+                                                            <option value="">Seleccione nivel</option>
+                                                            {catalogos.niveles.map(n => (
+                                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.campo_completo || n.nombre}</option>
                                                             ))}
                                                         </Form.Select>
                                                     </Form.Group>
@@ -644,10 +696,8 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                                                     <option value="">Seleccione</option>
                                                                     <option value="hijo">Hijo(a)</option>
                                                                     <option value="conyuge">Cónyuge</option>
-                                                                    <option value="padre">Padre</option>
-                                                                    <option value="madre">Madre</option>
-                                                                    <option value="hermano">Hermano(a)</option>
-                                                                    <option value="otro">Otro</option>
+                                                                    <option value="esposo">Esposo</option>
+
                                                                 </Form.Select>
                                                             </Form.Group>
                                                         </div>

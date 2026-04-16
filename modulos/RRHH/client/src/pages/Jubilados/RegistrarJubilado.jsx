@@ -475,7 +475,7 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
                                             <option value="">Seleccione</option>
                                             {catalogos.niveles && catalogos.niveles.map(n => (
                                                 <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>
-                                                    {n.niv_nom} — {n.salario_base} Bs.
+                                                    {n.nombre} — {n.salario_base} Bs.
                                                 </option>
                                             ))}
                                         </Form.Select>

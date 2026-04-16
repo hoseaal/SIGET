@@ -477,7 +477,7 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                                         <Form.Select name="nivel_salarial_id" value={formData.nivel_salarial_id} onChange={handleChange} disabled={!formData.cargo_onapre_id}>
                                             <option value="">Seleccione</option>
                                             {catalogos.niveles.map(n => (
-                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.niv_nom} — {n.salario_base} Bs.</option>
+                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.nombre} — {n.salario_base} Bs.</option>
                                             ))}
                                         </Form.Select>
                                     </Form.Group>

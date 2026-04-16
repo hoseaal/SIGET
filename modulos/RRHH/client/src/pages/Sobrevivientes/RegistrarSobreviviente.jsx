@@ -180,7 +180,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
         if (m < 0 || (m === 0 && current.getDate() < birthDate.getDate())) {
             age--;
         }
-        
+
         if (age < 18) {
             setErrorMessage('El familiar debe ser mayor o igual a 18 años.');
             setMensajeMostrado(true);
@@ -436,7 +436,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                                 </div>
                             </div>
 
-                             <div className="row mb-3">
+                            <div className="row mb-3">
                                 <div className="col-md-6">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Fecha de Nacimiento</Form.Label>
@@ -451,10 +451,8 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                                             <option value="">Seleccione</option>
                                             <option value="hijo">Hijo(a)</option>
                                             <option value="conyuge">Cónyuge</option>
-                                            <option value="padre">Padre</option>
-                                            <option value="madre">Madre</option>
-                                            <option value="hermano">Hermano(a)</option>
-                                            <option value="otro">Otro</option>
+                                            <option value="esposo">Esposo</option>
+
                                         </Form.Select>
                                     </Form.Group>
                                 </div>

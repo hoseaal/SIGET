@@ -1,6 +1,22 @@
 import { EncargoTemporalModel } from '../models/encargoTemporal.model.js'
+import pool from '../utils/database.js'
 
 export class EncargoTemporalService {
+
+  static async _vincularNivelesSalariales (datos) {
+    if (datos && datos.nivel_salarial_id) {
+       const [oldLevelRows] = await pool.query(`
+         SELECT nsa.nivel_salarial_antiguo_id
+         FROM niveles_salariales_antiguos nsa
+         INNER JOIN niveles_salariales ns ON ns.nombre = nsa.nombre
+         WHERE ns.nivel_salarial_id = ?
+       `, [datos.nivel_salarial_id])
+
+       if (oldLevelRows && oldLevelRows.length > 0) {
+          datos.nivel_salarial_antiguo_id = oldLevelRows[0].nivel_salarial_antiguo_id
+       }
+    }
+  }
 
   /**
    * Retorna todos los encargos (activos e históricos) de un funcionario.
@@ -45,6 +61,7 @@ export class EncargoTemporalService {
     if (!division_id)       throw new Error('La división es requerida.')
     if (!unidad_id)         throw new Error('La unidad es requerida.')
 
+    await this._vincularNivelesSalariales(datos)
     return await EncargoTemporalModel.create(datos)
   }
 
@@ -64,6 +81,7 @@ export class EncargoTemporalService {
   static async actualizar (id, datos) {
     const encargo = await EncargoTemporalModel.getById(id)
     if (!encargo) throw new Error('Encargo temporal no encontrado.')
+    await this._vincularNivelesSalariales(datos)
     return await EncargoTemporalModel.update(id, datos)
   }
 

@@ -61,6 +61,21 @@ export class PensionadoService {
         }
     }
 
+    static async _vincularNivelesSalariales (datosContratoClean) {
+        if (datosContratoClean && datosContratoClean.nivel_salarial_id) {
+           const [oldLevelRows] = await pool.query(`
+             SELECT nsa.nivel_salarial_antiguo_id
+             FROM niveles_salariales_antiguos nsa
+             INNER JOIN niveles_salariales ns ON ns.nombre = nsa.nombre
+             WHERE ns.nivel_salarial_id = ?
+           `, [datosContratoClean.nivel_salarial_id])
+    
+           if (oldLevelRows && oldLevelRows.length > 0) {
+              datosContratoClean.nivel_salarial_antiguo_id = oldLevelRows[0].nivel_salarial_antiguo_id
+           }
+        }
+    }
+
     // Obtener lista paginada de pensionados
     static async getFiltered({ limit, offset, ...filters }) {
         const { whereClause, params } = this._buildWhere(filters)
@@ -217,6 +232,7 @@ export class PensionadoService {
 
             // Insertar en datos_laborales si hay datos
             if (laboralData && Object.keys(laboralData).length > 0) {
+                await this._vincularNivelesSalariales(laboralData)
                 const laboralPayload = {
                     ...laboralData,
                     empleado_id: empleadoId
@@ -248,6 +264,7 @@ export class PensionadoService {
 
             // Actualizar datos laborales
             if (laboralData && Object.keys(laboralData).length > 0) {
+                await this._vincularNivelesSalariales(laboralData)
                 const [rows] = await connection.query(
                     'SELECT empleado_id FROM datos_laborales WHERE empleado_id = ?',
                     [id]

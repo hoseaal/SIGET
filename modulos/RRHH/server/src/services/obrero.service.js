@@ -69,6 +69,21 @@ export class ObreroService {
     return { direccion_id: null, division_id: null, unidad_id: null }
   }
 
+  static async _vincularNivelesSalariales (datosContratoClean) {
+    if (datosContratoClean && datosContratoClean.nivel_salarial_id) {
+       const [oldLevelRows] = await pool.query(`
+         SELECT nsa.nivel_salarial_antiguo_id
+         FROM niveles_salariales_antiguos nsa
+         INNER JOIN niveles_salariales ns ON ns.nombre = nsa.nombre
+         WHERE ns.nivel_salarial_id = ?
+       `, [datosContratoClean.nivel_salarial_id])
+
+       if (oldLevelRows && oldLevelRows.length > 0) {
+          datosContratoClean.nivel_salarial_antiguo_id = oldLevelRows[0].nivel_salarial_antiguo_id
+       }
+    }
+  }
+
   static async _validarCargosObrero(cargo_cet_id, cargo_onapre_id) {
     // Validar cargos para asegurar que sean Obrero, Aseador, Mensajero o Vigilante
     const regex = /OBRERO|ASEADOR|MENSAJERO|VIGILANTE/i
@@ -157,6 +172,7 @@ export class ObreroService {
         datosContratoClean.unidad_id
       )
       datosContratoClean = { ...datosContratoClean, ...jerarquia }
+      await this._vincularNivelesSalariales(datosContratoClean)
     }
 
     return await ObreroModel.createTransactional(datosPersonalClean, datosContratoClean)
@@ -184,6 +200,7 @@ export class ObreroService {
          )
          datosContratoClean = { ...datosContratoClean, ...jerarquia }
       }
+      await this._vincularNivelesSalariales(datosContratoClean)
     }
 
     return await ObreroModel.updateTransactional(id, datosPersonalClean, datosContratoClean)

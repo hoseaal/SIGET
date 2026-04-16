@@ -26,6 +26,7 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
         
         // Tablas Salariales y Deducciones
         niveles_salariales: '/api/niveles-salariales',
+        niveles_salariales_antiguos: '/api/niveles-salariales-antiguos',
         primas_generales: '/api/primas',
         primas_profesionalizacion: '/api/primas-profesionalizacion',
         configuracion_antiguedad: '/api/antiguedad',

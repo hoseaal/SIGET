@@ -29,7 +29,7 @@ export const TablaSalarios = () => {
 
     const columnAliasNiv = {
         'nivel_salarial_id': 'Código',
-        'niv_nom': 'Nivel',
+        'nombre': 'Nivel',
         'salario_base': 'Salario (Bs)',
         'cargo_onapre_id': 'Cargo ONAPRE'
     };
@@ -220,14 +220,14 @@ export const TablaSalarios = () => {
     // ==========================================
     
     const ordenRomanos = { 'I':1, 'II':2, 'III':3, 'IV':4, 'V':5, 'VI':6, 'VII':7, 'VIII':8, 'IX':9, 'X':10 };
-    const nivelesDinamicos = [...new Set(dataNiv.map(n => n.niv_nom))]
+    const nivelesDinamicos = [...new Set(dataNiv.map(n => n.nombre))]
         .sort((a, b) => (ordenRomanos[a] || 99) - (ordenRomanos[b] || 99));
 
     const niveles = nivelesDinamicos.length > 0 ? nivelesDinamicos : ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
     const matrizNiveles = dataNiv.reduce((acc, curr) => {
         if (!acc[curr.cargo_onapre_id]) acc[curr.cargo_onapre_id] = {};
-        acc[curr.cargo_onapre_id][curr.niv_nom] = curr;
+        acc[curr.cargo_onapre_id][curr.nombre] = curr;
         return acc;
     }, {});
 

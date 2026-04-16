@@ -83,8 +83,8 @@ export const SobrevivienteController = {
                 cedula, nombres, apellidos, fecha_nacimiento, genero, direccion_habitacion,
                 profesion_id,
                 // Datos laborales
-                cargo_cet_id, nivel_salarial_id, condicion_laboral_id,
-                direccion_id, division_id, unidad_id,
+                cargo_cet_id, cargo_onapre_id, nivel_salarial_id, nivel_salarial_antiguo_id, condicion_laboral_id,
+                direccion_id, division_id, unidad_id, prima_profesional_id,
                 // Datos del familiar
                 familiar_cedula, familiar_nombres, familiar_apellidos, familiar_fecha_nacimiento, familiar_parentesco,
                 familiar_direccion, familiar_telefono, familiar_cuenta_bancaria
@@ -153,6 +153,7 @@ export const SobrevivienteController = {
             // Preparar datos laborales
             const laboralData = {
                 cargo_cet_id: cargo_cet_id || null,
+                cargo_onapre_id: cargo_onapre_id || null,
                 nivel_salarial_id: nivel_salarial_id || null,
                 nivel_salarial_antiguo_id: nivel_salarial_antiguo_id || null,
                 condicion_laboral_id: condicion_laboral_id || null,
@@ -278,7 +279,7 @@ export const SobrevivienteController = {
             })
 
             const laboralFields = [
-                'cargo_cet_id', 'nivel_salarial_id', 'nivel_salarial_antiguo_id',
+                'cargo_cet_id', 'cargo_onapre_id', 'nivel_salarial_id', 'nivel_salarial_antiguo_id',
                 'condicion_laboral_id', 'direccion_id', 'division_id', 'unidad_id', 'prima_profesional_id'
             ]
 

@@ -82,6 +82,25 @@ export class FuncionarioService {
     return { direccion_id: null, division_id: null, unidad_id: null }
   }
 
+  /**
+   * HELPER: Deduce y vincula automáticamente el nivel_salarial_antiguo_id 
+   * en los datos contractuales, buscando el nivel antiguo coincidente por nombre.
+   */
+  static async _vincularNivelesSalariales (datosContratoClean) {
+    if (datosContratoClean && datosContratoClean.nivel_salarial_id) {
+       const [oldLevelRows] = await pool.query(`
+         SELECT nsa.nivel_salarial_antiguo_id
+         FROM niveles_salariales_antiguos nsa
+         INNER JOIN niveles_salariales ns ON ns.nombre = nsa.nombre
+         WHERE ns.nivel_salarial_id = ?
+       `, [datosContratoClean.nivel_salarial_id])
+
+       if (oldLevelRows && oldLevelRows.length > 0) {
+          datosContratoClean.nivel_salarial_antiguo_id = oldLevelRows[0].nivel_salarial_antiguo_id
+       }
+    }
+  }
+
   // --- MÉTODOS PÚBLICOS ---
 
   static async obtenerConFiltros (query) {
@@ -155,6 +174,9 @@ export class FuncionarioService {
       )
       // Fusionamos la jerarquía validada sobre los datos limpios
       datosContratoClean = { ...datosContratoClean, ...jerarquia }
+
+      // Vinculamos ID antiguo basándonos en ID actual
+      await this._vincularNivelesSalariales(datosContratoClean)
     }
 
     // 3. Crear Transaccional
@@ -179,6 +201,9 @@ export class FuncionarioService {
          )
          datosContratoClean = { ...datosContratoClean, ...jerarquia }
       }
+
+      // Vinculamos ID antiguo basándonos en ID actual
+      await this._vincularNivelesSalariales(datosContratoClean)
     }
     
     console.log('--- ACTUALIZANDO FUNCIONARIO ID:', id)

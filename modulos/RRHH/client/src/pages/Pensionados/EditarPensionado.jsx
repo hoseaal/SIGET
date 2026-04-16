@@ -23,7 +23,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
 
         // ── Datos Laborales ──
         fecha_ingreso: '',
-        cargo_cet_id: '', condicion_laboral_id: '',
+        cargo_cet_id: '', cargo_onapre_id: '', condicion_laboral_id: '',
         nivel_salarial_id: '', direccion_id: '', division_id: '', unidad_id: '',
 
         // ── Datos Jubilación ──
@@ -31,7 +31,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
     });
 
     const [catalogos, setCatalogos] = useState({
-        profesiones: [], cargosCET: [],
+        profesiones: [], cargosCET: [], cargosONAPRE: [],
         condicionesLaborales: [], niveles: [],
         direcciones: [], divisiones: [], unidades: [],
     });
@@ -44,9 +44,10 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                const [proRes, cetRes, dirRes, condRes, jubRes] = await Promise.all([
+                const [proRes, cetRes, onaRes, dirRes, condRes, jubRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/cargos-cet'),
+                    fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
                     fetch('/api/condiciones-laborales'),
                     fetch(`/api/pensionados/${pensionado_id}`),
@@ -54,8 +55,8 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
 
                 if (!jubRes.ok) throw new Error('Error al obtener datos del pensionado');
 
-                const [profesiones, cargosCET, direcciones, condicionesLaborales, jubResData] = await Promise.all([
-                    proRes.json(), cetRes.json(),
+                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, jubResData] = await Promise.all([
+                    proRes.json(), cetRes.json(), onaRes.json(),
                     dirRes.json(), condRes.json(), jubRes.json(),
                 ]);
 
@@ -83,7 +84,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                 }
 
                 setCatalogos({
-                    profesiones, cargosCET, condicionesLaborales, direcciones,
+                    profesiones, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
                     divisiones: divisionesFetch, unidades: unidadesFetch, niveles: nivelesFetch,
                 });
 
@@ -115,6 +116,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                     profesion_id: jub.profesion_id || '',
                     fecha_ingreso: fmt(jub.fecha_ingreso),
                     cargo_cet_id: jub.cargo_cet_id || '',
+                    cargo_onapre_id: jub.cargo_onapre_id || '',
                     condicion_laboral_id: jub.condicion_laboral_id || '',
                     nivel_salarial_id: jub.nivel_salarial_id || '',
                     direccion_id: jub.direccion_id || '',
@@ -137,6 +139,22 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
         setMensajeMostrado(false);
         setErrorMessage('');
     }, [show, pensionado_id]);
+
+    // Cascada: Niveles Salariales
+    useEffect(() => {
+        if (!formData.cargo_onapre_id || !show || isLoadingData) return;
+        fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
+            .then(r => r.json())
+            .then(data => {
+                const arr = data.success ? data.data : data;
+                const nivelesFormateados = Array.isArray(arr) ? arr.map(n => ({
+                    ...n,
+                    campo_completo: n.campo_completo || `${n.cargo_onapre_nombre || n.nombre} ${n.grado || ''}`.trim()
+                })) : [];
+                setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
+            })
+            .catch(console.error);
+    }, [formData.cargo_onapre_id]);
 
     // Cascadas
     useEffect(() => {
@@ -163,6 +181,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
             const newData = { ...prev, [name]: value };
             if (name === 'direccion_id') { newData.division_id = ''; newData.unidad_id = ''; setCatalogos(c => ({ ...c, unidades: [] })); }
             else if (name === 'division_id') { newData.unidad_id = ''; }
+            else if (name === 'cargo_onapre_id') { newData.nivel_salarial_id = ''; setCatalogos(c => ({ ...c, niveles: [] })); }
             return newData;
         });
     };
@@ -436,7 +455,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                             </div>
 
                                             <div className="row mb-3">
-                                                <div className="col-md-6">
+                                                <div className="col-md-4">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Cargo Interno (CET)</Form.Label>
                                                         <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
@@ -447,18 +466,29 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                                         </Form.Select>
                                                     </Form.Group>
                                                 </div>
-                                            </div>
-
-                                            <div className="row mb-3">
-                                                <div className="col-md-12">
+                                                <div className="col-md-4">
                                                     <Form.Group className="mb-3">
-                                                        <Form.Label>Nivel Salarial (Salario)</Form.Label>
-                                                        <Form.Select name="nivel_salarial_id" value={formData.nivel_salarial_id} onChange={handleChange}>
+                                                        <Form.Label>Clasificación ONAPRE</Form.Label>
+                                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
                                                             <option value="">Seleccione</option>
+                                                            {catalogos.cargosONAPRE.map(c => (
+                                                                <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Nivel Salarial</Form.Label>
+                                                        <Form.Select 
+                                                            name="nivel_salarial_id" 
+                                                            value={formData.nivel_salarial_id} 
+                                                            onChange={handleChange}
+                                                            disabled={!formData.cargo_onapre_id || catalogos.niveles.length === 0}
+                                                        >
+                                                            <option value="">Seleccione nivel</option>
                                                             {catalogos.niveles.map(n => (
-                                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>
-                                                                    {n.niv_nom} — {n.salario_base} Bs.
-                                                                </option>
+                                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.campo_completo || n.nombre}</option>
                                                             ))}
                                                         </Form.Select>
                                                     </Form.Group>

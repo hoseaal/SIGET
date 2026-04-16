@@ -80,7 +80,7 @@ export const PensionadoController = {
                 contacto_emergencia_1, telefono_emergencia_1, contacto_emergencia_2,
                 telefono_emergencia_2, profesion_id, nro_cuenta_bancaria, cuenta_bancaria,
                 // Datos laborales (tabla datos_laborales)
-                cargo_cet_id, nivel_salarial_id, nivel_salarial_antiguo_id,
+                cargo_cet_id, cargo_onapre_id, nivel_salarial_id, nivel_salarial_antiguo_id,
                 condicion_laboral_id, direccion_id, division_id, unidad_id, prima_profesional_id
             } = req.body
 
@@ -134,6 +134,7 @@ export const PensionadoController = {
             // Preparar datos laborales
             const laboralData = {
                 cargo_cet_id: cargo_cet_id || null,
+                cargo_onapre_id: cargo_onapre_id || null,
                 nivel_salarial_id: nivel_salarial_id || null,
                 nivel_salarial_antiguo_id: nivel_salarial_antiguo_id || null,
                 condicion_laboral_id: condicion_laboral_id || null,
@@ -171,7 +172,7 @@ export const PensionadoController = {
                 contacto_emergencia_1, telefono_emergencia_1, contacto_emergencia_2,
                 telefono_emergencia_2, profesion_id, nro_cuenta_bancaria, cuenta_bancaria,
                 // Datos laborales
-                cargo_cet_id, nivel_salarial_id, nivel_salarial_antiguo_id,
+                cargo_cet_id, cargo_onapre_id, nivel_salarial_id, nivel_salarial_antiguo_id,
                 condicion_laboral_id, direccion_id, division_id, unidad_id, prima_profesional_id
             } = req.body
 
@@ -203,7 +204,7 @@ export const PensionadoController = {
 
             // Datos laborales
             const laboralFields = [
-                'cargo_cet_id', 'nivel_salarial_id', 'nivel_salarial_antiguo_id',
+                'cargo_cet_id', 'cargo_onapre_id', 'nivel_salarial_id', 'nivel_salarial_antiguo_id',
                 'condicion_laboral_id', 'direccion_id', 'division_id', 'unidad_id', 'prima_profesional_id'
             ]
 
