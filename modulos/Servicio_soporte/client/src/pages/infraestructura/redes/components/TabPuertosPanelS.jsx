@@ -72,9 +72,9 @@ export const TabPuertosPanelS = () => {
             const url = isEdit ? `/puertos_panel_s/${currentId}` : `/puertos_panel_s`;
 
             await helpFetch[method](url, { 
-                nro_puerto: nroPuerto, 
-                p_router: pRouter, 
-                panel_soport_id: panelSoportId 
+                nro_puerto: parseInt(nroPuerto, 10), 
+                p_router: parseInt(pRouter, 10), 
+                panel_soport_id: parseInt(panelSoportId, 10) 
             });
             
             toast.success(`Puerto ${isEdit ? 'actualizado' : 'registrado'} con éxito`);
