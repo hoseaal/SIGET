@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 17-04-2026 a las 15:08:57
+-- Tiempo de generación: 17-04-2026 a las 15:55:50
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -22,6 +22,9 @@ SET time_zone = "+00:00";
 --
 
 -- --------------------------------------------------------
+
+CREATE DATABASE IF NOT EXISTS `dbsigetrrhh-1`;
+USE `dbsigetrrhh-1`;
 
 --
 -- Estructura de tabla para la tabla `cargos_cet`
