@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown } from 'react-bootstrap';
-import { DepartamentoSelect } from '../layouts/selectInfinito';
-import ModalAntiguedades from '../Modales/ModalAntiguedades';
+import { DepartamentoSelect } from '../../layouts/selectInfinito';
+import ModalAntiguedades from '../../Modales/ModalAntiguedades';
 import { RegistrarObrero } from './RegistrarObrero';
 import { EditarObrero } from './EditarObrero';
-import ModalVerPerfil from '../Modales/ModalVerPerfil';
-import ModalCargaFamiliar from '../Modales/modalCargaFamiliar';
-import ModalCambioEstatus from '../Modales/ModalCambioEstatus';
+import ModalVerPerfil from '../../Modales/ModalVerPerfil';
+import ModalCargaFamiliar from '../../Modales/modalCargaFamiliar';
+import ModalCambioEstatus from '../../Modales/ModalCambioEstatus';
 
 export const ObrerosFijos = () => {
     const [data, setData] = useState([]);

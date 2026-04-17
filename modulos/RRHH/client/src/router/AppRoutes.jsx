@@ -3,14 +3,15 @@ import ProtectedRoute from "./ProtectedRoutes";
 import { LoginPage } from "../pages/authentication/LoginPage";
 import { RegisterPage } from "../pages/authentication/RegisterPage";
 
-import { RegistrarFuncionario } from "../pages/FuncionariosActivos/RegistrarFuncionario.jsx";
-import { FuncionariosActivos } from "../pages/FuncionariosActivos/FuncionariosActivos.jsx";
-import { Jubilados } from "../pages/Jubilados/Jubilados.jsx";
-import { Pensionados } from "../pages/Pensionados/Pensionados.jsx";
-import { Sobrevivientes } from "../pages/Sobrevivientes/Sobrevivientes.jsx";
+import { RegistrarFuncionario } from "../pages/empleados/FuncionariosActivos/RegistrarFuncionario.jsx";
+import { FuncionariosActivos } from "../pages/empleados/FuncionariosActivos/FuncionariosActivos.jsx";
+import { Jubilados } from "../pages/empleados/Jubilados/Jubilados.jsx";
+import { Pensionados } from "../pages/empleados/Pensionados/Pensionados.jsx";
+import { Sobrevivientes } from "../pages/empleados/Sobrevivientes/Sobrevivientes.jsx";
 
-import { Reportes } from "../pages/FuncionariosActivos/reportes"
-import { ObrerosFijos } from "../pages/ObrerosFijos/ObrerosFijos.jsx";
+import { Reportes } from "../pages/Reportes/Reportes"
+import { ObrerosFijos } from "../pages/empleados/ObrerosFijos/ObrerosFijos.jsx";
+import { NominaActivos } from "../pages/nomina/FuncionariosActivos/NominaActivos.jsx";
 
 import { Prestamos } from "../pages/prestamos/prestamos";
 import { Almacen } from "../pages/prestamos/almacen.jsx"
@@ -104,6 +105,12 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
+
+            <Route path="/Nomina/FuncionariosActivos" element={
+                <ProtectedRoute>
+                    <NominaActivos />
+                </ProtectedRoute>
+            } />
 
             <Route path="/Reportes" element={
                 <ProtectedRoute>

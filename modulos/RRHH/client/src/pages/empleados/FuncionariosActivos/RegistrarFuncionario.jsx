@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
-import Button from '../../components/atoms/Buttons'; // Asegúrate de que la ruta sea correcta
-import Alert from "../../components/atoms/Alert";   // Asegúrate de que la ruta sea correcta
+import Button from '../../../components/atoms/Buttons'; // Asegúrate de que la ruta sea correcta
+import Alert from "../../../components/atoms/Alert";   // Asegúrate de que la ruta sea correcta
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
-// import { hasPermission, ACTIONS } from '../../data/dataPermissions' // Descomentar si usas permisos
+// import { hasPermission, ACTIONS } from '../../../data/dataPermissions' // Descomentar si usas permisos
 
 export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd }) => {
     const [paso, setPaso] = useState(1);

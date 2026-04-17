@@ -52,15 +52,15 @@
         "header": "Gestion de Remuneraciones",
         "items": [
             {
-                "text": "Nonima",
-                "icon": "bx bx-group",
+                "text": "Nómina",
+                "icon": "bx bx-money",
                 "available": true,
                 "link": "",
                 "submenu": [
                     {
                         "text": "Funcionarios Activos",
                         "available": true,
-                        "link": "/Personal/FuncionariosActivos"
+                        "link": "/Nomina/FuncionariosActivos"
                     },
                     {
                         "text": "Obreros Fijos",

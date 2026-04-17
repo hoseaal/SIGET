@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown } from 'react-bootstrap';
-import { hasPermission, ACTIONS } from '../../data/dataPermissions';
-import { DepartamentoSelect } from '../layouts/selectInfinito';
-import ModalAntiguedades from '../Modales/ModalAntiguedades';
+import { hasPermission, ACTIONS } from '../../../data/dataPermissions';
+import { DepartamentoSelect } from '../../layouts/selectInfinito';
+import ModalAntiguedades from '../../Modales/ModalAntiguedades';
 import { RegistrarFuncionario } from './RegistrarFuncionario';
 import { EditarFuncionario } from './EditarFuncionario';
-import ModalVerPerfil from '../Modales/ModalVerPerfil';
-import ModalCargaFamiliar from '../Modales/modalCargaFamiliar';
-import ModalCambioEstatus from '../Modales/ModalCambioEstatus';
-import ModalEncargoTemporal from '../Modales/ModalEncargoTemporal';
+import ModalVerPerfil from '../../Modales/ModalVerPerfil';
+import ModalCargaFamiliar from '../../Modales/modalCargaFamiliar';
+import ModalCambioEstatus from '../../Modales/ModalCambioEstatus';
+import ModalEncargoTemporal from '../../Modales/ModalEncargoTemporal';
 
 export const FuncionariosActivos = () => {
     const [data, setData] = useState([]);

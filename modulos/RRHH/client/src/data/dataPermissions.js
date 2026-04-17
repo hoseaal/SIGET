@@ -20,7 +20,11 @@ export const menuPermissions = {
     "/Personal/ObrerosFijos": [1, 2, 3, 4, 5],
     "/Personal/Jubilados": [1, 2, 3, 4, 5],
     "/Personal/Pensionados": [1, 2, 3, 4, 5],
+
     "/Personal/Sobrevivientes": [1, 2, 3, 4, 5],
+
+    // Nomina
+    "/Nomina/FuncionariosActivos": [1, 2, 3, 4, 5],
 
     // Configuración General
     "/Configuracion/EstructuraOrganizacional": [3, 4, 5],

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
-import Button from '../../components/atoms/Buttons';
-import Alert from "../../components/atoms/Alert";
+import Button from '../../../components/atoms/Buttons';
+import Alert from "../../../components/atoms/Alert";
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
 
