@@ -1,8 +1,8 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import ModalActaVerificacion from '../Modales/modalActaVerificacion'; // Asegúrate de que esta ruta sea correcta
+import ModalActaVerificacion from '../../Modales/modalActaVerificacion'; // Asegúrate de que esta ruta sea correcta
 import { Container, Row, Col, Card, Button } from 'react-bootstrap'; // Importa los componentes de React-Bootstrap
-import ModalGenerarEtiquetas from '../Modales/modalGenerarEtiquetas';
+import ModalGenerarEtiquetas from '../../Modales/modalGenerarEtiquetas';
 
 export const Reportes = () => {
     const [showVeriModal, setShowVeriModal] = useState(false);

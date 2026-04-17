@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
-import { DepartamentoSelect } from '../layouts/selectInfinito';
-import ModalVerPerfil from '../Modales/ModalVerPerfil';
+import { DepartamentoSelect } from '../../layouts/selectInfinito';
+import ModalVerPerfil from '../../Modales/ModalVerPerfil';
 import RegistrarSobreviviente from './RegistrarSobreviviente';
 import EditarSobrevivientes from './EditarSobrevivientes';
 import VerFamiliares from './VerFamiliares';

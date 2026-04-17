@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
-import Button from '../../components/atoms/Buttons';
-import Alert from '../../components/atoms/Alert';
+import Button from '../../../components/atoms/Buttons';
+import Alert from '../../../components/atoms/Alert';
 import Modal from 'react-bootstrap/Modal';
 
-export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd }) => {
+// Componente para registrar nuevos sobrevivientes
+const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) => {
     const [paso, setPaso] = useState(1);
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -14,37 +15,32 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
         cedula: '',
         nombres: '',
         apellidos: '',
-        rif: '',
-        fecha_nacimiento: '',
-        genero: '',
-        estado_civil: 'Soltero',
-        telefono_fijo: '',
-        celular: '',
-        correo_principal: '',
-        correo_secundario: '',
-        cuenta_bancaria: '',
-        contacto_emergencia_1: '',
-        telefono_emergencia_1: '',
-        contacto_emergencia_2: '',
-        telefono_emergencia_2: '',
+        direccion_habitacion: '',
         profesion_id: '',
 
-        // ── Datos Laborales (tabla datos_laborales + empleados) ──
+        // ── Datos Laborales ──
         fecha_ingreso: '',
         cargo_cet_id: '',
-        cargo_onapre_id: '',
         condicion_laboral_id: '',
         nivel_salarial_id: '',
         direccion_id: '',
         division_id: '',
         unidad_id: '',
 
+        // ── Datos del Familiar Sobreviviente ──
+        familiar_cedula: '',
+        familiar_nombres: '',
+        familiar_apellidos: '',
+        familiar_fecha_nacimiento: '',
+        familiar_parentesco: '',
+        familiar_direccion: '',
+        familiar_telefono: '',
+        familiar_cuenta_bancaria: '',
     });
 
     const [catalogos, setCatalogos] = useState({
         profesiones: [],
         cargosCET: [],
-        cargosONAPRE: [],
         condicionesLaborales: [],
         niveles: [],
         direcciones: [],
@@ -58,23 +54,21 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
 
         const fetchCatalogos = async () => {
             try {
-                const [proRes, cetRes, onapreRes, dirRes, condRes] = await Promise.all([
+                const [proRes, cetRes, dirRes, condRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/cargos-cet'),
-                    fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
                     fetch('/api/condiciones-laborales'),
                 ]);
 
-                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales] = await Promise.all([
-                    proRes.json(), cetRes.json(), onapreRes.json(), dirRes.json(), condRes.json(),
+                const [profesiones, cargosCET, direcciones, condicionesLaborales] = await Promise.all([
+                    proRes.json(), cetRes.json(), dirRes.json(), condRes.json(),
                 ]);
 
                 setCatalogos(prev => ({
                     ...prev,
                     profesiones,
                     cargosCET,
-                    cargosONAPRE,
                     condicionesLaborales,
                     direcciones,
                     niveles: [],
@@ -89,35 +83,6 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
 
         fetchCatalogos();
     }, [show]);
-
-    // Cascada: Niveles Salariales según Cargo ONAPRE
-    useEffect(() => {
-        const fetchNiveles = async () => {
-            if (!formData.cargo_onapre_id) {
-                setCatalogos(prev => ({ ...prev, niveles: [] }));
-                return;
-            }
-            try {
-                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
-                const nivelesData = await res.json();
-                
-                // Si la API devuelve el formato { success: true, data: [...] }
-                const data = nivelesData.success ? nivelesData.data : nivelesData;
-                
-                // Formatear campo_completo simulando funcionalidad de la BD
-                const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
-                    ...n,
-                    campo_completo: n.campo_completo || `${n.cargo_onapre_nombre || n.nombre} ${n.grado || ''}`.trim()
-                })) : [];
-                
-                setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
-            } catch (e) {
-                console.error('Error niveles:', e);
-                setCatalogos(prev => ({ ...prev, niveles: [] }));
-            }
-        };
-        fetchNiveles();
-    }, [formData.cargo_onapre_id]);
 
     // Cascada: Divisiones según Dirección
     useEffect(() => {
@@ -151,32 +116,27 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
         fetch_();
     }, [formData.division_id]);
 
-
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => {
             const newData = { ...prev, [name]: value };
             if (name === 'direccion_id') { newData.division_id = ''; newData.unidad_id = ''; }
             else if (name === 'division_id') { newData.unidad_id = ''; }
-            else if (name === 'cargo_onapre_id') { newData.nivel_salarial_id = ''; }
             return newData;
         });
     };
 
     const limpiarFormulario = () => {
         setFormData({
-            cedula: '', nombres: '', apellidos: '', rif: '',
-            fecha_nacimiento: '', lugar_nacimiento: '', genero: '', estado_civil: 'Soltero',
-            tipo_sangre: '', direccion_habitacion: '', telefono_fijo: '', celular: '',
-            correo_principal: '', correo_secundario: '', cuenta_bancaria: '',
-            contacto_emergencia_1: '', telefono_emergencia_1: '',
-            contacto_emergencia_2: '', telefono_emergencia_2: '',
+            cedula: '', nombres: '', apellidos: '',
+            direccion_habitacion: '',
             profesion_id: '',
-            fecha_ingreso: '', cargo_cet_id: '', cargo_onapre_id: '',
+            fecha_ingreso: '', cargo_cet_id: '',
             condicion_laboral_id: '', nivel_salarial_id: '',
             direccion_id: '', division_id: '', unidad_id: '',
-
+            familiar_nombres: '', familiar_apellidos: '',
+            familiar_fecha_nacimiento: '', familiar_parentesco: '',
+            familiar_direccion: '', familiar_telefono: '', familiar_cuenta_bancaria: '',
         });
         setErrorMessage('');
         setMensajeMostrado(false);
@@ -184,55 +144,83 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
     };
 
     const handleSiguiente = () => {
-        if (!formData.cedula || !formData.nombres || !formData.apellidos) {
-            setErrorMessage('Por favor complete Cédula, Nombres y Apellidos.');
-            setMensajeMostrado(true);
-            setTimeout(() => setMensajeMostrado(false), 3000);
-            return;
+        if (paso === 1) {
+            if (!formData.cedula || !formData.nombres || !formData.apellidos) {
+                setErrorMessage('Por favor complete Cédula, Nombres y Apellidos.');
+                setMensajeMostrado(true);
+                setTimeout(() => setMensajeMostrado(false), 3000);
+                return;
+            }
         }
         setErrorMessage('');
         setMensajeMostrado(false);
-        setPaso(2);
+        setPaso(prev => prev + 1);
     };
 
     const handleAtras = () => {
         setErrorMessage('');
         setMensajeMostrado(false);
-        setPaso(1);
+        setPaso(prev => prev - 1);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!formData.familiar_nombres || !formData.familiar_apellidos || !formData.familiar_fecha_nacimiento) {
+            setErrorMessage('Por favor complete los nombres, apellidos y fecha de nacimiento del familiar sobreviviente.');
+            setMensajeMostrado(true);
+            setTimeout(() => setMensajeMostrado(false), 3000);
+            return;
+        }
+
+        const birthDate = new Date(formData.familiar_fecha_nacimiento);
+        const current = new Date();
+        let age = current.getFullYear() - birthDate.getFullYear();
+        const m = current.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && current.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        if (age < 18) {
+            setErrorMessage('El familiar debe ser mayor o igual a 18 años.');
+            setMensajeMostrado(true);
+            setTimeout(() => setMensajeMostrado(false), 3000);
+            return;
+        }
 
         if (onSaveStart) onSaveStart();
 
         try {
-            const response = await fetch('/api/pensionados', {
+            const response = await fetch('/api/sobrevivientes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
 
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Error al registrar pensionado');
+            if (!response.ok) throw new Error(result.error || 'Error al registrar sobreviviente');
 
             limpiarFormulario();
-            if (onSaveEnd) onSaveEnd(true, 'pensionado registrado exitosamente.');
+            if (onSaveEnd) onSaveEnd(true, 'Sobreviviente registrado exitosamente.');
         } catch (error) {
             console.error('Error:', error);
             if (onSaveEnd) onSaveEnd(false, error.message);
         }
     };
 
+    const getTituloPaso = () => {
+        switch (paso) {
+            case 1: return 'Registrar Sobreviviente — Datos Personales';
+            case 2: return 'Registrar Sobreviviente — Datos Laborales';
+            case 3: return 'Registrar Sobreviviente — Familiar Sobreviviente';
+            default: return '';
+        }
+    };
+
     return (
         <Modal show={show} onHide={handleClose} size="xl" backdrop="static">
             <Modal.Header closeButton>
-                <Modal.Title>
-                    {paso === 1
-                        ? 'Registrar pensionado — Datos Personales'
-                        : 'Registrar pensionado — Datos Laborales y Jubilación'}
-                </Modal.Title>
+                <Modal.Title>{getTituloPaso()}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 {mensajeMostrado && <Alert key="danger" type="danger">{errorMessage}</Alert>}
@@ -249,20 +237,13 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                                 <small className="text-muted">* Campos obligatorios</small>
                             </div>
 
-                            {/* Cédula y RIF */}
+                            {/* Cédula */}
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-md-12">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Cédula de Identidad *</Form.Label>
                                         <Form.Control type="text" name="cedula" placeholder="Ej: V-12345678"
                                             value={formData.cedula} onChange={handleChange} required />
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>RIF</Form.Label>
-                                        <Form.Control type="text" name="rif" placeholder="Ej: V123456789"
-                                            value={formData.rif} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
                             </div>
@@ -285,16 +266,16 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                                 </div>
                             </div>
 
-                            {/* Nacimiento, Género, Estado Civil */}
+                            {/* Nacimiento, Género */}
                             <div className="row mb-3">
-                                <div className="col-md-4">
+                                <div className="col-md-6">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Fecha de Nacimiento</Form.Label>
                                         <Form.Control type="date" name="fecha_nacimiento"
                                             value={formData.fecha_nacimiento} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-4">
+                                <div className="col-md-6">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Género</Form.Label>
                                         <Form.Select name="genero" value={formData.genero} onChange={handleChange}>
@@ -304,51 +285,9 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                                         </Form.Select>
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-4">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Estado Civil</Form.Label>
-                                        <Form.Select name="estado_civil" value={formData.estado_civil} onChange={handleChange}>
-                                            <option value="Soltero">Soltero(a)</option>
-                                            <option value="Casado">Casado(a)</option>
-                                            <option value="Divorciado">Divorciado(a)</option>
-                                            <option value="Viudo">Viudo(a)</option>
-                                        </Form.Select>
-                                    </Form.Group>
-                                </div>
                             </div>
 
 
-                            {/* Correos */}
-                            <div className="row mb-3">
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Correo Principal</Form.Label>
-                                        <Form.Control type="email" name="correo_principal"
-                                            value={formData.correo_principal} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Correo Secundario</Form.Label>
-                                        <Form.Control type="email" name="correo_secundario"
-                                            value={formData.correo_secundario} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Celular</Form.Label>
-                                        <Form.Control type="text" name="celular"
-                                            value={formData.celular} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Nro. Cuenta Bancaria</Form.Label>
-                                        <Form.Control type="text" name="cuenta_bancaria" maxLength={20}
-                                            value={formData.cuenta_bancaria} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
-                            </div>
 
                             {/* Dirección */}
                             <div className="mb-3">
@@ -358,57 +297,16 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                                         value={formData.direccion_habitacion} onChange={handleChange} />
                                 </Form.Group>
                             </div>
-
-
                         </>
                     )}
-
-                    {/* ══════════ PASO 2: DATOS LABORALES + MOTIVO DE PENSIÓN ══════════ */}
+                    {/* ══════════ PASO 2: DATOS LABORALES ══════════ */}
                     {paso === 2 && (
                         <>
-                            {/* Contactos de emergencia */}
-                            <h6 className="mt-2 mb-3 text-primary">
-                                <i className="bx bx-first-aid me-1"></i> Contactos de Emergencia
-                            </h6>
-                            <div className="row mb-3">
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>1. Nombres y Apellidos</Form.Label>
-                                        <Form.Control type="text" name="contacto_emergencia_1"
-                                            value={formData.contacto_emergencia_1} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>1. Teléfono</Form.Label>
-                                        <Form.Control type="text" name="telefono_emergencia_1"
-                                            value={formData.telefono_emergencia_1} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
-                            </div>
-                            <div className="row mb-4">
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>2. Nombres y Apellidos</Form.Label>
-                                        <Form.Control type="text" name="contacto_emergencia_2"
-                                            value={formData.contacto_emergencia_2} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>2. Teléfono</Form.Label>
-                                        <Form.Control type="text" name="telefono_emergencia_2"
-                                            value={formData.telefono_emergencia_2} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
-                            </div>
-
                             {/* Datos Laborales */}
-                            <div className="d-flex justify-content-between align-items-center mb-3 mt-2">
+                            <div className="d-flex justify-content-between align-items-center mb-3 mt-0">
                                 <h6 className="text-primary mb-0">
                                     <i className="bx bx-briefcase me-1"></i> 2. Datos Laborales
                                 </h6>
-                                <small className="text-muted">* Campos obligatorios</small>
                             </div>
 
                             <div className="row mb-3">
@@ -444,40 +342,13 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                             </div>
 
                             <div className="row mb-3">
-                                <div className="col-md-4">
+                                <div className="col-md-6">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Cargo Interno (CET)</Form.Label>
                                         <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
                                             <option value="">Seleccione cargo</option>
                                             {catalogos.cargosCET.map(c => (
                                                 <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
-                                            ))}
-                                        </Form.Select>
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-4">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Clasificación ONAPRE</Form.Label>
-                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
-                                            <option value="">Seleccione clasificación</option>
-                                            {catalogos.cargosONAPRE.map(c => (
-                                                <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
-                                            ))}
-                                        </Form.Select>
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-4">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Nivel Salarial</Form.Label>
-                                        <Form.Select 
-                                            name="nivel_salarial_id" 
-                                            value={formData.nivel_salarial_id} 
-                                            onChange={handleChange}
-                                            disabled={!formData.cargo_onapre_id || catalogos.niveles.length === 0}
-                                        >
-                                            <option value="">Seleccione nivel</option>
-                                            {catalogos.niveles.map(n => (
-                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.campo_completo}</option>
                                             ))}
                                         </Form.Select>
                                     </Form.Group>
@@ -523,44 +394,117 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                                     </Form.Group>
                                 </div>
                             </div>
+                        </>
+                    )}
 
-                            {/* Datos de Jubilación */}
-                            <div className="d-flex justify-content-between align-items-center mb-3 mt-2">
-                                <h6 className="text-primary mb-0">
-                                    <i className="bx bx-medal me-1"></i> 3. Datos de Jubilación *
+                    {/* ══════════ PASO 3: FAMILIAR SOBREVIVIENTE ══════════ */}
+                    {paso === 3 && (
+                        <>
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <h6 className="mt-2 text-primary mb-0">
+                                    <i className="bx bx-group me-1"></i> 3. Datos del Familiar Sobreviviente
                                 </h6>
+                                <small className="text-muted">* Campos obligatorios</small>
                             </div>
 
-                            {/* <div className="row mb-3">
-                                <div className="col-md-6">
+                            <div className="alert alert-info mb-3">
+                                <i className="bx bx-info-circle me-1"></i>
+                                Registre los datos del familiar que tiene derecho como sobreviviente.
+                            </div>
+
+                            <div className="row mb-3">
+                                <div className="col-md-4">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Motivo de Pension </Form.Label>
-                                        <Form.Control type="text" name="motivo_pension"
-                                            value={formData.motivo_pension} onChange={handleChange} />
+                                        <Form.Label>Cédula del Familiar *</Form.Label>
+                                        <Form.Control type="text" name="familiar_cedula"
+                                            value={formData.familiar_cedula} onChange={handleChange} required />
                                     </Form.Group>
                                 </div>
-                            </div> */}
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Nombres del Familiar *</Form.Label>
+                                        <Form.Control type="text" name="familiar_nombres"
+                                            value={formData.familiar_nombres} onChange={handleChange} required />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Apellidos del Familiar *</Form.Label>
+                                        <Form.Control type="text" name="familiar_apellidos"
+                                            value={formData.familiar_apellidos} onChange={handleChange} required />
+                                    </Form.Group>
+                                </div>
+                            </div>
+
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Fecha de Nacimiento</Form.Label>
+                                        <Form.Control type="date" name="familiar_fecha_nacimiento"
+                                            value={formData.familiar_fecha_nacimiento} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Parentesco</Form.Label>
+                                        <Form.Select name="familiar_parentesco" value={formData.familiar_parentesco} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            <option value="hijo">Hijo(a)</option>
+                                            <option value="conyuge">Cónyuge</option>
+                                            <option value="esposo">Esposo</option>
+
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                            </div>
+
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Teléfono del Familiar</Form.Label>
+                                        <Form.Control type="text" name="familiar_telefono"
+                                            value={formData.familiar_telefono} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Cuenta Bancaria del Familiar (20 dígitos)</Form.Label>
+                                        <Form.Control type="text" name="familiar_cuenta_bancaria" maxLength={20}
+                                            value={formData.familiar_cuenta_bancaria} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                            </div>
+
+                            <div className="mb-3">
+                                <Form.Group>
+                                    <Form.Label>Dirección del Familiar</Form.Label>
+                                    <Form.Control as="textarea" rows={2} name="familiar_direccion"
+                                        value={formData.familiar_direccion} onChange={handleChange} />
+                                </Form.Group>
+                            </div>
                         </>
                     )}
                 </form>
             </Modal.Body>
             <Modal.Footer>
                 <Button type='secondary' onClick={handleClose}>Cancelar</Button>
-                {paso === 1 && (
+                {paso > 1 && (
+                    <Button type='secondary' className="me-2" onClick={handleAtras}>
+                        <i className="bx bx-left-arrow-alt me-1"></i> Atrás
+                    </Button>
+                )}
+                {paso < 3 && (
                     <Button type='primary' onClick={handleSiguiente}>
                         Siguiente <i className="bx bx-right-arrow-alt ms-1"></i>
                     </Button>
                 )}
-                {paso === 2 && (
+                {paso === 3 && (
                     <>
-                        <Button type='secondary' className="me-2" onClick={handleAtras}>
-                            <i className="bx bx-left-arrow-alt me-1"></i> Atrás
-                        </Button>
                         <Button type='secondary' className="me-2" onClick={limpiarFormulario}>
                             Limpiar
                         </Button>
                         <Button type='primary' onClick={handleSubmit}>
-                            <i className="bx bx-save me-1"></i> Registrar pensionado
+                            <i className="bx bx-save me-1"></i> Registrar Sobreviviente
                         </Button>
                     </>
                 )}
@@ -568,3 +512,5 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
         </Modal>
     );
 };
+
+export default RegistrarSobreviviente;

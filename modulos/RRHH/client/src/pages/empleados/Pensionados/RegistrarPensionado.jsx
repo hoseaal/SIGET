@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
-import Button from '../../components/atoms/Buttons';
-import Alert from '../../components/atoms/Alert';
+import Button from '../../../components/atoms/Buttons';
+import Alert from '../../../components/atoms/Alert';
 import Modal from 'react-bootstrap/Modal';
 
-export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd }) => {
+export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd }) => {
     const [paso, setPaso] = useState(1);
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -39,9 +39,6 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
         division_id: '',
         unidad_id: '',
 
-        // ── Datos de Jubilación (tabla jubilados) ──
-        porcentaje_jubilacion: '',
-        fecha_efectiva: new Date().toISOString().split('T')[0],
     });
 
     const [catalogos, setCatalogos] = useState({
@@ -61,7 +58,7 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
 
         const fetchCatalogos = async () => {
             try {
-                const [proRes, cetRes, onaRes, dirRes, condRes] = await Promise.all([
+                const [proRes, cetRes, onapreRes, dirRes, condRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
@@ -70,7 +67,7 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
                 ]);
 
                 const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales] = await Promise.all([
-                    proRes.json(), cetRes.json(), onaRes.json(), dirRes.json(), condRes.json(),
+                    proRes.json(), cetRes.json(), onapreRes.json(), dirRes.json(), condRes.json(),
                 ]);
 
                 setCatalogos(prev => ({
@@ -92,6 +89,35 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
 
         fetchCatalogos();
     }, [show]);
+
+    // Cascada: Niveles Salariales según Cargo ONAPRE
+    useEffect(() => {
+        const fetchNiveles = async () => {
+            if (!formData.cargo_onapre_id) {
+                setCatalogos(prev => ({ ...prev, niveles: [] }));
+                return;
+            }
+            try {
+                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
+                const nivelesData = await res.json();
+
+                // Si la API devuelve el formato { success: true, data: [...] }
+                const data = nivelesData.success ? nivelesData.data : nivelesData;
+
+                // Formatear campo_completo simulando funcionalidad de la BD
+                const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
+                    ...n,
+                    campo_completo: n.campo_completo || `${n.cargo_onapre_nombre || n.nombre} ${n.grado || ''}`.trim()
+                })) : [];
+
+                setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
+            } catch (e) {
+                console.error('Error niveles:', e);
+                setCatalogos(prev => ({ ...prev, niveles: [] }));
+            }
+        };
+        fetchNiveles();
+    }, [formData.cargo_onapre_id]);
 
     // Cascada: Divisiones según Dirección
     useEffect(() => {
@@ -125,21 +151,7 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
         fetch_();
     }, [formData.division_id]);
 
-    // Cascada: Niveles salariales según Cargo ONAPRE
-    useEffect(() => {
-        const fetch_ = async () => {
-            if (!formData.cargo_onapre_id) {
-                setCatalogos(prev => ({ ...prev, niveles: [] }));
-                return;
-            }
-            try {
-                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
-                const niveles = await res.json();
-                setCatalogos(prev => ({ ...prev, niveles }));
-            } catch (e) { console.error('Error niveles:', e); }
-        };
-        fetch_();
-    }, [formData.cargo_onapre_id]);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -164,8 +176,7 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
             fecha_ingreso: '', cargo_cet_id: '', cargo_onapre_id: '',
             condicion_laboral_id: '', nivel_salarial_id: '',
             direccion_id: '', division_id: '', unidad_id: '',
-            porcentaje_jubilacion: '',
-            fecha_efectiva: new Date().toISOString().split('T')[0],
+
         });
         setErrorMessage('');
         setMensajeMostrado(false);
@@ -193,34 +204,21 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.porcentaje_jubilacion || !formData.fecha_efectiva) {
-            setErrorMessage('El porcentaje de jubilación y la fecha efectiva son obligatorios.');
-            setMensajeMostrado(true);
-            setTimeout(() => setMensajeMostrado(false), 4000);
-            return;
-        }
-        const pct = Number(formData.porcentaje_jubilacion);
-        if (isNaN(pct) || pct < 1 || pct > 100) {
-            setErrorMessage('El porcentaje de jubilación debe ser un número entre 1 y 100.');
-            setMensajeMostrado(true);
-            setTimeout(() => setMensajeMostrado(false), 4000);
-            return;
-        }
 
         if (onSaveStart) onSaveStart();
 
         try {
-            const response = await fetch('/api/jubilados', {
+            const response = await fetch('/api/pensionados', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
 
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Error al registrar jubilado');
+            if (!response.ok) throw new Error(result.error || 'Error al registrar pensionado');
 
             limpiarFormulario();
-            if (onSaveEnd) onSaveEnd(true, 'Jubilado registrado exitosamente.');
+            if (onSaveEnd) onSaveEnd(true, 'pensionado registrado exitosamente.');
         } catch (error) {
             console.error('Error:', error);
             if (onSaveEnd) onSaveEnd(false, error.message);
@@ -232,8 +230,8 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
             <Modal.Header closeButton>
                 <Modal.Title>
                     {paso === 1
-                        ? 'Registrar Jubilado — Datos Personales'
-                        : 'Registrar Jubilado — Datos Laborales y Jubilación'}
+                        ? 'Registrar pensionado — Datos Personales'
+                        : 'Registrar pensionado — Datos Laborales y Jubilación'}
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
@@ -336,6 +334,20 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
                                             value={formData.correo_secundario} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Celular</Form.Label>
+                                        <Form.Control type="text" name="celular"
+                                            value={formData.celular} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-6">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Nro. Cuenta Bancaria</Form.Label>
+                                        <Form.Control type="text" name="cuenta_bancaria" maxLength={20}
+                                            value={formData.cuenta_bancaria} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
                             </div>
 
                             {/* Dirección */}
@@ -347,21 +359,11 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
                                 </Form.Group>
                             </div>
 
-                            {/* Cuenta y Actividades */}
-                            <div className="row mb-3">
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Nro. Cuenta Bancaria</Form.Label>
-                                        <Form.Control type="text" name="cuenta_bancaria" maxLength={20}
-                                            value={formData.cuenta_bancaria} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
 
-                            </div>
                         </>
                     )}
 
-                    {/* ══════════ PASO 2: DATOS LABORALES + JUBILACIÓN ══════════ */}
+                    {/* ══════════ PASO 2: DATOS LABORALES + MOTIVO DE PENSIÓN ══════════ */}
                     {paso === 2 && (
                         <>
                             {/* Contactos de emergencia */}
@@ -442,7 +444,7 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
                             </div>
 
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-md-4">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Cargo Interno (CET)</Form.Label>
                                         <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
@@ -453,30 +455,29 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
                                         </Form.Select>
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-md-4">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Clasificación ONAPRE</Form.Label>
                                         <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
                                             <option value="">Seleccione clasificación</option>
-                                            {catalogos.cargosONAPRE && catalogos.cargosONAPRE.map(c => (
+                                            {catalogos.cargosONAPRE.map(c => (
                                                 <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
                                             ))}
                                         </Form.Select>
                                     </Form.Group>
                                 </div>
-                            </div>
-
-                            <div className="row mb-3">
-                                <div className="col-md-12">
+                                <div className="col-md-4">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Nivel Salarial (Salario)</Form.Label>
-                                        <Form.Select name="nivel_salarial_id" value={formData.nivel_salarial_id} onChange={handleChange}
-                                            disabled={!formData.cargo_onapre_id}>
-                                            <option value="">Seleccione</option>
-                                            {catalogos.niveles && catalogos.niveles.map(n => (
-                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>
-                                                    {n.nombre} — {n.salario_base} Bs.
-                                                </option>
+                                        <Form.Label>Nivel Salarial</Form.Label>
+                                        <Form.Select
+                                            name="nivel_salarial_id"
+                                            value={formData.nivel_salarial_id}
+                                            onChange={handleChange}
+                                            disabled={!formData.cargo_onapre_id || catalogos.niveles.length === 0}
+                                        >
+                                            <option value="">Seleccione nivel</option>
+                                            {catalogos.niveles.map(n => (
+                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.campo_completo}</option>
                                             ))}
                                         </Form.Select>
                                     </Form.Group>
@@ -530,22 +531,15 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
                                 </h6>
                             </div>
 
-                            <div className="row mb-3">
+                            {/* <div className="row mb-3">
                                 <div className="col-md-6">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Porcentaje de Jubilación * (1–100)</Form.Label>
-                                        <Form.Control type="number" name="porcentaje_jubilacion" min="1" max="100"
-                                            placeholder="Ej: 75" value={formData.porcentaje_jubilacion} onChange={handleChange} required />
+                                        <Form.Label>Motivo de Pension </Form.Label>
+                                        <Form.Control type="text" name="motivo_pension"
+                                            value={formData.motivo_pension} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Fecha Efectiva de Jubilación *</Form.Label>
-                                        <Form.Control type="date" name="fecha_efectiva"
-                                            value={formData.fecha_efectiva} onChange={handleChange} required />
-                                    </Form.Group>
-                                </div>
-                            </div>
+                            </div> */}
                         </>
                     )}
                 </form>
@@ -566,7 +560,7 @@ export const RegistrarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd })
                             Limpiar
                         </Button>
                         <Button type='primary' onClick={handleSubmit}>
-                            <i className="bx bx-save me-1"></i> Registrar Jubilado
+                            <i className="bx bx-save me-1"></i> Registrar pensionado
                         </Button>
                     </>
                 )}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
-import Button from '../../components/atoms/Buttons';
-import Alert from '../../components/atoms/Alert';
+import Button from '../../../components/atoms/Buttons';
+import Alert from '../../../components/atoms/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
 
@@ -513,9 +513,9 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                                 <div className="col-md-4">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Nivel Salarial</Form.Label>
-                                                        <Form.Select 
-                                                            name="nivel_salarial_id" 
-                                                            value={formData.nivel_salarial_id} 
+                                                        <Form.Select
+                                                            name="nivel_salarial_id"
+                                                            value={formData.nivel_salarial_id}
                                                             onChange={handleChange}
                                                             disabled={!formData.cargo_onapre_id || catalogos.niveles.length === 0}
                                                         >
