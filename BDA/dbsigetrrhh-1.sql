@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 07-04-2026 a las 15:36:22
+-- Tiempo de generación: 17-04-2026 a las 15:08:57
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -50,7 +50,32 @@ INSERT INTO `cargos_cet` (`cargo_cet_id`, `nombre`) VALUES
 (11, 'MENSAJERO III'),
 (12, 'MENSAJERO IV'),
 (13, 'MENSAJERO V'),
-(14, 'MENSAJERO VI');
+(14, 'MENSAJERO VI'),
+(15, 'CONTRALOR (A)'),
+(16, 'DIRECTOR (A)'),
+(17, 'JEFE DE DIVISION GENERAL'),
+(18, 'JEFE DE DIVISION'),
+(19, 'JEFE DE OFICINA'),
+(20, 'AUDITOR I'),
+(21, 'AUDITOR II'),
+(22, 'AUDITOR III'),
+(23, 'AUDITOR IV'),
+(24, 'ABOGADO P I'),
+(25, 'ABOGADO P II'),
+(26, 'MEDICO'),
+(27, 'ANALISTA DE PRESUPUESTO I'),
+(28, 'ASISTENTE ADMINISTRATIVO'),
+(29, 'SUPERVISOR'),
+(30, 'SECRETARIO (A) I'),
+(31, 'SECRETARIO (A) II'),
+(32, 'SECRETARIO (A) III'),
+(33, 'SECRETARIO (A) IV'),
+(34, 'AUXILIAR ADMINISTRATIVO B I'),
+(35, 'AUXILIAR B I'),
+(36, 'NOTIFICADOR B III'),
+(37, 'MENSAJERO IV'),
+(38, 'CHOFER I'),
+(39, 'VIGILANTE I');
 
 -- --------------------------------------------------------
 
@@ -71,8 +96,20 @@ INSERT INTO `cargos_onapre` (`cargo_onapre_id`, `nombre`) VALUES
 (1, 'Profesional III'),
 (2, 'Técnico II'),
 (3, 'Obrero I-MAX'),
-(4, 'Obrero II-MIN'),
-(5, 'Obrero III-MIN');
+(6, 'Jefe de Division'),
+(7, 'Jefe de Division General'),
+(8, 'Director en Linea'),
+(9, 'Director General'),
+(10, 'Contralor del Estado'),
+(11, 'Coordinador de Area'),
+(12, 'Profesional I'),
+(13, 'Profesional II'),
+(15, 'Bachiller I'),
+(16, 'Bachiller II'),
+(17, 'Bachiller III'),
+(18, 'TSU I'),
+(19, 'TSU II'),
+(20, 'TSU III');
 
 -- --------------------------------------------------------
 
@@ -123,10 +160,10 @@ INSERT INTO `configuracion_antiguedad` (`antiguedad_id`, `anios_cumplidos`, `por
 CREATE TABLE `datos_laborales` (
   `empleado_id` int(11) NOT NULL,
   `cargo_cet_id` int(11) NOT NULL,
-  `cargo_onapre_id` int(11) NOT NULL,
-  `nivel_salarial_id` int(11) NOT NULL,
+  `cargo_onapre_id` int(11) DEFAULT NULL,
+  `nivel_salarial_id` int(11) DEFAULT NULL,
   `nivel_salarial_antiguo_id` int(11) DEFAULT NULL,
-  `condicion_laboral_id` int(11) NOT NULL,
+  `condicion_laboral_id` int(11) DEFAULT NULL,
   `prima_profesional_id` int(11) DEFAULT NULL,
   `direccion_id` int(11) DEFAULT NULL,
   `division_id` int(11) DEFAULT NULL,
@@ -138,12 +175,9 @@ CREATE TABLE `datos_laborales` (
 --
 
 INSERT INTO `datos_laborales` (`empleado_id`, `cargo_cet_id`, `cargo_onapre_id`, `nivel_salarial_id`, `nivel_salarial_antiguo_id`, `condicion_laboral_id`, `prima_profesional_id`, `direccion_id`, `division_id`, `unidad_id`) VALUES
-(5, 1, 1, 1, NULL, 1, NULL, 1, NULL, NULL),
-(7, 1, 2, 1, NULL, 1, NULL, 2, 2, 2),
-(11, 2, 1, 1, NULL, 2, NULL, 1, 1, 1),
-(12, 2, 1, 1, NULL, 1, NULL, 1, 1, 1),
-(15, 11, 3, 2, NULL, 1, NULL, 2, NULL, NULL),
-(16, 2, 1, 1, NULL, 1, NULL, 1, 1, 1);
+(5, 17, 7, 28, 31, 1, NULL, 3, NULL, NULL),
+(34, 2, 7, 27, 30, 1, NULL, 1, 1, 1),
+(35, 2, 7, 28, 31, 1, NULL, 2, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -174,7 +208,8 @@ CREATE TABLE `direcciones` (
 
 INSERT INTO `direcciones` (`direccion_id`, `nombre`) VALUES
 (1, 'Dirección de Informática'),
-(2, 'Dirección de Recursos Humanos');
+(2, 'Dirección de Recursos Humanos'),
+(3, 'Dirección General');
 
 -- --------------------------------------------------------
 
@@ -209,7 +244,7 @@ CREATE TABLE `empleados` (
   `apellidos` varchar(100) NOT NULL,
   `rif` varchar(20) DEFAULT NULL,
   `fecha_nacimiento` date NOT NULL,
-  `lugar_nacimiento` varchar(100) NOT NULL,
+  `lugar_nacimiento` varchar(100) DEFAULT NULL,
   `genero` enum('M','F','O') NOT NULL,
   `estado_civil` varchar(50) NOT NULL,
   `tipo_sangre` varchar(5) DEFAULT NULL,
@@ -238,12 +273,17 @@ CREATE TABLE `empleados` (
 --
 
 INSERT INTO `empleados` (`empleado_id`, `cedula`, `nombres`, `apellidos`, `rif`, `fecha_nacimiento`, `lugar_nacimiento`, `genero`, `estado_civil`, `tipo_sangre`, `deportes`, `actividades_culturales`, `direccion_habitacion`, `telefono_fijo`, `celular`, `correo_principal`, `correo_secundario`, `fecha_ingreso`, `estudios_actuales`, `fecha_culminacion_estudios`, `contacto_emergencia_1`, `telefono_emergencia_1`, `contacto_emergencia_2`, `telefono_emergencia_2`, `profesion_id`, `estatus_id`, `nro_cuenta_bancaria`, `cuenta_bancaria`) VALUES
-(5, '9247771', 'Luis', 'Bolaños', 'V12345678', '2000-11-30', 'nlknlknlk', 'M', 'Casado', 'A', 'j bj', 'bauolsa', 'jbljbj', '0412345986', '098765', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2026-04-02', NULL, NULL, 'nlnkblk', '0000000', 'nlkpij[ol', '00000000', 1, 1, '', '0102111122223333'),
-(7, '10146978', 'Ana Maria', 'Perez Roa', 'V2345678', '2003-09-09', 'ursdddddddbcoisdvoivbdsi', 'F', 'Soltero', 'A', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '090809809', 'lewis@gmail.com', 'lewis@gmail.com', '2026-04-02', NULL, NULL, 'nlnkblk', '0412345986', 'Luis Bolaños', '0412345986', 2, 1, '', NULL),
-(11, '92477713', 'Luisa', 'Bolaños', 'V123456783', '2009-10-10', 'dfgtryuj', 'F', 'Viudo', 'A', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '0412345986', '098765', 'SONIARGUELLO11Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2026-04-02', NULL, NULL, 'Luis Bolaños', '0412345986', 'nlkpij[ol', '0412345982', 1, 1, '', NULL),
-(12, '29908320', 'Angela Marina', 'Villamizar Arguello', 'V29908320-1', '2003-02-08', 'Hospital Central', 'F', 'Soltero', 'A+', '', '', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '04247741424', 'angelavillamizar900@gmail.com', 'angelavillamizar900@gmail.com', '2026-04-02', NULL, NULL, 'sonia', '04149795188', 'mili', '0412345986', 1, 1, '', NULL),
-(15, '31456098', 'Lenis', 'Perez Roa', 'V31456098', '2003-01-09', 'Los Roques', 'M', 'Casado', 'A+', 'j bj', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0987652`31', 'lewis@gmail.com', 'SONIARGUELLO10Y@GMAIL.COM', '2026-04-04', NULL, NULL, 'nlnkblk', '0412345986', 'Luis Bolaños', '00000000', NULL, 1, '01020319101792801', '12345678901234567890'),
-(16, '30890123', 'Eric Alberto', 'Martinez Omaña', 'V30890123-1', '1969-02-04', 'Por ahi', 'F', 'Divorciado', 'A+', NULL, NULL, 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2003-12-09', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', 1, 3, '', '12345678901234567890');
+(5, '9247771', 'Luis', 'Bolaños', 'V12345678', '2000-11-30', 'nlknlknlk', 'M', 'Casado', 'A', 'j bj', 'bauolsa', 'jbljbj', '0412345986', '098765', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2026-04-02', NULL, NULL, 'nlnkblk', '0000000', 'nlkpij[ol', '00000000', 1, 3, '', '0102111122223333'),
+(7, '10146978', 'Ana Maria', 'Perez Roa', 'V2345678', '2003-09-09', 'ursdddddddbcoisdvoivbdsi', 'F', 'Soltero', 'A', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '090809809', 'lewis@gmail.com', 'lewis@gmail.com', '2026-04-02', NULL, NULL, 'nlnkblk', '0412345986', 'Luis Bolaños', '0412345986', 2, 4, '', NULL),
+(11, '92477713', 'Luisa', 'Bolaños', 'V123456783', '2009-10-10', 'dfgtryuj', 'F', 'Viudo', 'A', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '0412345986', '098765', 'SONIARGUELLO11Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2026-04-02', NULL, NULL, 'Luis Bolaños', '0412345986', 'nlkpij[ol', '0412345982', 1, 4, '', NULL),
+(15, '31456098', 'Lenis', 'Perez Roa', 'V31456098', '2003-01-09', 'Los Roques', 'M', 'Casado', 'A+', 'j bj', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0987652`31', 'lewis@gmail.com', 'SONIARGUELLO10Y@GMAIL.COM', '2026-04-04', NULL, NULL, 'nlnkblk', '0412345986', 'Luis Bolaños', '00000000', NULL, 7, '01020319101792801', '12345678901234567890'),
+(16, '30890123', 'Eric Alberto', 'Martinez Omaña', 'V30890123-1', '1969-02-04', 'Por ahi', 'F', 'Divorciado', 'A+', NULL, NULL, 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2003-12-09', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 1, 3, '', '12345678901234567890'),
+(22, '23890123', 'Carlos', 'Guerrero', 'V14908722', '1969-03-21', '', 'M', 'Soltero', '', '', '', 'Municipio Libertador, Calle 2, Casa n3', '', '', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '1969-08-09', '', NULL, 'nlnkblk', '0412345986', 'Luis Bolaños', '00000000', 1, 3, '', '0102111122223333'),
+(25, '34567891', 'Lewis', 'Perez Roa', 'V24567890', '2009-09-09', '', 'M', 'Viudo', '', '', '', 'Municipio Libertador, Calle 2, Casa n3', '', '', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '1969-08-09', '', NULL, 'nlnkblk', '0412345986', 'Luis Bolaños', '00000000', 1, 3, '', '0102111122223333'),
+(31, '45678901', 'Jhon', 'Doe', 'V4567890-2', '2000-05-09', '', 'M', 'Divorciado', NULL, NULL, NULL, 'Municipio San Cristobal, Calle 2, Casa n 0', NULL, '0987652`31', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '1999-08-09', NULL, NULL, 'nlnkblk', '0000002', 'Luis Bolaños', '00000000', 1, 4, '', '12345678901234567890'),
+(33, 'V19807506', 'Pedro Enrique', 'Consolacion Rodriguez', 'V19807506-1', '1976-05-09', '', 'M', 'Divorciado', NULL, NULL, NULL, 'Municipio Libertador, Calle 2, Casa n3', NULL, '0412345986', 'pedro@gmail.com', 'pedro1pedo@gmail.com', '1999-10-09', NULL, NULL, 'nlnkblk', '0412345986', 'Luis Bolaños', '00000000', 1, 4, '', '12345678901234567890'),
+(34, '14502107', 'Jesus David', 'Salamanca Carvajal', 'V14502107-1', '1974-04-08', 'Valencia, estado Carabobo', 'M', 'Casado', 'A+', NULL, 'ajedrez', 'Municipio San Cristobal, Calle 2, Casa n 0', '04161373897', '0987652`31', 'salamanca@gmail.com', 'salamanca1@gmail.com', '2023-03-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', 1, 1, '', '09999999999999999999'),
+(35, '9236358', 'Rosa Elena', 'Useche de Osorio', 'V9236358-9', '1970-08-09', 'por ahi', 'F', 'Soltero', 'A+', 'rtyukj', 'tyuio', 'Municipio San Cristobal, Calle 2, Casa n 0', '04161373897', '0412345986', 'SONIARGUELLO10Y@GMAIL.COM', 'angelavillamizar900@gmail.com', '2003-05-16', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', 2, 1, '', '12345678901234567890');
 
 -- --------------------------------------------------------
 
@@ -265,6 +305,13 @@ CREATE TABLE `encargos_temporales` (
   `division_id` int(11) NOT NULL,
   `unidad_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `encargos_temporales`
+--
+
+INSERT INTO `encargos_temporales` (`encargo_id`, `empleado_id`, `fecha_inicio`, `fecha_fin`, `estatus_encargo`, `cargo_cet_id`, `cargo_onapre_id`, `nivel_salarial_id`, `nivel_salarial_antiguo_id`, `direccion_id`, `division_id`, `unidad_id`) VALUES
+(7, 34, '2026-04-02', NULL, 1, 1, 7, 28, NULL, 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -322,7 +369,10 @@ CREATE TABLE `jubilados` (
 --
 
 INSERT INTO `jubilados` (`jubilado_id`, `empleado_id`, `porcentaje_jubilacion`, `fecha_efectiva`) VALUES
-(1, 16, 2.00, '2026-04-06');
+(1, 16, 2.00, '2026-04-06'),
+(2, 22, 23.00, '2026-04-07'),
+(3, 25, 23.00, '2026-04-08'),
+(4, 5, 20.00, '2026-04-08');
 
 -- --------------------------------------------------------
 
@@ -362,8 +412,38 @@ CREATE TABLE `niveles_salariales` (
 --
 
 INSERT INTO `niveles_salariales` (`nivel_salarial_id`, `nombre`, `salario_base`, `cargo_onapre_id`) VALUES
-(1, 'Nivel P3-1', 1500.00, 1),
-(2, 'Nivel T2-1', 950.00, 2);
+(27, 'I', 200.00, 7),
+(28, 'III', 300.00, 7),
+(29, 'I', 120.00, 15);
+
+--
+-- Disparadores `niveles_salariales`
+--
+DELIMITER $$
+CREATE TRIGGER `after_insert_nivel` AFTER INSERT ON `niveles_salariales` FOR EACH ROW BEGIN
+  INSERT INTO niveles_salariales_antiguos (
+    nombre,
+    salario_antiguo,
+    cargo_onapre_id
+  )
+  VALUES (
+    NEW.nombre,
+    NEW.salario_base,
+    NEW.cargo_onapre_id
+  );
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `after_update_nivel` AFTER UPDATE ON `niveles_salariales` FOR EACH ROW BEGIN
+  UPDATE niveles_salariales_antiguos
+  SET 
+    salario_antiguo = NEW.salario_base,
+    cargo_onapre_id = NEW.cargo_onapre_id
+  WHERE nombre = NEW.nombre;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -378,6 +458,15 @@ CREATE TABLE `niveles_salariales_antiguos` (
   `cargo_onapre_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `niveles_salariales_antiguos`
+--
+
+INSERT INTO `niveles_salariales_antiguos` (`nivel_salarial_antiguo_id`, `nombre`, `salario_antiguo`, `cargo_onapre_id`) VALUES
+(30, 'I', 200.00, 7),
+(31, 'III', 300.00, 7),
+(32, 'I', 120.00, 15);
+
 -- --------------------------------------------------------
 
 --
@@ -390,17 +479,46 @@ CREATE TABLE `nucleo_familiar` (
   `apellidos` varchar(100) NOT NULL,
   `fecha_nacimiento` date NOT NULL,
   `estatus` tinyint(4) DEFAULT 1,
-  `parentesco` varchar(20) DEFAULT NULL
+  `parentesco` varchar(20) DEFAULT NULL,
+  `ci` varchar(8) DEFAULT NULL,
+  `direccion` text DEFAULT NULL,
+  `celular` int(12) DEFAULT NULL,
+  `cuenta_bancaria` varchar(20) NOT NULL,
+  `telefono` varchar(20) DEFAULT NULL,
+  `cedula` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `nucleo_familiar`
 --
 
-INSERT INTO `nucleo_familiar` (`familiar_id`, `nombres`, `apellidos`, `fecha_nacimiento`, `estatus`, `parentesco`) VALUES
-(1, 'Alberto Jesus', 'Bolaños Bolaños', '2008-02-09', 0, 'hijo'),
-(2, 'Jesus Leonardo', 'Rujano', '2016-11-21', 1, 'hijo'),
-(3, 'Miguel', 'Bolaños', '2010-02-09', 1, 'hijo');
+INSERT INTO `nucleo_familiar` (`familiar_id`, `nombres`, `apellidos`, `fecha_nacimiento`, `estatus`, `parentesco`, `ci`, `direccion`, `celular`, `cuenta_bancaria`, `telefono`, `cedula`) VALUES
+(1, 'Alberto Jesus', 'Bolaños Bolaños', '2008-02-09', 0, 'hijo', NULL, NULL, NULL, '0', NULL, NULL),
+(3, 'Miguel', 'Bolaños', '2010-02-09', 1, 'hijo', NULL, NULL, NULL, '0', NULL, NULL),
+(5, 'Andres', 'Jaimes Bolaños', '2010-08-09', 1, 'hijo', NULL, NULL, NULL, '0', NULL, NULL),
+(6, 'Luisana', 'Jaimes Bolaños', '2010-08-09', 1, 'hijo', NULL, NULL, NULL, '0', NULL, NULL),
+(7, 'Andres', 'Montilva', '2008-02-09', 1, 'hijo', NULL, 'cpasic', NULL, '09999999999999999999', '04161373897', '31456097');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `pensionado`
+--
+
+CREATE TABLE `pensionado` (
+  `id_pensionado` int(11) NOT NULL,
+  `fecha_ingreso` date DEFAULT NULL,
+  `observacion` text DEFAULT NULL,
+  `empleado_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `pensionado`
+--
+
+INSERT INTO `pensionado` (`id_pensionado`, `fecha_ingreso`, `observacion`, `empleado_id`) VALUES
+(1, '2026-04-08', 'Pension porque si\n', 7),
+(2, '2026-04-09', 'Pensión por incapacidad, accidente laboral, se cayó del sexto piso', 33);
 
 -- --------------------------------------------------------
 
@@ -539,18 +657,20 @@ INSERT INTO `roles_sistema` (`rol_id`, `nombre_rol`) VALUES
 CREATE TABLE `sobreviviente` (
   `id_sobreviviente` int(11) NOT NULL,
   `empleado_id` int(11) DEFAULT NULL,
-  `familiar_id` int(11) DEFAULT NULL
+  `familiar_id` int(11) DEFAULT NULL,
+  `fecha_ingreso` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `sobreviviente`
 --
 
-INSERT INTO `sobreviviente` (`id_sobreviviente`, `empleado_id`, `familiar_id`) VALUES
-(1, NULL, NULL),
-(2, 5, 1),
-(3, 15, 2),
-(4, 5, 3);
+INSERT INTO `sobreviviente` (`id_sobreviviente`, `empleado_id`, `familiar_id`, `fecha_ingreso`) VALUES
+(2, 5, 1, NULL),
+(4, 5, 3, NULL),
+(6, 11, 5, NULL),
+(7, 11, 6, NULL),
+(8, 15, 7, NULL);
 
 -- --------------------------------------------------------
 
@@ -740,6 +860,13 @@ ALTER TABLE `nucleo_familiar`
   ADD PRIMARY KEY (`familiar_id`);
 
 --
+-- Indices de la tabla `pensionado`
+--
+ALTER TABLE `pensionado`
+  ADD PRIMARY KEY (`id_pensionado`),
+  ADD KEY `empleado_id` (`empleado_id`);
+
+--
 -- Indices de la tabla `permisos_remunerados`
 --
 ALTER TABLE `permisos_remunerados`
@@ -823,13 +950,13 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `cargos_cet`
 --
 ALTER TABLE `cargos_cet`
-  MODIFY `cargo_cet_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `cargo_cet_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT de la tabla `cargos_onapre`
 --
 ALTER TABLE `cargos_onapre`
-  MODIFY `cargo_onapre_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `cargo_onapre_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT de la tabla `condiciones_laborales`
@@ -853,7 +980,7 @@ ALTER TABLE `deducciones`
 -- AUTO_INCREMENT de la tabla `direcciones`
 --
 ALTER TABLE `direcciones`
-  MODIFY `direccion_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la Dirección', AUTO_INCREMENT=3;
+  MODIFY `direccion_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la Dirección', AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `divisiones`
@@ -865,13 +992,13 @@ ALTER TABLE `divisiones`
 -- AUTO_INCREMENT de la tabla `empleados`
 --
 ALTER TABLE `empleados`
-  MODIFY `empleado_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `empleado_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT de la tabla `encargos_temporales`
 --
 ALTER TABLE `encargos_temporales`
-  MODIFY `encargo_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `encargo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `estatus_funcionarios`
@@ -889,7 +1016,7 @@ ALTER TABLE `historial_salarios`
 -- AUTO_INCREMENT de la tabla `jubilados`
 --
 ALTER TABLE `jubilados`
-  MODIFY `jubilado_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `jubilado_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `modulos_acceso`
@@ -901,19 +1028,25 @@ ALTER TABLE `modulos_acceso`
 -- AUTO_INCREMENT de la tabla `niveles_salariales`
 --
 ALTER TABLE `niveles_salariales`
-  MODIFY `nivel_salarial_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `nivel_salarial_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT de la tabla `niveles_salariales_antiguos`
 --
 ALTER TABLE `niveles_salariales_antiguos`
-  MODIFY `nivel_salarial_antiguo_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `nivel_salarial_antiguo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT de la tabla `nucleo_familiar`
 --
 ALTER TABLE `nucleo_familiar`
-  MODIFY `familiar_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `familiar_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT de la tabla `pensionado`
+--
+ALTER TABLE `pensionado`
+  MODIFY `id_pensionado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `permisos_remunerados`
@@ -961,7 +1094,7 @@ ALTER TABLE `roles_sistema`
 -- AUTO_INCREMENT de la tabla `sobreviviente`
 --
 ALTER TABLE `sobreviviente`
-  MODIFY `id_sobreviviente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_sobreviviente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `sueldos_pensionados`
@@ -1048,6 +1181,12 @@ ALTER TABLE `niveles_salariales`
 --
 ALTER TABLE `niveles_salariales_antiguos`
   ADD CONSTRAINT `fk_nivelant_onapre` FOREIGN KEY (`cargo_onapre_id`) REFERENCES `cargos_onapre` (`cargo_onapre_id`) ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `pensionado`
+--
+ALTER TABLE `pensionado`
+  ADD CONSTRAINT `pensionado_ibfk_1` FOREIGN KEY (`empleado_id`) REFERENCES `empleados` (`empleado_id`);
 
 --
 -- Filtros para la tabla `permisos_remunerados`
