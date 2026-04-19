@@ -86,7 +86,7 @@ export const TabPanelSoport = () => {
 
     return (
         <div className="pt-3">
-            <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <h6 className="mb-0">Listado de Patch Panels (Paneles de Soporte)</h6>
                 <Button variant="primary" size="sm" onClick={handleShowCreate}>
                     <i className="bx bx-plus me-1"></i> Registrar Panel
@@ -98,7 +98,7 @@ export const TabPanelSoport = () => {
                         <th>Nº</th>
                         <th>Nro. de Bien</th>
                         <th>Descripción</th>
-                        <th className="text-end pe-5">Acciones</th>
+                        <th className="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -120,13 +120,15 @@ export const TabPanelSoport = () => {
                                 <td>{index + 1}</td>
                                 <td><span className="badge bg-label-primary">{item.nro_bien}</span></td>
                                 <td>{item.descripcion}</td>
-                                <td className="text-end pe-5">
-                                    <Button variant="warning" size="sm" className="me-2" onClick={() => handleShowEdit(item)}>
-                                        <i className="bx bx-edit"></i>
-                                    </Button>
-                                    <Button variant="danger" size="sm" onClick={() => handleShowDelete(item)}>
-                                        <i className="bx bx-trash"></i>
-                                    </Button>
+                                <td className="text-end">
+                                    <div className="d-flex justify-content-end gap-2">
+                                        <Button variant="warning" size="sm" onClick={() => handleShowEdit(item)}>
+                                            <i className="bx bx-edit"></i>
+                                        </Button>
+                                        <Button variant="danger" size="sm" onClick={() => handleShowDelete(item)}>
+                                            <i className="bx bx-trash"></i>
+                                        </Button>
+                                    </div>
                                 </td>
                             </tr>
                         ))

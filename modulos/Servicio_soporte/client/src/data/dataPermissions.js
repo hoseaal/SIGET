@@ -19,7 +19,10 @@ export const menuPermissions = {
     "/Configuracion/Maestros": [1, 2, 3, 4, 5],
 
     // Infraestructura
-    "/Infraestructura/Red": [1, 2, 3, 4, 5]
+    "/Infraestructura/Red": [1, 2, 3, 4, 5],
+
+    // Inventario
+    "/Equipos": [1, 2, 3, 4, 5]
 };
 
 // src/data/permissions.js

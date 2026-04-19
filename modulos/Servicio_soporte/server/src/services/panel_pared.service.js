@@ -19,11 +19,11 @@ export class PanelParedService {
         if (!datos.piso) throw new Error('El ID del piso es requerido')
         await validaciones.number(datos.piso)    
 
-        if (!datos.es_panel_principal) throw new Error('Debe especificar si es Panel 1 o 2')
-        await validaciones.number(datos.es_panel_principal) // 0 o 1 
+        if (!datos.pp_soporte_id) throw new Error('Especificar el Puerto del Panel de Soporte (Patch Panel)');
+        await validaciones.number(datos.pp_soporte_id);
 
-        if (!datos.pp_soporte_id) throw new Error('Especificar el Panel de soporte ')
-        await validaciones.number(datos.pp_soporte_id)
+        const exists = await PanelParedModel.getBySoporteId(datos.pp_soporte_id);
+        if (exists) throw new Error('Ese puerto del Panel de Soporte ya está asignado a otra Roseta');
 
         return await PanelParedModel.create(datos)
     }
@@ -34,8 +34,13 @@ export class PanelParedService {
         if (!datos.piso) throw new Error('El ID del piso es requerido')
         await validaciones.number(datos.piso)
 
-        if (!datos.es_panel_principal) throw new Error('Debe especificar si es Panel 1 o 2')
-        await validaciones.number(datos.es_panel_principal) // 0 o 1
+        if (!datos.pp_soporte_id) throw new Error('Especificar el Puerto del Panel de Soporte');
+        await validaciones.number(datos.pp_soporte_id);
+
+        const exists = await PanelParedModel.getBySoporteId(datos.pp_soporte_id);
+        if (exists && String(exists.id) !== String(id)) {
+            throw new Error('Ese puerto del Panel de Soporte ya está ocupado por otra Roseta');
+        }
 
         return await PanelParedModel.update(id, datos)
     }

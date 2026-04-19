@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { GenericMasterTab } from "../../components/GenericMasterTab";
 import { TabDepartamentos } from "../../components/TabDepartamentos";
 import { TabModelos } from "../../components/TabModelos";
+import { TabTipoToner } from "../../components/TabTipoToner";
 
 export const ConfiguracionPage = () => {
     // Controlar la pestaña activa
@@ -61,6 +62,16 @@ export const ConfiguracionPage = () => {
                                         <i className="bx bx-desktop me-1"></i> Tipos de Equipo
                                     </Nav.Link>
                                 </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey="tiposComponente">
+                                        <i className="bx bx-chip me-1"></i> Tipos de Componente
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey="tiposToner">
+                                        <i className="bx bx-droplet me-1"></i> Tipos de Tóner
+                                    </Nav.Link>
+                                </Nav.Item>
                             </Nav>
 
                             <Tab.Content className="p-0 border-0 bg-transparent">
@@ -92,6 +103,14 @@ export const ConfiguracionPage = () => {
 
                                 <Tab.Pane eventKey="tiposEquipo">
                                     <GenericMasterTab endpoint="/tipo_equipo" titleItem="Tipo de Equipo" />
+                                </Tab.Pane>
+
+                                <Tab.Pane eventKey="tiposComponente">
+                                    <GenericMasterTab endpoint="/tipo_componente" titleItem="Tipo de Componente" />
+                                </Tab.Pane>
+
+                                <Tab.Pane eventKey="tiposToner">
+                                    <TabTipoToner />
                                 </Tab.Pane>
                             </Tab.Content>
                         </Tab.Container>

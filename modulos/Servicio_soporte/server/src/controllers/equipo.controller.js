@@ -28,6 +28,20 @@ export const createFullEquipo = async (req, res) => {
         res.status(400).json({ error: error.message })
     }   
 }
+
+export const updateFullEquipo = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const resultado = await EquipoService.actualizarCompleto(id, req.body);
+        res.json({
+            message: "Equipo actualizado con éxito",
+            data: resultado
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
 export const deleteEquipo = async (req, res) => {
         try{
             const { id } = req.params

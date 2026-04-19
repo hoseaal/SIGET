@@ -9,6 +9,13 @@ export class EquipoModel {
         )
         return { id: result.insertId }
     }
+
+    static async update(id, { nro_bien, direc_id, tipo_equipo, pp_pared }, connection = pool) {
+        await connection.query(
+            'UPDATE equipos SET nro_bien = ?, direc_id = ?, tipo_equipo = ?, pp_pared = ? WHERE id = ?',
+            [nro_bien, direc_id, tipo_equipo, pp_pared, id]
+        )
+    }
     static async getByPuerto({pp_pared}, connection = pool) {
         const [rows] = await connection.query(`
             SELECT * FROM equipos WHERE pp_pared = ?` 
@@ -25,9 +32,10 @@ export class EquipoModel {
     }
     static async getAll() {
     const [rows] = await pool.query(`
-        SELECT e.*, tc.nombre as Tipo_componente, c.serial as c_serial, c.capacidad as c_capacidad, 
+        SELECT e.*, tc.nombre as Tipo_componente, c.tipo_id, c.marca_id, c.modelo_id, c.serial as c_serial, c.capacidad as c_capacidad, c.nro_bien as c_nro_bien,
         d.nombre as Departamento, te.nombre as Tipo_de_equipo, p.nro_puerto as Puerto, pp.piso as piso_id, pi.nombre as Piso,
-        pps.nro_puerto as Puerto_soporte, pps.p_router as Puerto_router, ps.nro_bien as nro_bien, ps.descripcion, m.nombre as marca, t.nombre as toner, t.descripcion as toner_descripcion 
+        pps.nro_puerto as Puerto_soporte, pps.p_router as Puerto_router, ps.nro_bien as nro_bien_soport, ps.descripcion, m.nombre as marca, t.nombre as toner, t.descripcion as toner_descripcion,
+        ec.nombre_equipo, ec.sistema_operativo, ec.version_office, ec.elaborado_por, ec.observaciones
         FROM equipos e
         JOIN departamentos d ON e.direc_id = d.id
         JOIN tipo_equipo te ON e.tipo_equipo = te.id
@@ -60,10 +68,14 @@ export class EquipoModel {
                 piso: row.Piso,
                 puerto_soporte: row.Puerto_soporte,
                 puerto_router: row.Puerto_router,
-                nro_bien_panel_soporte: row.nro_bien,
-                descripcion: row.descripcion,
+                nro_bien_panel_soporte: row.nro_bien_soport,
+                descripcion_panel: row.descripcion,
+                nombre_equipo: row.nombre_equipo,
+                sistema_operativo: row.sistema_operativo,
+                version_office: row.version_office,
+                elaborado_por: row.elaborado_por,
+                observaciones: row.observaciones,
                 detalles: []
-                
             });
         }
 
@@ -78,8 +90,12 @@ export class EquipoModel {
         if (row.c_serial !== null) {
             equiposMap.get(row.id).detalles.push({
                 tipo: row.Tipo_componente,
+                tipo_id: row.tipo_id,
+                marca_id: row.marca_id,
+                modelo_id: row.modelo_id,
                 serial: row.c_serial,
-                capacidad: row.c_capacidad
+                capacidad: row.c_capacidad,
+                nro_bien: row.c_nro_bien
             });
         }
     });

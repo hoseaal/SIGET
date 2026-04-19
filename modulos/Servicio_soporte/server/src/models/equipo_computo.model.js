@@ -8,4 +8,14 @@ export class EquipoComputoModel {
             [equipo_id, nombre_equipo, sistema_operativo, version_office, elaborado_por, observaciones]
         )
     }
+
+    static async update(equipo_id, datos, connection) {
+        const { nombre_equipo, sistema_operativo, version_office, elaborado_por, observaciones } = datos
+        await connection.query(
+            `UPDATE equipos_computo 
+            SET nombre_equipo = ?, sistema_operativo = ?, version_office = ?, elaborado_por = ?, observaciones = ? 
+            WHERE equipo_id = ?`,
+            [nombre_equipo, sistema_operativo, version_office, elaborado_por, observaciones, equipo_id]
+        )
+    }
 }

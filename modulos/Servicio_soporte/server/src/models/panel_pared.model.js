@@ -17,20 +17,25 @@ export class PanelParedModel {
         return rows[0] || null
     }
 
-    static async create({ piso, es_panel_principal, pp_soporte_id }) {
-        const [result] = await pool.query(
-            'INSERT INTO panel_pared (piso, es_panel_principal, pp_soporte_id) VALUES (?, ?, ?)',
-            [piso, es_panel_principal, pp_soporte_id]
-        )
-        return { id: result.insertId, piso, es_panel_principal, pp_soporte_id }
+    static async getBySoporteId(pp_soporte_id) {
+        const [rows] = await pool.query('SELECT * FROM panel_pared WHERE pp_soporte_id = ?', [pp_soporte_id])
+        return rows[0] || null
     }
 
-    static async update(id, { piso, es_panel_principal, pp_soporte_id }) {
-        await pool.query(
-            'UPDATE panel_pared SET piso = ?, es_panel_principal = ?, pp_soporte_id = ? WHERE id = ?',
-            [piso, es_panel_principal, pp_soporte_id, id]
+    static async create({ piso, pp_soporte_id }) {
+        const [result] = await pool.query(
+            'INSERT INTO panel_pared (piso, pp_soporte_id) VALUES (?, ?)',
+            [piso, pp_soporte_id]
         )
-        return { id, piso, es_panel_principal, pp_soporte_id }
+        return { id: result.insertId, piso, pp_soporte_id }
+    }
+
+    static async update(id, { piso, pp_soporte_id }) {
+        await pool.query(
+            'UPDATE panel_pared SET piso = ?, pp_soporte_id = ? WHERE id = ?',
+            [piso, pp_soporte_id, id]
+        )
+        return { id, piso, pp_soporte_id }
     }
 
     static async delete(id) {

@@ -59,39 +59,82 @@ export class EquipoService {
     }
     
     static async eliminarCompleto(equipoId) {
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
 
-        // 1. Borrar de tablas secundarias (hijos)
-        // Borramos componentes asociados
-        await connection.query('DELETE FROM componentes WHERE equipo_id = ?', [equipoId]);
-        
-        // Borramos detalles si era computadora
-        await connection.query('DELETE FROM equipos_computo WHERE equipo_id = ?', [equipoId]);
-        
-        // Borramos detalles si era impresora
-        await connection.query('DELETE FROM impresoras WHERE equipo_id = ?', [equipoId]);
+            // 1. Borrar de tablas secundarias (hijos)
+            await ComponenteModel.deleteByEquipoId(equipoId, connection);
+            await connection.query('DELETE FROM equipos_computo WHERE equipo_id = ?', [equipoId]);
+            await connection.query('DELETE FROM impresoras WHERE equipo_id = ?', [equipoId]);
 
-        // 2. Limpiar referencias en otras tablas (Opcional)
-        // Si el equipo está en 'estandar_detall', podrías querer ponerlo en NULL o borrarlo
-        await connection.query('UPDATE estandar_detall SET equipo_id = NULL WHERE equipo_id = ?', [equipoId]);
+            // 2. Limpiar referencias
+            await connection.query('UPDATE estandar_detall SET equipo_id = NULL WHERE equipo_id = ?', [equipoId]);
 
-        // 3. Borrar el registro principal
-        const eliminado = await EquipoModel.delete(equipoId, connection);
+            // 3. Borrar el registro principal
+            const eliminado = await EquipoModel.delete(equipoId, connection);
 
-        if (!eliminado) {
-            throw new Error("El equipo no existe o ya fue eliminado.");
+            if (!eliminado) throw new Error("El equipo no existe o ya fue eliminado.");
+
+            await connection.commit();
+            return { success: true };
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
         }
-
-        await connection.commit();
-        return { success: true, message: "Equipo y sus componentes eliminados correctamente" };
-
-    } catch (error) {
-        await connection.rollback();
-        throw error;
-    } finally {
-        connection.release();
     }
-}
+
+    static async actualizarCompleto(id, datos) {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            // 1. Actualizar equipo base
+            await EquipoModel.update(id, datos.general, connection);
+
+            // 2. Actualizar detalles específicos
+            const tipo = Number(datos.general.tipo_equipo);
+
+            if (tipo === 1) {
+                // PC: Actualizar detalles de cómputo
+                if (datos.detallesComputo) {
+                    // Verificamos si ya existe registro en equipos_computo
+                    const [rows] = await connection.query('SELECT * FROM equipos_computo WHERE equipo_id = ?', [id]);
+                    if (rows.length > 0) {
+                        await EquipoComputoModel.update(id, datos.detallesComputo, connection);
+                    } else {
+                        await EquipoComputoModel.create({ equipo_id: id, ...datos.detallesComputo }, connection);
+                    }
+                }
+
+                // Sincronizar componentes (Borrar e Insertar)
+                await ComponenteModel.deleteByEquipoId(id, connection);
+                if (datos.componentes && datos.componentes.length > 0) {
+                    for (const comp of datos.componentes) {
+                        await ComponenteModel.create({ equipo_id: id, ...comp }, connection);
+                    }
+                }
+            } else if (tipo === 2) {
+                // Impresora: Actualizar detalles
+                if (datos.detallesImpresora) {
+                    const [rows] = await connection.query('SELECT * FROM impresoras WHERE equipo_id = ?', [id]);
+                    if (rows.length > 0) {
+                        await ImpresoraModel.update(id, datos.detallesImpresora, connection);
+                    } else {
+                        await ImpresoraModel.create({ equipo_id: id, ...datos.detallesImpresora }, connection);
+                    }
+                }
+            }
+
+            await connection.commit();
+            return { success: true };
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
 }

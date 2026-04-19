@@ -96,7 +96,7 @@ export const TabPuertos = () => {
 
     return (
         <div className="pt-3">
-            <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <h6 className="mb-0">Listado de Puertos Finales (Usuarios)</h6>
                 <Button variant="primary" size="sm" onClick={handleShowCreate}>
                     <i className="bx bx-plus me-1"></i> Añadir Puerto
@@ -109,7 +109,7 @@ export const TabPuertos = () => {
                         <th>Nro. Etiqueta / Puerto</th>
                         <th>Caja / Roseta a la que pertenece</th>
                         <th>Piso Ubicación</th>
-                        <th className="text-end pe-5">Acciones</th>
+                        <th className="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -132,13 +132,15 @@ export const TabPuertos = () => {
                                 <td><strong>{item.nro_puerto}</strong></td>
                                 <td>Panel #{item.panel_id} {item.es_panel_principal ? '(Principal)' : ''}</td>
                                 <td>{item.nombre_piso || 'N/A'}</td>
-                                <td className="text-end pe-5">
-                                    <Button variant="warning" size="sm" className="me-2" onClick={() => handleShowEdit(item)}>
-                                        <i className="bx bx-edit"></i>
-                                    </Button>
-                                    <Button variant="danger" size="sm" onClick={() => handleShowDelete(item)}>
-                                        <i className="bx bx-trash"></i>
-                                    </Button>
+                                <td className="text-end">
+                                    <div className="d-flex justify-content-end gap-2">
+                                        <Button variant="warning" size="sm" onClick={() => handleShowEdit(item)}>
+                                            <i className="bx bx-edit"></i>
+                                        </Button>
+                                        <Button variant="danger" size="sm" onClick={() => handleShowDelete(item)}>
+                                            <i className="bx bx-trash"></i>
+                                        </Button>
+                                    </div>
                                 </td>
                             </tr>
                         ))

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Spinner, Badge } from "react-bootstrap";
+import { Table, Button, Modal, Form, Spinner, Badge, Row, Col } from "react-bootstrap";
 import { toast } from "react-toastify";
 import helpFetch from "../../../../utils/helpFetch";
 
 export const TabPanelPared = () => {
     const [dataList, setDataList] = useState([]);
     const [pisos, setPisos] = useState([]);
+    const [panelesSoport, setPanelesSoport] = useState([]);
     const [puertosPanel, setPuertosPanel] = useState([]);
     const [loading, setLoading] = useState(true);
     
@@ -17,21 +18,23 @@ export const TabPanelPared = () => {
     // Form state
     const [currentId, setCurrentId] = useState(null);
     const [pisoId, setPisoId] = useState('');
-    const [esPrincipal, setEsPrincipal] = useState(false);
+    const [selectedPanelSoport, setSelectedPanelSoport] = useState('');
     const [ppSoporteId, setPpSoporteId] = useState('');
 
     const fetchDataList = async () => {
         try {
             setLoading(true);
-            const [panelesPared, pisosData, puertosPanelData] = await Promise.all([
+            const [panelesPared, pisosData, puertosPanelData, racksData] = await Promise.all([
                 helpFetch.GET("/panel_pared"),
                 helpFetch.GET("/piso"),
-                helpFetch.GET("/puertos_panel_s")
+                helpFetch.GET("/puertos_panel_s"),
+                helpFetch.GET("/panel_soport")
             ]);
             
             setDataList(panelesPared);
             setPisos(pisosData);
             setPuertosPanel(puertosPanelData);
+            setPanelesSoport(racksData);
         } catch (error) {
             console.error(error);
             toast.error("Error cargando los Paneles de Pared (Rosetas)");
@@ -46,7 +49,7 @@ export const TabPanelPared = () => {
 
     const handleShowCreate = () => {
         setPisoId('');
-        setEsPrincipal(false);
+        setSelectedPanelSoport('');
         setPpSoporteId('');
         setModalAction('crear');
         setModalVisible(true);
@@ -55,8 +58,18 @@ export const TabPanelPared = () => {
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
         setPisoId(item.piso || '');
-        setEsPrincipal(item.es_panel_principal ? true : false);
         setPpSoporteId(item.pp_soporte_id || '');
+        
+        // Resolver el rack padre a partir del puerto seleccionado
+        if (item.pp_soporte_id) {
+            const puertoEncontrado = puertosPanel.find(p => String(p.id) === String(item.pp_soporte_id));
+            if (puertoEncontrado) {
+                setSelectedPanelSoport(puertoEncontrado.panel_soport_id);
+            }
+        } else {
+            setSelectedPanelSoport('');
+        }
+        
         setModalAction('editar');
         setModalVisible(true);
     };
@@ -75,7 +88,6 @@ export const TabPanelPared = () => {
 
             await helpFetch[method](url, { 
                 piso: pisoId, 
-                es_panel_principal: esPrincipal ? 1 : 0, 
                 pp_soporte_id: ppSoporteId 
             });
             
@@ -102,7 +114,7 @@ export const TabPanelPared = () => {
 
     return (
         <div className="pt-3">
-            <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <h6 className="mb-0">Listado de Cajas / Paneles de Pared (Rosetas)</h6>
                 <Button variant="primary" size="sm" onClick={handleShowCreate}>
                     <i className="bx bx-plus me-1"></i> Registrar Panel
@@ -113,9 +125,8 @@ export const TabPanelPared = () => {
                     <tr>
                         <th>ID Cód.</th>
                         <th>Piso Ubicación</th>
-                        <th>¿Es Principal?</th>
                         <th>Conectado a (Puerto Servidor)</th>
-                        <th className="text-end pe-5">Acciones</th>
+                        <th className="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -137,22 +148,19 @@ export const TabPanelPared = () => {
                                 <td><strong>#{item.id}</strong></td>
                                 <td>{item.nombre_piso || 'Desconocido'}</td>
                                 <td>
-                                    {item.es_panel_principal 
-                                        ? <Badge bg="success">Sí</Badge> 
-                                        : <Badge bg="secondary">No</Badge>}
-                                </td>
-                                <td>
                                     {item.puerto_servidor 
                                         ? `Puerto ${item.puerto_servidor} (Patch Panel)`
                                         : <span className="text-muted">Sin enlace</span>}
                                 </td>
-                                <td className="text-end pe-5">
-                                    <Button variant="warning" size="sm" className="me-2" onClick={() => handleShowEdit(item)}>
-                                        <i className="bx bx-edit"></i>
-                                    </Button>
-                                    <Button variant="danger" size="sm" onClick={() => handleShowDelete(item)}>
-                                        <i className="bx bx-trash"></i>
-                                    </Button>
+                                <td className="text-end">
+                                    <div className="d-flex justify-content-end gap-2">
+                                        <Button variant="warning" size="sm" onClick={() => handleShowEdit(item)}>
+                                            <i className="bx bx-edit"></i>
+                                        </Button>
+                                        <Button variant="danger" size="sm" onClick={() => handleShowDelete(item)}>
+                                            <i className="bx bx-trash"></i>
+                                        </Button>
+                                    </div>
                                 </td>
                             </tr>
                         ))
@@ -184,29 +192,44 @@ export const TabPanelPared = () => {
                         </Form.Group>
                         
                         <Form.Group className="mb-3">
-                            <Form.Check 
-                                type="switch"
-                                id="es-principal-switch"
-                                label="¿Es caja principal (distribuidor)?"
-                                checked={esPrincipal}
-                                onChange={(e) => setEsPrincipal(e.target.checked)}
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Enlace ascendente (Patch Panel del site central)</Form.Label>
-                            <Form.Select 
-                                value={ppSoporteId}
-                                onChange={(e) => setPpSoporteId(e.target.value)}
-                            >
-                                <option value="">(Ninguno / Temporal)</option>
-                                {puertosPanel.map(pp => (
-                                    <option key={pp.id} value={pp.id}>
-                                        Panel: {pp.panel_nro_bien} - Pto: {pp.nro_puerto}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                            <Form.Text className="text-muted">A qué puerto del patch panel central va el cable general de esta pared.</Form.Text>
+                            <Form.Label className="fw-bold text-primary">Conector de Enlace (Uplink)</Form.Label>
+                            <Row className="g-2">
+                                <Col md={6}>
+                                    <Form.Select 
+                                        value={selectedPanelSoport}
+                                        onChange={(e) => {
+                                            setSelectedPanelSoport(e.target.value);
+                                            setPpSoporteId(''); // Reset puerto al cambiar rack
+                                        }}
+                                        required
+                                    >
+                                        <option value="">1. Seleccionar Rack...</option>
+                                        {panelesSoport.map(ps => (
+                                            <option key={ps.id} value={ps.id}>
+                                                Rack: {ps.nro_bien}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                </Col>
+                                <Col md={6}>
+                                    <Form.Select 
+                                        value={ppSoporteId}
+                                        onChange={(e) => setPpSoporteId(e.target.value)}
+                                        disabled={!selectedPanelSoport}
+                                        required
+                                    >
+                                        <option value="">2. Seleccionar Puerto...</option>
+                                        {puertosPanel
+                                            .filter(p => String(p.panel_soport_id) === String(selectedPanelSoport))
+                                            .map(pp => (
+                                                <option key={pp.id} value={pp.id}>
+                                                    Pto: {pp.nro_puerto}
+                                                </option>
+                                            ))}
+                                    </Form.Select>
+                                </Col>
+                            </Row>
+                            <Form.Text className="text-muted">Especifique a qué puerto del site central está conectada esta roseta.</Form.Text>
                         </Form.Group>
 
                     </Modal.Body>
