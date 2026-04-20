@@ -36,6 +36,14 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
                                 <span className="text-muted">Piso:</span>
                                 <span>{equipo.piso}</span>
                             </ListGroup.Item>
+                            <ListGroup.Item className="px-0 d-flex justify-content-between">
+                                <span className="text-muted">Marca:</span>
+                                <span className="fw-bold">{equipo.marca_nombre || 'N/A'}</span>
+                            </ListGroup.Item>
+                            <ListGroup.Item className="px-0 d-flex justify-content-between">
+                                <span className="text-muted">Modelo:</span>
+                                <span>{equipo.modelo_nombre || 'N/A'}</span>
+                            </ListGroup.Item>
                         </ListGroup>
                     </Col>
                     <Col md={6}>
@@ -47,7 +55,11 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
                             </ListGroup.Item>
                             <ListGroup.Item className="px-0 d-flex justify-content-between">
                                 <span className="text-muted">Patch Panel Soporte:</span>
-                                <span>Bien: {equipo.nro_bien_panel_soporte} (Puerto: {equipo.puerto_soporte})</span>
+                                <span>Bien: {equipo.nro_bien_panel_soporte}</span>
+                            </ListGroup.Item>
+                            <ListGroup.Item className="px-0 d-flex justify-content-between">
+                                <span className="text-muted">Puerto en Soporte:</span>
+                                <span>{equipo.puerto_soporte}</span>
                             </ListGroup.Item>
                             <ListGroup.Item className="px-0 d-flex justify-content-between">
                                 <span className="text-muted">Puerto Switch/Router:</span>
@@ -93,7 +105,8 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
                         <thead className="table-dark">
                             <tr className="small">
                                 <th>Elemento</th>
-                                <th>Marca/Detalle</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
                                 <th>Serial / Capacidad</th>
                             </tr>
                         </thead>
@@ -102,7 +115,12 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
                                 equipo.detalles.map((det, idx) => (
                                     <tr key={idx}>
                                         <td>{det.tipo || "Hardware"}</td>
-                                        <td>{det.marca || det.toner || "Genérico"}</td>
+                                        <td>
+                                            {det.marca_nombre || det.marca || det.toner || "Genérico"}
+                                        </td>
+                                        <td>
+                                            {det.modelo_nombre ? ` ${det.modelo_nombre}` : ''}
+                                        </td>
                                         <td>{det.serial || det.capacidad || det.toner_descripcion || "-"}</td>
                                     </tr>
                                 ))

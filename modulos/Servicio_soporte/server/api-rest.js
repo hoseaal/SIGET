@@ -11,13 +11,16 @@ import marca from './src/routes/marca.route.js'
 import modelo from './src/routes/modelo.route.js'
 import panel_soport from './src/routes/panel_soport.route.js'
 import piso from './src/routes/piso.route.js'
-import puertos_panel_s  from './src/routes/puertos_panel_s.route.js'
+import puertos_panel_s from './src/routes/puertos_panel_s.route.js'
 import puertos from './src/routes/puertos.route.js'
 import panel_pared from './src/routes/panel_pared.route.js'
 import departamento from './src/routes/departamento.route.js'
 import equipo from './src/routes/equipo.route.js'
 import userRoutes from './src/routes/user.routes.js'
 import auth from './src/auth/auth.routes.js'
+import actividades from './src/routes/actividades.route.js'
+import status from './src/routes/status.route.js'
+
 import cookieParser from 'cookie-parser';
 const app = express()
 
@@ -54,6 +57,8 @@ app.use('/api/puertos', puertos)
 app.use('/api/panel_pared', panel_pared)
 app.use('/api/departamento', departamento)
 app.use('/api/equipo', equipo)
+app.use('/api/actividades', actividades)
+app.use('/api/status', status)
 
 const PORT = 5002
 app.listen(PORT, () => {

@@ -1,6 +1,9 @@
 export class ComponenteModel {
     static async create(datos, connection) {
-        const { equipo_id, tipo_id, marca_id, modelo_id, serial, capacidad, nro_bien } = datos
+        let { equipo_id, tipo_id, marca_id, modelo_id, serial, capacidad, nro_bien } = datos
+        marca_id = marca_id === "" ? null : marca_id
+        modelo_id = modelo_id === "" ? null : modelo_id
+        
         await connection.query(
             `INSERT INTO componentes 
             (equipo_id, tipo_id, marca_id, modelo_id, serial, capacidad, nro_bien) 

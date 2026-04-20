@@ -26,7 +26,9 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
         nro_bien: "",
         direc_id: "",
         tipo_equipo: "",
-        pp_pared: ""
+        pp_pared: "",
+        marca_id: "",
+        modelo_id: ""
     });
 
     const [selectedPanel, setSelectedPanel] = useState("");
@@ -91,7 +93,9 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             nro_bien: equipo.nro_bien,
                             direc_id: (deps || maestros.departamentos).find(d => d.nombre === equipo.departamento)?.id || "",
                             tipo_equipo: (tiposEq || maestros.tiposEquipo).find(t => t.nombre === equipo.tipo_de_equipo)?.id || "",
-                            pp_pared: equipo.pp_pared || ""
+                            pp_pared: equipo.pp_pared || "",
+                            marca_id: equipo.marca_id || "",
+                            modelo_id: equipo.modelo_id || ""
                         });
                         
                         // Determinar el panel seleccionado basándose en el puerto del equipo
@@ -138,7 +142,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
     }, [show, equipo]);
 
     const resetForm = () => {
-        setFormGeneral({ nro_bien: "", direc_id: "", tipo_equipo: "", pp_pared: "" });
+        setFormGeneral({ nro_bien: "", direc_id: "", tipo_equipo: "", pp_pared: "", marca_id: "", modelo_id: "" });
         setSelectedPanel("");
         setDetallesComputo({ nombre_equipo: "", sistema_operativo: "", version_office: "", elaborado_por: "", observaciones: "" });
         setDetallesImpresora({ marca: "", toner_id: "" });
@@ -244,6 +248,39 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                 {maestros.departamentos.map(d => (
                                                     <option key={d.id} value={d.id}>{d.nombre}</option>
                                                 ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={3}>
+                                        <Form.Group>
+                                            <Form.Label>Marca</Form.Label>
+                                            <Form.Select 
+                                                required
+                                                value={formGeneral.marca_id}
+                                                onChange={(e) => setFormGeneral({...formGeneral, marca_id: e.target.value, modelo_id: ""})}
+                                            >
+                                                <option value="">Seleccione...</option>
+                                                {maestros.marcas.map(m => (
+                                                    <option key={m.id} value={m.id}>{m.nombre}</option>
+                                                ))}
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={3}>
+                                        <Form.Group>
+                                            <Form.Label>Modelo</Form.Label>
+                                            <Form.Select 
+                                                disabled={!formGeneral.marca_id}
+                                                value={formGeneral.modelo_id}
+                                                onChange={(e) => setFormGeneral({...formGeneral, modelo_id: e.target.value})}
+                                            >
+                                                <option value="">Seleccione...</option>
+                                                {maestros.modelos
+                                                    .filter(m => String(m.marca_id) === String(formGeneral.marca_id))
+                                                    .map(m => (
+                                                        <option key={m.id} value={m.id}>{m.nombre}</option>
+                                                    ))
+                                                }
                                             </Form.Select>
                                         </Form.Group>
                                     </Col>
@@ -379,10 +416,25 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                     <Form.Select 
                                                         size="sm" 
                                                         value={nuevoComp.marca_id}
-                                                        onChange={(e) => setNuevoComp({...nuevoComp, marca_id: e.target.value})}
+                                                        onChange={(e) => setNuevoComp({...nuevoComp, marca_id: e.target.value, modelo_id: ""})}
                                                     >
                                                         <option value="">Marca...</option>
                                                         {maestros.marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                                                    </Form.Select>
+                                                </Col>
+                                                <Col md={2}>
+                                                    <Form.Label className="small">Modelo</Form.Label>
+                                                    <Form.Select 
+                                                        size="sm" 
+                                                        disabled={!nuevoComp.marca_id}
+                                                        value={nuevoComp.modelo_id}
+                                                        onChange={(e) => setNuevoComp({...nuevoComp, modelo_id: e.target.value})}
+                                                    >
+                                                        <option value="">Modelo...</option>
+                                                        {maestros.modelos
+                                                            .filter(m => String(m.marca_id) === String(nuevoComp.marca_id))
+                                                            .map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)
+                                                        }
                                                     </Form.Select>
                                                 </Col>
                                                 <Col md={2}>
@@ -420,6 +472,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                 <thead>
                                                     <tr className="table-dark">
                                                         <th>Tipo</th>
+                                                        <th>Marca</th>
+                                                        <th>Modelo</th>
                                                         <th>Serial</th>
                                                         <th>Capacidad</th>
                                                         <th>Nro Bien</th>
@@ -435,6 +489,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                         componentes.map((c, i) => (
                                                             <tr key={i}>
                                                                 <td>{getCompTypeName(c.tipo_id)}</td>
+                                                                <td>{maestros.marcas.find(m => String(m.id) === String(c.marca_id))?.nombre || '-'}</td>
+                                                                <td>{maestros.modelos.find(m => String(m.id) === String(c.modelo_id))?.nombre || '-'}</td>
                                                                 <td>{c.serial}</td>
                                                                 <td>{c.capacidad}</td>
                                                                 <td>{c.nro_bien || '-'}</td>

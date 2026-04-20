@@ -56,7 +56,6 @@ export const ConfiguracionPage = () => {
                                         <i className="bx bx-briefcase me-1"></i> Departamentos
                                     </Nav.Link>
                                 </Nav.Item>
-                                {/* Puedes añadir más aquí como Tipos de equipo, Tipos de componente, etc. */}
                                 <Nav.Item>
                                     <Nav.Link eventKey="tiposEquipo">
                                         <i className="bx bx-desktop me-1"></i> Tipos de Equipo
@@ -70,6 +69,11 @@ export const ConfiguracionPage = () => {
                                 <Nav.Item>
                                     <Nav.Link eventKey="tiposToner">
                                         <i className="bx bx-droplet me-1"></i> Tipos de Tóner
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey="status">
+                                        <i className="bx bx-radio-circle-marked me-1"></i> Status
                                     </Nav.Link>
                                 </Nav.Item>
                             </Nav>
@@ -97,7 +101,6 @@ export const ConfiguracionPage = () => {
                                 </Tab.Pane>
 
                                 <Tab.Pane eventKey="departamentos">
-                                    {/* Pasamos el control al componente especializado */}
                                     <TabDepartamentos />
                                 </Tab.Pane>
 
@@ -111,6 +114,10 @@ export const ConfiguracionPage = () => {
 
                                 <Tab.Pane eventKey="tiposToner">
                                     <TabTipoToner />
+                                </Tab.Pane>
+
+                                <Tab.Pane eventKey="status">
+                                    <GenericMasterTab endpoint="/status" titleItem="Status" />
                                 </Tab.Pane>
                             </Tab.Content>
                         </Tab.Container>
