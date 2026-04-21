@@ -26,7 +26,7 @@ export const createFullEquipo = async (req, res) => {
         })
     } catch (error) {
         res.status(400).json({ error: error.message })
-    }   
+    }
 }
 
 export const updateFullEquipo = async (req, res) => {
@@ -43,11 +43,11 @@ export const updateFullEquipo = async (req, res) => {
 }
 
 export const deleteEquipo = async (req, res) => {
-        try{
-            const { id } = req.params
-            await EquipoService.eliminarCompleto(id)
-            res.json({ message: 'Equipo eliminado correctamente' })
-        } catch (error) {
-            res.status(400).json({ error: error.message })
-        }
+    try {
+        const { id } = req.params
+        await EquipoService.eliminarCompleto(id)
+        res.json({ message: 'Equipo eliminado correctamente' })
+    } catch (error) {
+        res.status(400).json({ error: error.message })
+    }
 }

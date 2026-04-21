@@ -72,8 +72,8 @@ export const ConfiguracionPage = () => {
                                     </Nav.Link>
                                 </Nav.Item>
                                 <Nav.Item>
-                                    <Nav.Link eventKey="status">
-                                        <i className="bx bx-radio-circle-marked me-1"></i> Status
+                                    <Nav.Link className="d-flex align-items-center" eventKey="status">
+                                        <i className="bx bx-radio-circle-marked me-1 fs-4"></i> Status
                                     </Nav.Link>
                                 </Nav.Item>
                             </Nav>

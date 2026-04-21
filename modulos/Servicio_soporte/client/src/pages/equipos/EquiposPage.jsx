@@ -199,17 +199,25 @@ export const EquiposPage = () => {
                                         </td>
                                         <td>
                                             <div style={{ maxWidth: '250px', fontSize: '0.85rem' }}>
-                                                {eq.detalles && eq.detalles.length > 0 ? (
-                                                    <ul className="ps-3 mb-0">
-                                                        {eq.detalles.map((det, i) => (
-                                                            <li key={i}>
-                                                                {det.marca ? `Marca: ${det.marca} (Toner: ${det.toner})` : `${det.tipo}: ${det.capacidad}GB`}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                ) : (
-                                                    <span className="text-muted">Sin detalles técnicos</span>
-                                                )}
+                                                {/* Caso 1: Impresora con Tóner */}
+                                                {(eq.tipo_de_equipo?.toLowerCase().includes("impresora") && eq.toner_nombre) ? (
+                                                    <div className="fw-bold">
+                                                        <i className="bx bx-droplet me-1 text-primary"></i>
+                                                        Tóner: {eq.toner_nombre}
+                                                    </div>
+                                                ) :
+                                                    /* Caso 2: Equipo con componentes (PC) */
+                                                    (eq.detalles && eq.detalles.length > 0) ? (
+                                                        <ul className="ps-3 mb-0">
+                                                            {eq.detalles.map((det, i) => (
+                                                                <li key={i}>
+                                                                    <span className="fw-bold">{det.tipo}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    ) : (
+                                                        <span className="text-muted">Sin detalles técnicos</span>
+                                                    )}
                                             </div>
                                         </td>
                                         <td className="text-center">

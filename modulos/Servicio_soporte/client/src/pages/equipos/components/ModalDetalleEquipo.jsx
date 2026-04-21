@@ -18,7 +18,7 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
             <Modal.Body className="p-4">
                 <Row className="mb-4">
                     <Col md={6}>
-                        <h6 className="text-muted text-uppercase small fw-bold mb-3">Identificación y Ubicación</h6>
+                        <h6 className="text-muted text-uppercase small fw-bold mb-3">Identificación</h6>
                         <ListGroup variant="flush" className="small">
                             <ListGroup.Item className="px-0 d-flex justify-content-between">
                                 <span className="text-muted">Número de Bien:</span>
@@ -31,10 +31,6 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
                             <ListGroup.Item className="px-0 d-flex justify-content-between">
                                 <span className="text-muted">Departamento:</span>
                                 <span>{equipo.departamento}</span>
-                            </ListGroup.Item>
-                            <ListGroup.Item className="px-0 d-flex justify-content-between">
-                                <span className="text-muted">Piso:</span>
-                                <span>{equipo.piso}</span>
                             </ListGroup.Item>
                             <ListGroup.Item className="px-0 d-flex justify-content-between">
                                 <span className="text-muted">Marca:</span>
@@ -50,6 +46,10 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
                         <h6 className="text-muted text-uppercase small fw-bold mb-3">Conectividad de Red</h6>
                         <ListGroup variant="flush" className="small">
                             <ListGroup.Item className="px-0 d-flex justify-content-between">
+                                <span className="text-muted">Piso:</span>
+                                <span>{equipo.piso}</span>
+                            </ListGroup.Item>
+                            <ListGroup.Item className="px-0 d-flex justify-content-between">
                                 <span className="text-muted">Puerto de Pared:</span>
                                 <Badge bg="label-info" className="text-info">{equipo.puerto_en_panel}</Badge>
                             </ListGroup.Item>
@@ -64,10 +64,6 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
                             <ListGroup.Item className="px-0 d-flex justify-content-between">
                                 <span className="text-muted">Puerto Switch/Router:</span>
                                 <span className="text-primary fw-bold">{equipo.puerto_router}</span>
-                            </ListGroup.Item>
-                            <ListGroup.Item className="px-0 d-flex justify-content-between">
-                                <span className="text-muted">Estado Enlace:</span>
-                                <span className="text-success"><i className="bx bxs-circle me-1 small"></i> Activo</span>
                             </ListGroup.Item>
                         </ListGroup>
                     </Col>
@@ -99,39 +95,83 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
                     </div>
                 )}
 
-                <div className="pt-3 border-top">
-                    <h6 className="text-muted text-uppercase small fw-bold mb-3">Hardware / Componentes</h6>
-                    <Table responsive size="sm" className="mb-0 border">
-                        <thead className="table-dark">
-                            <tr className="small">
-                                <th>Elemento</th>
-                                <th>Marca</th>
-                                <th>Modelo</th>
-                                <th>Serial / Capacidad</th>
-                            </tr>
-                        </thead>
-                        <tbody className="small">
-                            {equipo.detalles && equipo.detalles.length > 0 ? (
-                                equipo.detalles.map((det, idx) => (
-                                    <tr key={idx}>
-                                        <td>{det.tipo || "Hardware"}</td>
-                                        <td>
-                                            {det.marca_nombre || det.marca || det.toner || "Genérico"}
-                                        </td>
-                                        <td>
-                                            {det.modelo_nombre ? ` ${det.modelo_nombre}` : ''}
-                                        </td>
-                                        <td>{det.serial || det.capacidad || det.toner_descripcion || "-"}</td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="3" className="text-center py-2 text-muted italic">No hay componentes detallados registrados</td>
+                {isImpresora && (
+                    <div className="mb-4 pt-3 border-top">
+                        <h6 className="text-muted text-uppercase small fw-bold mb-3">Detalles de Impresión</h6>
+                        <Row className="g-3">
+                            <Col md={4}>
+                                <div className="p-3 border rounded bg-light">
+                                    <div className="text-muted small mb-1">Modelo de Tóner</div>
+                                    <div className="fw-bold text-primary d-flex align-items-center">
+                                        <i className="bx bx-droplet me-2"></i>
+                                        {equipo.toner_nombre || 'No especificado'}
+                                    </div>
+                                    {equipo.toner_descripcion && (
+                                        <div className="text-muted extra-small mt-1">{equipo.toner_descripcion}</div>
+                                    )}
+                                </div>
+                            </Col>
+                            <Col md={4}>
+                                <div className="p-3 border rounded bg-light">
+                                    <div className="text-muted small mb-1">Marca del Consumible</div>
+                                    <div className="fw-bold">
+                                        <i className="bx bx-purchase-tag-alt me-2"></i>
+                                        {equipo.toner_marca_nombre || 'N/A'}
+                                    </div>
+                                </div>
+                            </Col>
+                            <Col md={4}>
+                                <div className="p-3 border rounded bg-light">
+                                    <div className="text-muted small mb-1">Modelo del Consumible</div>
+                                    <div className="fw-bold">
+                                        <i className="bx bx-cog me-2"></i>
+                                        {equipo.toner_modelo_nombre || 'N/A'}
+                                    </div>
+                                </div>
+                            </Col>
+                        </Row>
+                    </div>
+                )}
+
+                {!isImpresora && (
+                    <div className="pt-3 border-top">
+                        <h6 className="text-muted text-uppercase small fw-bold mb-3">Hardware / Componentes</h6>
+                        <Table responsive size="sm" className="mb-0 border">
+                            <thead className="table-dark">
+                                <tr className="small">
+                                    <th>Elemento</th>
+                                    <th>Marca</th>
+                                    <th>Modelo</th>
+                                    <th>Serial</th>
+                                    <th>Capacidad</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </Table>
-                </div>
+                            </thead>
+                            <tbody className="small">
+                                {equipo.detalles && equipo.detalles.length > 0 ? (
+                                    equipo.detalles.map((det, idx) => (
+                                        <tr key={idx}>
+                                            <td>{det.tipo || "Hardware"}</td>
+                                            <td>
+                                                {det.marca_nombre || det.marca || "Genérico"}
+                                            </td>
+                                            <td>
+                                                {det.modelo_nombre ? ` ${det.modelo_nombre}` : ''}
+                                            </td>
+                                            <td>{det.serial || "-"}</td>
+                                            <td>
+                                                {det.capacidad || "-"}
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="5" className="text-center py-2 text-muted italic">No hay componentes detallados registrados</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </Table>
+                    </div>
+                )}
 
                 {(equipo.observaciones || equipo.elaborado_por) && (
                     <div className="mt-4 p-3 bg-label-secondary rounded border-start border-secondary border-3 small">

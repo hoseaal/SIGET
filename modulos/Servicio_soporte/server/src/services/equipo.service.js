@@ -13,9 +13,9 @@ export class EquipoService {
         try {
             await connection.beginTransaction()
 
-            const puerto = await EquipoModel.getByPuerto({pp_pared: datos.general.pp_pared}, connection) 
-            console.log(puerto)
-            if(puerto) throw new Error('Ya existe un equipo registrado en ese puerto del panel')  
+            const puerto = await EquipoModel.getByPuerto({ pp_pared: datos.general.pp_pared }, connection)
+            if (puerto) throw new Error('Ya existe un equipo registrado en ese puerto del panel')
+
             // 1. Crear el equipo base (Siempre se hace)
             const { id: equipoId } = await EquipoModel.create(datos.general, connection)
 
@@ -23,26 +23,26 @@ export class EquipoService {
             // Supongamos que tipo_equipo 1 = PC, 2 = Impresora
             const tipo = datos.general.tipo_equipo
 
-            if (tipo === 1) { 
+            if (tipo === 1) {
                 // ES UNA COMPUTADORA
                 if (datos.detallesComputo) {
                     await EquipoComputoModel.create({ equipo_id: equipoId, ...datos.detallesComputo }, connection)
-                }else{
+                } else {
                     throw new Error('Faltan detalles para computadora')
                 }
                 if (datos.componentes && datos.componentes.length > 0) {
                     for (const comp of datos.componentes) {
                         await ComponenteModel.create({ equipo_id: equipoId, ...comp }, connection)
                     }
-                }else{
+                } else {
                     throw new Error('Debe agregar al menos un componente para computadoras')
                 }
-            } 
-            else if (tipo === 2) { 
+            }
+            else if (tipo === 2) {
                 // ES UNA IMPRESORA
                 if (datos.detallesImpresora) {
                     await ImpresoraModel.create({ equipo_id: equipoId, ...datos.detallesImpresora }, connection)
-                }else{
+                } else {
                     throw new Error('Faltan detalles para impresora')
                 }
             }
@@ -57,7 +57,7 @@ export class EquipoService {
             connection.release()
         }
     }
-    
+
     static async eliminarCompleto(equipoId) {
         const connection = await pool.getConnection();
         try {
@@ -90,6 +90,9 @@ export class EquipoService {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
+
+            const puerto = await EquipoModel.getByPuerto({ pp_pared: datos.general.pp_pared }, connection)
+            if (puerto && puerto.id != id) throw new Error('Ya existe otro equipo registrado en ese puerto del panel')
 
             // 1. Actualizar equipo base
             await EquipoModel.update(id, datos.general, connection);

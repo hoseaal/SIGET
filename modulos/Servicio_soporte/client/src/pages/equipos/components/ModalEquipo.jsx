@@ -6,7 +6,7 @@ import helpFetch from "../../../utils/helpFetch";
 export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
     const isEdit = !!equipo;
     const [loadingMaestros, setLoadingMaestros] = useState(false);
-    
+
     // Listas Maestras
     const [maestros, setMaestros] = useState({
         departamentos: [],
@@ -20,7 +20,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
     });
 
     // --- ESTADOS DEL FORMULARIO ---
-    
+
     // 1. Datos Generales
     const [formGeneral, setFormGeneral] = useState({
         nro_bien: "",
@@ -90,14 +90,14 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                     // el backend getAll ya trae mucha info pero la edicion completa re-usará el registrar)
                     if (equipo) {
                         setFormGeneral({
-                            nro_bien: equipo.nro_bien,
-                            direc_id: (deps || maestros.departamentos).find(d => d.nombre === equipo.departamento)?.id || "",
-                            tipo_equipo: (tiposEq || maestros.tiposEquipo).find(t => t.nombre === equipo.tipo_de_equipo)?.id || "",
+                            nro_bien: equipo.nro_bien || "",
+                            direc_id: equipo.direc_id || "",
+                            tipo_equipo: equipo.tipo_equipo_id || "",
                             pp_pared: equipo.pp_pared || "",
                             marca_id: equipo.marca_id || "",
                             modelo_id: equipo.modelo_id || ""
                         });
-                        
+
                         // Determinar el panel seleccionado basándose en el puerto del equipo
                         if (equipo.pp_pared) {
                             const portObj = (ports || maestros.puertosPared).find(p => String(p.id) === String(equipo.pp_pared));
@@ -107,7 +107,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                         }
 
                         // Poblar detalles si es tipo PC (Tipo 1)
-                        if (String(equipo.tipo_de_equipo).trim().toLowerCase() === "computador" || equipo.tipo_de_equipo === 1) {
+                        if (String(equipo.tipo_de_equipo).trim().toLowerCase() === "computador" || equipo.tipo_equipo_id === 1) {
                             setDetallesComputo({
                                 nombre_equipo: equipo.nombre_equipo || "",
                                 sistema_operativo: equipo.sistema_operativo || "",
@@ -115,23 +115,34 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                 elaborado_por: equipo.elaborado_por || "",
                                 observaciones: equipo.observaciones || ""
                             });
-                            
+
                             // Mapear componentes conservando sus IDs originales
-                            const compsRaw = (equipo.detalles || []).filter(d => d.serial);
+                            // Mapear componentes conservando sus IDs originales
+                            const compsRaw = equipo.detalles || [];
                             const compsMapeados = compsRaw.map(c => ({
+                                id: c.id,
                                 tipo_id: c.tipo_id || "",
                                 marca_id: c.marca_id || "",
                                 modelo_id: c.modelo_id || "",
-                                serial: c.serial,
-                                capacidad: c.capacidad,
+                                serial: c.serial || "",
+                                capacidad: c.capacidad || "",
                                 nro_bien: c.nro_bien || ""
                             }));
                             setComponentes(compsMapeados);
+                        }
+
+                        // Poblar detalles si es tipo Impresora (Tipo 2)
+                        const esImpresora = String(equipo.tipo_de_equipo).toLowerCase().includes("impresora") || equipo.tipo_equipo_id === 2;
+                        if (esImpresora) {
+                            setDetallesImpresora({
+                                toner_id: equipo.toner_id || ""
+                            });
                         }
                     } else {
                         resetForm();
                     }
                 } catch (err) {
+                    console.error("Error cargando maestros:", err);
                     toast.error("Error al cargar datos necesarios");
                 } finally {
                     setLoadingMaestros(false);
@@ -145,7 +156,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
         setFormGeneral({ nro_bien: "", direc_id: "", tipo_equipo: "", pp_pared: "", marca_id: "", modelo_id: "" });
         setSelectedPanel("");
         setDetallesComputo({ nombre_equipo: "", sistema_operativo: "", version_office: "", elaborado_por: "", observaciones: "" });
-        setDetallesImpresora({ marca: "", toner_id: "" });
+        setDetallesImpresora({ toner_id: "" });
         setComponentes([]);
     };
 
@@ -164,6 +175,27 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // --- VALIDACIONES ---
+        if (!formGeneral.nro_bien || !formGeneral.tipo_equipo || !formGeneral.direc_id || !formGeneral.marca_id || !formGeneral.pp_pared) {
+            toast.error("Complete todos los campos de información general (Bien, Tipo, Depto, Marca, Red)");
+            return;
+        }
+
+        if (String(formGeneral.tipo_equipo) === "1") {
+            if (componentes.length === 0) {
+                toast.error("Debe agregar al menos un componente interno para una computadora");
+                return;
+            }
+        }
+
+        if (String(formGeneral.tipo_equipo) === "2") {
+            if (!detallesImpresora.toner_id) {
+                toast.error("Debe seleccionar el modelo de tóner para la impresora");
+                return;
+            }
+        }
+
         try {
             const payload = {
                 general: formGeneral,
@@ -213,21 +245,21 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Número de Bien</Form.Label>
-                                            <Form.Control 
+                                            <Form.Control
                                                 required
                                                 placeholder="Ej. C-123"
                                                 value={formGeneral.nro_bien}
-                                                onChange={(e) => setFormGeneral({...formGeneral, nro_bien: e.target.value})}
+                                                onChange={(e) => setFormGeneral({ ...formGeneral, nro_bien: e.target.value })}
                                             />
                                         </Form.Group>
                                     </Col>
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Tipo de Equipo</Form.Label>
-                                            <Form.Select 
+                                            <Form.Select
                                                 required
                                                 value={formGeneral.tipo_equipo}
-                                                onChange={(e) => setFormGeneral({...formGeneral, tipo_equipo: e.target.value})}
+                                                onChange={(e) => setFormGeneral({ ...formGeneral, tipo_equipo: e.target.value })}
                                             >
                                                 <option value="">Seleccione...</option>
                                                 {maestros.tiposEquipo.map(t => (
@@ -239,10 +271,10 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Departamento</Form.Label>
-                                            <Form.Select 
+                                            <Form.Select
                                                 required
                                                 value={formGeneral.direc_id}
-                                                onChange={(e) => setFormGeneral({...formGeneral, direc_id: e.target.value})}
+                                                onChange={(e) => setFormGeneral({ ...formGeneral, direc_id: e.target.value })}
                                             >
                                                 <option value="">Seleccione...</option>
                                                 {maestros.departamentos.map(d => (
@@ -254,10 +286,10 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Marca</Form.Label>
-                                            <Form.Select 
+                                            <Form.Select
                                                 required
                                                 value={formGeneral.marca_id}
-                                                onChange={(e) => setFormGeneral({...formGeneral, marca_id: e.target.value, modelo_id: ""})}
+                                                onChange={(e) => setFormGeneral({ ...formGeneral, marca_id: e.target.value, modelo_id: "" })}
                                             >
                                                 <option value="">Seleccione...</option>
                                                 {maestros.marcas.map(m => (
@@ -269,10 +301,10 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Modelo</Form.Label>
-                                            <Form.Select 
+                                            <Form.Select
                                                 disabled={!formGeneral.marca_id}
                                                 value={formGeneral.modelo_id}
-                                                onChange={(e) => setFormGeneral({...formGeneral, modelo_id: e.target.value})}
+                                                onChange={(e) => setFormGeneral({ ...formGeneral, modelo_id: e.target.value })}
                                             >
                                                 <option value="">Seleccione...</option>
                                                 {maestros.modelos
@@ -285,17 +317,17 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                         </Form.Group>
                                     </Col>
                                     <Col md={12}>
-                                        <hr className="my-2"/>
+                                        <hr className="my-2" />
                                     </Col>
                                     <Col md={6}>
                                         <Form.Group>
                                             <Form.Label className="fw-bold">1. Seleccionar Caja / Roseta de Pared</Form.Label>
-                                            <Form.Select 
+                                            <Form.Select
                                                 required
                                                 value={selectedPanel}
                                                 onChange={(e) => {
                                                     setSelectedPanel(e.target.value);
-                                                    setFormGeneral({...formGeneral, pp_pared: ""}); // Reset puerto al cambiar pared
+                                                    setFormGeneral({ ...formGeneral, pp_pared: "" }); // Reset puerto al cambiar pared
                                                 }}
                                             >
                                                 <option value="">Seleccione Roseta...</option>
@@ -310,11 +342,11 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                     <Col md={6}>
                                         <Form.Group>
                                             <Form.Label className="fw-bold">2. Seleccionar Puerto en esta Pared</Form.Label>
-                                            <Form.Select 
+                                            <Form.Select
                                                 required
                                                 disabled={!selectedPanel}
                                                 value={formGeneral.pp_pared}
-                                                onChange={(e) => setFormGeneral({...formGeneral, pp_pared: e.target.value})}
+                                                onChange={(e) => setFormGeneral({ ...formGeneral, pp_pared: e.target.value })}
                                             >
                                                 <option value="">
                                                     {!selectedPanel ? "Elija una roseta primero..." : "Seleccione Puerto..."}
@@ -333,7 +365,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             </div>
 
                             {/* SECCION 2: ESPECIFICA SEGUN TIPO */}
-                            
+
                             {/* SI ES COMPUTADOR (ID 1) */}
                             {String(formGeneral.tipo_equipo) === "1" && (
                                 <div className="mb-4">
@@ -344,30 +376,30 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                         <Col md={4}>
                                             <Form.Group>
                                                 <Form.Label>Nombre en Red</Form.Label>
-                                                <Form.Control 
+                                                <Form.Control
                                                     placeholder="Ej. AUDITORIA-PC01"
                                                     value={detallesComputo.nombre_equipo}
-                                                    onChange={(e) => setDetallesComputo({...detallesComputo, nombre_equipo: e.target.value})}
+                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, nombre_equipo: e.target.value })}
                                                 />
                                             </Form.Group>
                                         </Col>
                                         <Col md={4}>
                                             <Form.Group>
                                                 <Form.Label>Sistema Operativo</Form.Label>
-                                                <Form.Control 
+                                                <Form.Control
                                                     placeholder="Ej. Windows 11 Pro"
                                                     value={detallesComputo.sistema_operativo}
-                                                    onChange={(e) => setDetallesComputo({...detallesComputo, sistema_operativo: e.target.value})}
+                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, sistema_operativo: e.target.value })}
                                                 />
                                             </Form.Group>
                                         </Col>
                                         <Col md={4}>
                                             <Form.Group>
                                                 <Form.Label>Versión Office</Form.Label>
-                                                <Form.Control 
+                                                <Form.Control
                                                     placeholder="Ej. 2021 LTSC"
                                                     value={detallesComputo.version_office}
-                                                    onChange={(e) => setDetallesComputo({...detallesComputo, version_office: e.target.value})}
+                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, version_office: e.target.value })}
                                                 />
                                             </Form.Group>
                                         </Col>
@@ -376,20 +408,20 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                         <Col md={6}>
                                             <Form.Group>
                                                 <Form.Label>Registrado/Elaborado por</Form.Label>
-                                                <Form.Control 
+                                                <Form.Control
                                                     placeholder="Nombre del técnico"
                                                     value={detallesComputo.elaborado_por}
-                                                    onChange={(e) => setDetallesComputo({...detallesComputo, elaborado_por: e.target.value})}
+                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, elaborado_por: e.target.value })}
                                                 />
                                             </Form.Group>
                                         </Col>
                                         <Col md={6}>
                                             <Form.Group>
                                                 <Form.Label>Observaciones Iniciales</Form.Label>
-                                                <Form.Control 
+                                                <Form.Control
                                                     as="textarea" rows={1}
                                                     value={detallesComputo.observaciones}
-                                                    onChange={(e) => setDetallesComputo({...detallesComputo, observaciones: e.target.value})}
+                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, observaciones: e.target.value })}
                                                 />
                                             </Form.Group>
                                         </Col>
@@ -402,10 +434,10 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                             <Row className="g-2 mb-3 align-items-end">
                                                 <Col md={2}>
                                                     <Form.Label className="small">Tipo</Form.Label>
-                                                    <Form.Select 
-                                                        size="sm" 
+                                                    <Form.Select
+                                                        size="sm"
                                                         value={nuevoComp.tipo_id}
-                                                        onChange={(e) => setNuevoComp({...nuevoComp, tipo_id: e.target.value})}
+                                                        onChange={(e) => setNuevoComp({ ...nuevoComp, tipo_id: e.target.value })}
                                                     >
                                                         <option value="">Tipo...</option>
                                                         {maestros.tiposComponente.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
@@ -413,10 +445,10 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                 </Col>
                                                 <Col md={2}>
                                                     <Form.Label className="small">Marca</Form.Label>
-                                                    <Form.Select 
-                                                        size="sm" 
+                                                    <Form.Select
+                                                        size="sm"
                                                         value={nuevoComp.marca_id}
-                                                        onChange={(e) => setNuevoComp({...nuevoComp, marca_id: e.target.value, modelo_id: ""})}
+                                                        onChange={(e) => setNuevoComp({ ...nuevoComp, marca_id: e.target.value, modelo_id: "" })}
                                                     >
                                                         <option value="">Marca...</option>
                                                         {maestros.marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
@@ -424,11 +456,11 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                 </Col>
                                                 <Col md={2}>
                                                     <Form.Label className="small">Modelo</Form.Label>
-                                                    <Form.Select 
-                                                        size="sm" 
+                                                    <Form.Select
+                                                        size="sm"
                                                         disabled={!nuevoComp.marca_id}
                                                         value={nuevoComp.modelo_id}
-                                                        onChange={(e) => setNuevoComp({...nuevoComp, modelo_id: e.target.value})}
+                                                        onChange={(e) => setNuevoComp({ ...nuevoComp, modelo_id: e.target.value })}
                                                     >
                                                         <option value="">Modelo...</option>
                                                         {maestros.modelos
@@ -439,26 +471,26 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                 </Col>
                                                 <Col md={2}>
                                                     <Form.Label className="small">Serial</Form.Label>
-                                                    <Form.Control 
+                                                    <Form.Control
                                                         size="sm" placeholder="Serial..."
                                                         value={nuevoComp.serial}
-                                                        onChange={(e) => setNuevoComp({...nuevoComp, serial: e.target.value})}
+                                                        onChange={(e) => setNuevoComp({ ...nuevoComp, serial: e.target.value })}
                                                     />
                                                 </Col>
                                                 <Col md={2}>
                                                     <Form.Label className="small">Capacid.</Form.Label>
-                                                    <Form.Control 
+                                                    <Form.Control
                                                         size="sm" placeholder="GB/Slots..."
                                                         value={nuevoComp.capacidad}
-                                                        onChange={(e) => setNuevoComp({...nuevoComp, capacidad: e.target.value})}
+                                                        onChange={(e) => setNuevoComp({ ...nuevoComp, capacidad: e.target.value })}
                                                     />
                                                 </Col>
                                                 <Col md={2}>
                                                     <Form.Label className="small">Bien Comp.</Form.Label>
-                                                    <Form.Control 
+                                                    <Form.Control
                                                         size="sm" placeholder="B-XXXX"
                                                         value={nuevoComp.nro_bien}
-                                                        onChange={(e) => setNuevoComp({...nuevoComp, nro_bien: e.target.value})}
+                                                        onChange={(e) => setNuevoComp({ ...nuevoComp, nro_bien: e.target.value })}
                                                     />
                                                 </Col>
                                                 <Col md={2}>
@@ -495,7 +527,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                                 <td>{c.capacidad}</td>
                                                                 <td>{c.nro_bien || '-'}</td>
                                                                 <td className="text-center">
-                                                                    <i className="bx bx-x text-danger cursor-pointer" onClick={() => removeComponent(i)}></i>
+                                                                    <i className="bx bx-trash text-danger cursor-pointer" onClick={() => removeComponent(i)}></i>
                                                                 </td>
                                                             </tr>
                                                         ))
@@ -514,32 +546,24 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                         <i className="bx bx-printer me-1"></i> Detalles de Impresión
                                     </h6>
                                     <Row className="g-3">
-                                        <Col md={6}>
+                                        <Col md={12}>
                                             <Form.Group>
-                                                <Form.Label>Marca</Form.Label>
-                                                <Form.Select 
-                                                    value={detallesImpresora.marca}
-                                                    onChange={(e) => setDetallesImpresora({...detallesImpresora, marca: e.target.value})}
-                                                >
-                                                    <option value="">Seleccione marca...</option>
-                                                    {maestros.marcas.map(m => (
-                                                        <option key={m.id} value={m.id}>{m.nombre}</option>
-                                                    ))}
-                                                </Form.Select>
-                                            </Form.Group>
-                                        </Col>
-                                        <Col md={6}>
-                                            <Form.Group>
-                                                <Form.Label>Modelo de Tóner</Form.Label>
-                                                <Form.Select 
+                                                <Form.Label className="fw-bold">Seleccionar Modelo de Tóner Correspondiente</Form.Label>
+                                                <Form.Select
+                                                    required
                                                     value={detallesImpresora.toner_id}
-                                                    onChange={(e) => setDetallesImpresora({...detallesImpresora, toner_id: e.target.value})}
+                                                    onChange={(e) => setDetallesImpresora({ ...detallesImpresora, toner_id: e.target.value })}
                                                 >
                                                     <option value="">Seleccione tóner...</option>
-                                                    {maestros.tiposToner.map(t => (
-                                                        <option key={t.id} value={t.id}>{t.nombre}</option>
-                                                    ))}
+                                                    {maestros.tiposToner
+                                                        .map(t => (
+                                                            <option key={t.id} value={t.id}>
+                                                                {t.nombre} {t.marca_nombre ? `(${t.marca_nombre})` : ''} {t.modelo_nombre ? `- Mod: ${t.modelo_nombre}` : ''}
+                                                            </option>
+                                                        ))
+                                                    }
                                                 </Form.Select>
+
                                             </Form.Group>
                                         </Col>
                                     </Row>

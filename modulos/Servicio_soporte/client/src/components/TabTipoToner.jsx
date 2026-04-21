@@ -12,6 +12,11 @@ export const TabTipoToner = () => {
     const [currentId, setCurrentId] = useState(null);
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
+    const [marcaId, setMarcaId] = useState('');
+    const [modeloId, setModeloId] = useState('');
+
+    const [marcas, setMarcas] = useState([]);
+    const [modelos, setModelos] = useState([]);
 
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
@@ -28,13 +33,29 @@ export const TabTipoToner = () => {
         }
     };
 
+    const fetchMaestros = async () => {
+        try {
+            const [brands, modules] = await Promise.all([
+                helpFetch.GET("/marca"),
+                helpFetch.GET("/modelo")
+            ]);
+            setMarcas(brands);
+            setModelos(modules);
+        } catch (error) {
+            console.error("Error cargando maestros:", error);
+        }
+    };
+
     useEffect(() => {
         fetchDataList();
+        fetchMaestros();
     }, []);
 
     const handleShowCreate = () => {
         setNombre('');
         setDescripcion('');
+        setMarcaId('');
+        setModeloId('');
         setModalAction('crear');
         setModalVisible(true);
     };
@@ -43,6 +64,8 @@ export const TabTipoToner = () => {
         setCurrentId(item.id);
         setNombre(item.nombre);
         setDescripcion(item.descripcion || '');
+        setMarcaId(item.marca_id || '');
+        setModeloId(item.modelo_id || '');
         setModalAction('editar');
         setModalVisible(true);
     };
@@ -60,7 +83,12 @@ export const TabTipoToner = () => {
             const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `/tipo_toner/${currentId}` : `/tipo_toner`;
 
-            await helpFetch[method](url, { nombre, descripcion });
+            await helpFetch[method](url, { 
+                nombre, 
+                descripcion, 
+                marca_id: marcaId || null, 
+                modelo_id: modeloId || null 
+            });
             
             toast.success(`Tipo de Tóner ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
@@ -96,6 +124,8 @@ export const TabTipoToner = () => {
                     <tr>
                         <th>Nº</th>
                         <th>Nombre / Modelo</th>
+                        <th>Marca</th>
+                        <th>Modelo Eq.</th>
                         <th>Descripción</th>
                         <th className="text-end">Acciones</th>
                     </tr>
@@ -118,6 +148,8 @@ export const TabTipoToner = () => {
                             <tr key={item.id}>
                                 <td>{index + 1}</td>
                                 <td><strong>{item.nombre}</strong></td>
+                                <td>{item.marca_nombre || <span className="text-muted">-</span>}</td>
+                                <td>{item.modelo_nombre || <span className="text-muted">-</span>}</td>
                                 <td>{item.descripcion || <span className="text-muted">Sin descripción</span>}</td>
                                 <td className="text-end">
                                     <div className="d-flex justify-content-end gap-2">
@@ -153,6 +185,37 @@ export const TabTipoToner = () => {
                                 autoFocus
                             />
                         </Form.Group>
+
+                        <div className="row">
+                            <div className="col-md-6 mb-3">
+                                <Form.Label>Marca Asociada</Form.Label>
+                                <Form.Select 
+                                    value={marcaId} 
+                                    onChange={(e) => {
+                                        setMarcaId(e.target.value);
+                                        setModeloId('');
+                                    }}
+                                >
+                                    <option value="">Seleccione marca...</option>
+                                    {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                                </Form.Select>
+                            </div>
+                            <div className="col-md-6 mb-3">
+                                <Form.Label>Modelo Asociado</Form.Label>
+                                <Form.Select 
+                                    value={modeloId} 
+                                    onChange={(e) => setModeloId(e.target.value)}
+                                    disabled={!marcaId}
+                                >
+                                    <option value="">Seleccione modelo...</option>
+                                    {modelos
+                                        .filter(m => String(m.marca_id) === String(marcaId))
+                                        .map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)
+                                    }
+                                </Form.Select>
+                            </div>
+                        </div>
+
                         <Form.Group className="mb-3">
                             <Form.Label>Descripción adicional</Form.Label>
                             <Form.Control
