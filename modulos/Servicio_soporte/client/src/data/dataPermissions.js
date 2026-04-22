@@ -5,24 +5,31 @@
  * mientras que si una ruta no está en esta lista, se asume que es pública o
  * se manejará con una lógica por defecto.
  * * Asumamos los siguientes tipos de usuario (rol_id):
- * 1: Visualizador
- * 2: Temporal
- * 3: Trabajador
- * 4: Jefe de Area
- * 5: Administrador
+ * 1: Administrador
+ * 2: Técnico
+ * 3: Consulta (Visualizador)
  */
 export const menuPermissions = {
     // Dashboard disponible para todos
-    "/Dashboard": [1, 2, 3, 4, 5],
+    "/Dashboard": [1, 2, 3],
 
     // Mantenimiento
-    "/Configuracion/Maestros": [1, 2, 3, 4, 5],
+    "/Configuracion/Maestros": [1, 2, 3],
 
     // Infraestructura
-    "/Infraestructura/Red": [1, 2, 3, 4, 5],
+    "/Infraestructura/Red": [1, 2, 3],
 
     // Inventario
-    "/Equipos": [1, 2, 3, 4, 5]
+    "/Equipos": [1, 2, 3],
+
+    // Transferencias
+    "/Transferencias": [1, 2, 3],
+
+    // Gestión de Soporte (Solo técnicos y admin)
+    "/Transferencias/Tecnico": [1, 2],
+
+    // Gestión de Usuarios (Solo admin)
+    "/Seguridad/Usuarios": [1]
 };
 
 // src/data/permissions.js

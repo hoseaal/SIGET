@@ -4,7 +4,8 @@ import {
   obtenerUsuario,
   actualizarUsuario,
   actualizarClaveUsuario,
-  eliminarUsuario
+  eliminarUsuario,
+  obtenerRoles
 } from '../controllers/user.controller.js'
 // Aquí podrías agregar middlewares de autenticación o autorización si lo necesitas
 // import { authRequired } from '../middlewares/auth.middleware.js'
@@ -13,6 +14,9 @@ const router = Router()
 
 // Obtener todos los usuarios
 router.get('/', obtenerUsuarios)
+
+// Obtener todos los roles
+router.get('/roles', obtenerRoles)
 
 // Obtener un solo usuario por ID
 router.get('/:id', obtenerUsuario)

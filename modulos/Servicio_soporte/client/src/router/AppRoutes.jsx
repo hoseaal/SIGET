@@ -6,6 +6,9 @@ import { DashboardPage } from "../pages/DashboardPage";
 import { ConfiguracionPage } from "../pages/configuracion/ConfiguracionPage";
 import { RedesPage } from "../pages/infraestructura/redes/RedesPage";
 import { EquiposPage } from "../pages/equipos/EquiposPage";
+import { TransferenciasPage } from "../pages/transferencias/TransferenciasPage";
+import { TransferenciaTecnicoPage } from "../pages/transferencias/TransferenciaTecnicoPage";
+import { UsuariosPage } from "../pages/usuarios/UsuariosPage";
 
 const AppRoutes = () => {
     return (
@@ -36,6 +39,24 @@ const AppRoutes = () => {
             <Route path="/Equipos" element={
                 <ProtectedRoute>
                     <EquiposPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Transferencias" element={
+                <ProtectedRoute>
+                    <TransferenciasPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Transferencias/Tecnico" element={
+                <ProtectedRoute>
+                    <TransferenciaTecnicoPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Seguridad/Usuarios" element={
+                <ProtectedRoute>
+                    <UsuariosPage />
                 </ProtectedRoute>
             } />
 

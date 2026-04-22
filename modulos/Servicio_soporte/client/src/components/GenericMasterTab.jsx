@@ -58,7 +58,7 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
             const url = isEdit ? `${endpoint}/${currentId}` : endpoint;
 
             await helpFetch[method](url, { nombre });
-            
+
             toast.success(`${titleItem} ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
@@ -93,7 +93,7 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
                     <tr>
                         <th>Nº</th>
                         <th>Nombre / Descripción</th>
-                        <th className="text-end">Acciones</th>
+                        <th className="text-end" style={{ width: '120px' }}>ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -115,8 +115,8 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
                                 <td>{index + 1}</td>
                                 <td>{item.nombre}</td>
                                 <td className="text-end">
-                                    <div className="d-flex justify-content-end gap-2">
-                                        <Button variant="warning" size="sm" onClick={() => handleShowEdit(item)}>
+                                    <div className="d-flex justify-content-end">
+                                        <Button variant="warning" size="sm" className="me-2" onClick={() => handleShowEdit(item)}>
                                             <i className="bx bx-edit"></i>
                                         </Button>
                                         <Button variant="danger" size="sm" onClick={() => handleShowDelete(item)}>

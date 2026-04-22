@@ -48,3 +48,12 @@ export const eliminarUsuario = async (req, res) => {
     res.status(400).json({ error: error.message })
   }
 }
+
+export const obtenerRoles = async (req, res) => {
+  try {
+    const roles = await UserService.obtenerRoles()
+    res.json(roles)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}

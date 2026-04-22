@@ -115,7 +115,7 @@ export const EquiposPage = () => {
                     {/* Filtros */}
                     <Row className="mb-4 g-3">
                         <Col md={4}>
-                            <InputGroup size="sm">
+                            <InputGroup>
                                 <InputGroup.Text><i className="bx bx-search"></i></InputGroup.Text>
                                 <Form.Control
                                     placeholder="Buscar por Nro. Bien..."
@@ -126,7 +126,6 @@ export const EquiposPage = () => {
                         </Col>
                         <Col md={3}>
                             <Form.Select
-                                size="sm"
                                 value={filterTipo}
                                 onChange={(e) => setFilterTipo(e.target.value)}
                             >
@@ -138,7 +137,7 @@ export const EquiposPage = () => {
                         </Col>
                         <Col md={3}>
                             <Form.Select
-                                size="sm"
+
                                 value={filterDep}
                                 onChange={(e) => setFilterDep(e.target.value)}
                             >
@@ -149,7 +148,7 @@ export const EquiposPage = () => {
                             </Form.Select>
                         </Col>
                         <Col md={2} className="text-end">
-                            <Button variant="outline-secondary" size="sm" onClick={() => { setSearchTerm(""); setFilterTipo(""); setFilterDep(""); }}>
+                            <Button variant="secondary" className="w-100" onClick={() => { setSearchTerm(""); setFilterTipo(""); setFilterDep(""); }}>
                                 Limpiar
                             </Button>
                         </Col>

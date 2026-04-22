@@ -24,6 +24,12 @@
                 "icon": "bx bx-network-chart",
                 "available": true,
                 "link": "/Infraestructura/Red"
+            },
+            {
+                "text": "Transferencias",
+                "icon": "bx bx-transfer-alt",
+                "available": true,
+                "link": "/Transferencias"
             }
         ]
     },
@@ -35,6 +41,23 @@
                 "icon": "bx bx-cog",
                 "available": true,
                 "link": "/Configuracion/Maestros"
+            },
+            {
+                "text": "Tablero Soporte",
+                "icon": "bx bx-wrench",
+                "available": true,
+                "link": "/Transferencias/Tecnico"
+            }
+        ]
+    },
+    {
+        "header": "Administración",
+        "items": [
+            {
+                "text": "Gestión de Usuarios",
+                "icon": "bx bx-shield-quarter",
+                "available": true,
+                "link": "/Seguridad/Usuarios"
             }
         ]
     }

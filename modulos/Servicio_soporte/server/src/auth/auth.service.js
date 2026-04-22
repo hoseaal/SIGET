@@ -15,14 +15,13 @@ export class AuthService {
     const hash = user.password_hash.replace(/^\$2y\$/, '$2a$')
     const isValid = await bcrypt.compare(password, hash)
     if (!isValid) throw new Error('Contraseña incorrecta')
-    const modulo = user.modulo_id
-    if (modulo === 2) throw new Error('No tienes acceso a este modulo del sistema SIGET')
     const token = jwt.sign(
       {
         usuario_id: user.usuario_id,
         nombres: user.nombres,
         apellidos: user.apellidos,
-        rol_id: user.rol_id
+        rol_id: user.rol_id,
+        direc_id: user.direc_id
       },
       process.env.SECRET_KEY,
       { expiresIn: '6h' }
@@ -34,7 +33,8 @@ export class AuthService {
         usuario_id: user.usuario_id,
         nombres: user.nombres,
         apellidos: user.apellidos,
-        rol_id: user.rol_id
+        rol_id: user.rol_id,
+        direc_id: user.direc_id
       }
     }
   }

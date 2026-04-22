@@ -20,6 +20,7 @@ import userRoutes from './src/routes/user.routes.js'
 import auth from './src/auth/auth.routes.js'
 import actividades from './src/routes/actividades.route.js'
 import status from './src/routes/status.route.js'
+import transferencia from './src/routes/transferencia.route.js'
 
 import cookieParser from 'cookie-parser';
 const app = express()
@@ -59,6 +60,7 @@ app.use('/api/departamento', departamento)
 app.use('/api/equipo', equipo)
 app.use('/api/actividades', actividades)
 app.use('/api/status', status)
+app.use('/api/transferencia', transferencia)
 
 const PORT = 5002
 app.listen(PORT, () => {

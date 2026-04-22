@@ -41,4 +41,8 @@ export class UserService {
 
     return await UserModel.delete(id)
   }
+
+  static async obtenerRoles () {
+    return await UserModel.getAllRoles()
+  }
 }
