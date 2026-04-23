@@ -65,6 +65,12 @@ export const ModalDetalleEquipo = ({ show, onHide, equipo }) => {
                                 <span className="text-muted">Puerto Switch/Router:</span>
                                 <span className="text-primary fw-bold">{equipo.puerto_router}</span>
                             </ListGroup.Item>
+                            {equipo.ip && (
+                                <ListGroup.Item className="px-0 d-flex justify-content-between">
+                                    <span className="text-muted">Dirección IP:</span>
+                                    <span className="text-primary fw-bold">{equipo.ip}</span>
+                                </ListGroup.Item>
+                            )}
                         </ListGroup>
                     </Col>
                 </Row>

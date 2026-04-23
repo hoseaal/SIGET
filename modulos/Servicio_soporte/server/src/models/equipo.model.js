@@ -2,22 +2,24 @@ import pool from '../utils/database.js'
 
 export class EquipoModel {
     // El parámetro 'connection' permite que esta consulta sea parte de una transacción
-    static async create({ nro_bien, direc_id, tipo_equipo, pp_pared, modelo_id, marca_id }, connection = pool) {
+    static async create({ nro_bien, direc_id, tipo_equipo, pp_pared, modelo_id, marca_id, ip }, connection = pool) {
         const mid = modelo_id === "" ? null : modelo_id;
         const maid = marca_id === "" ? null : marca_id;
+        const tip = ip === "" ? null : ip;
         const [result] = await connection.query(
-            'INSERT INTO equipos (nro_bien, direc_id, tipo_equipo, pp_pared, modelo_id, marca_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [nro_bien, direc_id, tipo_equipo, pp_pared, mid, maid]
+            'INSERT INTO equipos (nro_bien, direc_id, tipo_equipo, pp_pared, modelo_id, marca_id, ip) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [nro_bien, direc_id, tipo_equipo, pp_pared, mid, maid, tip]
         )
         return { id: result.insertId }
     }
 
-    static async update(id, { nro_bien, direc_id, tipo_equipo, pp_pared, modelo_id, marca_id }, connection = pool) {
+    static async update(id, { nro_bien, direc_id, tipo_equipo, pp_pared, modelo_id, marca_id, ip }, connection = pool) {
         const mid = modelo_id === "" ? null : modelo_id;
         const maid = marca_id === "" ? null : marca_id;
+        const tip = ip === "" ? null : ip;
         await connection.query(
-            'UPDATE equipos SET nro_bien = ?, direc_id = ?, tipo_equipo = ?, pp_pared = ?, modelo_id = ?, marca_id = ? WHERE id = ?',
-            [nro_bien, direc_id, tipo_equipo, pp_pared, mid, maid, id]
+            'UPDATE equipos SET nro_bien = ?, direc_id = ?, tipo_equipo = ?, pp_pared = ?, modelo_id = ?, marca_id = ?, ip = ? WHERE id = ?',
+            [nro_bien, direc_id, tipo_equipo, pp_pared, mid, maid, tip, id]
         )
     }
     static async getByPuerto({ pp_pared }, connection = pool) {
@@ -130,6 +132,7 @@ export class EquipoModel {
                     toner_descripcion: row.toner_descripcion,
                     toner_marca_nombre: row.toner_marca_nombre,
                     toner_modelo_nombre: row.toner_modelo_nombre,
+                    ip: row.ip,
                     detalles: []
                 });
             }

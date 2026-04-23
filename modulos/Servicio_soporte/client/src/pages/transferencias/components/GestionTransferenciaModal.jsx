@@ -16,7 +16,8 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
         status: '',
         prioridad: '',
         diagnostico_tecnico: '',
-        solucion_tecnica: ''
+        solucion_tecnica: '',
+        codigo_validacion: ''
     });
 
     useEffect(() => {
@@ -25,7 +26,8 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                 status: transferencia.status || '',
                 prioridad: transferencia.prioridad || 'Media',
                 diagnostico_tecnico: transferencia.diagnostico_tecnico || '',
-                solucion_tecnica: transferencia.solucion_tecnica || ''
+                solucion_tecnica: transferencia.solucion_tecnica || '',
+                codigo_validacion: ''
             });
             fetchUser();
         }
@@ -154,6 +156,28 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                         placeholder="Describa el mantenimiento realizado y el estado final del equipo..."
                     />
                 </Form.Group>
+
+                {formData.status == 7 && (
+                    <div className="bg-light p-3 rounded mb-3 border border-success">
+                        <Form.Group>
+                            <Form.Label className="text-success fw-bold">Código de Validación de Entrega <span className="text-danger">*</span></Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                name="codigo_validacion"
+                                value={formData.codigo_validacion}
+                                onChange={handleChange}
+                                placeholder="Ingrese el código proporcionado por el usuario"
+                                maxLength={6}
+                                className="form-control-lg text-center fw-bold"
+                                style={{ letterSpacing: '5px' }}
+                                required
+                            />
+                            <Form.Text className="text-muted">
+                                Este código es obligatorio para finalizar la entrega y debe ser proporcionado por el usuario solicitante.
+                            </Form.Text>
+                        </Form.Group>
+                    </div>
+                )}
 
                 {formData.status == 7 && (
                     <div className="alert alert-success d-flex align-items-center">

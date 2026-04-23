@@ -57,16 +57,26 @@ export class TransferenciaController {
     static async updateStatus(req, res) {
         try {
             const { id } = req.params
-            const { status, usuario_tecnico_id, fecha_recepcion, prioridad, diagnostico_tecnico, solucion_tecnica, fecha_entrega } = req.body
+            const { 
+                status, 
+                usuario_tecnico_id, 
+                fecha_recepcion, 
+                prioridad, 
+                diagnostico_tecnico, 
+                solucion_tecnica, 
+                fecha_entrega,
+                codigo_validacion 
+            } = req.body
 
-            const success = await TransferenciaModel.updateStatus(id, {
-                status,
-                usuario_tecnico_id,
-                fecha_recepcion,
-                prioridad,
-                diagnostico_tecnico,
-                solucion_tecnica,
-                fecha_entrega
+            const success = await TransferenciaModel.updateStatus(id, { 
+                status: parseInt(status), 
+                usuario_tecnico_id, 
+                fecha_recepcion, 
+                prioridad, 
+                diagnostico_tecnico, 
+                solucion_tecnica, 
+                fecha_entrega,
+                codigo_validacion
             })
 
             if (!success) {

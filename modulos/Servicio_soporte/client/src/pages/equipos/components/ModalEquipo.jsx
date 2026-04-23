@@ -28,7 +28,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
         tipo_equipo: "",
         pp_pared: "",
         marca_id: "",
-        modelo_id: ""
+        modelo_id: "",
+        ip: ""
     });
 
     const [selectedPanel, setSelectedPanel] = useState("");
@@ -95,7 +96,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             tipo_equipo: equipo.tipo_equipo_id || "",
                             pp_pared: equipo.pp_pared || "",
                             marca_id: equipo.marca_id || "",
-                            modelo_id: equipo.modelo_id || ""
+                            modelo_id: equipo.modelo_id || "",
+                            ip: equipo.ip || ""
                         });
 
                         // Determinar el panel seleccionado basándose en el puerto del equipo
@@ -153,7 +155,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
     }, [show, equipo]);
 
     const resetForm = () => {
-        setFormGeneral({ nro_bien: "", direc_id: "", tipo_equipo: "", pp_pared: "", marca_id: "", modelo_id: "" });
+        setFormGeneral({ nro_bien: "", direc_id: "", tipo_equipo: "", pp_pared: "", marca_id: "", modelo_id: "", ip: "" });
         setSelectedPanel("");
         setDetallesComputo({ nombre_equipo: "", sistema_operativo: "", version_office: "", elaborado_por: "", observaciones: "" });
         setDetallesImpresora({ toner_id: "" });
@@ -314,6 +316,16 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                     ))
                                                 }
                                             </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                    <Col md={3}>
+                                        <Form.Group>
+                                            <Form.Label>Dirección IP (Opcional)</Form.Label>
+                                            <Form.Control
+                                                placeholder="Ej. 192.168.1.50"
+                                                value={formGeneral.ip}
+                                                onChange={(e) => setFormGeneral({ ...formGeneral, ip: e.target.value })}
+                                            />
                                         </Form.Group>
                                     </Col>
                                     <Col md={12}>

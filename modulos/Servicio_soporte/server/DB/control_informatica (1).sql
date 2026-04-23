@@ -63,7 +63,8 @@ CREATE TABLE `equipos` (
   `nro_bien` varchar(50) NOT NULL,
   `direc_id` int(11) NOT NULL,
   `tipo_equipo` int(11) NOT NULL,
-  `pp_pared` int(11) DEFAULT NULL
+  `pp_pared` int(11) DEFAULT NULL,
+  `ip` varchar(15) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `equipos` (`id`, `nro_bien`, `direc_id`, `tipo_equipo`, `pp_pared`) VALUES

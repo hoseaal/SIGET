@@ -195,6 +195,7 @@ export const EquiposPage = () => {
                                         <td>
                                             <div className="small">Puerto: {eq.puerto_en_panel}</div>
                                             <div className="small text-muted">P. Soporte: {eq.puerto_soporte}</div>
+                                            {eq.ip && <div className="small fw-bold text-primary mt-1"><i className="bx bx-broadcast me-1"></i>{eq.ip}</div>}
                                         </td>
                                         <td>
                                             <div style={{ maxWidth: '250px', fontSize: '0.85rem' }}>

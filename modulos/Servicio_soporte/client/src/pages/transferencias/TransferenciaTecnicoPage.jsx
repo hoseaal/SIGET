@@ -6,10 +6,12 @@ import { GestionTransferenciaModal } from "./components/GestionTransferenciaModa
 
 export const TransferenciaTecnicoPage = () => {
     const [transferencias, setTransferencias] = useState([]);
+    const [departamentos, setDepartamentos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
     const [filterPrio, setFilterPrio] = useState("");
+    const [filterDepto, setFilterDepto] = useState("");
 
     // Modal state
     const [modalVisible, setModalVisible] = useState(false);
@@ -18,8 +20,12 @@ export const TransferenciaTecnicoPage = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const data = await helpFetch.GET("/transferencia");
-            setTransferencias(data);
+            const [transData, depsData] = await Promise.all([
+                helpFetch.GET("/transferencia"),
+                helpFetch.GET("/departamento")
+            ]);
+            setTransferencias(transData);
+            setDepartamentos(depsData);
         } catch (error) {
             console.error(error);
             toast.error("Error al cargar tablero técnico");
@@ -43,7 +49,8 @@ export const TransferenciaTecnicoPage = () => {
             t.origen_nombre.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = filterStatus === "" || String(t.status) === filterStatus;
         const matchesPrio = filterPrio === "" || t.prioridad === filterPrio;
-        return matchesSearch && matchesStatus && matchesPrio;
+        const matchesDepto = filterDepto === "" || String(t.origen_id) === filterDepto;
+        return matchesSearch && matchesStatus && matchesPrio && matchesDepto;
     });
 
     const getStatusBadge = (nombre) => {
@@ -92,14 +99,14 @@ export const TransferenciaTecnicoPage = () => {
             </Row>
 
             <Card className="shadow-sm border-0">
-                <Card.Header className="bg-transparent border-bottom">
+                <Card.Header className="bg-transparent">
                     <h5 className="mb-0">Gestión de Equipos Recibidos</h5>
                 </Card.Header>
                 <Card.Body>
                     {/* Filtros */}
                     <Row className="mb-4 g-3">
-                        <Col md={4}>
-                            <InputGroup size="sm">
+                        <Col md={3}>
+                            <InputGroup>
                                 <InputGroup.Text><i className="bx bx-search"></i></InputGroup.Text>
                                 <Form.Control
                                     placeholder="Buscar por Caso, Bien o Departamento..."
@@ -109,7 +116,15 @@ export const TransferenciaTecnicoPage = () => {
                             </InputGroup>
                         </Col>
                         <Col md={3}>
-                            <Form.Select size="sm" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                            <Form.Select value={filterDepto} onChange={(e) => setFilterDepto(e.target.value)}>
+                                <option value="">Todos los departamentos</option>
+                                {departamentos.map(d => (
+                                    <option key={d.id} value={d.id}>{d.nombre}</option>
+                                ))}
+                            </Form.Select>
+                        </Col>
+                        <Col md={2}>
+                            <Form.Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                                 <option value="">Todos los estados</option>
                                 <option value="2">Pendiente</option>
                                 <option value="3">Recibido</option>
@@ -119,8 +134,8 @@ export const TransferenciaTecnicoPage = () => {
                                 <option value="7">Entregado</option>
                             </Form.Select>
                         </Col>
-                        <Col md={3}>
-                            <Form.Select size="sm" value={filterPrio} onChange={(e) => setFilterPrio(e.target.value)}>
+                        <Col md={2}>
+                            <Form.Select value={filterPrio} onChange={(e) => setFilterPrio(e.target.value)}>
                                 <option value="">Todas las prioridades</option>
                                 <option value="Alta">Alta</option>
                                 <option value="Media">Media</option>
@@ -128,7 +143,7 @@ export const TransferenciaTecnicoPage = () => {
                             </Form.Select>
                         </Col>
                         <Col md={2} className="text-end">
-                            <Button variant="outline-secondary" size="sm" className="w-100" onClick={() => { setSearchTerm(""); setFilterStatus(""); setFilterPrio(""); }}>
+                            <Button variant="secondary" className="w-100" onClick={() => { setSearchTerm(""); setFilterStatus(""); setFilterPrio(""); setFilterDepto(""); }}>
                                 Limpiar
                             </Button>
                         </Col>
@@ -170,7 +185,7 @@ export const TransferenciaTecnicoPage = () => {
                                             <div className="small text-muted">{t.asunto}</div>
                                         </td>
                                         <td>
-                                            <div className="small">{new Date(t.fecha).toLocaleDateString()}</div>
+                                            <div className="small">{new Date(t.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })}</div>
                                             <div className="text-muted small">{new Date(t.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                                         </td>
                                         <td>

@@ -14,7 +14,8 @@ export class TransferenciaModel {
                 e.nro_bien as equipo_nro_bien,
                 te.nombre as equipo_tipo,
                 u.username as usuario_crea,
-                ut.username as tecnico_recibe
+                ut.username as tecnico_recibe,
+                t.codigo_entrega
             FROM transferencia t
             JOIN status s ON t.status = s.id
             JOIN departamentos d_orig ON t.origen_id = d_orig.id
@@ -39,7 +40,8 @@ export class TransferenciaModel {
                 d_dest.nombre as destino_nombre,
                 e.nro_bien as equipo_nro_bien,
                 te.nombre as equipo_tipo,
-                u.username as usuario_crea
+                u.username as usuario_crea,
+                t.codigo_entrega
             FROM transferencia t
             JOIN status s ON t.status = s.id
             JOIN departamentos d_dest ON t.destino_id = d_dest.id
@@ -98,19 +100,31 @@ export class TransferenciaModel {
         }
 
         const nro_caso = await this.generateCaseNumber()
+        const codigo_entrega = Math.floor(100000 + Math.random() * 900000).toString() // Generar 6 dígitos
+
         const [result] = await pool.query(`
             INSERT INTO transferencia 
-            (nro_caso, origen_id, destino_id, equipo_id, usuario_id, asunto, prioridad, observaciones, status) 
-            VALUES (?, ?, ?, ?, ?, ?, 'Media', ?, 2)
-        `, [nro_caso, origen_id, destino_id, equipo_id, usuario_id, asunto, observaciones])
+            (nro_caso, origen_id, destino_id, equipo_id, usuario_id, asunto, prioridad, observaciones, status, codigo_entrega) 
+            VALUES (?, ?, ?, ?, ?, ?, 'Media', ?, 2, ?)
+        `, [nro_caso, origen_id, destino_id, equipo_id, usuario_id, asunto, observaciones, codigo_entrega])
 
-        return { id: result.insertId, nro_caso }
+        return { id: result.insertId, nro_caso, codigo_entrega }
     }
 
     /**
      * Actualiza el estatus y datos técnicos de una transferencia
      */
-    static async updateStatus(id, { status, usuario_tecnico_id, fecha_recepcion, prioridad, diagnostico_tecnico, solucion_tecnica, fecha_entrega }) {
+    static async updateStatus(id, { status, usuario_tecnico_id, fecha_recepcion, prioridad, diagnostico_tecnico, solucion_tecnica, fecha_entrega, codigo_validacion }) {
+        // VALIDACIÓN DE CÓDIGO DE ENTREGA
+        if (parseInt(status) === 7) { // 7: Entregado
+            const [rows] = await pool.query('SELECT codigo_entrega FROM transferencia WHERE id = ?', [id])
+            if (rows.length === 0) throw new Error('Transferencia no encontrada.')
+            
+            if (rows[0].codigo_entrega !== codigo_validacion) {
+                throw new Error('Código de validación incorrecto. El usuario debe proporcionar el código para completar la entrega.')
+            }
+        }
+
         const updates = []
         const params = []
 

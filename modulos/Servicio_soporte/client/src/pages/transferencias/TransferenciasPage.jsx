@@ -7,9 +7,11 @@ import { TransferenciaDetalleModal } from "./components/TransferenciaDetalleModa
 
 export const TransferenciasPage = () => {
     const [transferencias, setTransferencias] = useState([]);
+    const [departamentos, setDepartamentos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
+    const [filterDepto, setFilterDepto] = useState("");
     const [user, setUser] = useState(null);
 
     // Modal state
@@ -31,15 +33,14 @@ export const TransferenciasPage = () => {
                 const depId = currentUser.direc_id;
                 const isAdmin = currentUser.rol_id === 1; // 1: Administrador en DB
 
-                // 2. Obtener transferencias
-                // Si es admin, ve todas. Si es usuario, ve las de su departamento
-                let data;
-                if (isAdmin) {
-                    data = await helpFetch.GET("/transferencia");
-                } else {
-                    data = await helpFetch.GET(`/transferencia/origen/${depId}`);
-                }
-                setTransferencias(data);
+                // 2. Obtener transferencias y departamentos
+                const [transData, depsData] = await Promise.all([
+                    isAdmin ? helpFetch.GET("/transferencia") : helpFetch.GET(`/transferencia/origen/${depId}`),
+                    helpFetch.GET("/departamento")
+                ]);
+
+                setTransferencias(transData);
+                setDepartamentos(depsData);
             }
         } catch (error) {
             console.error(error);
@@ -57,7 +58,8 @@ export const TransferenciasPage = () => {
         const matchesSearch = t.nro_caso.toLowerCase().includes(searchTerm.toLowerCase()) ||
             t.equipo_nro_bien.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = filterStatus === "" || String(t.status) === filterStatus;
-        return matchesSearch && matchesStatus;
+        const matchesDepto = filterDepto === "" || String(t.origen_id) === filterDepto;
+        return matchesSearch && matchesStatus && matchesDepto;
     });
 
     const getStatusBadge = (nombre) => {
@@ -96,7 +98,7 @@ export const TransferenciasPage = () => {
                 <Card.Body>
                     {/* Filtros */}
                     <Row className="mb-4 g-3">
-                        <Col md={6}>
+                        <Col md={user?.rol_id === 1 ? 4 : 6}>
                             <InputGroup>
                                 <InputGroup.Text className="bg-transparent border-end-0">
                                     <i className="bx bx-search"></i>
@@ -109,7 +111,20 @@ export const TransferenciasPage = () => {
                                 />
                             </InputGroup>
                         </Col>
-                        <Col md={4}>
+                        {user?.rol_id === 1 && (
+                            <Col md={3}>
+                                <Form.Select
+                                    value={filterDepto}
+                                    onChange={(e) => setFilterDepto(e.target.value)}
+                                >
+                                    <option value="">Todos los departamentos</option>
+                                    {departamentos.map(d => (
+                                        <option key={d.id} value={d.id}>{d.nombre}</option>
+                                    ))}
+                                </Form.Select>
+                            </Col>
+                        )}
+                        <Col md={user?.rol_id === 1 ? 3 : 4}>
                             <Form.Select
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
@@ -125,7 +140,7 @@ export const TransferenciasPage = () => {
                             </Form.Select>
                         </Col>
                         <Col md={2} className="text-end">
-                            <Button variant="secondary" className="w-100" onClick={() => { setSearchTerm(""); setFilterStatus(""); }}>
+                            <Button variant="secondary" className="w-100" onClick={() => { setSearchTerm(""); setFilterStatus(""); setFilterDepto(""); }}>
                                 Limpiar
                             </Button>
                         </Col>
@@ -138,21 +153,23 @@ export const TransferenciasPage = () => {
                                 <th>Fecha</th>
                                 <th>Equipo</th>
                                 <th>Asunto</th>
+                                <th>Prioridad</th>
                                 <th>Estatus</th>
+                                <th className="text-center">Código Entrega</th>
                                 <th className="text-center">Detalle</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="7" className="text-center py-5">
+                                    <td colSpan="8" className="text-center py-5">
                                         <Spinner animation="border" variant="primary" />
                                         <p className="mt-2 mb-0">Cargando transferencias...</p>
                                     </td>
                                 </tr>
                             ) : filteredData.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="text-center py-5 text-muted">
+                                    <td colSpan="8" className="text-center py-5 text-muted">
                                         <div className="mb-2"><i className="bx bx-info-circle fs-1"></i></div>
                                         No hay transferencias registradas para su departamento.
                                     </td>
@@ -164,7 +181,7 @@ export const TransferenciasPage = () => {
                                             <span className="fw-bold text-primary">{t.nro_caso}</span>
                                         </td>
                                         <td>
-                                            <div className="small">{new Date(t.fecha).toLocaleDateString()}</div>
+                                            <div className="small">{new Date(t.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })}</div>
                                             <div className="text-muted small">{new Date(t.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                                         </td>
                                         <td>
@@ -177,9 +194,23 @@ export const TransferenciasPage = () => {
                                             </div>
                                         </td>
                                         <td>
+                                            <Badge bg={getPriorityBadge(t.prioridad)} className="rounded-pill">
+                                                {t.prioridad}
+                                            </Badge>
+                                        </td>
+                                        <td>
                                             <Badge bg={getStatusBadge(t.status_nombre)} className="bg-label-primary">
                                                 {t.status_nombre}
                                             </Badge>
+                                        </td>
+                                        <td className="text-center">
+                                            {t.status !== 7 && t.status !== 8 ? (
+                                                <Badge bg="dark" className="fs-6 py-2 px-3">
+                                                    <i className="bx bx-lock-alt me-1"></i> {t.codigo_entrega}
+                                                </Badge>
+                                            ) : (
+                                                <span className="text-muted small">Finalizado</span>
+                                            )}
                                         </td>
                                         <td className="text-center">
                                             <Button

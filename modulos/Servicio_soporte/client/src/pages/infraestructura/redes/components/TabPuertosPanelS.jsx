@@ -7,12 +7,12 @@ export const TabPuertosPanelS = () => {
     const [dataList, setDataList] = useState([]);
     const [paneles, setPaneles] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+
     // Modal states
     const [modalVisible, setModalVisible] = useState(false);
     const [modalAction, setModalAction] = useState('crear');
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    
+
     // Form state
     const [currentId, setCurrentId] = useState(null);
     const [nroPuerto, setNroPuerto] = useState('');
@@ -26,7 +26,7 @@ export const TabPuertosPanelS = () => {
                 helpFetch.GET("/puertos_panel_s"),
                 helpFetch.GET("/panel_soport")
             ]);
-            
+
             setDataList(puertosData);
             setPaneles(panelesData);
         } catch (error) {
@@ -71,12 +71,12 @@ export const TabPuertosPanelS = () => {
             const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `/puertos_panel_s/${currentId}` : `/puertos_panel_s`;
 
-            await helpFetch[method](url, { 
-                nro_puerto: parseInt(nroPuerto, 10), 
-                p_router: parseInt(pRouter, 10), 
-                panel_soport_id: parseInt(panelSoportId, 10) 
+            await helpFetch[method](url, {
+                nro_puerto: parseInt(nroPuerto, 10),
+                p_router: parseInt(pRouter, 10),
+                panel_soport_id: parseInt(panelSoportId, 10)
             });
-            
+
             toast.success(`Puerto ${isEdit ? 'actualizado' : 'registrado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
@@ -136,8 +136,8 @@ export const TabPuertosPanelS = () => {
                                 <td><strong>{item.nro_puerto}</strong></td>
                                 <td><span className="badge bg-label-info">{item.p_router || 'N/A'}</span></td>
                                 <td>
-                                    {item.panel_nro_bien 
-                                        ? `${item.panel_nro_bien} - ${item.panel_descripcion}` 
+                                    {item.panel_nro_bien
+                                        ? `${item.panel_nro_bien} - ${item.panel_descripcion}`
                                         : 'N/A'}
                                 </td>
                                 <td className="text-end">
@@ -165,7 +165,7 @@ export const TabPuertosPanelS = () => {
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Patch Panel (Soporte)</Form.Label>
-                            <Form.Select 
+                            <Form.Select
                                 value={panelSoportId}
                                 onChange={(e) => setPanelSoportId(e.target.value)}
                                 required
@@ -182,7 +182,7 @@ export const TabPuertosPanelS = () => {
                             <div className="col-md-6">
                                 <Form.Group className="mb-3">
                                     <Form.Label>Nro. de Puerto Local</Form.Label>
-                                    <Form.Control 
+                                    <Form.Control
                                         type="number"
                                         min="1"
                                         placeholder="Ej. 24"
@@ -195,7 +195,7 @@ export const TabPuertosPanelS = () => {
                             <div className="col-md-6">
                                 <Form.Group className="mb-3">
                                     <Form.Label>Puerto en el Router (Uplink)</Form.Label>
-                                    <Form.Control 
+                                    <Form.Control
                                         type="text"
                                         placeholder="Ej. Gi1/0/24"
                                         value={pRouter}
@@ -224,7 +224,7 @@ export const TabPuertosPanelS = () => {
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas desconectar y eliminar el puerto <strong>{nroPuerto}</strong>? 
+                    ¿Estás seguro de que deseas desconectar y eliminar el puerto <strong>{nroPuerto}</strong>?
                     Esta acción podría dejar huérfanas rosetas de pared.
                 </Modal.Body>
                 <Modal.Footer>
