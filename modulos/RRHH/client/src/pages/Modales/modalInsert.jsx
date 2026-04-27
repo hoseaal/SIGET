@@ -9,7 +9,7 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
     const [formEnviado, setFormEnviado] = useState(false);
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
     const [errorMessage, setErrorMessage] = useState(false);
-    const [foreignTable, setForeignTable] = useState([]);
+    const [foreignData, setForeignData] = useState({});
 
     // MAPA UNIVERSAL DE ENDPOINTS (Sistema RRHH)
     const endpointMap = {
@@ -41,25 +41,31 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
         }));
     };
 
-    // Efecto para buscar los datos de la llave foránea (si existe)
+    // Efecto para buscar los datos de las llaves foráneas
     useEffect(() => {
         if (foreign && show) { 
-            const fetchForeign = async () => {
-                const endpoint = endpointMap[foreign];
-                if (!endpoint) {
-                    console.warn(`No se encontró endpoint configurado para la tabla foránea: ${foreign}`);
-                    return;
-                }
+            const fetchAllForeign = async () => {
+                const tables = Array.isArray(foreign) ? foreign : [foreign];
+                const newData = {};
 
-                try {
-                    const res = await fetch(endpoint);
-                    const data = await res.json();
-                    setForeignTable(data);
-                } catch (error) {
-                    console.error('Error al obtener datos foráneos:', error);
+                for (const table of tables) {
+                    const endpoint = endpointMap[table];
+                    if (!endpoint) {
+                        console.warn(`No se encontró endpoint configurado para la tabla foránea: ${table}`);
+                        continue;
+                    }
+
+                    try {
+                        const res = await fetch(endpoint);
+                        const data = await res.json();
+                        newData[table] = data;
+                    } catch (error) {
+                        console.error(`Error al obtener datos de ${table}:`, error);
+                    }
                 }
+                setForeignData(newData);
             };
-            fetchForeign();
+            fetchAllForeign();
         }
     }, [show, tableName, foreign]);
 
@@ -131,26 +137,55 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
                             return null;
                         }
 
-                        // 2. Detectar si es clave foránea (termina en _ide)
-                        const isForeignKey = column.originalName.endsWith('ide') && foreignTable.length > 0;
+                        // 2. Detectar si es clave foránea (termina en _id o _ide)
+                        // Buscamos si tenemos datos para esta columna en foreignData
+                        let tableData = [];
+                        let tableNameMatch = null;
+
+                        // Intentar encontrar la tabla correspondiente
+                        if (column.originalName.endsWith('_id') || column.originalName.endsWith('_ide') || column.originalName.endsWith('id')) {
+                            const possibleTableName = column.originalName.replace(/(_id|_ide|id)$/, 'es').toLowerCase(); // Convención simple
+                            // O buscar en las tablas cargadas
+                            tableNameMatch = Object.keys(foreignData).find(t => 
+                                column.originalName.startsWith(t.replace(/es$/, '').replace(/s$/, ''))
+                            );
+                            
+                            if (tableNameMatch) {
+                                tableData = foreignData[tableNameMatch];
+                            }
+                        }
+
+                        const isForeignKey = tableData.length > 0;
 
                         // 3. RENDERIZAR SELECT PARA CLAVE FORÁNEA
                         if (isForeignKey) {
-                            const firstItem = foreignTable[0];
-                            const ideField = Object.keys(firstItem).find(key => key.endsWith('_ide'));
-                            const displayField = Object.keys(firstItem).find(key => key !== ideField);
+                            const firstItem = tableData[0];
+                            // Buscar el campo que sirve como ID (el que termina en _id o _ide)
+                            const ideField = Object.keys(firstItem).find(key => 
+                                key.toLowerCase().endsWith('_id') || 
+                                key.toLowerCase().endsWith('_ide') || 
+                                key.toLowerCase() === 'id'
+                            ) || Object.keys(firstItem)[0];
+
+                            // Buscar un campo para mostrar (preferiblemente nombre, descripcion, etc.)
+                            const displayField = Object.keys(firstItem).find(key => 
+                                ['nombre', 'descripcion', 'denominacion', 'nombre_completo'].includes(key.toLowerCase())
+                            ) || Object.keys(firstItem).find(key => key !== ideField) || ideField;
+
+                            // Verificar si es opcional (direccion_id o division_id)
+                            const isOptional = ['direccion_id', 'division_id'].includes(column.originalName);
 
                             return (
                                 <Form.Group key={index} className="mb-3">
-                                    <Form.Label>{column.displayName}</Form.Label>
+                                    <Form.Label>{column.displayName} {isOptional && <small className="text-muted">(Opcional)</small>}</Form.Label>
                                     <Form.Select
                                         name={column.originalName}
                                         value={formData[column.originalName] || ''}
                                         onChange={handleChange}
-                                        required
+                                        required={!isOptional}
                                     >
                                         <option value="">Seleccione una opción</option>
-                                        {foreignTable.map((item) => (
+                                        {tableData.map((item) => (
                                             <option
                                                 key={item[ideField]}
                                                 value={item[ideField]}
@@ -166,10 +201,11 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
                         // 4. RENDERIZAR INPUT PARA CAMPOS NORMALES
                         // (Si el nombre de la columna sugiere un número o porcentaje, lo tratamos como "number")
                         const isNumberField = ['por', 'val', 'sal', 'ani'].some(suffix => column.originalName.endsWith(suffix));
+                        const isOptionalField = ['porcentaje_anterior'].includes(column.originalName);
 
                         return (
                             <Form.Group key={index} className="mb-3">
-                                <Form.Label>{column.displayName}</Form.Label>
+                                <Form.Label>{column.displayName} {isOptionalField && <small className="text-muted">(Opcional)</small>}</Form.Label>
                                 <Form.Control
                                     type={isNumberField ? "number" : "text"}
                                     step={isNumberField ? "0.01" : undefined}
@@ -177,7 +213,7 @@ function ModalInsert({ show, handleClose, columns, tableName, foreign, onSuccess
                                     value={formData[column.originalName] || ''}
                                     onChange={handleChange}
                                     placeholder={`Ingrese ${column.displayName}`}
-                                    required
+                                    required={!isOptionalField}
                                 />
                             </Form.Group>
                         );

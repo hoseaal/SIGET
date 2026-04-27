@@ -4,6 +4,7 @@ import Button from '../../../components/atoms/Buttons';
 import Alert from '../../../components/atoms/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
 
 const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobreviviente_id, fromStatusChange }) => {
     const [paso, setPaso] = useState(1);
@@ -41,6 +42,14 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
         direcciones: [], divisiones: [], unidades: [],
     });
 
+    const {
+        cargosCETFiltrados,
+        divisionesFiltradas,
+        unidadesFiltradas,
+        tieneDivisiones,
+        tieneUnidades,
+    } = useSelectsDependientes(formData, catalogos);
+
     const loadFamiliares = async () => {
         if (!sobreviviente_id) return;
         setLoadingFamiliares(true);
@@ -68,48 +77,40 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                const [proRes, cetRes, onaRes, dirRes, condRes, sobRes] = await Promise.all([
+                const [proRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, sobRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
                     fetch('/api/condiciones-laborales'),
+                    fetch('/api/divisiones'),
+                    fetch('/api/unidades'),
                     fetch(`/api/sobrevivientes/${sobreviviente_id}`),
                 ]);
 
                 if (!sobRes.ok) throw new Error('Error al obtener datos del sobreviviente');
 
-                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, sobResData] = await Promise.all([
+                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades, sobResData] = await Promise.all([
                     proRes.json(), cetRes.json(), onaRes.json(),
-                    dirRes.json(), condRes.json(), sobRes.json(),
+                    dirRes.json(), condRes.json(), divRes.json(), uniRes.json(), sobRes.json(),
                 ]);
 
                 const sob = sobResData.data || sobResData;
-
-                const dir_id = sob.direccion_id || '';
-                const div_id = sob.division_id || '';
                 const ona_id = sob.cargo_onapre_id || '';
-
-                let divisionesFetch = [];
-                let unidadesFetch = [];
                 let nivelesFetch = [];
 
-                if (dir_id) {
-                    const res = await fetch(`/api/divisiones?direccion_id=${dir_id}`);
-                    divisionesFetch = await res.json();
-                }
-                if (div_id) {
-                    const res = await fetch(`/api/unidades?division_id=${div_id}`);
-                    unidadesFetch = await res.json();
-                }
                 if (ona_id) {
                     const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
-                    nivelesFetch = await res.json();
+                    const nivelesData = await res.json();
+                    const data = nivelesData.success ? nivelesData.data : nivelesData;
+                    nivelesFetch = Array.isArray(data) ? data.map(n => ({
+                        ...n, campo_completo: n.campo_completo || `${n.nombre}`.trim()
+                    })) : [];
                 }
 
                 setCatalogos({
                     profesiones, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
-                    divisiones: divisionesFetch, unidades: unidadesFetch, niveles: nivelesFetch,
+                    divisiones, unidades, niveles: nivelesFetch,
                 });
 
                 const fmt = (s) => {
@@ -160,46 +161,28 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
         setErrorMessage('');
     }, [show, sobreviviente_id]);
 
-    // Cascada: Niveles Salariales
+    // Cascada: Niveles Salariales según Clasificación ONAPRE (se mantiene API)
     useEffect(() => {
         if (!formData.cargo_onapre_id || !show || isLoadingData) return;
         fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
             .then(r => r.json())
-            .then(data => {
-                const arr = data.success ? data.data : data;
-                const nivelesFormateados = Array.isArray(arr) ? arr.map(n => ({
-                    ...n,
-                    campo_completo: n.campo_completo || `${n.cargo_onapre_nombre || n.nombre} ${n.grado || ''}`.trim()
+            .then(nivelesData => {
+                const data = nivelesData.success ? nivelesData.data : nivelesData;
+                const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
+                    ...n, campo_completo: n.campo_completo || `${n.nombre}`.trim()
                 })) : [];
                 setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
             })
             .catch(console.error);
-    }, [formData.cargo_onapre_id]);
-
-    // Cascadas
-    useEffect(() => {
-        if (!formData.direccion_id || !show || isLoadingData) return;
-        fetch(`/api/divisiones?direccion_id=${formData.direccion_id}`)
-            .then(r => r.json())
-            .then(data => setCatalogos(prev => ({ ...prev, divisiones: data })))
-            .catch(console.error);
-    }, [formData.direccion_id]);
-
-    useEffect(() => {
-        if (!formData.division_id || !show || isLoadingData) return;
-        fetch(`/api/unidades?division_id=${formData.division_id}`)
-            .then(r => r.json())
-            .then(data => setCatalogos(prev => ({ ...prev, unidades: data })))
-            .catch(console.error);
-    }, [formData.division_id]);
+    }, [formData.cargo_onapre_id, show, isLoadingData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => {
             const newData = { ...prev, [name]: value };
-            if (name === 'direccion_id') { newData.division_id = ''; newData.unidad_id = ''; setCatalogos(c => ({ ...c, unidades: [] })); }
+            if (name === 'direccion_id') { newData.division_id = ''; newData.unidad_id = ''; }
             else if (name === 'division_id') { newData.unidad_id = ''; }
-            else if (name === 'cargo_onapre_id') { newData.nivel_salarial_id = ''; setCatalogos(c => ({ ...c, niveles: [] })); }
+            else if (name === 'cargo_onapre_id') { newData.cargo_cet_id = ''; newData.nivel_salarial_id = ''; }
             return newData;
         });
     };
@@ -459,19 +442,28 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                             <div className="row mb-3">
                                                 <div className="col-md-4">
                                                     <Form.Group className="mb-3">
-                                                        <Form.Label>Fecha de Ingreso</Form.Label>
-                                                        <Form.Control type="date" name="fecha_ingreso" value={formData.fecha_ingreso} onChange={handleChange} />
+                                                        <Form.Label>Clasificación ONAPRE</Form.Label>
+                                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
+                                                            <option value="">Seleccione</option>
+                                                            {catalogos.cargosONAPRE.map(c => (
+                                                                <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
                                                     </Form.Group>
                                                 </div>
                                                 <div className="col-md-4">
                                                     <Form.Group className="mb-3">
-                                                        <Form.Label>Profesión</Form.Label>
-                                                        <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
+                                                        <Form.Label>Cargo Interno (CET)</Form.Label>
+                                                        <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}
+                                                            disabled={!formData.cargo_onapre_id || cargosCETFiltrados.length === 0}>
                                                             <option value="">Seleccione</option>
-                                                            {catalogos.profesiones.map(p => (
-                                                                <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
+                                                            {cargosCETFiltrados.map(c => (
+                                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
                                                             ))}
                                                         </Form.Select>
+                                                        {formData.cargo_onapre_id && cargosCETFiltrados.length === 0 && (
+                                                            <Form.Text className="text-muted">No hay cargos CET para esta clasificación.</Form.Text>
+                                                        )}
                                                     </Form.Group>
                                                 </div>
                                                 <div className="col-md-4">
@@ -488,40 +480,29 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                             </div>
 
                                             <div className="row mb-3">
-                                                <div className="col-md-4">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Cargo Interno (CET)</Form.Label>
-                                                        <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
-                                                            <option value="">Seleccione</option>
-                                                            {catalogos.cargosCET.map(c => (
-                                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                    </Form.Group>
-                                                </div>
-                                                <div className="col-md-4">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Clasificación ONAPRE</Form.Label>
-                                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
-                                                            <option value="">Seleccione</option>
-                                                            {catalogos.cargosONAPRE.map(c => (
-                                                                <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                    </Form.Group>
-                                                </div>
-                                                <div className="col-md-4">
+                                                <div className="col-md-6">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Nivel Salarial</Form.Label>
                                                         <Form.Select
                                                             name="nivel_salarial_id"
                                                             value={formData.nivel_salarial_id}
                                                             onChange={handleChange}
-                                                            disabled={!formData.cargo_onapre_id || catalogos.niveles.length === 0}
+                                                            disabled={!formData.cargo_onapre_id}
                                                         >
                                                             <option value="">Seleccione nivel</option>
                                                             {catalogos.niveles.map(n => (
-                                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.campo_completo || n.nombre}</option>
+                                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.campo_completo || n.nombre} — {n.salario_base} Bs.</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-6">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Profesión</Form.Label>
+                                                        <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
+                                                            <option value="">Seleccione</option>
+                                                            {catalogos.profesiones.map(p => (
+                                                                <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
                                                             ))}
                                                         </Form.Select>
                                                     </Form.Group>
@@ -545,9 +526,9 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                                     <Form.Group>
                                                         <Form.Label>División (Opcional)</Form.Label>
                                                         <Form.Select name="division_id" value={formData.division_id} onChange={handleChange}
-                                                            disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}>
+                                                            disabled={!formData.direccion_id}>
                                                             <option value="">-- Directo a la Dirección --</option>
-                                                            {catalogos.divisiones?.map(d => (
+                                                            {divisionesFiltradas.map(d => (
                                                                 <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
                                                             ))}
                                                         </Form.Select>
@@ -557,9 +538,9 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                                     <Form.Group>
                                                         <Form.Label>Unidad (Opcional)</Form.Label>
                                                         <Form.Select name="unidad_id" value={formData.unidad_id} onChange={handleChange}
-                                                            disabled={!formData.division_id || catalogos.unidades?.length === 0}>
-                                                            <option value="">-- Directo a la División --</option>
-                                                            {catalogos.unidades?.map(u => (
+                                                            disabled={!formData.direccion_id}>
+                                                            <option value="">{formData.division_id ? '-- Directo a la División --' : '-- Directo a la Dirección --'}</option>
+                                                            {unidadesFiltradas.map(u => (
                                                                 <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
                                                             ))}
                                                         </Form.Select>

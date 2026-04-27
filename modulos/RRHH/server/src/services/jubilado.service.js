@@ -91,25 +91,35 @@ export class JubiladoService {
   /**
    * HELPER: Valida la jerarquía Unidad → División → Dirección
    */
-  static async _validarJerarquia (direccion_id, division_id, unidad_id) {
-    if (unidad_id) {
-      const [uniRows] = await pool.query('SELECT division_id FROM unidades WHERE unidad_id = ?', [unidad_id])
-      if (uniRows.length === 0) throw new Error('Unidad no existe')
-      const realDiv = uniRows[0].division_id
-      const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [realDiv])
-      return { direccion_id: divRows[0].direccion_id, division_id: realDiv, unidad_id }
-    }
-    if (division_id) {
-      const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [division_id])
-      if (divRows.length === 0) throw new Error('División no existe')
-      return { direccion_id: divRows[0].direccion_id, division_id, unidad_id: null }
-    }
-    if (direccion_id) {
-      const [dirRows] = await pool.query('SELECT direccion_id FROM direcciones WHERE direccion_id = ?', [direccion_id])
-      if (dirRows.length === 0) throw new Error('Dirección no existe')
+  static async _validarJerarquia(direccion_id, division_id, unidad_id) {
+    if (!direccion_id) return { direccion_id: null, division_id: null, unidad_id: null }
+
+    try {
+      if (unidad_id) {
+        const [uniRows] = await pool.query('SELECT division_id FROM unidades WHERE unidad_id = ?', [unidad_id])
+        if (uniRows.length > 0) {
+          const realDiv = uniRows[0].division_id
+          const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [realDiv])
+          return {
+            direccion_id: divRows.length > 0 ? divRows[0].direccion_id : direccion_id,
+            division_id: realDiv,
+            unidad_id
+          }
+        }
+      }
+      if (division_id) {
+        const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [division_id])
+        return {
+          direccion_id: divRows.length > 0 ? divRows[0].direccion_id : direccion_id,
+          division_id,
+          unidad_id: null
+        }
+      }
+      return { direccion_id, division_id: null, unidad_id: null }
+    } catch (error) {
+      console.error('Error en _validarJerarquia:', error)
       return { direccion_id, division_id: null, unidad_id: null }
     }
-    return { direccion_id: null, division_id: null, unidad_id: null }
   }
 
   static async _vincularNivelesSalariales (datosContratoClean) {

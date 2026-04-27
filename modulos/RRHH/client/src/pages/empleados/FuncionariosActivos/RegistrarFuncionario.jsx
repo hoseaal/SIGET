@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
-import Button from '../../../components/atoms/Buttons'; // Asegúrate de que la ruta sea correcta
-import Alert from "../../../components/atoms/Alert";   // Asegúrate de que la ruta sea correcta
+import Button from '../../../components/atoms/Buttons';
+import Alert from "../../../components/atoms/Alert";
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
 // import { hasPermission, ACTIONS } from '../../../data/dataPermissions' // Descomentar si usas permisos
 
 export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd }) => {
@@ -65,18 +66,29 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
         unidades: []
     });
 
+    // Hook de selects dependientes: filtra CET, divisiones y unidades localmente
+    const {
+        cargosCETFiltrados,
+        divisionesFiltradas,
+        unidadesFiltradas,
+        tieneDivisiones,
+        tieneUnidades,
+        tieneUnidadesDirectas
+    } = useSelectsDependientes(formData, catalogos);
+
     // Cargar catalogos al montar el componente
     useEffect(() => {
         const fetchCatalogos = async () => {
             try {
-                // Aquí asumimos que existen estos endpoints basados en tu estructura
-                const [proRes, estRes, cetRes, onaRes, colRes, dirRes] = await Promise.all([
+                const [proRes, estRes, cetRes, onaRes, colRes, dirRes, divRes, uniRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/estatus'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
-                    fetch('/api/condiciones-laborales'), // condiciones_laborales
-                    fetch('/api/direcciones')
+                    fetch('/api/condiciones-laborales'),
+                    fetch('/api/direcciones'),
+                    fetch('/api/divisiones'),
+                    fetch('/api/unidades')
                 ]);
 
                 setCatalogos({
@@ -86,6 +98,8 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                     cargosONAPRE: await onaRes.json(),
                     condiciones: await colRes.json(),
                     direcciones: await dirRes.json(),
+                    divisiones: await divRes.json(),
+                    unidades: await uniRes.json(),
                     niveles: [] // Se cargan dinámicamente según ONAPRE
                 });
 
@@ -97,43 +111,6 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
 
         fetchCatalogos();
     }, []);
-
-    useEffect(() => {
-        const fetchDivisiones = async () => {
-            if (!formData.direccion_id) {
-                setCatalogos(prev => ({ ...prev, divisiones: [], unidades: [] }));
-                return;
-            }
-            try {
-                // Endpoint hipotético que trae divisiones por ID de dirección
-                const res = await fetch(`/api/divisiones?direccion_id=${formData.direccion_id}`);
-                const data = await res.json();
-                setCatalogos(prev => ({ ...prev, divisiones: data, unidades: [] })); // Limpiamos unidades por si cambia de dirección
-            } catch (error) {
-                console.error("Error cargando divisiones:", error);
-            }
-        };
-        fetchDivisiones();
-    }, [formData.direccion_id]);
-
-    // Efecto Cascada 2: Cargar Unidades cuando cambia la División (division_id)
-    useEffect(() => {
-        const fetchUnidades = async () => {
-            if (!formData.division_id) {
-                setCatalogos(prev => ({ ...prev, unidades: [] }));
-                return;
-            }
-            try {
-                // Endpoint hipotético que trae unidades por ID de división
-                const res = await fetch(`/api/unidades?division_id=${formData.division_id}`);
-                const data = await res.json();
-                setCatalogos(prev => ({ ...prev, unidades: data }));
-            } catch (error) {
-                console.error("Error cargando unidades:", error);
-            }
-        };
-        fetchUnidades();
-    }, [formData.division_id]);
 
     // Efecto: Cargar Niveles cuando cambia el Cargo ONAPRE (cargo_onapre_id)
     useEffect(() => {
@@ -168,6 +145,9 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                 newData.unidad_id = '';
             } else if (name === 'division_id') {
                 newData.unidad_id = '';
+            } else if (name === 'cargo_onapre_id') {
+                newData.cargo_cet_id = '';
+                newData.nivel_salarial_id = '';
             }
 
             return newData;
@@ -181,7 +161,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
             tipo_sangre: '', direccion_habitacion: '', celular: '', correo_principal: '', correo_secundario: '', cuenta_bancaria: '',
             fecha_ingreso: new Date().toISOString().split('T')[0],
             contacto_emergencia_1: '', telefono_emergencia_1: '', contacto_emergencia_2: '', telefono_emergencia_2: '', profesion_id: '', estatus_id: 1,
-            cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '', condicion_laboral_id: '', direccion_id: ''
+            cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '', condicion_laboral_id: '', direccion_id: '', division_id: '', unidad_id: ''
         });
         setErrorMessage('');
         setMensajeMostrado(false);
@@ -480,18 +460,37 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                             </div>
 
                             <div className="row mb-3">
-                                <div className="col-md-6">
+                                <div className="col-md-4">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Cargo CET (Interno)</Form.Label>
-                                        <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
+                                        <Form.Label>Clasificación ONAPRE</Form.Label>
+                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
                                             <option value="">Seleccione</option>
-                                            {catalogos.cargosCET.map(c => (
-                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                            {catalogos.cargosONAPRE.map(o => (
+                                                <option key={o.cargo_onapre_id} value={o.cargo_onapre_id}>{o.nombre}</option>
                                             ))}
                                         </Form.Select>
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Cargo CET (Interno)</Form.Label>
+                                        <Form.Select
+                                            name="cargo_cet_id"
+                                            value={formData.cargo_cet_id}
+                                            onChange={handleChange}
+                                            disabled={!formData.cargo_onapre_id || cargosCETFiltrados.length === 0}
+                                        >
+                                            <option value="">Seleccione</option>
+                                            {cargosCETFiltrados.map(c => (
+                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                        {formData.cargo_onapre_id && cargosCETFiltrados.length === 0 && (
+                                            <Form.Text className="text-muted">No hay cargos CET para esta clasificación.</Form.Text>
+                                        )}
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Condición Laboral</Form.Label>
                                         <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
@@ -505,24 +504,13 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                             </div>
 
                             <div className="row mb-3">
-                                <div className="col-md-6">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Clasificación ONAPRE</Form.Label>
-                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
-                                            <option value="">Seleccione</option>
-                                            {catalogos.cargosONAPRE.map(o => (
-                                                <option key={o.cargo_onapre_id} value={o.cargo_onapre_id}>{o.nombre}</option>
-                                            ))}
-                                        </Form.Select>
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-6">
+                                <div className="col-md-12">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Nivel Salarial</Form.Label>
                                         <Form.Select name="nivel_salarial_id" value={formData.nivel_salarial_id} onChange={handleChange} disabled={!formData.cargo_onapre_id}>
                                             <option value="">Seleccione</option>
                                             {catalogos.niveles.map(n => (
-                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.nombre} - {n.salario_base} Bs.</option>
+                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.nombre} — {n.salario_base} Bs.</option>
                                             ))}
                                         </Form.Select>
                                         {catalogos.niveles.length === 0 && formData.cargo_onapre_id && (
@@ -554,10 +542,10 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                                             name="division_id"
                                             value={formData.division_id}
                                             onChange={handleChange}
-                                            disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}
+                                            disabled={!formData.direccion_id || !tieneDivisiones}
                                         >
                                             <option value="">-- Directo a la Dirección --</option>
-                                            {catalogos.divisiones?.map(d => (
+                                            {divisionesFiltradas.map(d => (
                                                 <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
                                             ))}
                                         </Form.Select>
@@ -571,10 +559,10 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                                             name="unidad_id"
                                             value={formData.unidad_id}
                                             onChange={handleChange}
-                                            disabled={!formData.division_id || catalogos.unidades?.length === 0}
+                                            disabled={!formData.direccion_id || !tieneUnidades}
                                         >
-                                            <option value="">-- Directo a la División --</option>
-                                            {catalogos.unidades?.map(u => (
+                                            <option value="">{formData.division_id ? '-- Directo a la División --' : '-- Directo a la Dirección --'}</option>
+                                            {unidadesFiltradas.map(u => (
                                                 <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
                                             ))}
                                         </Form.Select>

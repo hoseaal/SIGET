@@ -4,6 +4,7 @@ import Button from '../../../components/atoms/Buttons';
 import Alert from '../../../components/atoms/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
 
 export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pensionado_id }) => {
     const [paso, setPaso] = useState(1);
@@ -26,8 +27,9 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
         cargo_cet_id: '', cargo_onapre_id: '', condicion_laboral_id: '',
         nivel_salarial_id: '', direccion_id: '', division_id: '', unidad_id: '',
 
-        // ── Datos Jubilación ──
-        porcentaje_jubilacion: '', fecha_efectiva: '',
+        // ── Datos Pensión ──
+        fecha_ingreso_pension: '',
+        motivo_pension: '',
     });
 
     const [catalogos, setCatalogos] = useState({
@@ -35,6 +37,14 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
         condicionesLaborales: [], niveles: [],
         direcciones: [], divisiones: [], unidades: [],
     });
+
+    const {
+        cargosCETFiltrados,
+        divisionesFiltradas,
+        unidadesFiltradas,
+        tieneDivisiones,
+        tieneUnidades,
+    } = useSelectsDependientes(formData, catalogos);
 
     // Cargar datos del pensionado + catálogos al abrir
     useEffect(() => {
@@ -44,48 +54,40 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                const [proRes, cetRes, onaRes, dirRes, condRes, jubRes] = await Promise.all([
+                const [proRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, jubRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
                     fetch('/api/condiciones-laborales'),
+                    fetch('/api/divisiones'),
+                    fetch('/api/unidades'),
                     fetch(`/api/pensionados/${pensionado_id}`),
                 ]);
 
                 if (!jubRes.ok) throw new Error('Error al obtener datos del pensionado');
 
-                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, jubResData] = await Promise.all([
+                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades, jubResData] = await Promise.all([
                     proRes.json(), cetRes.json(), onaRes.json(),
-                    dirRes.json(), condRes.json(), jubRes.json(),
+                    dirRes.json(), condRes.json(), divRes.json(), uniRes.json(), jubRes.json(),
                 ]);
 
                 const jub = jubResData.data || jubResData;
-
-                const dir_id = jub.direccion_id || '';
-                const div_id = jub.division_id || '';
                 const ona_id = jub.cargo_onapre_id || '';
-
-                let divisionesFetch = [];
-                let unidadesFetch = [];
                 let nivelesFetch = [];
 
-                if (dir_id) {
-                    const res = await fetch(`/api/divisiones?direccion_id=${dir_id}`);
-                    divisionesFetch = await res.json();
-                }
-                if (div_id) {
-                    const res = await fetch(`/api/unidades?division_id=${div_id}`);
-                    unidadesFetch = await res.json();
-                }
                 if (ona_id) {
                     const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
-                    nivelesFetch = await res.json();
+                    const nivelesData = await res.json();
+                    const data = nivelesData.success ? nivelesData.data : nivelesData;
+                    nivelesFetch = Array.isArray(data) ? data.map(n => ({
+                        ...n, campo_completo: n.campo_completo || `${n.nombre}`.trim()
+                    })) : [];
                 }
 
                 setCatalogos({
                     profesiones, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
-                    divisiones: divisionesFetch, unidades: unidadesFetch, niveles: nivelesFetch,
+                    divisiones, unidades, niveles: nivelesFetch,
                 });
 
                 const fmt = (s) => {
@@ -122,8 +124,8 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                     direccion_id: jub.direccion_id || '',
                     division_id: jub.division_id || '',
                     unidad_id: jub.unidad_id || '',
-                    porcentaje_jubilacion: jub.porcentaje_jubilacion || '',
-                    fecha_efectiva: fmt(jub.fecha_efectiva),
+                    fecha_ingreso_pension: fmt(jub.fecha_ingreso_pension),
+                    motivo_pension: jub.observacion || '',
                 });
 
             } catch (error) {
@@ -140,7 +142,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
         setErrorMessage('');
     }, [show, pensionado_id]);
 
-    // Cascada: Niveles Salariales
+    // Cascada Cargo ONAPRE → Niveles (se mantiene API)
     useEffect(() => {
         if (!formData.cargo_onapre_id || !show || isLoadingData) return;
         fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
@@ -148,30 +150,12 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
             .then(data => {
                 const arr = data.success ? data.data : data;
                 const nivelesFormateados = Array.isArray(arr) ? arr.map(n => ({
-                    ...n,
-                    campo_completo: n.campo_completo || `${n.cargo_onapre_nombre || n.nombre} ${n.grado || ''}`.trim()
+                    ...n, campo_completo: n.campo_completo || `${n.nombre}`.trim()
                 })) : [];
                 setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
             })
             .catch(console.error);
-    }, [formData.cargo_onapre_id]);
-
-    // Cascadas
-    useEffect(() => {
-        if (!formData.direccion_id || !show || isLoadingData) return;
-        fetch(`/api/divisiones?direccion_id=${formData.direccion_id}`)
-            .then(r => r.json())
-            .then(data => setCatalogos(prev => ({ ...prev, divisiones: data })))
-            .catch(console.error);
-    }, [formData.direccion_id]);
-
-    useEffect(() => {
-        if (!formData.division_id || !show || isLoadingData) return;
-        fetch(`/api/unidades?division_id=${formData.division_id}`)
-            .then(r => r.json())
-            .then(data => setCatalogos(prev => ({ ...prev, unidades: data })))
-            .catch(console.error);
-    }, [formData.division_id]);
+    }, [formData.cargo_onapre_id, isLoadingData]);
 
 
 
@@ -179,9 +163,9 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
         const { name, value } = e.target;
         setFormData(prev => {
             const newData = { ...prev, [name]: value };
-            if (name === 'direccion_id') { newData.division_id = ''; newData.unidad_id = ''; setCatalogos(c => ({ ...c, unidades: [] })); }
+            if (name === 'direccion_id') { newData.division_id = ''; newData.unidad_id = ''; }
             else if (name === 'division_id') { newData.unidad_id = ''; }
-            else if (name === 'cargo_onapre_id') { newData.nivel_salarial_id = ''; setCatalogos(c => ({ ...c, niveles: [] })); }
+            else if (name === 'cargo_onapre_id') { newData.cargo_cet_id = ''; newData.nivel_salarial_id = ''; }
             return newData;
         });
     };
@@ -207,15 +191,8 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (formData.porcentaje_jubilacion) {
-            const pct = Number(formData.porcentaje_jubilacion);
-            if (isNaN(pct) || pct < 1 || pct > 100) {
-                setErrorMessage('El porcentaje de jubilación debe estar entre 1 y 100.');
-                setMensajeMostrado(true);
-                setTimeout(() => setMensajeMostrado(false), 3000);
-                return;
-            }
-        }
+        setErrorMessage('');
+        setMensajeMostrado(false);
 
         if (onSaveStart) onSaveStart();
 
@@ -242,7 +219,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                 <Modal.Title>
                     {paso === 1
                         ? 'Editar Pensionado — Datos Personales'
-                        : 'Editar Pensionado — Datos Laborales y Jubilación'}
+                        : 'Editar Pensionado — Datos Laborales y Pensión'}
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body className="bg-light">
@@ -374,7 +351,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                 </div>
                             )}
 
-                            {/* ══════════ PASO 2: DATOS LABORALES Y JUBILACIÓN ══════════ */}
+                            {/* ══════════ PASO 2: DATOS LABORALES Y PENSIÓN ══════════ */}
                             {paso === 2 && (
                                 <>
                                     {/* Contactos emergencia */}
@@ -441,6 +418,35 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                                         </Form.Select>
                                                     </Form.Group>
                                                 </div>
+                                            </div>
+
+                                            <div className="row mb-3">
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Clasificación ONAPRE</Form.Label>
+                                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
+                                                            <option value="">Seleccione</option>
+                                                            {catalogos.cargosONAPRE.map(c => (
+                                                                <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Cargo Interno (CET)</Form.Label>
+                                                        <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}
+                                                            disabled={!formData.cargo_onapre_id || cargosCETFiltrados.length === 0}>
+                                                            <option value="">Seleccione</option>
+                                                            {cargosCETFiltrados.map(c => (
+                                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                        {formData.cargo_onapre_id && cargosCETFiltrados.length === 0 && (
+                                                            <Form.Text className="text-muted">No hay cargos CET para esta clasificación.</Form.Text>
+                                                        )}
+                                                    </Form.Group>
+                                                </div>
                                                 <div className="col-md-4">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Condición Laboral</Form.Label>
@@ -455,40 +461,18 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                             </div>
 
                                             <div className="row mb-3">
-                                                <div className="col-md-4">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Cargo Interno (CET)</Form.Label>
-                                                        <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
-                                                            <option value="">Seleccione</option>
-                                                            {catalogos.cargosCET.map(c => (
-                                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                    </Form.Group>
-                                                </div>
-                                                <div className="col-md-4">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Clasificación ONAPRE</Form.Label>
-                                                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
-                                                            <option value="">Seleccione</option>
-                                                            {catalogos.cargosONAPRE.map(c => (
-                                                                <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                    </Form.Group>
-                                                </div>
-                                                <div className="col-md-4">
+                                                <div className="col-md-12">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Nivel Salarial</Form.Label>
-                                                        <Form.Select 
-                                                            name="nivel_salarial_id" 
-                                                            value={formData.nivel_salarial_id} 
+                                                        <Form.Select
+                                                            name="nivel_salarial_id"
+                                                            value={formData.nivel_salarial_id}
                                                             onChange={handleChange}
-                                                            disabled={!formData.cargo_onapre_id || catalogos.niveles.length === 0}
+                                                            disabled={!formData.cargo_onapre_id}
                                                         >
                                                             <option value="">Seleccione nivel</option>
                                                             {catalogos.niveles.map(n => (
-                                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.campo_completo || n.nombre}</option>
+                                                                <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.campo_completo || n.nombre} — {n.salario_base} Bs.</option>
                                                             ))}
                                                         </Form.Select>
                                                     </Form.Group>
@@ -512,9 +496,9 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                                     <Form.Group>
                                                         <Form.Label>División (Opcional)</Form.Label>
                                                         <Form.Select name="division_id" value={formData.division_id} onChange={handleChange}
-                                                            disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}>
+                                                            disabled={!formData.direccion_id || !tieneDivisiones}>
                                                             <option value="">-- Directo a la Dirección --</option>
-                                                            {catalogos.divisiones?.map(d => (
+                                                            {divisionesFiltradas.map(d => (
                                                                 <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
                                                             ))}
                                                         </Form.Select>
@@ -524,9 +508,9 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                                     <Form.Group>
                                                         <Form.Label>Unidad (Opcional)</Form.Label>
                                                         <Form.Select name="unidad_id" value={formData.unidad_id} onChange={handleChange}
-                                                            disabled={!formData.division_id || catalogos.unidades?.length === 0}>
-                                                            <option value="">-- Directo a la División --</option>
-                                                            {catalogos.unidades?.map(u => (
+                                                            disabled={!formData.direccion_id}>
+                                                            <option value="">{formData.division_id ? '-- Directo a la División --' : '-- Directo a la Dirección --'}</option>
+                                                            {unidadesFiltradas.map(u => (
                                                                 <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
                                                             ))}
                                                         </Form.Select>
@@ -536,27 +520,27 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                         </div>
                                     </div>
 
-                                    {/* Datos de Jubilación */}
-                                    <div className="card shadow-sm border-0 mb-3">
-                                        <div className="card-body">
-                                            <h6 className="mt-2 text-primary mb-3">
-                                                <i className="bx bx-medal me-2"></i>3. Datos de Jubilación
-                                            </h6>
-                                            <div className="row mb-3">
-                                                <div className="col-md-6">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Porcentaje de Jubilación (1–100)</Form.Label>
-                                                        <Form.Control type="number" name="porcentaje_jubilacion"
-                                                            min="1" max="100" value={formData.porcentaje_jubilacion} onChange={handleChange} />
-                                                    </Form.Group>
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Fecha Efectiva de Jubilación</Form.Label>
-                                                        <Form.Control type="date" name="fecha_efectiva" value={formData.fecha_efectiva} onChange={handleChange} />
-                                                    </Form.Group>
-                                                </div>
-                                            </div>
+                                    {/* Datos de Pensión */}
+                                    <div className="d-flex justify-content-between align-items-center mb-3 mt-2">
+                                        <h6 className="text-primary mb-0">
+                                            <i className="bx bx-calendar-star me-1"></i> 3. Datos de pensión *
+                                        </h6>
+                                    </div>
+
+                                    <div className="row mb-3">
+                                        <div className="col-md-6">
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Fecha de Ingreso a Pensión</Form.Label>
+                                                <Form.Control type="date" name="fecha_ingreso_pension"
+                                                    value={formData.fecha_ingreso_pension} onChange={handleChange} />
+                                            </Form.Group>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Motivo de Pensión</Form.Label>
+                                                <Form.Control type="text" name="motivo_pension"
+                                                    value={formData.motivo_pension} onChange={handleChange} />
+                                            </Form.Group>
                                         </div>
                                     </div>
                                 </>

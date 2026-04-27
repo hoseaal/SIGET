@@ -136,18 +136,21 @@ export const SobrevivienteController = {
                 apellidos,
                 fecha_nacimiento: fecha_nacimiento || null,
                 genero: genero || null,
-                direccion_habitacion: direccion_habitacion || null,
+                direccion_habitacion: direccion_habitacion || '',
                 profesion_id: profesion_id || null,
-                // Default placeholders to satisfy NOT NULL constraints missing in the UI
-                rif: 'N/A',
+                rif: 'N/A', // Mantener por ahora si es requerido por el modelo o DB
                 lugar_nacimiento: 'No especificado',
                 estado_civil: 'Soltero',
-                tipo_sangre: 'N/A',
-                correo_principal: 'N/A',
-                correo_secundario: 'N/A',
-                telefono_fijo: 'N/A',
-                celular: 'N/A',
-                estudios_actuales: 'N/A',
+                tipo_sangre: '',
+                correo_principal: '',
+                correo_secundario: '',
+                telefono_fijo: '',
+                celular: '',
+                estudios_actuales: '',
+                contacto_emergencia_1: '',
+                telefono_emergencia_1: '',
+                contacto_emergencia_2: '',
+                telefono_emergencia_2: '',
             }
 
             // Preparar datos laborales
@@ -284,8 +287,13 @@ export const SobrevivienteController = {
             ]
 
             laboralFields.forEach(field => {
-                if (req.body[field] !== undefined && req.body[field] !== '') {
-                    laboralData[field] = req.body[field]
+                if (req.body[field] !== undefined) {
+                    const val = req.body[field]
+                    if (val === '' && ['direccion_id', 'division_id', 'unidad_id'].includes(field)) {
+                        laboralData[field] = null
+                    } else if (val !== '') {
+                        laboralData[field] = val
+                    }
                 }
             })
 

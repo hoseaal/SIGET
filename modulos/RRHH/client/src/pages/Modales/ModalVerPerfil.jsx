@@ -39,7 +39,7 @@ const ModalVerPerfil = ({ show, handleClose, empleado_id, tipo = 'funcionario' }
             color: 'warning'
         },
         pensionado: {
-            endpoint: `/api/funcionarios/${empleado_id}?type=full`, // Ajustar si existe endpoint específico
+            endpoint: `/api/pensionados/${empleado_id}`,
             titulo: 'Perfil del Pensionado',
             icon: 'bx-wallet',
             color: 'secondary'
@@ -150,6 +150,21 @@ const ModalVerPerfil = ({ show, handleClose, empleado_id, tipo = 'funcionario' }
                                                 <i className="bx bx-check-shield me-2"></i>
                                                 Jubilación: {datos.porcentaje_jubilacion}%
                                             </p>
+                                        )}
+
+                                        {tipo === 'pensionado' && (
+                                            <div className="mt-3 text-start border-top pt-2">
+                                                <p className="mb-1 text-secondary small fw-bold">
+                                                    <i className="bx bx-calendar-check me-2"></i>
+                                                    Ingreso Pensión: {formatearFecha(datos.fecha_ingreso_pension)}
+                                                </p>
+                                                {datos.observacion && (
+                                                    <p className="mb-0 text-muted small">
+                                                        <i className="bx bx-info-circle me-1"></i>
+                                                        Motivo: {datos.observacion}
+                                                    </p>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 </div>

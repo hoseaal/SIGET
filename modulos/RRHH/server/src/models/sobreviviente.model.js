@@ -52,9 +52,11 @@ export class SobrevivienteModel {
         e.empleado_id AS sobreviviente_id,
         TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) as edad,
         dl.cargo_cet_id, 
+        dl.cargo_onapre_id,
         dl.condicion_laboral_id,
         dl.direccion_id, dl.division_id, dl.unidad_id,
         cet.nombre AS cargo_cet_nombre,
+        ona.nombre AS cargo_onapre_nombre,
         ns.salario_base,
         dir.nombre AS direccion_nombre,
         divi.nombre AS division_nombre,
@@ -65,6 +67,7 @@ export class SobrevivienteModel {
       FROM empleados e
       LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
       LEFT JOIN cargos_cet cet ON dl.cargo_cet_id = cet.cargo_cet_id
+      LEFT JOIN cargos_onapre ona ON dl.cargo_onapre_id = ona.cargo_onapre_id
       LEFT JOIN niveles_salariales ns ON dl.nivel_salarial_id = ns.nivel_salarial_id
       LEFT JOIN direcciones dir ON dl.direccion_id = dir.direccion_id
       LEFT JOIN divisiones divi ON dl.division_id = divi.division_id
@@ -104,12 +107,14 @@ export class SobrevivienteModel {
         e.empleado_id AS sobreviviente_id,
         TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) as edad,
         dl.cargo_cet_id, 
+        dl.cargo_onapre_id,
         dl.nivel_salarial_id,
         dl.nivel_salarial_antiguo_id,
         dl.condicion_laboral_id,
         dl.prima_profesional_id,
         dl.direccion_id, dl.division_id, dl.unidad_id,
         cet.nombre AS cargo_cet_nombre,
+        ona.nombre AS cargo_onapre_nombre,
         ns.salario_base,
         cl.nombre AS condicion_nombre,
         prof.nombre AS profesion_nombre,
@@ -119,6 +124,7 @@ export class SobrevivienteModel {
       FROM empleados e
       LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
       LEFT JOIN cargos_cet cet ON dl.cargo_cet_id = cet.cargo_cet_id
+      LEFT JOIN cargos_onapre ona ON dl.cargo_onapre_id = ona.cargo_onapre_id
       LEFT JOIN niveles_salariales ns ON dl.nivel_salarial_id = ns.nivel_salarial_id
       LEFT JOIN condiciones_laborales cl ON dl.condicion_laboral_id = cl.condicion_laboral_id
       LEFT JOIN profesiones prof ON e.profesion_id = prof.profesion_id

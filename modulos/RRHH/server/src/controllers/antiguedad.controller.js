@@ -32,7 +32,7 @@ export const obtenerAntiguedad = async (req, res) => {
  * Crea un nuevo escalafón de antigüedad.
  * @param {object} req.body - Datos del registro.
  * @param {number} req.body.anios_cumplidos - Años de servicio (Debe ser único).
- * @param {number} req.body.ant_act - Porcentaje a aplicar.
+ * @param {number} req.body.porcentaje_actual - Porcentaje a aplicar.
  * @returns {Promise<object>} Registro creado.
  */
 export const crearAntiguedad = async (req, res) => {

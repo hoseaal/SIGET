@@ -4,6 +4,7 @@ import Button from '../../../components/atoms/Buttons';
 import Alert from '../../../components/atoms/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
 
 export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubilado_id }) => {
     const [paso, setPaso] = useState(1);
@@ -32,9 +33,17 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
 
     const [catalogos, setCatalogos] = useState({
         profesiones: [], cargosCET: [],
-        condicionesLaborales: [], niveles: [],
+        cargosONAPRE: [], condicionesLaborales: [], niveles: [],
         direcciones: [], divisiones: [], unidades: [],
     });
+
+    const {
+        cargosCETFiltrados,
+        divisionesFiltradas,
+        unidadesFiltradas,
+        tieneDivisiones,
+        tieneUnidades,
+    } = useSelectsDependientes(formData, catalogos);
 
     // Cargar datos del jubilado + catálogos al abrir
     useEffect(() => {
@@ -44,47 +53,38 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                // Hay 6 catálogos necesarios + la data del jubilado (7 fetches total)
-                const [proRes, cetRes, onaRes, dirRes, condRes, jubRes] = await Promise.all([
+                const [proRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, jubRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
                     fetch('/api/condiciones-laborales'),
+                    fetch('/api/divisiones'),
+                    fetch('/api/unidades'),
                     fetch(`/api/jubilados/${jubilado_id}`),
                 ]);
 
                 if (!jubRes.ok) throw new Error('Error al obtener datos del jubilado');
 
-                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, jub] = await Promise.all([
+                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades, jub] = await Promise.all([
                     proRes.json(), cetRes.json(), onaRes.json(),
-                    dirRes.json(), condRes.json(), jubRes.json(),
+                    dirRes.json(), condRes.json(), divRes.json(), uniRes.json(), jubRes.json(),
                 ]);
 
-                const dir_id = jub.direccion_id || '';
-                const div_id = jub.division_id || '';
                 const ona_id = jub.cargo_onapre_id || '';
-
-                let divisionesFetch = [];
-                let unidadesFetch = [];
                 let nivelesFetch = [];
-
-                if (dir_id) {
-                    const res = await fetch(`/api/divisiones?direccion_id=${dir_id}`);
-                    divisionesFetch = await res.json();
-                }
-                if (div_id) {
-                    const res = await fetch(`/api/unidades?division_id=${div_id}`);
-                    unidadesFetch = await res.json();
-                }
                 if (ona_id) {
                     const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
-                    nivelesFetch = await res.json();
+                    const nivelesData = await res.json();
+                    const data = nivelesData.success ? nivelesData.data : nivelesData;
+                    nivelesFetch = Array.isArray(data) ? data.map(n => ({
+                        ...n, campo_completo: n.campo_completo || `${n.nombre}`.trim()
+                    })) : [];
                 }
 
                 setCatalogos({
                     profesiones, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
-                    divisiones: divisionesFetch, unidades: unidadesFetch, niveles: nivelesFetch,
+                    divisiones, unidades, niveles: nivelesFetch,
                 });
 
                 const fmt = (s) => {
@@ -140,38 +140,31 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
         setErrorMessage('');
     }, [show, jubilado_id]);
 
-    // Cascadas
-    useEffect(() => {
-        if (!formData.direccion_id || !show || isLoadingData) return;
-        fetch(`/api/divisiones?direccion_id=${formData.direccion_id}`)
-            .then(r => r.json())
-            .then(data => setCatalogos(prev => ({ ...prev, divisiones: data })))
-            .catch(console.error);
-    }, [formData.direccion_id]);
-
-    useEffect(() => {
-        if (!formData.division_id || !show || isLoadingData) return;
-        fetch(`/api/unidades?division_id=${formData.division_id}`)
-            .then(r => r.json())
-            .then(data => setCatalogos(prev => ({ ...prev, unidades: data })))
-            .catch(console.error);
-    }, [formData.division_id]);
-
+    // Cascada Cargo ONAPRE → Niveles (se mantiene API)
     useEffect(() => {
         if (!formData.cargo_onapre_id || !show || isLoadingData) return;
         fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
             .then(r => r.json())
-            .then(data => setCatalogos(prev => ({ ...prev, niveles: data })))
+            .then(nivelesData => {
+                const data = nivelesData.success ? nivelesData.data : nivelesData;
+                const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
+                    ...n, campo_completo: n.campo_completo || `${n.nombre}`.trim()
+                })) : [];
+                setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
+            })
             .catch(console.error);
-    }, [formData.cargo_onapre_id]);
+    }, [formData.cargo_onapre_id, isLoadingData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => {
             const newData = { ...prev, [name]: value };
-            if (name === 'direccion_id') { newData.division_id = ''; newData.unidad_id = ''; setCatalogos(c => ({ ...c, unidades: [] })); }
+            if (name === 'direccion_id') { newData.division_id = ''; newData.unidad_id = ''; }
             else if (name === 'division_id') { newData.unidad_id = ''; }
-            else if (name === 'cargo_onapre_id') { newData.nivel_salarial_id = ''; }
+            else if (name === 'cargo_onapre_id') { 
+                newData.cargo_cet_id = '';
+                newData.nivel_salarial_id = ''; 
+            }
             return newData;
         });
     };
@@ -456,24 +449,39 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                                             </div>
 
                                             <div className="row mb-3">
-                                                <div className="col-md-6">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Cargo Interno (CET)</Form.Label>
-                                                        <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
-                                                            <option value="">Seleccione</option>
-                                                            {catalogos.cargosCET.map(c => (
-                                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                    </Form.Group>
-                                                </div>
-                                                <div className="col-md-6">
+                                                <div className="col-md-4">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Clasificación ONAPRE</Form.Label>
                                                         <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
                                                             <option value="">Seleccione clasificación</option>
                                                             {catalogos.cargosONAPRE && catalogos.cargosONAPRE.map(c => (
                                                                 <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Cargo Interno (CET)</Form.Label>
+                                                        <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}
+                                                            disabled={!formData.cargo_onapre_id || cargosCETFiltrados.length === 0}>
+                                                            <option value="">Seleccione</option>
+                                                            {cargosCETFiltrados.map(c => (
+                                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                        {formData.cargo_onapre_id && cargosCETFiltrados.length === 0 && (
+                                                            <Form.Text className="text-muted">No hay cargos CET para esta clasificación.</Form.Text>
+                                                        )}
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Condición Laboral</Form.Label>
+                                                        <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
+                                                            <option value="">Seleccione</option>
+                                                            {catalogos.condicionesLaborales.map(c => (
+                                                                <option key={c.condicion_laboral_id} value={c.condicion_laboral_id}>{c.nombre}</option>
                                                             ))}
                                                         </Form.Select>
                                                     </Form.Group>
@@ -514,9 +522,9 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                                                     <Form.Group>
                                                         <Form.Label>División (Opcional)</Form.Label>
                                                         <Form.Select name="division_id" value={formData.division_id} onChange={handleChange}
-                                                            disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}>
+                                                            disabled={!formData.direccion_id}>
                                                             <option value="">-- Directo a la Dirección --</option>
-                                                            {catalogos.divisiones?.map(d => (
+                                                            {divisionesFiltradas.map(d => (
                                                                 <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
                                                             ))}
                                                         </Form.Select>
@@ -526,9 +534,9 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                                                     <Form.Group>
                                                         <Form.Label>Unidad (Opcional)</Form.Label>
                                                         <Form.Select name="unidad_id" value={formData.unidad_id} onChange={handleChange}
-                                                            disabled={!formData.division_id || catalogos.unidades?.length === 0}>
-                                                            <option value="">-- Directo a la División --</option>
-                                                            {catalogos.unidades?.map(u => (
+                                                            disabled={!formData.direccion_id}>
+                                                            <option value="">{formData.division_id ? '-- Directo a la División --' : '-- Directo a la Dirección --'}</option>
+                                                            {unidadesFiltradas.map(u => (
                                                                 <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
                                                             ))}
                                                         </Form.Select>

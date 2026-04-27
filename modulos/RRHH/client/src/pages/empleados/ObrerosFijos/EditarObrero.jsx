@@ -4,6 +4,7 @@ import Button from '../../../components/atoms/Buttons';
 import Alert from '../../../components/atoms/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
 
 const CARGO_REGEX = /OBRERO|ASEADOR|MENSAJERO|VIGILANTE/i;
 
@@ -31,6 +32,15 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
         niveles: [], direcciones: [], divisiones: [], unidades: []
     });
 
+    // Hook de selects dependientes
+    const {
+        cargosCETFiltrados,
+        divisionesFiltradas,
+        unidadesFiltradas,
+        tieneDivisiones,
+        tieneUnidades,
+    } = useSelectsDependientes(formData, catalogos);
+
     // Cargar datos del obrero + catálogos al abrir
     useEffect(() => {
         if (!show || !empleado_id) return;
@@ -39,51 +49,41 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                const [proRes, estRes, cetRes, onaRes, dirRes, obreroRes] = await Promise.all([
+                const [proRes, estRes, cetRes, onaRes, dirRes, divRes, uniRes, obreroRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/estatus'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
-                    fetch(`/api/obreros/${empleado_id}`)      // ← endpoint de obreros
+                    fetch('/api/divisiones'),
+                    fetch('/api/unidades'),
+                    fetch(`/api/obreros/${empleado_id}`)
                 ]);
 
                 if (!obreroRes.ok) throw new Error('Error al obtener datos del obrero');
 
-                const [profesiones, estatus, cargosCETAll, cargosONAPREAll, direcciones, obreroRaw] = await Promise.all([
-                    proRes.json(), estRes.json(), cetRes.json(), onaRes.json(), dirRes.json(), obreroRes.json()
+                const [profesiones, estatus, cargosCETAll, cargosONAPREAll, direcciones, divisiones, unidades, obreroRaw] = await Promise.all([
+                    proRes.json(), estRes.json(), cetRes.json(), onaRes.json(), dirRes.json(), divRes.json(), uniRes.json(), obreroRes.json()
                 ]);
 
-                // Filtrar catálogos solo a cargos válidos de obreros
-                const cargosCET = cargosCETAll.filter(c => CARGO_REGEX.test(c.nombre));
                 const cargosONAPRE = cargosONAPREAll.filter(c => CARGO_REGEX.test(c.nombre));
-
                 const obrero = obreroRaw.data || obreroRaw.datos_personales || obreroRaw;
-
-                const dir_id = obrero.direccion_id || '';
-                const div_id = obrero.division_id || '';
                 const ona_id = obrero.cargo_onapre_id || '';
-
-                let divisionesFetch = [];
-                let unidadesFetch = [];
                 let nivelesFetch = [];
 
-                if (dir_id) {
-                    const res = await fetch(`/api/divisiones?direccion_id=${dir_id}`);
-                    divisionesFetch = await res.json();
-                }
-                if (div_id) {
-                    const res = await fetch(`/api/unidades?division_id=${div_id}`);
-                    unidadesFetch = await res.json();
-                }
                 if (ona_id) {
                     const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
-                    nivelesFetch = await res.json();
+                    const nivelesData = await res.json();
+                    const data = nivelesData.success ? nivelesData.data : nivelesData;
+                    nivelesFetch = Array.isArray(data) ? data.map(n => ({
+                        ...n,
+                        campo_completo: n.campo_completo || `${n.nombre}`.trim()
+                    })) : [];
                 }
 
                 setCatalogos({
-                    profesiones, estatus, cargosCET, cargosONAPRE, direcciones,
-                    divisiones: divisionesFetch, unidades: unidadesFetch, niveles: nivelesFetch
+                    profesiones, estatus, cargosCET: cargosCETAll, cargosONAPRE,
+                    direcciones, divisiones, unidades, niveles: nivelesFetch
                 });
 
                 const formatDate = (s) => {
@@ -139,44 +139,24 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
         setErrorMessage('');
     }, [show, empleado_id]);
 
-    // Cascada Dirección → Divisiones
-    useEffect(() => {
-        if (!formData.direccion_id || !show || isLoadingData) return;
-        const fetch_ = async () => {
-            try {
-                const res = await fetch(`/api/divisiones?direccion_id=${formData.direccion_id}`);
-                const data = await res.json();
-                setCatalogos(prev => ({ ...prev, divisiones: data }));
-            } catch (e) { console.error(e); }
-        };
-        fetch_();
-    }, [formData.direccion_id]);
-
-    // Cascada División → Unidades
-    useEffect(() => {
-        if (!formData.division_id || !show || isLoadingData) return;
-        const fetch_ = async () => {
-            try {
-                const res = await fetch(`/api/unidades?division_id=${formData.division_id}`);
-                const data = await res.json();
-                setCatalogos(prev => ({ ...prev, unidades: data }));
-            } catch (e) { console.error(e); }
-        };
-        fetch_();
-    }, [formData.division_id]);
-
-    // Cascada Cargo ONAPRE → Niveles
+    // Cascada Cargo ONAPRE → Niveles (se mantiene API)
     useEffect(() => {
         if (!formData.cargo_onapre_id || !show || isLoadingData) return;
         const fetch_ = async () => {
             try {
                 const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
-                const data = await res.json();
-                setCatalogos(prev => ({ ...prev, niveles: data }));
+                const nivelesData = await res.json();
+                const data = nivelesData.success ? nivelesData.data : nivelesData;
+                const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
+                    ...n,
+                    campo_completo: n.campo_completo || `${n.nombre}`.trim()
+                })) : [];
+                setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
             } catch (e) { console.error(e); }
         };
         fetch_();
-    }, [formData.cargo_onapre_id]);
+    }, [formData.cargo_onapre_id, isLoadingData]);
+    // Nota: Divisiones y Unidades se filtran localmente via useSelectsDependientes
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -185,10 +165,10 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
             if (name === 'direccion_id') {
                 newData.division_id = '';
                 newData.unidad_id = '';
-                setCatalogos(c => ({ ...c, unidades: [] }));
             } else if (name === 'division_id') {
                 newData.unidad_id = '';
             } else if (name === 'cargo_onapre_id') {
+                newData.cargo_cet_id = '';
                 newData.nivel_salarial_id = '';
             }
             return newData;
@@ -477,19 +457,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                                             </div>
 
                                             <div className="row mb-3">
-                                                <div className="col-md-6">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Cargo CET *</Form.Label>
-                                                        <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange} required>
-                                                            <option value="">Seleccione cargo CET</option>
-                                                            {catalogos.cargosCET.map(c => (
-                                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                        <Form.Text className="text-muted">Solo cargos: Obrero, Aseador, Mensajero, Vigilante</Form.Text>
-                                                    </Form.Group>
-                                                </div>
-                                                <div className="col-md-6">
+                                                <div className="col-md-4">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Clasificación ONAPRE *</Form.Label>
                                                         <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange} required>
@@ -500,10 +468,27 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                                                         </Form.Select>
                                                     </Form.Group>
                                                 </div>
-                                            </div>
-
-                                            <div className="row mb-3">
-                                                <div className="col-md-6">
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Cargo CET *</Form.Label>
+                                                        <Form.Select
+                                                            name="cargo_cet_id"
+                                                            value={formData.cargo_cet_id}
+                                                            onChange={handleChange}
+                                                            required
+                                                            disabled={!formData.cargo_onapre_id || cargosCETFiltrados.length === 0}
+                                                        >
+                                                            <option value="">Seleccione cargo CET</option>
+                                                            {cargosCETFiltrados.map(c => (
+                                                                <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                        {formData.cargo_onapre_id && cargosCETFiltrados.length === 0 && (
+                                                            <Form.Text className="text-muted">No hay cargos CET para esta clasificación.</Form.Text>
+                                                        )}
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-4">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Nivel Salarial</Form.Label>
                                                         <Form.Select name="nivel_salarial_id" value={formData.nivel_salarial_id} onChange={handleChange} disabled={!formData.cargo_onapre_id}>
@@ -512,12 +497,6 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                                                                 <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.nombre} — {n.salario_base} Bs.</option>
                                                             ))}
                                                         </Form.Select>
-                                                    </Form.Group>
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Nro. Cuenta Bancaria</Form.Label>
-                                                        <Form.Control type="text" name="cuenta_bancaria" maxLength={20} value={formData.cuenta_bancaria} onChange={handleChange} />
                                                     </Form.Group>
                                                 </div>
                                             </div>
@@ -538,9 +517,9 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                                                 <div className="col-md-4">
                                                     <Form.Group>
                                                         <Form.Label>División (Opcional)</Form.Label>
-                                                        <Form.Select name="division_id" value={formData.division_id} onChange={handleChange} disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}>
+                                                        <Form.Select name="division_id" value={formData.division_id} onChange={handleChange} disabled={!formData.direccion_id}>
                                                             <option value="">-- Directo a la Dirección --</option>
-                                                            {catalogos.divisiones?.map(d => (
+                                                            {divisionesFiltradas.map(d => (
                                                                 <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
                                                             ))}
                                                         </Form.Select>
@@ -549,9 +528,9 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                                                 <div className="col-md-4">
                                                     <Form.Group>
                                                         <Form.Label>Unidad (Opcional)</Form.Label>
-                                                        <Form.Select name="unidad_id" value={formData.unidad_id} onChange={handleChange} disabled={!formData.division_id || catalogos.unidades?.length === 0}>
-                                                            <option value="">-- Directo a la División --</option>
-                                                            {catalogos.unidades?.map(u => (
+                                                        <Form.Select name="unidad_id" value={formData.unidad_id} onChange={handleChange} disabled={!formData.direccion_id}>
+                                                            <option value="">{formData.division_id ? '-- Directo a la División --' : '-- Directo a la Dirección --'}</option>
+                                                            {unidadesFiltradas.map(u => (
                                                                 <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
                                                             ))}
                                                         </Form.Select>

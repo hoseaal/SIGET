@@ -34,17 +34,21 @@ export class PensionadoModel {
       SELECT e.*,
              e.empleado_id AS pensionado_id,
              TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) AS edad,
-             dl.cargo_cet_id, dl.condicion_laboral_id,
-             cet.nombre AS cargo_cet_nombre,
-             niv.salario_base,
-             cl.nombre AS condicion_nombre,
-             p.nombre AS profesion_nombre,
-             dir.nombre AS direccion_nombre,
-             divi.nombre AS division_nombre,
-             uni.nombre AS unidad_nombre
+             p_table.id_pensionado, p_table.fecha_ingreso AS fecha_ingreso_pension, p_table.observacion,
+              dl.cargo_cet_id, dl.cargo_onapre_id, dl.condicion_laboral_id,
+              cet.nombre AS cargo_cet_nombre,
+              ona.nombre AS cargo_onapre_nombre,
+              niv.salario_base,
+              cl.nombre AS condicion_nombre,
+              p.nombre AS profesion_nombre,
+              dir.nombre AS direccion_nombre,
+              divi.nombre AS division_nombre,
+              uni.nombre AS unidad_nombre
       FROM empleados e
+      LEFT JOIN pensionado p_table ON e.empleado_id = p_table.empleado_id
       LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
       LEFT JOIN cargos_cet cet ON dl.cargo_cet_id = cet.cargo_cet_id
+      LEFT JOIN cargos_onapre ona ON dl.cargo_onapre_id = ona.cargo_onapre_id
       LEFT JOIN niveles_salariales niv ON dl.nivel_salarial_id = niv.nivel_salarial_id
       LEFT JOIN condiciones_laborales cl ON dl.condicion_laboral_id = cl.condicion_laboral_id
       LEFT JOIN profesiones p ON e.profesion_id = p.profesion_id
@@ -82,19 +86,23 @@ export class PensionadoModel {
       SELECT e.*,
              e.empleado_id AS pensionado_id,
              TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) AS edad,
-             dl.cargo_cet_id, dl.nivel_salarial_id,
-             dl.nivel_salarial_antiguo_id, dl.condicion_laboral_id,
-             dl.prima_profesional_id, dl.direccion_id, dl.division_id, dl.unidad_id,
-             cet.nombre AS cargo_cet_nombre,
-             niv.salario_base,
-             cl.nombre AS condicion_nombre,
-             p.nombre AS profesion_nombre,
-             dir.nombre AS direccion_nombre,
-             divi.nombre AS division_nombre,
-             uni.nombre AS unidad_nombre
+             p_table.id_pensionado, p_table.fecha_ingreso AS fecha_ingreso_pension, p_table.observacion,
+              dl.cargo_cet_id, dl.cargo_onapre_id, dl.nivel_salarial_id,
+              dl.nivel_salarial_antiguo_id, dl.condicion_laboral_id,
+              dl.prima_profesional_id, dl.direccion_id, dl.division_id, dl.unidad_id,
+              cet.nombre AS cargo_cet_nombre,
+              ona.nombre AS cargo_onapre_nombre,
+              niv.salario_base,
+              cl.nombre AS condicion_nombre,
+              p.nombre AS profesion_nombre,
+              dir.nombre AS direccion_nombre,
+              divi.nombre AS division_nombre,
+              uni.nombre AS unidad_nombre
       FROM empleados e
+      LEFT JOIN pensionado p_table ON e.empleado_id = p_table.empleado_id
       LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
       LEFT JOIN cargos_cet cet ON dl.cargo_cet_id = cet.cargo_cet_id
+      LEFT JOIN cargos_onapre ona ON dl.cargo_onapre_id = ona.cargo_onapre_id
       LEFT JOIN niveles_salariales niv ON dl.nivel_salarial_id = niv.nivel_salarial_id
       LEFT JOIN condiciones_laborales cl ON dl.condicion_laboral_id = cl.condicion_laboral_id
       LEFT JOIN profesiones p ON e.profesion_id = p.profesion_id
@@ -110,7 +118,7 @@ export class PensionadoModel {
     /**
      * TRANSACCIÓN DE REGISTRO COMPLETO DE PENSIONADO
      */
-    static async createTransactional(personalData, contractData) {
+    static async createTransactional(personalData, contractData, pensionData) {
         const connection = await pool.getConnection()
 
         try {
@@ -127,6 +135,12 @@ export class PensionadoModel {
                 await connection.query('INSERT INTO datos_laborales SET ?', [contractPayload])
             }
 
+            // PASO 3: Crear datos de pensión si existen
+            if (pensionData && Object.keys(pensionData).length > 0) {
+                const pensionPayload = { ...pensionData, empleado_id: empleadoId }
+                await connection.query('INSERT INTO pensionado SET ?', [pensionPayload])
+            }
+
             await connection.commit()
             return { empleado_id: empleadoId }
 
@@ -141,7 +155,7 @@ export class PensionadoModel {
     /**
      * TRANSACCIÓN DE ACTUALIZACIÓN
      */
-    static async updateTransactional(empleadoId, personalData, contractData) {
+    static async updateTransactional(empleadoId, personalData, contractData, pensionData) {
         const connection = await pool.getConnection()
 
         try {
@@ -159,6 +173,16 @@ export class PensionadoModel {
                     await connection.query('UPDATE datos_laborales SET ? WHERE empleado_id = ?', [contractData, empleadoId])
                 } else {
                     await connection.query('INSERT INTO datos_laborales SET ?', [{ ...contractData, empleado_id: empleadoId }])
+                }
+            }
+
+            // Actualizar/insertar datos de pensión
+            if (pensionData && Object.keys(pensionData).length > 0) {
+                const [pRows] = await connection.query('SELECT empleado_id FROM pensionado WHERE empleado_id = ?', [empleadoId])
+                if (pRows.length > 0) {
+                    await connection.query('UPDATE pensionado SET ? WHERE empleado_id = ?', [pensionData, empleadoId])
+                } else {
+                    await connection.query('INSERT INTO pensionado SET ?', [{ ...pensionData, empleado_id: empleadoId }])
                 }
             }
 

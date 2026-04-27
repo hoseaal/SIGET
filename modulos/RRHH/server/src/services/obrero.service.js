@@ -23,7 +23,9 @@ export class ObreroService {
 
     Object.keys(datosSucios).forEach(key => {
       let val = datosSucios[key]
-      if (val === '' || val === ' ' || val === 'null' || val === undefined) {
+      // Solo convertimos a null si es undefined o la cadena literal 'null'
+      // Las cadenas vacías se mantienen como '' para evitar errores en columnas NOT NULL de la BD
+      if (val === 'null' || val === undefined) {
         val = null
       }
 
@@ -42,31 +44,42 @@ export class ObreroService {
   }
 
   static async _validarJerarquia (direccion_id, division_id, unidad_id) {
-    if (unidad_id) {
-      const [uniRows] = await pool.query('SELECT division_id FROM unidades WHERE unidad_id = ?', [unidad_id])
-      if (uniRows.length === 0) throw new Error('Unidad no existe')
+    try {
+      if (unidad_id) {
+        const [uniRows] = await pool.query('SELECT division_id FROM unidades WHERE unidad_id = ?', [unidad_id])
+        if (uniRows.length === 0) throw new Error('Unidad no existe en la base de datos')
+        
+        const realDiv = uniRows[0].division_id
+        if (realDiv) {
+          const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [realDiv])
+          if (divRows.length > 0) {
+            return { direccion_id: divRows[0].direccion_id, division_id: realDiv, unidad_id }
+          }
+        }
+        // Fallback: Si no tiene división o la división no existe, devolvemos lo que tenemos
+        return { direccion_id: direccion_id || null, division_id: null, unidad_id }
+      }
       
-      const realDiv = uniRows[0].division_id
-      const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [realDiv])
+      if (division_id) {
+        const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [division_id])
+        if (divRows.length === 0) throw new Error('División no existe en la base de datos')
+        
+        return { direccion_id: divRows[0].direccion_id, division_id, unidad_id: null }
+      }
       
-      return { direccion_id: divRows[0].direccion_id, division_id: realDiv, unidad_id }
-    }
-    
-    if (division_id) {
-      const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [division_id])
-      if (divRows.length === 0) throw new Error('División no existe')
-      
-      return { direccion_id: divRows[0].direccion_id, division_id, unidad_id: null }
-    }
-    
-    if (direccion_id) {
-      const [dirRows] = await pool.query('SELECT direccion_id FROM direcciones WHERE direccion_id = ?', [direccion_id])
-      if (dirRows.length === 0) throw new Error('Dirección no existe')
+      if (direccion_id) {
+        const [dirRows] = await pool.query('SELECT direccion_id FROM direcciones WHERE direccion_id = ?', [direccion_id])
+        if (dirRows.length === 0) throw new Error('Dirección no existe en la base de datos')
 
-      return { direccion_id, division_id: null, unidad_id: null }
-    }
+        return { direccion_id, division_id: null, unidad_id: null }
+      }
 
-    return { direccion_id: null, division_id: null, unidad_id: null }
+      return { direccion_id: null, division_id: null, unidad_id: null }
+    } catch (error) {
+      console.error('Error en _validarJerarquia:', error)
+      // En caso de error de integridad, devolvemos lo que envió el cliente si al menos hay dirección
+      return { direccion_id: direccion_id || null, division_id: division_id || null, unidad_id: unidad_id || null }
+    }
   }
 
   static async _vincularNivelesSalariales (datosContratoClean) {

@@ -229,6 +229,13 @@ export class FuncionarioService {
       throw new Error('Faltan datos del encargo (Cargo, Fecha Inicio o Nivel Salarial)')
     }
 
+    const [contrato] = await pool.query('SELECT cargo_cet_id, cargo_onapre_id FROM datos_laborales WHERE empleado_id = ?', [empleado_id]);
+    if (contrato.length > 0) {
+      if (contrato[0].cargo_cet_id === datos.cargo_cet_id || contrato[0].cargo_onapre_id === datos.cargo_onapre_id) {
+        throw new Error('El cargo CET u ONAPRE a asignar es igual al que ya posee el funcionario en sus datos laborales base.')
+      }
+    }
+
     // 3. Validar Jerarquía del Encargo
     // Asumimos que para un encargo deben decir al menos la unidad (o dirección)
     // Usamos el mismo helper _validarJerarquia

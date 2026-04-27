@@ -25,16 +25,15 @@ export class NivelSalarialService {
     if (!existe) throw new Error('Nivel salarial no existe')
     
     // Auto-completar campos desde el registro existente si no vienen en el payload
-    // (el modal de update solo expone salario_base para edición)
-    const datosCompletos = {
-      nombre: datos.nombre || existe.nombre,
-      salario_base: datos.salario_base || existe.salario_base,
-      cargo_onapre_id: datos.cargo_onapre_id || existe.cargo_onapre_id
-    }
+    const nombre = datos.nombre !== undefined ? datos.nombre : existe.nombre
+    const salario_base = datos.salario_base !== undefined ? datos.salario_base : existe.salario_base
+    const cargo_onapre_id = datos.cargo_onapre_id !== undefined ? datos.cargo_onapre_id : existe.cargo_onapre_id
 
-    if (!datosCompletos.nombre || !datosCompletos.salario_base || !datosCompletos.cargo_onapre_id) {
+    if (nombre === undefined || salario_base === undefined || cargo_onapre_id === undefined) {
       throw new Error('Nombre, Salario y Cargo ONAPRE son requeridos para actualizar')
     }
+
+    const datosCompletos = { nombre, salario_base, cargo_onapre_id }
 
     return await NivelSalarialModel.update(id, datosCompletos)
   }

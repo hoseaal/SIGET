@@ -4,6 +4,7 @@ import Button from '../../../components/atoms/Buttons';
 import Alert from "../../../components/atoms/Alert";
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
 
 export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, empleado_id }) => {
     const [paso, setPaso] = useState(1);
@@ -31,6 +32,16 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
         niveles: [], condiciones: [], direcciones: [], divisiones: [], unidades: []
     });
 
+    // Hook de selects dependientes: filtra CET, divisiones y unidades localmente
+    const {
+        cargosCETFiltrados,
+        divisionesFiltradas,
+        unidadesFiltradas,
+        tieneDivisiones,
+        tieneUnidades,
+        tieneUnidadesDirectas
+    } = useSelectsDependientes(formData, catalogos);
+
     // Cargar Catálogos Maestros y Datos del Funcionario
     useEffect(() => {
         if (!show || !empleado_id) return;
@@ -40,14 +51,16 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
             setErrorMessage('');
             try {
                 // 1. Cargar bases estáticas
-                const [proRes, estRes, cetRes, onaRes, colRes, dirRes, funRes] = await Promise.all([
+                const [proRes, estRes, cetRes, onaRes, colRes, dirRes, divRes, uniRes, funRes] = await Promise.all([
                     fetch('/api/profesiones'),
                     fetch('/api/estatus'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/condiciones-laborales'),
                     fetch('/api/direcciones'),
-                    fetch(`/api/funcionarios/${empleado_id}`)
+                    fetch('/api/divisiones'),
+                    fetch('/api/unidades'),
+                    fetch(`/api/funcionarios/${empleado_id}?type=full`)
                 ]);
 
                 if (!funRes.ok) throw new Error('Error al obtener datos del funcionario');
@@ -58,37 +71,31 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
                 const cargosONAPRE = await onaRes.json();
                 const condiciones = await colRes.json();
                 const direcciones = await dirRes.json();
+                const divisiones = await divRes.json();
+                const unidades = await uniRes.json();
                 const empleadoRaw = await funRes.json();
                 // El servicio backend puede enviar el objeto de diversas formas según el type
                 const empleado = empleadoRaw.data || empleadoRaw.datos_personales || empleadoRaw;
 
-                // 2. Extraer dependencias dinámicas del empleado
-                const dir_id = empleado.direccion_id || '';
-                const div_id = empleado.division_id || '';
+                // 2. Cargar niveles salariales si hay cargo ONAPRE
                 const ona_id = empleado.cargo_onapre_id || '';
-
-                let divisionesFetch = [];
-                let unidadesFetch = [];
                 let nivelesFetch = [];
 
-                if (dir_id) {
-                    const res = await fetch(`/api/divisiones?direccion_id=${dir_id}`);
-                    divisionesFetch = await res.json();
-                }
-                if (div_id) {
-                    const res = await fetch(`/api/unidades?division_id=${div_id}`);
-                    unidadesFetch = await res.json();
-                }
                 if (ona_id) {
                     const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
-                    nivelesFetch = await res.json();
+                    const nivelesData = await res.json();
+                    const data = nivelesData.success ? nivelesData.data : nivelesData;
+                    nivelesFetch = Array.isArray(data) ? data.map(n => ({
+                        ...n,
+                        campo_completo: n.campo_completo || `${n.nombre}`.trim()
+                    })) : [];
                 }
 
-                // 3. Establecer catalogos
+                // 3. Establecer catalogos (divisiones y unidades se filtran localmente via hook)
                 setCatalogos({
                     profesiones, estatus, cargosCET, cargosONAPRE,
-                    condiciones, direcciones, divisiones: divisionesFetch,
-                    unidades: unidadesFetch, niveles: nivelesFetch
+                    condiciones, direcciones, divisiones, unidades,
+                    niveles: nivelesFetch
                 });
 
                 // 4. Formatear Fechas para el input 'date' (YYYY-MM-DD)
@@ -148,50 +155,26 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
         setErrorMessage('');
     }, [show, empleado_id]);
 
-    // Cascada: Cuando el usuario cambia la Dirección manualmente
-    useEffect(() => {
-        const fetchDivisiones = async () => {
-            if (!formData.direccion_id || !show || isLoadingData) return;
-            try {
-                const res = await fetch(`/api/divisiones?direccion_id=${formData.direccion_id}`);
-                const data = await res.json();
-                setCatalogos(prev => ({ ...prev, divisiones: data }));
-            } catch (error) {
-                console.error("Error cargando divisiones:", error);
-            }
-        };
-        fetchDivisiones();
-    }, [formData.direccion_id]);
-
-    // Cascada: Cuando el usuario cambia la División manualmente
-    useEffect(() => {
-        const fetchUnidades = async () => {
-            if (!formData.division_id || !show || isLoadingData) return;
-            try {
-                const res = await fetch(`/api/unidades?division_id=${formData.division_id}`);
-                const data = await res.json();
-                setCatalogos(prev => ({ ...prev, unidades: data }));
-            } catch (error) {
-                console.error("Error cargando unidades:", error);
-            }
-        };
-        fetchUnidades();
-    }, [formData.division_id]);
-
-    // Cascada: Cuando el usuario cambia Cargo ONAPRE manualmente
+    // Cascada: Cuando el usuario cambia Cargo ONAPRE manualmente → recargar niveles
     useEffect(() => {
         const fetchNiveles = async () => {
             if (!formData.cargo_onapre_id || !show || isLoadingData) return;
             try {
                 const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
-                const data = await res.json();
-                setCatalogos(prev => ({ ...prev, niveles: data }));
+                const nivelesData = await res.json();
+                const data = nivelesData.success ? nivelesData.data : nivelesData;
+                const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
+                    ...n,
+                    campo_completo: n.campo_completo || `${n.nombre}`.trim()
+                })) : [];
+                setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
             } catch (error) {
                 console.error("Error cargando niveles:", error);
             }
         };
         fetchNiveles();
-    }, [formData.cargo_onapre_id]);
+    }, [formData.cargo_onapre_id, isLoadingData]);
+    // Nota: Divisiones y Unidades se filtran localmente via useSelectsDependientes
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -200,10 +183,10 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
             if (name === 'direccion_id') {
                 newData.division_id = '';
                 newData.unidad_id = '';
-                setCatalogos(cat => ({ ...cat, unidades: [] }));
             } else if (name === 'division_id') {
                 newData.unidad_id = '';
             } else if (name === 'cargo_onapre_id') {
+                newData.cargo_cet_id = '';
                 newData.nivel_salarial_id = '';
             }
             return newData;
@@ -495,18 +478,37 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
                                         </div>
 
                                         <div className="row mb-3">
-                                            <div className="col-md-6">
+                                            <div className="col-md-4">
                                                 <Form.Group className="mb-3">
-                                                    <Form.Label>Cargo CET (Interno)</Form.Label>
-                                                    <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
+                                                    <Form.Label>Clasificación ONAPRE</Form.Label>
+                                                    <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
                                                         <option value="">Seleccione</option>
-                                                        {catalogos.cargosCET.map(c => (
-                                                            <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                                        {catalogos.cargosONAPRE.map(o => (
+                                                            <option key={o.cargo_onapre_id} value={o.cargo_onapre_id}>{o.nombre}</option>
                                                         ))}
                                                     </Form.Select>
                                                 </Form.Group>
                                             </div>
-                                            <div className="col-md-6">
+                                            <div className="col-md-4">
+                                                <Form.Group className="mb-3">
+                                                    <Form.Label>Cargo CET (Interno)</Form.Label>
+                                                    <Form.Select
+                                                        name="cargo_cet_id"
+                                                        value={formData.cargo_cet_id}
+                                                        onChange={handleChange}
+                                                        disabled={!formData.cargo_onapre_id || cargosCETFiltrados.length === 0}
+                                                    >
+                                                        <option value="">Seleccione</option>
+                                                        {cargosCETFiltrados.map(c => (
+                                                            <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                                        ))}
+                                                    </Form.Select>
+                                                    {formData.cargo_onapre_id && cargosCETFiltrados.length === 0 && (
+                                                        <Form.Text className="text-muted">No hay cargos CET para esta clasificación.</Form.Text>
+                                                    )}
+                                                </Form.Group>
+                                            </div>
+                                            <div className="col-md-4">
                                                 <Form.Group className="mb-3">
                                                     <Form.Label>Condición Laboral</Form.Label>
                                                     <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
@@ -520,24 +522,13 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
                                         </div>
 
                                         <div className="row mb-3">
-                                            <div className="col-md-6">
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Clasificación ONAPRE</Form.Label>
-                                                    <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
-                                                        <option value="">Seleccione</option>
-                                                        {catalogos.cargosONAPRE.map(o => (
-                                                            <option key={o.cargo_onapre_id} value={o.cargo_onapre_id}>{o.nombre}</option>
-                                                        ))}
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </div>
-                                            <div className="col-md-6">
+                                            <div className="col-md-12">
                                                 <Form.Group className="mb-3">
                                                     <Form.Label>Nivel Salarial</Form.Label>
                                                     <Form.Select name="nivel_salarial_id" value={formData.nivel_salarial_id} onChange={handleChange} disabled={!formData.cargo_onapre_id}>
                                                         <option value="">Seleccione</option>
                                                         {catalogos.niveles.map(n => (
-                                                            <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.nombre} - {n.salario_base} Bs.</option>
+                                                            <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.nombre} — {n.salario_base} Bs.</option>
                                                         ))}
                                                     </Form.Select>
                                                 </Form.Group>
@@ -566,10 +557,10 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
                                                         name="division_id"
                                                         value={formData.division_id}
                                                         onChange={handleChange}
-                                                        disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}
+                                                        disabled={!formData.direccion_id || !tieneDivisiones}
                                                     >
                                                         <option value="">-- Directo a la Dirección --</option>
-                                                        {catalogos.divisiones?.map(d => (
+                                                        {divisionesFiltradas.map(d => (
                                                             <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
                                                         ))}
                                                     </Form.Select>
@@ -583,10 +574,10 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
                                                         name="unidad_id"
                                                         value={formData.unidad_id}
                                                         onChange={handleChange}
-                                                        disabled={!formData.division_id || catalogos.unidades?.length === 0}
+                                                        disabled={!formData.direccion_id || !tieneUnidades}
                                                     >
-                                                        <option value="">-- Directo a la División --</option>
-                                                        {catalogos.unidades?.map(u => (
+                                                        <option value="">{formData.division_id ? '-- Directo a la División --' : '-- Directo a la Dirección --'}</option>
+                                                        {unidadesFiltradas.map(u => (
                                                             <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
                                                         ))}
                                                     </Form.Select>

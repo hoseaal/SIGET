@@ -11,12 +11,8 @@ export const NominaActivos = () => {
     const [mes, setMes] = useState(currentMonth);
     const [anio, setAnio] = useState(currentYear);
     const [quincena, setQuincena] = useState(currentQuincena);
-    
     const [nominaData, setNominaData] = useState([]);
     const [loading, setLoading] = useState(false);
-    
-    // Función para manejar la visibilidad de los detalles
-    const [expandedRows, setExpandedRows] = useState({});
 
     const meses = [
         { id: 1, name: 'Enero' }, { id: 2, name: 'Febrero' }, { id: 3, name: 'Marzo' },
@@ -36,7 +32,6 @@ export const NominaActivos = () => {
     const processNomina = async () => {
         setLoading(true);
         setNominaData([]);
-        setExpandedRows({});
         try {
             const url = new URL('/api/nomina-activos/procesar', window.location.origin);
             url.searchParams.append('mes', mes);
@@ -51,7 +46,7 @@ export const NominaActivos = () => {
                 }
             });
             const data = await res.json();
-            
+
             if (data.ok) {
                 setNominaData(data.datos);
                 toast.success('Nómina procesada correctamente.');
@@ -66,12 +61,7 @@ export const NominaActivos = () => {
         }
     };
 
-    const toggleRow = (cedula) => {
-        setExpandedRows(prev => ({
-            ...prev,
-            [cedula]: !prev[cedula]
-        }));
-    };
+
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'VES' }).format(amount);
@@ -115,8 +105,8 @@ export const NominaActivos = () => {
                             </select>
                         </div>
                         <div className="col-md-3 d-flex align-items-end">
-                            <button 
-                                className="btn btn-primary w-100" 
+                            <button
+                                className="btn btn-primary w-100"
                                 onClick={processNomina}
                                 disabled={loading}
                             >
@@ -140,137 +130,74 @@ export const NominaActivos = () => {
                     <table className="table table-hover">
                         <thead className="table-light">
                             <tr>
-                                <th></th>
                                 <th>Cédula</th>
                                 <th>Nombres y Apellidos</th>
                                 <th>Cargo</th>
-                                <th className="text-end">T. Asignaciones</th>
-                                <th className="text-end">T. Deducciones</th>
-                                <th className="text-end text-success">Salario Neto</th>
+                                <th className="text-end">Sueldo Quin.</th>
+                                <th className="text-end">Antigüedad</th>
+                                <th className="text-end">Prof.</th>
+                                <th className="text-end">P. Jerarquía</th>
+                                <th className="text-end">P. Transporte</th>
+                                <th className="text-end">P. Reconocim.</th>
+                                <th className="text-end">P. Hogares</th>
+                                <th className="text-end">Comp. Alim.</th>
+                                <th className="text-end">P. Hijos</th>
+                                <th className="text-end">Dif. Sueldo (Sup)</th>
+                                <th className="text-end">Dif. Antigüedad (Sup)</th>
+                                <th className="text-end">Dif. Prof. (Sup)</th>
+                                <th className="text-end">Dif. Jerarquía (Sup)</th>
+                                <th className="text-end fw-bold" style={{ backgroundColor: '#f0f8ff' }}>T. Asignaciones</th>
+                                <th className="text-end">S.S.O</th>
+                                <th className="text-end">R.P.E</th>
+                                <th className="text-end">F.A.O.V</th>
+                                <th className="text-end">F.E.J.P</th>
+                                <th className="text-end">Caja Ahorros</th>
+                                <th className="text-end fw-bold" style={{ backgroundColor: '#fff5f5' }}>T. Deducciones</th>
+                                <th className="text-end text-success fw-bold" style={{ backgroundColor: '#f0fff4' }}>Salario Neto</th>
                             </tr>
                         </thead>
                         <tbody className="table-border-bottom-0">
                             {nominaData.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="text-center py-4">
+                                    <td colSpan="24" className="text-center py-4">
                                         No hay datos de nómina para mostrar. Haga clic en Calcular.
                                     </td>
                                 </tr>
                             ) : (
                                 nominaData.map((row) => (
-                                    <React.Fragment key={row.empleado.cedula}>
-                                        <tr 
-                                            onClick={() => toggleRow(row.empleado.cedula)} 
-                                            style={{ cursor: 'pointer' }}
-                                            className={expandedRows[row.empleado.cedula] ? "table-active" : ""}
-                                        >
-                                            <td>
-                                                <i className={`bx ${expandedRows[row.empleado.cedula] ? 'bx-chevron-up' : 'bx-chevron-down'}`}></i>
-                                            </td>
-                                            <td>{row.empleado.cedula}</td>
-                                            <td>
-                                                <strong>{row.empleado.nombres} {row.empleado.apellidos}</strong><br/>
+                                    <tr key={row.empleado.cedula} className="align-middle">
+                                        <td>{row.empleado.cedula}</td>
+                                        <td>
+                                            <div style={{ minWidth: '200px' }}>
+                                                <strong>{row.empleado.nombres} {row.empleado.apellidos}</strong><br />
                                                 <small className="text-muted">{row.empleado.departamento}</small>
-                                            </td>
-                                            <td>{row.empleado.cargo_cet}</td>
-                                            <td className="text-end">{formatCurrency(row.asignaciones.total_asignaciones)}</td>
-                                            <td className="text-end">{formatCurrency(row.deducciones.total_deducciones)}</td>
-                                            <td className="text-end text-success fw-bold">{formatCurrency(row.salario_neto)}</td>
-                                        </tr>
-                                        {expandedRows[row.empleado.cedula] && (
-                                            <tr>
-                                                <td colSpan="7" className="p-0">
-                                                    <div className="bg-light p-4 border-bottom">
-                                                        <div className="row">
-                                                            <div className="col-md-6 border-end">
-                                                                <h6 className="text-primary text-uppercase mb-3"><i className="bx bx-plus-circle me-2"></i>Detalle de Asignaciones</h6>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Sueldo Quincenal:</span>
-                                                                    <strong>{formatCurrency(row.asignaciones.sueldo_quincenal)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Antigüedad:</span>
-                                                                    <strong>{formatCurrency(row.asignaciones.antiguedad_quincenal)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Profesionalización:</span>
-                                                                    <strong>{formatCurrency(row.asignaciones.profesionalizacion)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Prima de Jerarquía:</span>
-                                                                    <strong>{formatCurrency(row.asignaciones.prima_jerarquia)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Prima de Transporte:</span>
-                                                                    <strong>{formatCurrency(row.asignaciones.prima_transporte)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Prima de Reconocimiento:</span>
-                                                                    <strong>{formatCurrency(row.asignaciones.prima_reconocimiento)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Prima de Hogares:</span>
-                                                                    <strong>{formatCurrency(row.asignaciones.prima_hogares)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Comp. Alimentación:</span>
-                                                                    <strong>{formatCurrency(row.asignaciones.complemento_alimentacion)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Prima por Hijos:</span>
-                                                                    <strong>{formatCurrency(row.asignaciones.prima_hijos)}</strong>
-                                                                </div>
-                                                                {row.asignaciones.diferencias_suplencia && (
-                                                                    <div className="mt-2 pt-2 border-top">
-                                                                        <small className="text-muted d-block mb-1">DIFERENCIAS POR SUPLENCIA</small>
-                                                                        <div className="d-flex justify-content-between mb-1">
-                                                                            <span>Dif. Sueldo:</span>
-                                                                            <strong>{formatCurrency(row.asignaciones.diferencias_suplencia.sueldo)}</strong>
-                                                                        </div>
-                                                                        <div className="d-flex justify-content-between mb-1">
-                                                                            <span>Dif. Antigüedad:</span>
-                                                                            <strong>{formatCurrency(row.asignaciones.diferencias_suplencia.antiguedad)}</strong>
-                                                                        </div>
-                                                                        <div className="d-flex justify-content-between mb-1">
-                                                                            <span>Dif. Profesionalización:</span>
-                                                                            <strong>{formatCurrency(row.asignaciones.diferencias_suplencia.profesionalizacion)}</strong>
-                                                                        </div>
-                                                                        <div className="d-flex justify-content-between mb-1">
-                                                                            <span>Dif. Jerarquía:</span>
-                                                                            <strong>{formatCurrency(row.asignaciones.diferencias_suplencia.jerarquia)}</strong>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            <div className="col-md-6 ps-4">
-                                                                <h6 className="text-danger text-uppercase mb-3"><i className="bx bx-minus-circle me-2"></i>Detalle de Deducciones</h6>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>S.S.O (Seguro Social):</span>
-                                                                    <strong>{formatCurrency(row.deducciones.seguro_empleado)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>R.P.E (Régimen Prestacional):</span>
-                                                                    <strong>{formatCurrency(row.deducciones.rpe_empleado)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>F.A.O.V:</span>
-                                                                    <strong>{formatCurrency(row.deducciones.faov_empleado)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>F.E.J.P:</span>
-                                                                    <strong>{formatCurrency(row.deducciones.fejp)}</strong>
-                                                                </div>
-                                                                <div className="d-flex justify-content-between mb-1">
-                                                                    <span>Caja de Ahorros:</span>
-                                                                    <strong>{formatCurrency(row.deducciones.caja_ahorro)}</strong>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </React.Fragment>
+                                            </div>
+                                        </td>
+                                        <td><div style={{ minWidth: '150px' }}>{row.empleado.cargo_cet}</div></td>
+                                        <td className="text-end">{formatCurrency(row.asignaciones.sueldo_quincenal)}</td>
+                                        <td className="text-end">{formatCurrency(row.asignaciones.antiguedad_quincenal)}</td>
+                                        <td className="text-end">{formatCurrency(row.asignaciones.profesionalizacion)}</td>
+                                        <td className="text-end">{formatCurrency(row.asignaciones.prima_jerarquia)}</td>
+                                        <td className="text-end">{formatCurrency(row.asignaciones.prima_transporte)}</td>
+                                        <td className="text-end">{formatCurrency(row.asignaciones.prima_reconocimiento)}</td>
+                                        <td className="text-end">{formatCurrency(row.asignaciones.prima_hogares)}</td>
+                                        <td className="text-end">{formatCurrency(row.asignaciones.complemento_alimentacion)}</td>
+                                        <td className="text-end">{formatCurrency(row.asignaciones.prima_hijos)}</td>
+                                        <td className="text-end">{row.asignaciones.diferencias_suplencia ? formatCurrency(row.asignaciones.diferencias_suplencia.sueldo) : 'Bs. 0,00'}</td>
+                                        <td className="text-end">{row.asignaciones.diferencias_suplencia ? formatCurrency(row.asignaciones.diferencias_suplencia.antiguedad) : 'Bs. 0,00'}</td>
+                                        <td className="text-end">{row.asignaciones.diferencias_suplencia ? formatCurrency(row.asignaciones.diferencias_suplencia.profesionalizacion) : 'Bs. 0,00'}</td>
+                                        <td className="text-end">{row.asignaciones.diferencias_suplencia ? formatCurrency(row.asignaciones.diferencias_suplencia.jerarquia) : 'Bs. 0,00'}</td>
+                                        <td className="text-end fw-bold" style={{ backgroundColor: '#f0f8ff' }}>{formatCurrency(row.asignaciones.total_asignaciones)}</td>
+
+                                        <td className="text-end text-danger">{formatCurrency(row.deducciones.seguro_empleado)}</td>
+                                        <td className="text-end text-danger">{formatCurrency(row.deducciones.rpe_empleado)}</td>
+                                        <td className="text-end text-danger">{formatCurrency(row.deducciones.faov_empleado)}</td>
+                                        <td className="text-end text-danger">{formatCurrency(row.deducciones.fejp)}</td>
+                                        <td className="text-end text-danger">{formatCurrency(row.deducciones.caja_ahorro)}</td>
+                                        <td className="text-end fw-bold text-danger" style={{ backgroundColor: '#fff5f5' }}>{formatCurrency(row.deducciones.total_deducciones)}</td>
+
+                                        <td className="text-end text-success fw-bold" style={{ backgroundColor: '#f0fff4' }}>{formatCurrency(row.salario_neto)}</td>
+                                    </tr>
                                 ))
                             )}
                         </tbody>

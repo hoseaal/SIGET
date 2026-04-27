@@ -12,18 +12,18 @@ export class PrimaModel {
     return rows[0] || null
   }
 
-  static async create ({ nombre, porcentaje }) {
+  static async create ({ nombre, asignacion }) {
     const [result] = await pool.query(
-      'INSERT INTO primas_generales (nombre, porcentaje) VALUES (?, ?)',
-      [nombre, porcentaje]
+      'INSERT INTO primas_generales (nombre, asignacion) VALUES (?, ?)',
+      [nombre, asignacion]
     )
-    return { prima_id: result.insertId, nombre, porcentaje }
+    return { prima_id: result.insertId, nombre, asignacion }
   }
 
-  static async update (id, { nombre, porcentaje }) {
+  static async update (id, { nombre, asignacion }) {
     const [result] = await pool.query(
-      'UPDATE primas_generales SET nombre = ?, porcentaje = ? WHERE prima_id = ?',
-      [nombre, porcentaje, id]
+      'UPDATE primas_generales SET nombre = ?, asignacion = ? WHERE prima_id = ?',
+      [nombre, asignacion, id]
     )
     return result.affectedRows > 0
   }

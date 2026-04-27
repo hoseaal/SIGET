@@ -14,7 +14,7 @@ export class PrimaProfesionalizacionModel {
 
   static async create ({ descripcion, porcentaje_actual, porcentaje_anterior }) {
     // Si porcentaje_anterior no viene, insertamos NULL
-    const valorAntiguo = porcentaje_anterior !== undefined ? porcentaje_anterior : null
+    const valorAntiguo = (porcentaje_anterior !== undefined && porcentaje_anterior !== '') ? porcentaje_anterior : null
 
     const [result] = await pool.query(
       'INSERT INTO primas_profesionalizacion (descripcion, porcentaje_actual, porcentaje_anterior) VALUES (?, ?, ?)',
@@ -24,7 +24,7 @@ export class PrimaProfesionalizacionModel {
   }
 
   static async update (id, { descripcion, porcentaje_actual, porcentaje_anterior }) {
-    const valorAntiguo = porcentaje_anterior !== undefined ? porcentaje_anterior : null
+    const valorAntiguo = (porcentaje_anterior !== undefined && porcentaje_anterior !== '') ? porcentaje_anterior : null
 
     const [result] = await pool.query(
       'UPDATE primas_profesionalizacion SET descripcion = ?, porcentaje_actual = ?, porcentaje_anterior = ? WHERE prima_profesional_id = ?',

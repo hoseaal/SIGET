@@ -50,7 +50,7 @@ export class EncargoTemporalService {
    * Valida que no tenga ya uno activo.
    */
   static async crear (datos) {
-    const { empleado_id, fecha_inicio, cargo_cet_id, cargo_onapre_id, nivel_salarial_id, direccion_id, division_id, unidad_id } = datos
+    let { empleado_id, fecha_inicio, cargo_cet_id, cargo_onapre_id, nivel_salarial_id, direccion_id, division_id, unidad_id } = datos
 
     if (!empleado_id)       throw new Error('El ID del funcionario es requerido.')
     if (!fecha_inicio)      throw new Error('La fecha de inicio es requerida.')
@@ -58,8 +58,18 @@ export class EncargoTemporalService {
     if (!cargo_onapre_id)   throw new Error('El cargo ONAPRE es requerido.')
     if (!nivel_salarial_id) throw new Error('El nivel salarial es requerido.')
     if (!direccion_id)      throw new Error('La dirección es requerida.')
-    if (!division_id)       throw new Error('La división es requerida.')
-    if (!unidad_id)         throw new Error('La unidad es requerida.')
+
+    division_id = division_id || null;
+    unidad_id = unidad_id || null;
+    datos.division_id = division_id;
+    datos.unidad_id = unidad_id;
+
+    const [contrato] = await pool.query('SELECT cargo_cet_id, cargo_onapre_id FROM datos_laborales WHERE empleado_id = ?', [empleado_id]);
+    if (contrato.length > 0) {
+      if (contrato[0].cargo_cet_id === cargo_cet_id || contrato[0].cargo_onapre_id === cargo_onapre_id) {
+        throw new Error('El cargo CET u ONAPRE a asignar es igual al que ya posee el funcionario en sus datos laborales base.')
+      }
+    }
 
     await this._vincularNivelesSalariales(datos)
     return await EncargoTemporalModel.create(datos)

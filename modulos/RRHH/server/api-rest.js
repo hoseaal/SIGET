@@ -29,6 +29,7 @@ import cargaFamiliarRouter from './src/routes/cargaFamiliar.routes.js'
 import encargoTemporalRouter from './src/routes/encargoTemporal.routes.js'
 import sobrevivienteRouter from './src/routes/sobreviviente.routes.js'
 import nominaActivosRouter from './src/routes/nominaActivos.routes.js'
+import porcentajesJerarquiasRouter from './src/routes/porcentajesJerarquias.routes.js'
 
 import historialSalarioRouter from './src/routes/historialSalario.routes.js'
 
@@ -98,6 +99,7 @@ app.use('/api/carga-familiar', cargaFamiliarRouter)
 app.use('/api/encargos-temporales', encargoTemporalRouter)
 app.use('/api/sobrevivientes', sobrevivienteRouter)
 app.use('/api/nomina-activos', nominaActivosRouter)
+app.use('/api/porcentajes-jerarquias', porcentajesJerarquiasRouter)
 
 const PORT = 5002
 app.listen(PORT, () => {

@@ -6,25 +6,31 @@ export class NominaActivosModel {
     const sql = `
       SELECT t.empleado_id, t.cedula, t.nombres AS nombre, t.apellidos AS apellido, 
         t.fecha_ingreso, 
-        (SELECT COUNT(*) FROM hijos h WHERE h.empleado_id = t.empleado_id) AS numero_hijos,
+        (
+          SELECT COUNT(*) 
+          FROM nucleo_familiar nf 
+          INNER JOIN sobreviviente s ON nf.familiar_id = s.familiar_id 
+          WHERE s.empleado_id = t.empleado_id 
+            AND LOWER(nf.parentesco) IN ('hijo', 'hija') 
+            AND TIMESTAMPDIFF(YEAR, nf.fecha_nacimiento, CURDATE()) < 18
+        ) AS numero_hijos,
         c.cargo_cet_id, cet.nombre AS cargo_cet, 
         c.cargo_onapre_id, ona.nombre AS cargo_onapre,
         c.nivel_salarial_id, niv.salario_base,
         (
-          SELECT salario_base 
-          FROM historial_salarios hs 
-          WHERE hs.nivel_salarial_id = c.nivel_salarial_id 
-          ORDER BY fecha_vigencia DESC LIMIT 1
+          SELECT salario_antiguo 
+          FROM niveles_salariales_antiguos nsa 
+          WHERE nsa.nivel_salarial_antiguo_id = c.nivel_salarial_antiguo_id 
         ) AS salario_historico,
         c.direccion_id, dir.nombre AS departamento,
-        pp.porcentaje AS profesionalizacion
+        pp.porcentaje_actual AS profesionalizacion
       FROM empleados t
       JOIN datos_laborales c ON t.empleado_id = c.empleado_id
       LEFT JOIN cargos_cet cet ON c.cargo_cet_id = cet.cargo_cet_id
       LEFT JOIN cargos_onapre ona ON c.cargo_onapre_id = ona.cargo_onapre_id
       LEFT JOIN niveles_salariales niv ON c.nivel_salarial_id = niv.nivel_salarial_id
       LEFT JOIN direcciones dir ON c.direccion_id = dir.direccion_id
-      LEFT JOIN primas_profesionalizacion pp ON t.profesion_id = pp.profesion_id
+      LEFT JOIN primas_profesionalizacion pp ON c.prima_profesional_id = pp.prima_profesional_id
       WHERE t.estatus_id = 1
       ORDER BY dir.nombre, t.apellidos, t.nombres
     `;
@@ -45,10 +51,9 @@ export class NominaActivosModel {
              ecet.nombre AS cargo_suplencia,
              edir.nombre AS departamento_suplencia,
              (
-                SELECT salario_base 
-                FROM historial_salarios hs 
-                WHERE hs.nivel_salarial_id = e.nivel_salarial_id 
-                ORDER BY fecha_vigencia DESC LIMIT 1
+                SELECT salario_antiguo 
+                FROM niveles_salariales_antiguos nsa 
+                WHERE nsa.nivel_salarial_antiguo_id = e.nivel_salarial_antiguo_id 
              ) AS salario_historico_suplencia
       FROM encargos_temporales e
       JOIN cargos_cet ecet ON e.cargo_cet_id = ecet.cargo_cet_id
@@ -61,7 +66,7 @@ export class NominaActivosModel {
   }
 
   static async getEscalasAntiguedad() {
-    const sql = `SELECT anios_cumplidos, ant_act, ant_ant FROM configuracion_antiguedad`;
+    const sql = `SELECT anios_cumplidos, porcentaje_actual, porcentaje_anterior FROM configuracion_antiguedad`;
     const [rows] = await pool.query(sql);
     return rows;
   }

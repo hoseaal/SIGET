@@ -1,300 +1,250 @@
+import { PensionadoModel } from '../models/pensionado.model.js'
 import pool from '../utils/database.js'
 
 export class PensionadoService {
 
-    // Construye la cláusula WHERE dinámicamente
-    static _buildWhere(filters) {
-        const where = []
-        const params = []
+    /**
+     * HELPER: Separa el body en datos personales, laborales y de pensión.
+     * Datos personales → tabla `empleados`
+     * Datos laborales  → tabla `datos_laborales`
+     * Datos pensión    → tabla `pensionado`
+     */
+    static _separarDatos(datosSucios, isUpdate = false) {
+        // Campos de tabla `empleados`
+        const camposPersonal = [
+            'cedula', 'nombres', 'apellidos', 'rif', 'fecha_nacimiento', 'lugar_nacimiento',
+            'genero', 'estado_civil', 'tipo_sangre', 'deportes', 'actividades_culturales',
+            'direccion_habitacion', 'telefono_fijo', 'celular',
+            'correo_principal', 'correo_secundario', 'cuenta_bancaria',
+            'fecha_ingreso', 'estudios_actuales', 'fecha_culminacion_estudios',
+            'contacto_emergencia_1', 'contacto_emergencia_2',
+            'telefono_emergencia_1', 'telefono_emergencia_2',
+            'profesion_id', 'estatus_id'
+        ]
 
-        // Filtro para Pensionados (estatus_id = 4 según tu tabla estatus_funcionarios)
-        where.push(`e.estatus_id = 4`)
+        // Campos de tabla `datos_laborales`
+        const camposContrato = [
+            'cargo_cet_id', 'cargo_onapre_id', 'nivel_salarial_id',
+            'nivel_salarial_antiguo_id', 'condicion_laboral_id', 'prima_profesional_id',
+            'direccion_id', 'division_id', 'unidad_id'
+        ]
 
-        // Filtro global de búsqueda
-        if (filters.search) {
-            where.push('(e.nombres LIKE ? OR e.apellidos LIKE ? OR e.cedula LIKE ?)')
-            const like = `%${filters.search}%`
-            params.push(like, like, like)
+        // Campos propios de la tabla `pensionado`
+        // Mapeamos 'motivo_pension' -> 'observacion'
+        // Mapeamos 'fecha_ingreso' -> 'fecha_ingreso' (pension)
+        const camposPension = [
+            'fecha_ingreso_pension', 'motivo_pension'
+        ]
+
+        const datosPersonalClean = {}
+        const datosContratoClean = {}
+        const datosPensionClean = {}
+        let hayDatosContrato = false
+        let hayDatosPension = false
+
+        // Campos que no deben ser NULL en la DB
+        const evitarNull = [
+            'celular', 'cuenta_bancaria', 'lugar_nacimiento', 'rif', 'tipo_sangre',
+            'deportes', 'actividades_culturales', 'direccion_habitacion', 'telefono_fijo',
+            'correo_principal', 'correo_secundario', 'estudios_actuales',
+            'contacto_emergencia_1', 'telefono_emergencia_1',
+            'contacto_emergencia_2', 'telefono_emergencia_2'
+        ]
+
+        const processField = (key, val, targetObj, isContrato, isPension) => {
+            if (val === '' || val === ' ' || val === 'null' || val === undefined || val === null) {
+                val = evitarNull.includes(key) ? '' : null
+            }
+            
+            // Mapeo específico para pensión
+            if (isPension) {
+                if (key === 'motivo_pension') {
+                    targetObj['observacion'] = val
+                } else if (key === 'fecha_ingreso_pension') {
+                    targetObj['fecha_ingreso'] = val
+                } else {
+                    targetObj[key] = val
+                }
+            } else {
+                targetObj[key] = val
+            }
+
+            if (val !== null && val !== '') {
+                if (isContrato) hayDatosContrato = true
+                if (isPension) hayDatosPension = true
+            }
         }
 
-        // Filtros específicos
-        if (filters.profesion_id) {
-            where.push('e.profesion_id = ?');
-            params.push(filters.profesion_id)
-        }
-        if (filters.genero) {
-            where.push('e.genero = ?');
-            params.push(filters.genero)
-        }
-        if (filters.direccion_id) {
-            where.push('dl.direccion_id = ?')
-            params.push(filters.direccion_id)
-        }
-        if (filters.condicion_laboral_id) {
-            where.push('dl.condicion_laboral_id = ?')
-            params.push(filters.condicion_laboral_id)
-        }
-
-        // Rango de edad
-        if (filters.edad_min) {
-            where.push('TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) >= ?')
-            params.push(filters.edad_min)
-        }
-        if (filters.edad_max) {
-            where.push('TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) <= ?')
-            params.push(filters.edad_max)
-        }
-
-        // Rango de fechas de ingreso
-        if (filters.fecha_ingreso_desde) {
-            where.push('e.fecha_ingreso >= ?')
-            params.push(filters.fecha_ingreso_desde)
-        }
-        if (filters.fecha_ingreso_hasta) {
-            where.push('e.fecha_ingreso <= ?')
-            params.push(filters.fecha_ingreso_hasta)
+        if (isUpdate) {
+            Object.keys(datosSucios).forEach(key => {
+                if (camposPersonal.includes(key)) {
+                    processField(key, datosSucios[key], datosPersonalClean, false, false)
+                } else if (camposContrato.includes(key)) {
+                    processField(key, datosSucios[key], datosContratoClean, true, false)
+                } else if (camposPension.includes(key)) {
+                    processField(key, datosSucios[key], datosPensionClean, false, true)
+                }
+            })
+        } else {
+            camposPersonal.forEach(key => processField(key, datosSucios[key], datosPersonalClean, false, false))
+            camposContrato.forEach(key => processField(key, datosSucios[key], datosContratoClean, true, false))
+            camposPension.forEach(key => processField(key, datosSucios[key], datosPensionClean, false, true))
         }
 
         return {
-            whereClause: where.length > 0 ? 'WHERE ' + where.join(' AND ') : '',
-            params
+            datosPersonalClean,
+            datosContratoClean: hayDatosContrato || Object.keys(datosContratoClean).length > 0 ? datosContratoClean : null,
+            datosPensionClean: hayDatosPension || Object.keys(datosPensionClean).length > 0 ? datosPensionClean : null
         }
     }
 
-    static async _vincularNivelesSalariales (datosContratoClean) {
+    /**
+     * HELPER: Valida la jerarquía Unidad → División → Dirección
+     */
+    static async _validarJerarquia(direccion_id, division_id, unidad_id) {
+        if (!direccion_id) return { direccion_id: null, division_id: null, unidad_id: null }
+
+        try {
+            if (unidad_id) {
+                const [uniRows] = await pool.query('SELECT division_id FROM unidades WHERE unidad_id = ?', [unidad_id])
+                if (uniRows.length > 0) {
+                    const realDiv = uniRows[0].division_id
+                    const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [realDiv])
+                    return {
+                        direccion_id: divRows.length > 0 ? divRows[0].direccion_id : direccion_id,
+                        division_id: realDiv,
+                        unidad_id
+                    }
+                }
+            }
+            if (division_id) {
+                const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [division_id])
+                return {
+                    direccion_id: divRows.length > 0 ? divRows[0].direccion_id : direccion_id,
+                    division_id,
+                    unidad_id: null
+                }
+            }
+            return { direccion_id, division_id: null, unidad_id: null }
+        } catch (error) {
+            console.error('Error en _validarJerarquia:', error)
+            return { direccion_id, division_id: null, unidad_id: null }
+        }
+    }
+
+    static async _vincularNivelesSalariales(datosContratoClean) {
         if (datosContratoClean && datosContratoClean.nivel_salarial_id) {
-           const [oldLevelRows] = await pool.query(`
+            const [oldLevelRows] = await pool.query(`
              SELECT nsa.nivel_salarial_antiguo_id
              FROM niveles_salariales_antiguos nsa
              INNER JOIN niveles_salariales ns ON ns.nombre = nsa.nombre
              WHERE ns.nivel_salarial_id = ?
            `, [datosContratoClean.nivel_salarial_id])
-    
-           if (oldLevelRows && oldLevelRows.length > 0) {
-              datosContratoClean.nivel_salarial_antiguo_id = oldLevelRows[0].nivel_salarial_antiguo_id
-           }
+
+            if (oldLevelRows && oldLevelRows.length > 0) {
+                datosContratoClean.nivel_salarial_antiguo_id = oldLevelRows[0].nivel_salarial_antiguo_id
+            }
         }
     }
 
-    // Obtener lista paginada de pensionados
-    static async getFiltered({ limit, offset, ...filters }) {
-        const { whereClause, params } = this._buildWhere(filters)
+    // --- MÉTODOS PÚBLICOS ---
 
-        let sql = `
-      SELECT 
-        e.*,
-        e.empleado_id AS pensionado_id,
-        TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) as edad,
-        TIMESTAMPDIFF(YEAR, e.fecha_ingreso, CURDATE()) as años_servicio,
-        dl.cargo_cet_id, 
-        dl.cargo_onapre_id,
-        dl.nivel_salarial_id, 
-        dl.condicion_laboral_id,
-        dl.unidad_id, 
-        dl.division_id, 
-        dl.direccion_id,
-        dl.prima_profesional_id,
-        cet.nombre AS cargo_cet_nombre,
-        ns.salario_base,
-        dir.nombre AS direccion_nombre,
-        divi.nombre AS division_nombre,
-        uni.nombre AS unidad_nombre,
-        prof.nombre AS profesion_nombre,
-        ef.nombre AS estatus_nombre,
-        pp.porcentaje_actual AS prima_profesional_porcentaje,
-        pp.descripcion AS prima_profesional_descripcion
-      FROM empleados e
-      LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
-      LEFT JOIN cargos_cet cet ON dl.cargo_cet_id = cet.cargo_cet_id
-      LEFT JOIN niveles_salariales ns ON dl.nivel_salarial_id = ns.nivel_salarial_id
-      LEFT JOIN direcciones dir ON dl.direccion_id = dir.direccion_id
-      LEFT JOIN divisiones divi ON dl.division_id = divi.division_id
-      LEFT JOIN unidades uni ON dl.unidad_id = uni.unidad_id
-      LEFT JOIN profesiones prof ON e.profesion_id = prof.profesion_id
-      LEFT JOIN estatus_funcionarios ef ON e.estatus_id = ef.estatus_id
-      LEFT JOIN primas_profesionalizacion pp ON dl.prima_profesional_id = pp.prima_profesional_id
-      ${whereClause}
-      ORDER BY e.apellidos ASC, e.nombres ASC
-    `
+    static async obtenerConFiltros(query) {
+        const { page = 1, limit = 20, all, ...filtros } = query
+        const offset = (page - 1) * limit
 
-        if (limit !== null && limit !== undefined) {
-            sql += ' LIMIT ? OFFSET ?'
-            params.push(limit, offset)
+        if (all === 'true') {
+            return await PensionadoModel.getFiltered({ ...filtros, limit: null })
         }
 
-        const [rows] = await pool.query(sql, params)
-        return rows
-    }
+        const [data, total] = await Promise.all([
+            PensionadoModel.getFiltered({ ...filtros, limit: Number(limit), offset: Number(offset) }),
+            PensionadoModel.countFiltered(filtros)
+        ])
 
-    // Contar total de pensionados (para paginación)
-    static async countFiltered(filters) {
-        const { whereClause, params } = this._buildWhere(filters)
-        const sql = `
-      SELECT COUNT(*) as total 
-      FROM empleados e 
-      LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
-      ${whereClause}
-    `
-        const [rows] = await pool.query(sql, params)
-        return rows[0].total
-    }
-
-    // Obtener un pensionado por ID
-    static async getById(id) {
-        const sql = `
-      SELECT 
-        e.*,
-        e.empleado_id AS pensionado_id,
-        TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) as edad,
-        TIMESTAMPDIFF(YEAR, e.fecha_ingreso, CURDATE()) as años_servicio,
-        dl.cargo_cet_id, 
-        dl.cargo_onapre_id,
-        dl.nivel_salarial_id, 
-        dl.nivel_salarial_antiguo_id,
-        dl.condicion_laboral_id,
-        dl.unidad_id, 
-        dl.division_id, 
-        dl.direccion_id,
-        dl.prima_profesional_id,
-        cet.nombre AS cargo_cet_nombre,
-        ns.salario_base,
-        dir.nombre AS direccion_nombre,
-        divi.nombre AS division_nombre,
-        uni.nombre AS unidad_nombre,
-        prof.nombre AS profesion_nombre,
-        ef.nombre AS estatus_nombre,
-        pp.porcentaje_actual AS prima_profesional_porcentaje,
-        pp.descripcion AS prima_profesional_descripcion
-      FROM empleados e
-      LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
-      LEFT JOIN cargos_cet cet ON dl.cargo_cet_id = cet.cargo_cet_id
-      LEFT JOIN niveles_salariales ns ON dl.nivel_salarial_id = ns.nivel_salarial_id
-      LEFT JOIN direcciones dir ON dl.direccion_id = dir.direccion_id
-      LEFT JOIN divisiones divi ON dl.division_id = divi.division_id
-      LEFT JOIN unidades uni ON dl.unidad_id = uni.unidad_id
-      LEFT JOIN profesiones prof ON e.profesion_id = prof.profesion_id
-      LEFT JOIN estatus_funcionarios ef ON e.estatus_id = ef.estatus_id
-      LEFT JOIN primas_profesionalizacion pp ON dl.prima_profesional_id = pp.prima_profesional_id
-      WHERE e.empleado_id = ? AND e.estatus_id = 4
-    `
-        const [rows] = await pool.query(sql, [id])
-        return rows[0] || null
-    }
-
-    // Verificar si existe un empleado con la misma cédula
-    static async existsByCedula(cedula) {
-        const [rows] = await pool.query(
-            'SELECT empleado_id FROM empleados WHERE cedula = ?',
-            [cedula]
-        )
-        return rows[0] || null
-    }
-
-    // Verificar si un empleado ya es pensionado
-    static async isPensionado(empleadoId) {
-        const [rows] = await pool.query(
-            'SELECT 1 FROM empleados WHERE empleado_id = ? AND estatus_id = 4',
-            [empleadoId]
-        )
-        return rows.length > 0
-    }
-
-    // Cambiar estatus a Pensionado
-    static async updateToPensionado(id) {
-        const [result] = await pool.query(
-            'UPDATE empleados SET estatus_id = 4 WHERE empleado_id = ?',
-            [id]
-        )
-        return result.affectedRows > 0
-    }
-
-    // --- TRANSACCIÓN: CREATE (Registrar nuevo pensionado) ---
-    static async createTransactional(personalData, laboralData) {
-        const connection = await pool.getConnection()
-        try {
-            await connection.beginTransaction()
-
-            // Insertar en empleados (estatus_id = 4 para Pensionado)
-            const empleadoData = {
-                ...personalData,
-                estatus_id: 4  // Según tu tabla estatus_funcionarios, 4 = Pensionado
+        return {
+            data,
+            pagination: {
+                totalItems: total,
+                totalPages: Math.ceil(total / limit),
+                currentPage: Number(page),
+                itemsPerPage: Number(limit)
             }
-
-            // Eliminar campos undefined
-            Object.keys(empleadoData).forEach(key => {
-                if (empleadoData[key] === undefined || empleadoData[key] === '') {
-                    delete empleadoData[key]
-                }
-            })
-
-            const [resEmpleado] = await connection.query('INSERT INTO empleados SET ?', [empleadoData])
-            const empleadoId = resEmpleado.insertId
-
-            // Insertar en datos_laborales si hay datos
-            if (laboralData && Object.keys(laboralData).length > 0) {
-                await this._vincularNivelesSalariales(laboralData)
-                const laboralPayload = {
-                    ...laboralData,
-                    empleado_id: empleadoId
-                }
-                await connection.query('INSERT INTO datos_laborales SET ?', [laboralPayload])
-            }
-
-            await connection.commit()
-            return { empleado_id: empleadoId, ...personalData, laboral: laboralData }
-
-        } catch (error) {
-            await connection.rollback()
-            throw error
-        } finally {
-            connection.release()
         }
     }
 
-    // --- TRANSACCIÓN: UPDATE (Actualizar pensionado existente) ---
-    static async updateTransactional(id, personalData, laboralData) {
-        const connection = await pool.getConnection()
-        try {
-            await connection.beginTransaction()
+    static async obtenerTodos() {
+        return await PensionadoModel.getFiltered({ limit: null })
+    }
 
-            // Actualizar datos personales
-            if (personalData && Object.keys(personalData).length > 0) {
-                await connection.query('UPDATE empleados SET ? WHERE empleado_id = ?', [personalData, id])
+    static async obtenerPorId(id) {
+        const registro = await PensionadoModel.getById(id)
+        if (!registro) throw new Error('Registro de pensionado no encontrado')
+        return registro
+    }
+
+    static async crear(datos) {
+        let { datosPersonalClean, datosContratoClean, datosPensionClean } = this._separarDatos(datos)
+
+        // Validaciones mínimas obligatorias
+        if (!datosPersonalClean.cedula || !datosPersonalClean.nombres || !datosPersonalClean.apellidos) {
+            throw new Error('Cédula, Nombre y Apellido son obligatorios')
+        }
+
+        // Validar jerarquía organizativa si se envían datos laborales
+        if (datosContratoClean) {
+            if (!datosContratoClean.cargo_cet_id) {
+                throw new Error('El Cargo Interno (CET) es obligatorio al registrar datos laborales')
             }
+            const jerarquia = await this._validarJerarquia(
+                datosContratoClean.direccion_id,
+                datosContratoClean.division_id,
+                datosContratoClean.unidad_id
+            )
+            datosContratoClean = { ...datosContratoClean, ...jerarquia }
+            await this._vincularNivelesSalariales(datosContratoClean)
+        }
 
-            // Actualizar datos laborales
-            if (laboralData && Object.keys(laboralData).length > 0) {
-                await this._vincularNivelesSalariales(laboralData)
-                const [rows] = await connection.query(
-                    'SELECT empleado_id FROM datos_laborales WHERE empleado_id = ?',
-                    [id]
+        return await PensionadoModel.createTransactional(datosPersonalClean, datosContratoClean, datosPensionClean)
+    }
+
+    static async actualizar(id, datos) {
+        const existe = await PensionadoModel.getById(id)
+        if (!existe) throw new Error('Registro de pensionado no existe')
+
+        let { datosPersonalClean, datosContratoClean, datosPensionClean } = this._separarDatos(datos, true)
+
+        // Validar jerarquía si se modifican datos laborales
+        if (datosContratoClean) {
+            if (!datosContratoClean.cargo_cet_id) {
+                throw new Error('El Cargo Interno (CET) es obligatorio en los datos laborales')
+            }
+            if (
+                datosContratoClean.direccion_id !== undefined ||
+                datosContratoClean.division_id !== undefined ||
+                datosContratoClean.unidad_id !== undefined
+            ) {
+                const jerarquia = await this._validarJerarquia(
+                    datosContratoClean.direccion_id,
+                    datosContratoClean.division_id,
+                    datosContratoClean.unidad_id
                 )
-                if (rows.length > 0) {
-                    await connection.query('UPDATE datos_laborales SET ? WHERE empleado_id = ?', [laboralData, id])
-                } else {
-                    await connection.query('INSERT INTO datos_laborales SET ?', [{ ...laboralData, empleado_id: id }])
-                }
+                datosContratoClean = { ...datosContratoClean, ...jerarquia }
             }
-
-            await connection.commit()
-            return true
-
-        } catch (error) {
-            await connection.rollback()
-            throw error
-        } finally {
-            connection.release()
+            await this._vincularNivelesSalariales(datosContratoClean)
         }
+
+        return await PensionadoModel.updateTransactional(id, datosPersonalClean, datosContratoClean, datosPensionClean)
     }
 
-    // --- DELETE (Eliminar pensionado) ---
-    static async delete(id) {
-        const [result] = await pool.query('DELETE FROM empleados WHERE empleado_id = ? AND estatus_id = 4', [id])
-        return result.affectedRows > 0
+    static async eliminar(id) {
+        const existe = await PensionadoModel.getById(id)
+        if (!existe) throw new Error('Registro de pensionado no existe')
+        return await PensionadoModel.delete(id)
     }
 
-    // Obtener estadísticas de pensionados
     static async getStats() {
+        // Mantenemos la lógica de stats si es necesaria, pero idealmente debería estar en el modelo
         const sql = `
       SELECT 
         COUNT(*) as total_pensionados,
@@ -318,7 +268,6 @@ export class PensionadoService {
         return rows[0]
     }
 
-    // Obtener pensionados por dirección
     static async getByDireccion(direccionId) {
         const sql = `
       SELECT 
@@ -336,7 +285,6 @@ export class PensionadoService {
         return rows
     }
 
-    // Cambiar estatus de pensionado a otro estado (ej: activo nuevamente)
     static async changeStatus(id, newStatusId) {
         const [result] = await pool.query(
             'UPDATE empleados SET estatus_id = ? WHERE empleado_id = ? AND estatus_id = 4',

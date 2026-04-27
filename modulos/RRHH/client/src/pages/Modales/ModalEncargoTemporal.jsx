@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from '../../components/atoms/Alert';
+import { useSelectsDependientes } from '../../hooks/useSelectsDependientes';
 
 /* ─────────────────────────────────────────────────────────────
    COMPONENTE: ModalEncargoTemporal
@@ -19,17 +20,12 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
     const [funcionario, setFuncionario] = useState(null);
 
     // ── Catálogos para selectores ──────────────────────────────
-    const [cargosCet, setCargosCet] = useState([]);
-    const [cargosOnapre, setCargosOnapre] = useState([]);
-    const [nivelesSalariales, setNivelesSalariales] = useState([]);
-    const [nivelesAntiguos, setNivelesAntiguos] = useState([]);
-    const [direcciones, setDirecciones] = useState([]);
-    const [divisiones, setDivisiones] = useState([]);
-    const [unidades, setUnidades] = useState([]);
+    const [catalogos, setCatalogos] = useState({
+        cargosCET: [], cargosONAPRE: [], niveles: [], nivelesAntiguos: [],
+        direcciones: [], divisiones: [], unidades: []
+    });
 
-    // Divisiones y unidades filtradas según selección
-    const [divisionesFiltradas, setDivisionesFiltradas] = useState([]);
-    const [unidadesFiltradas, setUnidadesFiltradas] = useState([]);
+
 
     // ── Historial ──────────────────────────────────────────────
     const [historial, setHistorial] = useState([]);
@@ -47,12 +43,19 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
         cargo_cet_id: '',
         cargo_onapre_id: '',
         nivel_salarial_id: '',
-        nivel_salarial_antiguo_id: '',
         direccion_id: '',
         division_id: '',
         unidad_id: ''
     };
     const [formData, setFormData] = useState(formInicial);
+
+    const {
+        cargosCETFiltrados,
+        divisionesFiltradas,
+        unidadesFiltradas,
+        tieneDivisiones,
+        tieneUnidades
+    } = useSelectsDependientes(formData, catalogos);
 
     // ── Modal de finalización ──────────────────────────────────
     const [showFinalizar, setShowFinalizar] = useState(false);
@@ -76,28 +79,29 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
     // ── Cargar catálogos (una sola vez al montar) ──────────────
     const cargarCatalogos = async () => {
         try {
-            const [resCet, resOnapre, resNiv, resNivAnt, resDir, resDiv, resUni] = await Promise.all([
+            const [resCet, resOnapre, resNivAnt, resDir, resDiv, resUni] = await Promise.all([
                 fetch('/api/cargos-cet'),
                 fetch('/api/cargos-onapre'),
-                fetch('/api/niveles-salariales'),
                 fetch('/api/niveles-salariales-antiguos'),
                 fetch('/api/direcciones'),
                 fetch('/api/divisiones'),
                 fetch('/api/unidades')
             ]);
 
-            const [cetData, onapreData, nivData, nivAntData, dirData, divData, uniData] = await Promise.all([
-                resCet.json(), resOnapre.json(), resNiv.json(), resNivAnt.json(),
+            const [cetData, onapreData, nivAntData, dirData, divData, uniData] = await Promise.all([
+                resCet.json(), resOnapre.json(), resNivAnt.json(),
                 resDir.json(), resDiv.json(), resUni.json()
             ]);
 
-            setCargosCet(Array.isArray(cetData) ? cetData : cetData.data || []);
-            setCargosOnapre(Array.isArray(onapreData) ? onapreData : onapreData.data || []);
-            setNivelesSalariales(Array.isArray(nivData) ? nivData : nivData.data || []);
-            setNivelesAntiguos(Array.isArray(nivAntData) ? nivAntData : nivAntData.data || []);
-            setDirecciones(Array.isArray(dirData) ? dirData : dirData.data || []);
-            setDivisiones(Array.isArray(divData) ? divData : divData.data || []);
-            setUnidades(Array.isArray(uniData) ? uniData : uniData.data || []);
+            setCatalogos(prev => ({
+                ...prev,
+                cargosCET: Array.isArray(cetData) ? cetData : cetData.data || [],
+                cargosONAPRE: Array.isArray(onapreData) ? onapreData : onapreData.data || [],
+                nivelesAntiguos: Array.isArray(nivAntData) ? nivAntData : nivAntData.data || [],
+                direcciones: Array.isArray(dirData) ? dirData : dirData.data || [],
+                divisiones: Array.isArray(divData) ? divData : divData.data || [],
+                unidades: Array.isArray(uniData) ? uniData : uniData.data || []
+            }));
         } catch (err) {
             console.error('Error cargando catálogos:', err);
         }
@@ -110,7 +114,7 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
         setError('');
         try {
             // Datos del funcionario
-            const resFun = await fetch(`/api/funcionarios/${empleado_id}`);
+            const resFun = await fetch(`/api/funcionarios/${empleado_id}?type=full`);
             if (resFun.ok) {
                 const dataFun = await resFun.json();
                 setFuncionario(dataFun.datos_personales || dataFun);
@@ -144,33 +148,42 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
         }
     }, [show, empleado_id]);
 
-    // Filtrar divisiones cuando cambia la dirección
+    // Cascada: Cuando el usuario cambia Cargo ONAPRE manualmente → recargar niveles
     useEffect(() => {
-        if (formData.direccion_id) {
-            const filtradas = divisiones.filter(d => String(d.direccion_id) === String(formData.direccion_id));
-            setDivisionesFiltradas(filtradas);
-            setFormData(prev => ({ ...prev, division_id: '', unidad_id: '' }));
-            setUnidadesFiltradas([]);
-        } else {
-            setDivisionesFiltradas([]);
-        }
-    }, [formData.direccion_id, divisiones]);
-
-    // Filtrar unidades cuando cambia la división
-    useEffect(() => {
-        if (formData.division_id) {
-            const filtradas = unidades.filter(u => String(u.division_id) === String(formData.division_id));
-            setUnidadesFiltradas(filtradas);
-            setFormData(prev => ({ ...prev, unidad_id: '' }));
-        } else {
-            setUnidadesFiltradas([]);
-        }
-    }, [formData.division_id, unidades]);
+        const fetchNiveles = async () => {
+            if (!formData.cargo_onapre_id || !show || loading) return;
+            try {
+                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
+                const nivelesData = await res.json();
+                const data = nivelesData.success ? nivelesData.data : nivelesData;
+                const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
+                    ...n,
+                    campo_completo: n.campo_completo || `${n.nombre}`.trim()
+                })) : [];
+                setCatalogos(prev => ({ ...prev, niveles: nivelesFormateados }));
+            } catch (error) {
+                console.error("Error cargando niveles:", error);
+            }
+        };
+        fetchNiveles();
+    }, [formData.cargo_onapre_id, loading, show]);
 
     // ── Handlers ───────────────────────────────────────────────
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+            if (name === 'direccion_id') {
+                newData.division_id = '';
+                newData.unidad_id = '';
+            } else if (name === 'division_id') {
+                newData.unidad_id = '';
+            } else if (name === 'cargo_onapre_id') {
+                newData.cargo_cet_id = '';
+                newData.nivel_salarial_id = '';
+            }
+            return newData;
+        });
     };
 
     // CREAR nuevo encargo
@@ -180,10 +193,17 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
         setSuccessMsg('');
 
         // Validaciones locales
-        const requeridos = ['fecha_inicio', 'cargo_cet_id', 'cargo_onapre_id', 'nivel_salarial_id', 'direccion_id', 'division_id', 'unidad_id'];
+        const requeridos = ['fecha_inicio', 'cargo_onapre_id', 'cargo_cet_id', 'nivel_salarial_id', 'direccion_id'];
         for (const campo of requeridos) {
             if (!formData[campo]) {
                 setError('Por favor complete todos los campos obligatorios (*).');
+                return;
+            }
+        }
+
+        if (funcionario) {
+            if (String(formData.cargo_cet_id) === String(funcionario.cargo_cet_id) || String(formData.cargo_onapre_id) === String(funcionario.cargo_onapre_id)) {
+                setError('El cargo CET u ONAPRE a asignar es igual al que ya posee el funcionario en sus datos laborales base.');
                 return;
             }
         }
@@ -196,7 +216,6 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                 cargo_cet_id: formData.cargo_cet_id,
                 cargo_onapre_id: formData.cargo_onapre_id,
                 nivel_salarial_id: formData.nivel_salarial_id,
-                nivel_salarial_antiguo_id: formData.nivel_salarial_antiguo_id || null,
                 direccion_id: formData.direccion_id,
                 division_id: formData.division_id,
                 unidad_id: formData.unidad_id
@@ -346,24 +365,6 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                                             </Form.Group>
                                         </div>
 
-                                        {/* Cargo CET */}
-                                        <div className="col-md-4">
-                                            <Form.Group>
-                                                <Form.Label className="small fw-bold text-muted">Cargo CET *</Form.Label>
-                                                <Form.Select
-                                                    name="cargo_cet_id"
-                                                    value={formData.cargo_cet_id}
-                                                    onChange={handleChange}
-                                                    disabled={!!encargoActivo}
-                                                >
-                                                    <option value="">-- Seleccione --</option>
-                                                    {cargosCet.map(c => (
-                                                        <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
-                                                    ))}
-                                                </Form.Select>
-                                            </Form.Group>
-                                        </div>
-
                                         {/* Cargo ONAPRE */}
                                         <div className="col-md-4">
                                             <Form.Group>
@@ -375,10 +376,31 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                                                     disabled={!!encargoActivo}
                                                 >
                                                     <option value="">-- Seleccione --</option>
-                                                    {cargosOnapre.map(c => (
+                                                    {catalogos.cargosONAPRE.map(c => (
                                                         <option key={c.cargo_onapre_id} value={c.cargo_onapre_id}>{c.nombre}</option>
                                                     ))}
                                                 </Form.Select>
+                                            </Form.Group>
+                                        </div>
+
+                                        {/* Cargo CET */}
+                                        <div className="col-md-4">
+                                            <Form.Group>
+                                                <Form.Label className="small fw-bold text-muted">Cargo CET *</Form.Label>
+                                                <Form.Select
+                                                    name="cargo_cet_id"
+                                                    value={formData.cargo_cet_id}
+                                                    onChange={handleChange}
+                                                    disabled={!!encargoActivo || !formData.cargo_onapre_id || cargosCETFiltrados.length === 0}
+                                                >
+                                                    <option value="">Seleccione</option>
+                                                    {cargosCETFiltrados.map(c => (
+                                                        <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
+                                                    ))}
+                                                </Form.Select>
+                                                {formData.cargo_onapre_id && cargosCETFiltrados.length === 0 && (
+                                                    <Form.Text className="text-muted">No hay cargos CET para esta clasificación.</Form.Text>
+                                                )}
                                             </Form.Group>
                                         </div>
 
@@ -390,33 +412,17 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                                                     name="nivel_salarial_id"
                                                     value={formData.nivel_salarial_id}
                                                     onChange={handleChange}
-                                                    disabled={!!encargoActivo}
+                                                    disabled={!!encargoActivo || !formData.cargo_onapre_id}
                                                 >
                                                     <option value="">-- Seleccione --</option>
-                                                    {nivelesSalariales.map(n => (
-                                                        <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.nombre}</option>
+                                                    {catalogos.niveles.map(n => (
+                                                        <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.nombre} — {n.salario_base} Bs.</option>
                                                     ))}
                                                 </Form.Select>
                                             </Form.Group>
                                         </div>
 
-                                        {/* Nivel Salarial Antiguo (Opcional) */}
-                                        <div className="col-md-4">
-                                            <Form.Group>
-                                                <Form.Label className="small fw-bold text-muted">Nivel Salarial Antiguo <span className="fw-normal">(Opcional)</span></Form.Label>
-                                                <Form.Select
-                                                    name="nivel_salarial_antiguo_id"
-                                                    value={formData.nivel_salarial_antiguo_id}
-                                                    onChange={handleChange}
-                                                    disabled={!!encargoActivo}
-                                                >
-                                                    <option value="">-- Ninguno --</option>
-                                                    {nivelesAntiguos.map(n => (
-                                                        <option key={n.nivel_salarial_antiguo_id} value={n.nivel_salarial_antiguo_id}>{n.nombre}</option>
-                                                    ))}
-                                                </Form.Select>
-                                            </Form.Group>
-                                        </div>
+
 
                                         {/* Dirección */}
                                         <div className="col-md-4">
@@ -429,7 +435,7 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                                                     disabled={!!encargoActivo}
                                                 >
                                                     <option value="">-- Seleccione --</option>
-                                                    {direcciones.map(d => (
+                                                    {catalogos.direcciones.map(d => (
                                                         <option key={d.direccion_id} value={d.direccion_id}>{d.nombre}</option>
                                                     ))}
                                                 </Form.Select>
@@ -439,14 +445,14 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                                         {/* División */}
                                         <div className="col-md-4">
                                             <Form.Group>
-                                                <Form.Label className="small fw-bold text-muted">División *</Form.Label>
+                                                <Form.Label className="small fw-bold text-muted">División (Opcional)</Form.Label>
                                                 <Form.Select
                                                     name="division_id"
                                                     value={formData.division_id}
                                                     onChange={handleChange}
                                                     disabled={!!encargoActivo || !formData.direccion_id}
                                                 >
-                                                    <option value="">-- Seleccione dirección primero --</option>
+                                                    <option value="">-- Directo a la Dirección --</option>
                                                     {divisionesFiltradas.map(d => (
                                                         <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
                                                     ))}
@@ -457,14 +463,14 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                                         {/* Unidad */}
                                         <div className="col-md-4">
                                             <Form.Group>
-                                                <Form.Label className="small fw-bold text-muted">Unidad *</Form.Label>
+                                                <Form.Label className="small fw-bold text-muted">Unidad (Opcional)</Form.Label>
                                                 <Form.Select
                                                     name="unidad_id"
                                                     value={formData.unidad_id}
                                                     onChange={handleChange}
-                                                    disabled={!!encargoActivo || !formData.division_id}
+                                                    disabled={!!encargoActivo || !formData.direccion_id}
                                                 >
-                                                    <option value="">-- Seleccione división primero --</option>
+                                                    <option value="">{formData.division_id ? '-- Directo a la División --' : '-- Directo a la Dirección --'}</option>
                                                     {unidadesFiltradas.map(u => (
                                                         <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
                                                     ))}
