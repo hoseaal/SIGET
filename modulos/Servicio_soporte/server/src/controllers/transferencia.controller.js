@@ -1,9 +1,9 @@
-import { TransferenciaModel } from '../models/transferencia.model.js'
+import { TransferenciaService } from '../services/transferencia.service.js'
 
 export class TransferenciaController {
     static async getAll(req, res) {
         try {
-            const data = await TransferenciaModel.getAll()
+            const data = await TransferenciaService.getAll(req.user)
             res.json(data)
         } catch (error) {
             res.status(500).json({ message: error.message })
@@ -13,11 +13,10 @@ export class TransferenciaController {
     static async getByOrigen(req, res) {
         try {
             const { id } = req.params
-            // Si el ID es 'undefined' o nulo, devolver vacio o error controlado
             if (!id || id === 'undefined') {
                 return res.json([])
             }
-            const data = await TransferenciaModel.getByOrigen(id)
+            const data = await TransferenciaService.getByOrigen(id, req.user)
             res.json(data)
         } catch (error) {
             res.status(500).json({ message: error.message })
@@ -28,12 +27,11 @@ export class TransferenciaController {
         try {
             const { origen_id, destino_id, equipo_id, usuario_id, asunto, observaciones } = req.body
 
-            // Validaciones básicas
             if (!origen_id || !destino_id || !equipo_id || !asunto) {
                 return res.status(400).json({ message: 'Todos los campos obligatorios deben ser completados.' })
             }
 
-            const result = await TransferenciaModel.create({
+            const result = await TransferenciaService.create({
                 origen_id,
                 destino_id,
                 equipo_id,
@@ -57,27 +55,7 @@ export class TransferenciaController {
     static async updateStatus(req, res) {
         try {
             const { id } = req.params
-            const { 
-                status, 
-                usuario_tecnico_id, 
-                fecha_recepcion, 
-                prioridad, 
-                diagnostico_tecnico, 
-                solucion_tecnica, 
-                fecha_entrega,
-                codigo_validacion 
-            } = req.body
-
-            const success = await TransferenciaModel.updateStatus(id, { 
-                status: parseInt(status), 
-                usuario_tecnico_id, 
-                fecha_recepcion, 
-                prioridad, 
-                diagnostico_tecnico, 
-                solucion_tecnica, 
-                fecha_entrega,
-                codigo_validacion
-            })
+            const success = await TransferenciaService.updateStatus(id, req.body)
 
             if (!success) {
                 return res.status(404).json({ message: 'Transferencia no encontrada o sin cambios.' })

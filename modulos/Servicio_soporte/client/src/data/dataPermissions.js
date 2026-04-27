@@ -14,13 +14,13 @@ export const menuPermissions = {
     "/Dashboard": [1, 2, 3],
 
     // Mantenimiento
-    "/Configuracion/Maestros": [1, 2, 3],
+    "/Configuracion/Maestros": [1, 2],
 
     // Infraestructura
-    "/Infraestructura/Red": [1, 2, 3],
+    "/Infraestructura/Red": [1, 2],
 
     // Inventario
-    "/Equipos": [1, 2, 3],
+    "/Equipos": [1, 2],
 
     // Transferencias
     "/Transferencias": [1, 2, 3],
@@ -29,8 +29,13 @@ export const menuPermissions = {
     "/Transferencias/Tecnico": [1, 2],
 
     // Gestión de Usuarios (Solo admin)
-    "/Seguridad/Usuarios": [1]
+    "/Seguridad/Usuarios": [1],
+
+    // Mantenimientos
+    "/Mantenimientos": [1, 2, 3],
+    "/Mantenimientos/Gestion": [1, 2]
 };
+
 
 // src/data/permissions.js
 
@@ -43,7 +48,7 @@ export const ACTIONS = {
 // Mapeamos cada acción a los tipos de usuario que tienen permiso.
 const permissions = {
 
-    [ACTIONS.VIEW_LOAN_DETAILS]: [2, 3, 4, 5], 
+    [ACTIONS.VIEW_LOAN_DETAILS]: [2, 3, 4, 5],
 
     [ACTIONS.JEFE_AREA]: [4, 5]
 };

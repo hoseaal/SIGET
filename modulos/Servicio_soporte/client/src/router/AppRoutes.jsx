@@ -9,6 +9,8 @@ import { EquiposPage } from "../pages/equipos/EquiposPage";
 import { TransferenciasPage } from "../pages/transferencias/TransferenciasPage";
 import { TransferenciaTecnicoPage } from "../pages/transferencias/TransferenciaTecnicoPage";
 import { UsuariosPage } from "../pages/usuarios/UsuariosPage";
+import { MantenimientosPage } from "../pages/mantenimientos/MantenimientosPage";
+import { menuPermissions } from "../data/dataPermissions";
 
 const AppRoutes = () => {
     return (
@@ -19,44 +21,56 @@ const AppRoutes = () => {
             <Route path="/Login" element={<LoginPage />} />
 
             <Route path="/Dashboard" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={menuPermissions["/Dashboard"]}>
                     <DashboardPage />
                 </ProtectedRoute>
             } />
 
             <Route path="/Configuracion/Maestros" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={menuPermissions["/Configuracion/Maestros"]}>
                     <ConfiguracionPage />
                 </ProtectedRoute>
             } />
 
             <Route path="/Infraestructura/Red" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={menuPermissions["/Infraestructura/Red"]}>
                     <RedesPage />
                 </ProtectedRoute>
             } />
 
             <Route path="/Equipos" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={menuPermissions["/Equipos"]}>
                     <EquiposPage />
                 </ProtectedRoute>
             } />
 
             <Route path="/Transferencias" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={menuPermissions["/Transferencias"]}>
                     <TransferenciasPage />
                 </ProtectedRoute>
             } />
 
             <Route path="/Transferencias/Tecnico" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={menuPermissions["/Transferencias/Tecnico"]}>
                     <TransferenciaTecnicoPage />
                 </ProtectedRoute>
             } />
 
             <Route path="/Seguridad/Usuarios" element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={menuPermissions["/Seguridad/Usuarios"]}>
                     <UsuariosPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Mantenimientos" element={
+                <ProtectedRoute allowedRoles={menuPermissions["/Mantenimientos"]}>
+                    <MantenimientosPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Mantenimientos/Gestion" element={
+                <ProtectedRoute allowedRoles={menuPermissions["/Mantenimientos/Gestion"]}>
+                    <MantenimientosPage isTechnicalDashboard={true} />
                 </ProtectedRoute>
             } />
 

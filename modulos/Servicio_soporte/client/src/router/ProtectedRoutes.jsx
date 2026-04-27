@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -10,12 +11,15 @@ const ProtectedRoute = ({ children }) => {
       try {
         const res = await fetch('/api/auth/verify-auth', {
           method: 'GET',
-          credentials: 'include', // Esencial para enviar cookies
+          credentials: 'include',
         });
 
         if (!res.ok) throw new Error();
 
-        // Si llega acá, hay sesión activa
+        const data = await res.json();
+        if (!data.success) throw new Error();
+
+        setUser(data.user);
         setIsLoading(false);
       } catch (err) {
         navigate('/Login', { replace: true });
@@ -25,9 +29,17 @@ const ProtectedRoute = ({ children }) => {
     verifyAuth();
   }, [navigate]);
 
-  if (isLoading) return <div>Cargando...</div>; // O tu spinner facherito
+  if (isLoading) return <div>Cargando...</div>;
+
+  // Si se definieron roles permitidos, verificar que el usuario tenga uno de ellos
+  if (allowedRoles && !allowedRoles.includes(user.rol_id)) {
+    // Redirigir al Dashboard si no tiene permiso para esta ruta específica
+    return <Navigate to="/Dashboard" replace />;
+  }
 
   return children;
 };
 
 export default ProtectedRoute;
+
+

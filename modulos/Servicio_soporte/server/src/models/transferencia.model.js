@@ -30,6 +30,14 @@ export class TransferenciaModel {
     }
 
     /**
+     * Obtiene una transferencia por ID
+     */
+    static async getById(id) {
+        const [rows] = await pool.query('SELECT * FROM transferencia WHERE id = ?', [id])
+        return rows[0] || null
+    }
+
+    /**
      * Obtiene transferencias por departamento de origen
      */
     static async getByOrigen(origen_id) {
@@ -55,7 +63,7 @@ export class TransferenciaModel {
     }
 
     /**
-     * Verifica si un equipo ya tiene una transferencia pendiente (status != Entregado y != Anulado)
+     * Verifica si un equipo ya tiene una transferencia pendiente
      */
     static async hasPendingTransfer(equipo_id) {
         const [rows] = await pool.query(`
@@ -67,40 +75,26 @@ export class TransferenciaModel {
     }
 
     /**
-     * Genera el siguiente número de caso correlativo
+     * Obtiene el último número de caso para un prefijo dado
      */
-    static async generateCaseNumber() {
-        const year = new Date().getFullYear()
-        const prefix = `TRA-${year}-`
-        
+    static async getLastCaseNumber(prefix) {
         const [rows] = await pool.query(`
             SELECT nro_caso FROM transferencia 
             WHERE nro_caso LIKE ? 
             ORDER BY id DESC LIMIT 1
         `, [`${prefix}%`])
-
-        let nextNumber = 1
-        if (rows.length > 0) {
-            const lastCase = rows[0].nro_caso
-            const lastNumber = parseInt(lastCase.split('-')[2])
-            nextNumber = lastNumber + 1
-        }
-
-        return `${prefix}${nextNumber.toString().padStart(4, '0')}`
+        return rows.length > 0 ? rows[0].nro_caso : null
     }
 
     /**
      * Crea una nueva transferencia
      */
-    static async create({ origen_id, destino_id, equipo_id, usuario_id, asunto, observaciones }) {
-        // Validar si ya hay una pendiente
+    static async create({ nro_caso, origen_id, destino_id, equipo_id, usuario_id, asunto, observaciones, codigo_entrega }) {
+        // Validar si ya hay una pendiente (mantenido en modelo por integridad)
         const isPending = await this.hasPendingTransfer(equipo_id)
         if (isPending) {
             throw new Error('El equipo ya tiene una transferencia en curso.')
         }
-
-        const nro_caso = await this.generateCaseNumber()
-        const codigo_entrega = Math.floor(100000 + Math.random() * 900000).toString() // Generar 6 dígitos
 
         const [result] = await pool.query(`
             INSERT INTO transferencia 
@@ -112,18 +106,18 @@ export class TransferenciaModel {
     }
 
     /**
-     * Actualiza el estatus y datos técnicos de una transferencia
+     * Actualiza el estatus y datos técnicos
      */
-    static async updateStatus(id, { status, usuario_tecnico_id, fecha_recepcion, prioridad, diagnostico_tecnico, solucion_tecnica, fecha_entrega, codigo_validacion }) {
-        // VALIDACIÓN DE CÓDIGO DE ENTREGA
-        if (parseInt(status) === 7) { // 7: Entregado
-            const [rows] = await pool.query('SELECT codigo_entrega FROM transferencia WHERE id = ?', [id])
-            if (rows.length === 0) throw new Error('Transferencia no encontrada.')
-            
-            if (rows[0].codigo_entrega !== codigo_validacion) {
-                throw new Error('Código de validación incorrecto. El usuario debe proporcionar el código para completar la entrega.')
-            }
-        }
+    static async updateStatus(id, data) {
+        const { 
+            status, 
+            usuario_tecnico_id, 
+            fecha_recepcion, 
+            prioridad, 
+            diagnostico_tecnico, 
+            solucion_tecnica, 
+            fecha_entrega 
+        } = data
 
         const updates = []
         const params = []

@@ -43,12 +43,25 @@
                 "link": "/Configuracion/Maestros"
             },
             {
-                "text": "Tablero Soporte",
-                "icon": "bx bx-wrench",
+                "text": "Tablero Soporte (Transf.)",
+                "icon": "bx bx-transfer",
                 "available": true,
                 "link": "/Transferencias/Tecnico"
+            },
+            {
+                "text": "Gestión de Fallas",
+                "icon": "bx bx-error-alt",
+                "available": true,
+                "link": "/Mantenimientos"
+            },
+            {
+                "text": "Tablero Mantenimiento",
+                "icon": "bx bx-wrench",
+                "available": true,
+                "link": "/Mantenimientos/Gestion"
             }
         ]
+
     },
     {
         "header": "Administración",
