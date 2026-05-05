@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
-import helpFetch from "../utils/helpFetch";
+import helpFetch from "../../../utils/helpFetch";
 
-export const TabDepartamentos = () => {
+export const TabModelos = () => {
     const [dataList, setDataList] = useState([]);
-    const [pisos, setPisos] = useState([]);
+    const [marcas, setMarcas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalAction, setModalAction] = useState('crear'); // 'crear' | 'editar'
-    
+
     // Form state
     const [currentId, setCurrentId] = useState(null);
     const [nombre, setNombre] = useState('');
-    const [pisoId, setPisoId] = useState('');
+    const [marcaId, setMarcaId] = useState('');
 
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    
+
     const fetchDataList = async () => {
         try {
             setLoading(true);
-            const [deptData, pisosData] = await Promise.all([
-                helpFetch.GET("/departamento"),
-                helpFetch.GET("/piso")
+            const [modData, marcaData] = await Promise.all([
+                helpFetch.GET("/modelo"),
+                helpFetch.GET("/marca")
             ]);
-            
-            setDataList(deptData);
-            setPisos(pisosData);
+
+            setDataList(modData);
+            setMarcas(marcaData);
         } catch (error) {
             console.error(error);
-            toast.error("Error cargando departamentos");
+            toast.error("Error cargando modelos");
         } finally {
             setLoading(false);
         }
@@ -41,7 +41,7 @@ export const TabDepartamentos = () => {
 
     const handleShowCreate = () => {
         setNombre('');
-        setPisoId('');
+        setMarcaId('');
         setModalAction('crear');
         setModalVisible(true);
     };
@@ -49,7 +49,7 @@ export const TabDepartamentos = () => {
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
         setNombre(item.nombre);
-        setPisoId(item.piso_id || ''); // Asegurar default
+        setMarcaId(item.marca_id || ''); // Asegurar default
         setModalAction('editar');
         setModalVisible(true);
     };
@@ -64,38 +64,38 @@ export const TabDepartamentos = () => {
         e.preventDefault();
         try {
             const isEdit = modalAction === 'editar';
-            const url = isEdit ? `/departamento/${currentId}` : `/departamento`;
+            const url = isEdit ? `/modelo/${currentId}` : `/modelo`;
             const method = isEdit ? 'PATCH' : 'POST';
 
-            await helpFetch[method](url, { nombre, piso_id: pisoId });
-            
-            toast.success(`Departamento ${isEdit ? 'actualizado' : 'creado'} con éxito`);
+            await helpFetch[method](url, { nombre, marca_id: marcaId });
+
+            toast.success(`Modelo ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
         } catch (error) {
             console.error(error);
-            toast.error(error.message || `Error guardando Departamento`);
+            toast.error(error.message || `Error guardando Modelo`);
         }
     };
 
     const handleDelete = async () => {
         try {
-            const success = await helpFetch.DELETE(`/departamento/${currentId}`);
+            const success = await helpFetch.DELETE(`/modelo/${currentId}`);
             if (!success) throw new Error("No se pudo eliminar");
-            toast.success(`Departamento eliminado con éxito`);
+            toast.success(`Modelo eliminado con éxito`);
             setDeleteModalVisible(false);
             fetchDataList();
         } catch (error) {
-            toast.error(error.message || `Error al eliminar Departamento`);
+            toast.error(error.message || `Error al eliminar Modelo`);
         }
     };
 
     return (
         <div className="pt-3">
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <h6 className="mb-0">Listado de Departamentos</h6>
+                <h6 className="mb-0">Listado de Modelos</h6>
                 <Button variant="primary" size="sm" onClick={handleShowCreate}>
-                    <i className="bx bx-plus me-1"></i> Añadir Departamento
+                    <i className="bx bx-plus me-1"></i> Añadir Modelo
                 </Button>
             </div>
             <Table responsive hover size="sm">
@@ -103,7 +103,7 @@ export const TabDepartamentos = () => {
                     <tr>
                         <th>Nº</th>
                         <th>Nombre</th>
-                        <th>Piso Asignado</th>
+                        <th>Marca Asociada</th>
                         <th className="text-end">Acciones</th>
                     </tr>
                 </thead>
@@ -117,7 +117,7 @@ export const TabDepartamentos = () => {
                     ) : dataList.length === 0 ? (
                         <tr>
                             <td colSpan="4" className="text-center py-4 text-muted">
-                                No hay departamentos registrados
+                                No hay modelos registrados
                             </td>
                         </tr>
                     ) : (
@@ -125,7 +125,7 @@ export const TabDepartamentos = () => {
                             <tr key={item.id}>
                                 <td>{index + 1}</td>
                                 <td>{item.nombre}</td>
-                                <td>{item.nombre_piso || 'N/A'}</td>
+                                <td>{item.marca_nombre || 'N/A'}</td>
                                 <td className="text-end">
                                     <div className="d-flex justify-content-end gap-2">
                                         <Button variant="warning" size="sm" onClick={() => handleShowEdit(item)}>
@@ -145,15 +145,15 @@ export const TabDepartamentos = () => {
             {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
-                    <Modal.Title>{modalAction === 'crear' ? `Añadir Departamento` : `Editar Departamento`}</Modal.Title>
+                    <Modal.Title>{modalAction === 'crear' ? `Añadir Modelo` : `Editar Modelo`}</Modal.Title>
                 </Modal.Header>
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
-                            <Form.Label>Nombre del Departamento</Form.Label>
-                            <Form.Control 
+                            <Form.Label>Nombre del Modelo</Form.Label>
+                            <Form.Control
                                 type="text"
-                                placeholder="Ej. Recursos Humanos"
+                                placeholder="Ej. OptiPlex 3050"
                                 value={nombre}
                                 onChange={(e) => setNombre(e.target.value)}
                                 required
@@ -161,16 +161,16 @@ export const TabDepartamentos = () => {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Piso al que pertenece</Form.Label>
-                            <Form.Select 
-                                value={pisoId}
-                                onChange={(e) => setPisoId(e.target.value)}
+                            <Form.Label>Marca a la que pertenece</Form.Label>
+                            <Form.Select
+                                value={marcaId}
+                                onChange={(e) => setMarcaId(e.target.value)}
                                 required
                             >
-                                <option value="">Seleccione un piso...</option>
-                                {pisos.map(p => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.nombre}
+                                <option value="">Seleccione una marca...</option>
+                                {marcas.map(m => (
+                                    <option key={m.id} value={m.id}>
+                                        {m.nombre}
                                     </option>
                                 ))}
                             </Form.Select>
@@ -193,7 +193,7 @@ export const TabDepartamentos = () => {
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar este departamento <strong>"{nombre}"</strong>? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar el modelo <strong>"{nombre}"</strong>? Esta acción no se puede deshacer.
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>

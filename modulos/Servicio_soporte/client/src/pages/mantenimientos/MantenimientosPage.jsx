@@ -126,7 +126,6 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                 <th>Tipo / Asunto</th>
                                 <th>Equipo</th>
                                 <th>Fecha</th>
-                                <th>Prioridad</th>
                                 <th>Estatus</th>
                                 <th className="text-center">Acción</th>
                             </tr>
@@ -147,17 +146,12 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                         <td>{m.equipo_nro_bien || <span className="text-muted">N/A</span>}</td>
                                         <td>{new Date(m.fecha_solicitud).toLocaleDateString()}</td>
                                         <td>
-                                            <Badge bg={m.prioridad === 'Alta' ? 'danger' : m.prioridad === 'Media' ? 'warning' : 'info'}>
-                                                {m.prioridad}
-                                            </Badge>
-                                        </td>
-                                        <td>
                                             <Badge bg={getStatusBadge(m.status_nombre)} className="bg-label-primary">
                                                 {m.status_nombre}
                                             </Badge>
                                         </td>
                                         <td className="text-center">
-                                            <Button size="sm" variant="outline-primary" onClick={() => { setSelectedMaint(m); setShowGestion(true); }}>
+                                            <Button size="sm" variant="primary" onClick={() => { setSelectedMaint(m); setShowGestion(true); }}>
                                                 <i className={`bx ${isTechnicalDashboard ? 'bx-cog' : 'bx-show'}`}></i>
                                             </Button>
                                         </td>

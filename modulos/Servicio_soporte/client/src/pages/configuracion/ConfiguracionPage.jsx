@@ -4,10 +4,10 @@ import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 // Componentes
-import { GenericMasterTab } from "../../components/GenericMasterTab";
-import { TabDepartamentos } from "../../components/TabDepartamentos";
-import { TabModelos } from "../../components/TabModelos";
-import { TabTipoToner } from "../../components/TabTipoToner";
+import { GenericMasterTab } from "./components/GenericMasterTab";
+import { TabDepartamentos } from "./components/TabDepartamentos";
+import { TabModelos } from "./components/TabModelos";
+import { TabTipoToner } from "./components/TabTipoToner";
 
 export const ConfiguracionPage = () => {
     // Controlar la pestaña activa

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Row, Col, Spinner } from 'react-bootstrap';
+import Select from 'react-select';
 import { toast } from 'react-toastify';
 import helpFetch from '../../../utils/helpFetch';
 
@@ -12,8 +13,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
         direc_id: '',
         equipo_id: '',
         asunto: '',
-        descripcion: '',
-        prioridad: 'Media'
+        descripcion: ''
     });
 
     useEffect(() => {
@@ -56,6 +56,14 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Handler especial para react-select
+    const handleSelectChange = (selectedOption) => {
+        setFormData(prev => ({ 
+            ...prev, 
+            equipo_id: selectedOption ? selectedOption.value : '' 
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.asunto || !formData.descripcion || !formData.direc_id) {
@@ -82,6 +90,15 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
 
     const esTecnico = user?.rol_id === 1 || user?.rol_id === 2;
 
+    // Preparar opciones para react-select
+    const equipoOptions = [
+        { value: '', label: '-- No aplica / No listado --' },
+        ...equipos.map(e => ({
+            value: e.id,
+            label: `${e.nro_bien} - ${e.tipo_nombre} (${e.modelo_nombre || 'S/M'})`
+        }))
+    ];
+
     return (
         <Modal show={show} onHide={onHide} size="lg" backdrop="static">
             <Modal.Header closeButton>
@@ -90,7 +107,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
                     <Row className="mb-3">
-                        <Col md={esTecnico ? 4 : 6}>
+                        <Col md={esTecnico ? 6 : 12}>
                             <Form.Group>
                                 <Form.Label>Tipo de Falla</Form.Label>
                                 <Form.Select name="tipo_falla" value={formData.tipo_falla} onChange={handleChange}>
@@ -104,7 +121,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                         </Col>
                         
                         {esTecnico && (
-                            <Col md={4}>
+                            <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>Departamento Afectado</Form.Label>
                                     <Form.Select 
@@ -121,29 +138,28 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                                 </Form.Group>
                             </Col>
                         )}
-
-                        <Col md={esTecnico ? 4 : 6}>
-                            <Form.Group>
-                                <Form.Label>Prioridad</Form.Label>
-                                <Form.Select name="prioridad" value={formData.prioridad} onChange={handleChange}>
-                                    <option value="Baja">Baja</option>
-                                    <option value="Media">Media</option>
-                                    <option value="Alta">Alta</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
                     </Row>
 
 
                     {formData.tipo_falla === 'Equipo de Computación' && (
                         <Form.Group className="mb-3">
                             <Form.Label>Seleccionar Equipo (Opcional)</Form.Label>
-                            <Form.Select name="equipo_id" value={formData.equipo_id} onChange={handleChange}>
-                                <option value="">-- No aplica / No listado --</option>
-                                {equipos.map(e => (
-                                    <option key={e.id} value={e.id}>{e.nro_bien} - {e.tipo_nombre}</option>
-                                ))}
-                            </Form.Select>
+                            <Select
+                                options={equipoOptions}
+                                placeholder="Escriba Nro. Bien o Tipo para buscar..."
+                                isClearable
+                                onChange={handleSelectChange}
+                                value={equipoOptions.find(opt => opt.value === formData.equipo_id)}
+                                noOptionsMessage={() => "No se encontraron equipos"}
+                                theme={(theme) => ({
+                                    ...theme,
+                                    borderRadius: 5,
+                                    colors: {
+                                        ...theme.colors,
+                                        primary: '#007bff',
+                                    },
+                                })}
+                            />
                         </Form.Group>
                     )}
 

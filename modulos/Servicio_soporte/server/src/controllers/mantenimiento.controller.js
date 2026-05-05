@@ -3,7 +3,7 @@ import { MantenimientoService } from '../services/mantenimiento.service.js'
 export class MantenimientoController {
     static async getAll(req, res) {
         try {
-            const data = await MantenimientoService.getAll()
+            const data = await MantenimientoService.getAll(req.user)
             res.json(data)
         } catch (error) {
             res.status(500).json({ message: error.message })
@@ -13,7 +13,7 @@ export class MantenimientoController {
     static async getByDepto(req, res) {
         try {
             const { id } = req.params
-            const data = await MantenimientoService.getByDepto(id)
+            const data = await MantenimientoService.getByDepto(id, req.user)
             res.json(data)
         } catch (error) {
             res.status(500).json({ message: error.message })

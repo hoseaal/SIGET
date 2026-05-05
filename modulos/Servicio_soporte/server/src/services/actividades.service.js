@@ -24,7 +24,7 @@ export class ActividadesService {
             throw new Error('Faltan campos obligatorios para registrar la actividad');
         }
 
-        // 2. Normalización de textos (Limpieza de espacios y mayúsculas)
+        // 2. Normalización de textos
         const observacionesLimpias = datos.observaciones
             ? datos.observaciones.trim().replace(/\s+/g, ' ').toUpperCase()
             : 'SIN OBSERVACIONES';
@@ -37,18 +37,14 @@ export class ActividadesService {
     }
 
     static async actualizar(id, datos) {
-        // Verificamos si existe antes de intentar actualizar
         const existe = await actividadesModel.getById(id);
         if (!existe) throw new Error('La actividad que intentas actualizar no existe');
 
-        // Normalizamos observaciones si vienen en el update
         if (datos.observaciones) {
             datos.observaciones = datos.observaciones.trim().replace(/\s+/g, ' ').toUpperCase();
         }
 
-        // Combinamos datos viejos con nuevos para no perder información si el update es parcial
         const datosActualizados = { ...existe, ...datos };
-
         return await actividadesModel.update(id, datosActualizados);
     }
 

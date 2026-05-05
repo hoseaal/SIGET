@@ -3,6 +3,7 @@ import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup } from 
 import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
 import { GestionTransferenciaModal } from "./components/GestionTransferenciaModal";
+import { generateTransferPDF } from "../../utils/ReporteTransferencia";
 
 export const TransferenciaTecnicoPage = () => {
     const [transferencias, setTransferencias] = useState([]);
@@ -26,6 +27,7 @@ export const TransferenciaTecnicoPage = () => {
             ]);
             setTransferencias(transData);
             setDepartamentos(depsData);
+
         } catch (error) {
             console.error(error);
             toast.error("Error al cargar tablero técnico");
@@ -33,7 +35,6 @@ export const TransferenciaTecnicoPage = () => {
             setLoading(false);
         }
     };
-
     useEffect(() => {
         fetchData();
     }, []);
@@ -197,9 +198,16 @@ export const TransferenciaTecnicoPage = () => {
                                             </Badge>
                                         </td>
                                         <td className="text-center">
-                                            <Button size="sm" variant="primary" onClick={() => handleOpenGestion(t)}>
-                                                <i className="bx bx-cog"></i>
-                                            </Button>
+                                            <div className="d-flex justify-content-center gap-1">
+                                                <Button size="sm" variant="primary" onClick={() => handleOpenGestion(t)} title="Gestionar">
+                                                    <i className="bx bx-cog"></i>
+                                                </Button>
+                                                {(t.status === 6 || t.status === 7) && (
+                                                    <Button size="sm" variant="info" onClick={() => generateTransferPDF(t)} title="Imprimir Reporte">
+                                                        <i className="bx bx-printer"></i>
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

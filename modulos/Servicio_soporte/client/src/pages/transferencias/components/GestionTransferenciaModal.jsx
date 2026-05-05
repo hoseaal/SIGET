@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Row, Col, Badge, Spinner } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import helpFetch from '../../../utils/helpFetch';
+import { generateTransferPDF } from '../../../utils/ReporteTransferencia';
 
 /**
  * Modal para que el técnico gestione la transferencia.
@@ -68,6 +69,16 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
 
             await helpFetch.PUT(`/transferencia/${transferencia.id}/status`, payload);
             toast.success("Gestión actualizada correctamente.");
+            
+            // Si el estado es Entregado, generar el PDF automáticamente
+            if (formData.status == 7) {
+                generateTransferPDF({
+                    ...transferencia,
+                    diagnostico_tecnico: formData.diagnostico_tecnico,
+                    solucion_tecnica: formData.solucion_tecnica
+                }, { nombre: user?.nombre || 'Técnico de Soporte' });
+            }
+
             onSuccess();
         } catch (error) {
             console.error(error);
@@ -157,7 +168,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                     />
                 </Form.Group>
 
-                {formData.status == 7 && (
+                {formData.status == 7 && transferencia.status != 7 && (
                     <div className="bg-light p-3 rounded mb-3 border border-success">
                         <Form.Group>
                             <Form.Label className="text-success fw-bold">Código de Validación de Entrega <span className="text-danger">*</span></Form.Label>
@@ -179,7 +190,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                     </div>
                 )}
 
-                {formData.status == 7 && (
+                {formData.status == 7 && transferencia.status != 7 && (
                     <div className="alert alert-success d-flex align-items-center">
                         <i className="bx bx-check-circle me-2"></i>
                         <div>

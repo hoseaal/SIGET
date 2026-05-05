@@ -10,6 +10,7 @@ import { TransferenciasPage } from "../pages/transferencias/TransferenciasPage";
 import { TransferenciaTecnicoPage } from "../pages/transferencias/TransferenciaTecnicoPage";
 import { UsuariosPage } from "../pages/usuarios/UsuariosPage";
 import { MantenimientosPage } from "../pages/mantenimientos/MantenimientosPage";
+import { ActividadesPage } from "../pages/actividades/ActividadesPage";
 import { menuPermissions } from "../data/dataPermissions";
 
 const AppRoutes = () => {
@@ -71,6 +72,12 @@ const AppRoutes = () => {
             <Route path="/Mantenimientos/Gestion" element={
                 <ProtectedRoute allowedRoles={menuPermissions["/Mantenimientos/Gestion"]}>
                     <MantenimientosPage isTechnicalDashboard={true} />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Actividades" element={
+                <ProtectedRoute allowedRoles={menuPermissions["/Actividades"]}>
+                    <ActividadesPage />
                 </ProtectedRoute>
             } />
 

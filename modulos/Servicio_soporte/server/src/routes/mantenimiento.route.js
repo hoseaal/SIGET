@@ -7,9 +7,9 @@ const router = Router()
 // Todas las rutas de mantenimiento requieren autenticación
 router.use(authenticate)
 
-router.get('/', MantenimientoController.getAll)
-router.get('/depto/:id', MantenimientoController.getByDepto)
-router.post('/', MantenimientoController.create)
-router.put('/:id/status', MantenimientoController.updateStatus)
+router.get('/', authenticate, MantenimientoController.getAll)
+router.get('/depto/:id', authenticate, MantenimientoController.getByDepto)
+router.post('/', authenticate, MantenimientoController.create)
+router.put('/:id/status', authenticate, MantenimientoController.updateStatus)
 
 export default router

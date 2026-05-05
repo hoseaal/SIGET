@@ -11,19 +11,13 @@
         ]
     },
     {
-        "header": "Infraestructura",
+        "header": "Reportes",
         "items": [
             {
-                "text": "Inventario de Equipos",
-                "icon": "bx bx-desktop",
+                "text": "Gestión de Fallas",
+                "icon": "bx bx-error-alt",
                 "available": true,
-                "link": "/Equipos"
-            },
-            {
-                "text": "Lógica de Red",
-                "icon": "bx bx-network-chart",
-                "available": true,
-                "link": "/Infraestructura/Red"
+                "link": "/Mantenimientos"
             },
             {
                 "text": "Transferencias",
@@ -34,34 +28,45 @@
         ]
     },
     {
-        "header": "Mantenimiento",
+        "header": "Soporte",
         "items": [
             {
-                "text": "Configuración General",
-                "icon": "bx bx-cog",
+                "text": "Lógica de Red",
+                "icon": "bx bx-network-chart",
                 "available": true,
-                "link": "/Configuracion/Maestros"
+                "link": "/Infraestructura/Red"
             },
             {
-                "text": "Tablero Soporte (Transf.)",
+                "text": "Inventario de Equipos",
+                "icon": "bx bx-desktop",
+                "available": true,
+                "link": "/Equipos"
+            },
+            {
+                "text": "Gestión de Transferencias",
                 "icon": "bx bx-transfer",
                 "available": true,
                 "link": "/Transferencias/Tecnico"
             },
             {
-                "text": "Gestión de Fallas",
-                "icon": "bx bx-error-alt",
-                "available": true,
-                "link": "/Mantenimientos"
-            },
-            {
-                "text": "Tablero Mantenimiento",
+                "text": "Gestión de Mantenimientos",
                 "icon": "bx bx-wrench",
                 "available": true,
                 "link": "/Mantenimientos/Gestion"
+            },
+            {
+                "text": "Historial de Actividades",
+                "icon": "bx bx-list-check",
+                "available": true,
+                "link": "/Actividades"
+            },
+            {
+                "text": "Configuración General",
+                "icon": "bx bx-cog",
+                "available": true,
+                "link": "/Configuracion/Maestros"
             }
         ]
-
     },
     {
         "header": "Administración",

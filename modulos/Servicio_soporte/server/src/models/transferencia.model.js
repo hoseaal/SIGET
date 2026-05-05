@@ -109,14 +109,14 @@ export class TransferenciaModel {
      * Actualiza el estatus y datos técnicos
      */
     static async updateStatus(id, data) {
-        const { 
-            status, 
-            usuario_tecnico_id, 
-            fecha_recepcion, 
-            prioridad, 
-            diagnostico_tecnico, 
-            solucion_tecnica, 
-            fecha_entrega 
+        const {
+            status,
+            usuario_tecnico_id,
+            fecha_recepcion,
+            prioridad,
+            diagnostico_tecnico,
+            solucion_tecnica,
+            fecha_entrega
         } = data
 
         const updates = []

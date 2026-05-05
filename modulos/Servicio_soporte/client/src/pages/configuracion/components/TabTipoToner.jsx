@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
-import helpFetch from "../utils/helpFetch";
+import helpFetch from "../../../utils/helpFetch";
 
 export const TabTipoToner = () => {
     const [dataList, setDataList] = useState([]);
@@ -83,13 +83,13 @@ export const TabTipoToner = () => {
             const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `/tipo_toner/${currentId}` : `/tipo_toner`;
 
-            await helpFetch[method](url, { 
-                nombre, 
-                descripcion, 
-                marca_id: marcaId || null, 
-                modelo_id: modeloId || null 
+            await helpFetch[method](url, {
+                nombre,
+                descripcion,
+                marca_id: marcaId || null,
+                modelo_id: modeloId || null
             });
-            
+
             toast.success(`Tipo de Tóner ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
@@ -189,8 +189,8 @@ export const TabTipoToner = () => {
                         <div className="row">
                             <div className="col-md-6 mb-3">
                                 <Form.Label>Marca Asociada</Form.Label>
-                                <Form.Select 
-                                    value={marcaId} 
+                                <Form.Select
+                                    value={marcaId}
                                     onChange={(e) => {
                                         setMarcaId(e.target.value);
                                         setModeloId('');
@@ -202,8 +202,8 @@ export const TabTipoToner = () => {
                             </div>
                             <div className="col-md-6 mb-3">
                                 <Form.Label>Modelo Asociado</Form.Label>
-                                <Form.Select 
-                                    value={modeloId} 
+                                <Form.Select
+                                    value={modeloId}
                                     onChange={(e) => setModeloId(e.target.value)}
                                     disabled={!marcaId}
                                 >

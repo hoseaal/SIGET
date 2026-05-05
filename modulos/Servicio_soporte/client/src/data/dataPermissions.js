@@ -33,7 +33,10 @@ export const menuPermissions = {
 
     // Mantenimientos
     "/Mantenimientos": [1, 2, 3],
-    "/Mantenimientos/Gestion": [1, 2]
+    "/Mantenimientos/Gestion": [1, 2],
+
+    // Actividades
+    "/Actividades": [1, 2]
 };
 
 

@@ -1,27 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
-import helpFetch from "../utils/helpFetch";
+import helpFetch from "../../../utils/helpFetch";
 
-export const GenericMasterTab = ({ endpoint, titleItem }) => {
+export const TabDepartamentos = () => {
     const [dataList, setDataList] = useState([]);
+    const [pisos, setPisos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalAction, setModalAction] = useState('crear'); // 'crear' | 'editar'
 
+    // Form state
     const [currentId, setCurrentId] = useState(null);
     const [nombre, setNombre] = useState('');
+    const [pisoId, setPisoId] = useState('');
 
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
     const fetchDataList = async () => {
         try {
             setLoading(true);
-            const data = await helpFetch.GET(endpoint);
-            setDataList(data);
+            const [deptData, pisosData] = await Promise.all([
+                helpFetch.GET("/departamento"),
+                helpFetch.GET("/piso")
+            ]);
+
+            setDataList(deptData);
+            setPisos(pisosData);
         } catch (error) {
             console.error(error);
-            toast.error(`Error cargando ${titleItem}`);
+            toast.error("Error cargando departamentos");
         } finally {
             setLoading(false);
         }
@@ -29,10 +37,11 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
 
     useEffect(() => {
         fetchDataList();
-    }, [endpoint]);
+    }, []);
 
     const handleShowCreate = () => {
         setNombre('');
+        setPisoId('');
         setModalAction('crear');
         setModalVisible(true);
     };
@@ -40,6 +49,7 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
         setNombre(item.nombre);
+        setPisoId(item.piso_id || ''); // Asegurar default
         setModalAction('editar');
         setModalVisible(true);
     };
@@ -54,59 +64,60 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
         e.preventDefault();
         try {
             const isEdit = modalAction === 'editar';
+            const url = isEdit ? `/departamento/${currentId}` : `/departamento`;
             const method = isEdit ? 'PATCH' : 'POST';
-            const url = isEdit ? `${endpoint}/${currentId}` : endpoint;
 
-            await helpFetch[method](url, { nombre });
+            await helpFetch[method](url, { nombre, piso_id: pisoId });
 
-            toast.success(`${titleItem} ${isEdit ? 'actualizado' : 'creado'} con éxito`);
+            toast.success(`Departamento ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
         } catch (error) {
             console.error(error);
-            toast.error(error.message || `Error guardando ${titleItem}`);
+            toast.error(error.message || `Error guardando Departamento`);
         }
     };
 
     const handleDelete = async () => {
         try {
-            const success = await helpFetch.DELETE(`${endpoint}/${currentId}`);
+            const success = await helpFetch.DELETE(`/departamento/${currentId}`);
             if (!success) throw new Error("No se pudo eliminar");
-            toast.success(`${titleItem} eliminado con éxito`);
+            toast.success(`Departamento eliminado con éxito`);
             setDeleteModalVisible(false);
             fetchDataList();
         } catch (error) {
-            toast.error(error.message || `Error al eliminar ${titleItem}`);
+            toast.error(error.message || `Error al eliminar Departamento`);
         }
     };
 
     return (
-        <div className="pt-2">
+        <div className="pt-3">
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <h6 className="mb-0">Listado de {titleItem}</h6>
+                <h6 className="mb-0">Listado de Departamentos</h6>
                 <Button variant="primary" size="sm" onClick={handleShowCreate}>
-                    <i className="bx bx-plus me-1"></i> Añadir {titleItem}
+                    <i className="bx bx-plus me-1"></i> Añadir Departamento
                 </Button>
             </div>
             <Table responsive hover size="sm">
                 <thead>
                     <tr>
                         <th>Nº</th>
-                        <th>Nombre / Descripción</th>
-                        <th className="text-end" style={{ width: '120px' }}>ACCIONES</th>
+                        <th>Nombre</th>
+                        <th>Piso Asignado</th>
+                        <th className="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {loading ? (
                         <tr>
-                            <td colSpan="3" className="text-center py-4">
+                            <td colSpan="4" className="text-center py-4">
                                 <Spinner animation="border" variant="primary" size="sm" />
                             </td>
                         </tr>
                     ) : dataList.length === 0 ? (
                         <tr>
-                            <td colSpan="3" className="text-center py-4 text-muted">
-                                No hay opciones registradas
+                            <td colSpan="4" className="text-center py-4 text-muted">
+                                No hay departamentos registrados
                             </td>
                         </tr>
                     ) : (
@@ -114,9 +125,10 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
                             <tr key={item.id}>
                                 <td>{index + 1}</td>
                                 <td>{item.nombre}</td>
+                                <td>{item.nombre_piso || 'N/A'}</td>
                                 <td className="text-end">
-                                    <div className="d-flex justify-content-end">
-                                        <Button variant="warning" size="sm" className="me-2" onClick={() => handleShowEdit(item)}>
+                                    <div className="d-flex justify-content-end gap-2">
+                                        <Button variant="warning" size="sm" onClick={() => handleShowEdit(item)}>
                                             <i className="bx bx-edit"></i>
                                         </Button>
                                         <Button variant="danger" size="sm" onClick={() => handleShowDelete(item)}>
@@ -133,20 +145,35 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
             {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
-                    <Modal.Title>{modalAction === 'crear' ? `Añadir ${titleItem}` : `Editar ${titleItem}`}</Modal.Title>
+                    <Modal.Title>{modalAction === 'crear' ? `Añadir Departamento` : `Editar Departamento`}</Modal.Title>
                 </Modal.Header>
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
-                            <Form.Label>Nombre</Form.Label>
+                            <Form.Label>Nombre del Departamento</Form.Label>
                             <Form.Control
                                 type="text"
-                                placeholder={`Ej. Ingrese ${titleItem.toLowerCase()}`}
+                                placeholder="Ej. Recursos Humanos"
                                 value={nombre}
                                 onChange={(e) => setNombre(e.target.value)}
                                 required
                                 autoFocus
                             />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Piso al que pertenece</Form.Label>
+                            <Form.Select
+                                value={pisoId}
+                                onChange={(e) => setPisoId(e.target.value)}
+                                required
+                            >
+                                <option value="">Seleccione un piso...</option>
+                                {pisos.map(p => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.nombre}
+                                    </option>
+                                ))}
+                            </Form.Select>
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
@@ -166,7 +193,7 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar este registro <strong>"{nombre}"</strong>? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar este departamento <strong>"{nombre}"</strong>? Esta acción no se puede deshacer.
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>

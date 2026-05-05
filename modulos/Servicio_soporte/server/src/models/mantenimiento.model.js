@@ -70,14 +70,14 @@ export class MantenimientoModel {
      * Crea un nuevo registro de mantenimiento
      */
     static async create(data) {
-        const { nro_caso, usuario_id, direc_id, tipo_falla, equipo_id, asunto, descripcion, prioridad } = data
+        const { nro_caso, usuario_id, direc_id, tipo_falla, equipo_id, asunto, descripcion } = data
         const [result] = await pool.query(`
             INSERT INTO mantenimiento 
             (nro_caso, usuario_id, direc_id, tipo_falla, equipo_id, asunto, descripcion, prioridad, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 2)
-        `, [nro_caso, usuario_id, direc_id, tipo_falla, equipo_id || null, asunto, descripcion, prioridad])
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'Media', 2)
+        `, [nro_caso, usuario_id, direc_id, tipo_falla, equipo_id || null, asunto, descripcion])
         
-        return { id: result.insertId, ...data }
+        return { id: result.insertId, ...data, prioridad: 'Media' }
     }
 
     /**

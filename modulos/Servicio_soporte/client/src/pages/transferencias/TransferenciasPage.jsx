@@ -41,6 +41,7 @@ export const TransferenciasPage = () => {
 
                 setTransferencias(transData);
                 setDepartamentos(depsData);
+                console.log("transferencia:", transData);
             }
         } catch (error) {
             console.error(error);
@@ -153,7 +154,6 @@ export const TransferenciasPage = () => {
                                 <th>Fecha</th>
                                 <th>Equipo</th>
                                 <th>Asunto</th>
-                                <th>Prioridad</th>
                                 <th>Estatus</th>
                                 <th className="text-center">Código Entrega</th>
                                 <th className="text-center">Detalle</th>
@@ -192,11 +192,6 @@ export const TransferenciasPage = () => {
                                             <div className="text-truncate" style={{ maxWidth: '200px' }} title={t.asunto}>
                                                 {t.asunto}
                                             </div>
-                                        </td>
-                                        <td>
-                                            <Badge bg={getPriorityBadge(t.prioridad)} className="rounded-pill">
-                                                {t.prioridad}
-                                            </Badge>
                                         </td>
                                         <td>
                                             <Badge bg={getStatusBadge(t.status_nombre)} className="bg-label-primary">

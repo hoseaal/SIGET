@@ -26,11 +26,11 @@ export class TransferenciaService {
     static async updateStatus(id, updateData) {
         const { status, codigo_validacion } = updateData
 
-        // Lógica de negocio: Validar código si se marca como Entregado (status 7)
-        if (parseInt(status) === 7) {
-            const transfer = await TransferenciaModel.getById(id)
-            if (!transfer) throw new Error('Transferencia no encontrada.')
-            
+        const transfer = await TransferenciaModel.getById(id)
+        if (!transfer) throw new Error('Transferencia no encontrada.')
+
+        // Solo validar código si el nuevo estado es 7 (Entregado) y el anterior NO lo era
+        if (parseInt(status) === 7 && transfer.status !== 7) {
             if (transfer.codigo_entrega !== codigo_validacion) {
                 throw new Error('Código de validación incorrecto. El usuario debe proporcionar el código para completar la entrega.')
             }
@@ -41,11 +41,17 @@ export class TransferenciaService {
 
     // Métodos privados de apoyo
     static _filterData(data, user) {
+        if (!user) return data.map(({ codigo_entrega, ...rest }) => rest)
+
         return data.map(t => {
-            const { codigo_entrega, ...rest } = t
-            // Solo el dueño puede ver el código
-            const esDueno = user?.usuario_id === t.usuario_id
-            return esDueno ? t : rest
+            const { codigo_entrega, prioridad, ...rest } = t
+
+            // Solo el dueño puede ver el código (o si es necesario, el admin)
+            const esDueno = String(user.usuario_id) === String(t.usuario_id)
+
+            // Si es el dueño, devolvemos todo el objeto (incluyendo el código)
+            // Si no, devolvemos el objeto sin el código
+            return esDueno ? { codigo_entrega, ...rest } : { prioridad, ...rest }
         })
     }
 
@@ -53,7 +59,7 @@ export class TransferenciaService {
         const year = new Date().getFullYear()
         const prefix = `TRA-${year}-`
         const lastCase = await TransferenciaModel.getLastCaseNumber(prefix)
-        
+
         let nextNumber = 1
         if (lastCase) {
             const lastNumber = parseInt(lastCase.split('-')[2])
