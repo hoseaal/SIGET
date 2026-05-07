@@ -54,6 +54,7 @@ export class PrestamoModel {
    * Obtiene una lista de préstamos "normales" (excluyendo bienes en almacén por mal estado).
    * @param {object} filters - Filtros para la consulta.
    * @param {string} [filters.pre_ndo] - Filtro por número de oficio.
+   * @param {string} [filters.bim_cod] - Filtro por código de bien (número de bien en ttrdpr).
    * @param {number} [filters.dep_origen_id] - Filtro por ID de departamento de origen.
    * @param {number} [filters.dep_destino_id] - Filtro por ID de departamento de destino.
    * @returns {Promise<Array>} Lista de préstamos normales.
@@ -103,6 +104,11 @@ export class PrestamoModel {
       whereClauses.push('tp.pre_ndo LIKE ?')
       params.push(`%${filters.pre_ndo}%`)
     }
+    if (filters.bim_cod) {
+      // Filtrar por código de bien: el préstamo debe contener al menos un bien con ese código
+      whereClauses.push('tp.pre_ide IN (SELECT tdd2.pre_ide FROM ttrdpr tdd2 JOIN tmab_m tm2 ON tdd2.bim_ide = tm2.bim_ide WHERE tm2.bim_cod LIKE ?)')
+      params.push(`%${filters.bim_cod}%`)
+    }
     if (filters.dep_origen_id) { // Filtro por el nuevo campo dep_origen_ide en ttrpre
       whereClauses.push('tp.dep_origen_ide = ?')
       params.push(filters.dep_origen_id)
@@ -127,6 +133,7 @@ export class PrestamoModel {
    * Obtiene una lista de bienes en almacén por mal estado.
    * @param {object} filters - Filtros para la consulta.
    * @param {string} [filters.pre_ndo] - Filtro por número de oficio.
+   * @param {string} [filters.bim_cod] - Filtro por código de bien (número de bien en ttrdpr).
    * @param {number} [filters.dep_origen_id] - Filtro por ID de departamento de origen del bien.
    * @param {number} [filters.dep_destino_id] - Filtro por ID de departamento de destino.
    * @returns {Promise<Array>} Lista de bienes en almacén por mal estado.
@@ -164,6 +171,11 @@ export class PrestamoModel {
     if (filters.pre_ndo) {
       query += ' AND tp.pre_ndo LIKE ?'
       params.push(`%${filters.pre_ndo}%`)
+    }
+    if (filters.bim_cod) {
+      // Filtrar por código de bien: el préstamo debe contener al menos un bien con ese código
+      query += ' AND tp.pre_ide IN (SELECT tdd2.pre_ide FROM ttrdpr tdd2 JOIN tmab_m tm2 ON tdd2.bim_ide = tm2.bim_ide WHERE tm2.bim_cod LIKE ?)'
+      params.push(`%${filters.bim_cod}%`)
     }
     if (filters.dep_origen_id) {
       query += ' AND tp.dep_origen_ide = ?'

@@ -1,34 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown, Form, Button, Table, Pagination, Alert, Spinner } from 'react-bootstrap';
 import ModalEnviarBienAlmacen from '../Modales/modalEnviarBienAlmacen';
-import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo'; 
+import ModalVerDetallesPrestamo from '../Modales/modalVerDetallesPrestamo';
 import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
-const ITEMS_PER_PAGE = 10;
-
 export const Almacen = () => {
-    const DEP_ALMACEN_03 = 11;
-    const DEP_ALMACEN_04 = 9;
+    const DEP_ALMACEN_03 = 11; // ID del departamento "Almacén"
+    const DEP_ALMACEN_04 = 9; // ID del departamento "Almacén"
 
     const [data, setData] = useState([]);
-    const [departamentos, setDepartamentos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [refreshKey, setRefreshKey] = useState(0);
+    const [departamentos, setDepartamentos] = useState([]); // Para cargar la lista de departamentos
+    const [loading, setLoading] = useState(true); // Estado de carga
+    const [error, setError] = useState(null);    // Estado de error
 
-    // Paginación
-    const [currentPage, setCurrentPage] = useState(1);
-    const [meta, setMeta] = useState({ total: 0, totalPages: 1, page: 1 });
+    const [refreshKey, setRefreshKey] = useState(0); // Para forzar una recarga de datos
 
-    const [searchOficio, setSearchOficio] = useState('');
-    const [searchQueryOficio, setSearchQueryOficio] = useState('');
-    
+    const [searchText, setSearchText] = useState('');          // Texto en el input de búsqueda
+    const [searchType, setSearchType] = useState('pre_ndo');   // 'pre_ndo' | 'bim_cod'
+    const [searchQuery, setSearchQuery] = useState({ type: 'pre_ndo', value: '' }); // Estado que dispara la búsqueda
+
+    // Filtros: solo necesitamos el departamento de origen para esta vista
     const [filtros, setFiltros] = useState({
-        dep_origen_id: '',
-        dep_destino_id: '', 
+        dep_origen_id: '',   // Cadena vacía para "Todos"
+        dep_destino_id: '',
     });
 
     const [showCreateModal, setShowCreateModal] = useState(false);
+
     const [showDetallesModal, setShowDetallesModal] = useState(false);
     const [selectedPrestamoId, setSelectedPrestamoId] = useState(null);
 
@@ -39,8 +37,8 @@ export const Almacen = () => {
 
     const handleCloseDetallesModal = () => {
         setShowDetallesModal(false);
-        setSelectedPrestamoId(null);
-        setRefreshKey(prevKey => prevKey + 1);
+        setSelectedPrestamoId(null); // Limpiar el ID seleccionado al cerrar
+        setRefreshKey(prevKey => prevKey + 1); // Forzar la recarga de datos de la tabla principal si se hizo una devolución
     };
 
     const [userType, setUserType] = useState(null);
@@ -51,33 +49,51 @@ export const Almacen = () => {
                 if (!userRes.ok) throw new Error('No autorizado.');
                 const userDataResult = await userRes.json();
                 if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
-                setUserType(userDataResult.user.usu_tip);
+
+                const currentUserType = userDataResult.user.usu_tip;
+                setUserType(currentUserType);
+                setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
             } catch (error) {
                 console.error('Error fetching user data:', error);
             }
         };
+
         fetchUserData();
     }, []);
 
-    // --- Cargar datos de almacén paginados ---
+    // --- Cargar datos de préstamos en almacén ---
     useEffect(() => {
         const loadPrestamosEnAlmacen = async () => {
             setLoading(true);
             setError(null);
             try {
-                const params = new URLSearchParams();
-                params.append('page', currentPage);
-                params.append('limit', ITEMS_PER_PAGE);
-                if (searchQueryOficio) params.append('pre_ndo', searchQueryOficio);
-                if (filtros.dep_origen_id) params.append('dep_origen_id', filtros.dep_origen_id);
-                if (filtros.dep_destino_id) params.append('dep_destino_id', filtros.dep_destino_id);
+                let url = `/api/prestamos/almacen?`;
 
-                const response = await fetch(`/api/prestamos/almacen/pagina?${params.toString()}`, { credentials: 'include' });
-                if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+                // Añadir filtros a la URL
+                if (searchQuery.value) {
+                    if (searchQuery.type === 'pre_ndo') {
+                        url += `pre_ndo=${encodeURIComponent(searchQuery.value)}&`;
+                    } else if (searchQuery.type === 'bim_cod') {
+                        url += `bim_cod=${encodeURIComponent(searchQuery.value)}&`;
+                    }
+                }
+                if (filtros.dep_origen_id) {
+                    url += `dep_origen_id=${filtros.dep_origen_id}&`;
+                }
+                if (filtros.dep_destino_id) {
+                    url += `dep_destino_id=${filtros.dep_destino_id}&`;
+                }
+
+                // Eliminar el último '&' si existe
+                url = url.endsWith('&') ? url.slice(0, -1) : url;
+
+                const response = await fetch(url, { credentials: 'include' }); // 'include' para enviar cookies de autenticación
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
                 const result = await response.json();
 
-                setData(Array.isArray(result.data) ? result.data : []);
-                setMeta(result.meta || { total: 0, totalPages: 1, page: 1 });
+                setData(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : []);
             } catch (err) {
                 console.error('Error al cargar bienes en almacén:', err);
                 setError('No se pudieron cargar los bienes en almacén. ' + err.message);
@@ -86,173 +102,172 @@ export const Almacen = () => {
                 setLoading(false);
             }
         };
-        loadPrestamosEnAlmacen();
-    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQueryOficio, refreshKey, currentPage]);
 
-    // --- Cargar la lista de departamentos ---
+        loadPrestamosEnAlmacen();
+    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQuery, refreshKey]); // Dependencias del useEffect
+
+    // --- Cargar la lista de departamentos para los filtros ---
     useEffect(() => {
         const fetchDepartamentos = async () => {
             try {
                 const response = await fetch('/api/departamentos', { credentials: 'include' });
-                if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
                 const result = await response.json();
+                // Aquí también aplica el .data si tu API lo requiere
                 setDepartamentos(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : []);
             } catch (err) {
                 console.error('Error al cargar departamentos:', err);
+                // Manejar error de carga de departamentos
             }
         };
         fetchDepartamentos();
     }, []);
 
     // --- Manejadores de eventos ---
-    const handleSearchOficio = (e) => {
+    const handleSearch = (e) => {
         e.preventDefault();
-        setCurrentPage(1);
-        setSearchQueryOficio(searchOficio);
+        setSearchQuery({ type: searchType, value: searchText.trim() });
     };
 
     const handleClearSearch = () => {
-        setSearchOficio('');
-        setSearchQueryOficio('');
-        setCurrentPage(1);
+        setSearchText('');
+        setSearchQuery({ type: searchType, value: '' });
     };
 
-    const handleFiltroChange = (filterName, value) => {
-        setCurrentPage(1);
-        setFiltros(prev => ({ ...prev, [filterName]: value }));
-    };
-
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= meta.totalPages) {
-            setCurrentPage(page);
+    const handleSearchTypeChange = (newType) => {
+        setSearchType(newType);
+        // Si hay una búsqueda activa, limpiarla al cambiar el tipo para evitar confusión
+        if (searchQuery.value) {
+            setSearchText('');
+            setSearchQuery({ type: newType, value: '' });
         }
     };
 
-    // --- Funciones de Utilidad ---
+    const handleFiltroChange = (filterName, value) => {
+        setFiltros(prev => ({ ...prev, [filterName]: value }));
+    };
+
+    // --- Funciones de Utilidad para la UI ---
     const truncateText = (text, maxLength = 30) => {
         if (!text) return 'N/A';
         if (text.length <= maxLength) return text;
-        return (<span title={text}>{`${text.substring(0, maxLength)}...`}</span>);
+
+        return (
+            <span title={text}>
+                {`${text.substring(0, maxLength)}...`}
+            </span>
+        );
     };
 
+    // Función para obtener el badge del estado del préstamo
     const getEstadoPrestamoBadge = (pre_est) => {
-        switch(pre_est) {
-            case 1: return <span className="badge bg-label-success me-1">Activo</span>;
-            case 0: return <span className="badge bg-label-secondary me-1">Inactivo / Devuelto</span>;
-            default: return <span className="badge bg-label-dark me-1">Desconocido</span>;
+        switch (pre_est) {
+            case 1:
+                return <span className="badge bg-label-success me-1">Activo</span>;
+            case 0:
+                return <span className="badge bg-label-secondary me-1">Inactivo / Devuelto</span>;
+            default:
+                return <span className="badge bg-label-dark me-1">Desconocido</span>;
         }
     };
 
     const handleCloseCreateModal = () => {
         setShowCreateModal(false);
-        setCurrentPage(1);
-        setRefreshKey(prevKey => prevKey + 1);
-    };
-
-    // --- Renderizar controles de paginación ---
-    const renderPagination = () => {
-        if (!meta || meta.totalPages <= 1) return null;
-
-        const pages = [];
-        const maxVisible = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-        let endPage = Math.min(meta.totalPages, startPage + maxVisible - 1);
-        if (endPage - startPage < maxVisible - 1) {
-            startPage = Math.max(1, endPage - maxVisible + 1);
-        }
-        for (let p = startPage; p <= endPage; p++) pages.push(p);
-
-        return (
-            <div className="d-flex justify-content-between align-items-center mt-3">
-                <small className="text-muted">
-                    Mostrando {data.length} de {meta.total} registros · Página {meta.page} de {meta.totalPages}
-                </small>
-                <Pagination size="sm" className="mb-0">
-                    <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-                    {startPage > 1 && <><Pagination.Item onClick={() => handlePageChange(1)}>1</Pagination.Item><Pagination.Ellipsis disabled /></>}
-                    {pages.map(p => (
-                        <Pagination.Item key={p} active={p === currentPage} onClick={() => handlePageChange(p)}>{p}</Pagination.Item>
-                    ))}
-                    {endPage < meta.totalPages && <><Pagination.Ellipsis disabled /><Pagination.Item onClick={() => handlePageChange(meta.totalPages)}>{meta.totalPages}</Pagination.Item></>}
-                    <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === meta.totalPages} />
-                </Pagination>
-            </div>
-        );
+        setRefreshKey(prevKey => prevKey + 1); // Forzar la recarga de la tabla de préstamos
     };
 
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h4 className="py-3 mb-4"><span className="text-muted fw-light">Gestión de Movimientos /</span> Bienes en Almacén</h4>
-                {userType !== 1 ? ( 
-                <Button variant="primary" onClick={() => setShowCreateModal(true)}>
-                    Registrar Nuevo Bien en Almacén
-                <i className="bx bx-plus-circle ms-1"></i>
-                </Button>) : null}
+                {userType !== 1 ? (
+                    <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+                        Registrar Nuevo Bien en Almacén
+                        <i className="bx bx-plus-circle ms-1"></i>
+                    </Button>) : null}
             </div>
 
             <div className="card">
                 <h5 className="card-header">Relación de Bienes en Almacén (Préstamos con destino a Almacén)</h5>
                 <div className="card-body">
                     {/* Sección de Filtros y Búsqueda */}
-                    <Form onSubmit={handleSearchOficio} className="d-flex flex-wrap gap-2 align-items-center mb-4">
-                        <div className=" d-flex gap-3 align-items-center"> 
-                        <Form.Control
-                            type="text"
-                            placeholder="Buscar por número de oficio..."
-                            value={searchOficio}
-                            onChange={(e) => setSearchOficio(e.target.value)}
-                            className="flex-grow-5"
-                        />
-                        <Button type="submit" variant="outline-primary">
-                            Buscar
-                        </Button>
-                        {searchQueryOficio && (
-                            <Button type="button" variant="outline-secondary" onClick={handleClearSearch}>
-                                Limpiar
-                            </Button>
-                        )}
+                    <Form onSubmit={handleSearch} className="d-flex align-items-center gap-2 mb-4">
 
-                        <Form.Group controlId="filtroDepOrigen" className="flex-grow-1">
-                            <Form.Label className="visually-hidden">Departamento Origen</Form.Label>
-                            <Form.Control
-                                as="select"
+                            {/* Selector de tipo de búsqueda + input en grupo */}
+                            <div className="input-group flex-grow-1" style={{ minWidth: 0 }}>
+                                <select
+                                    className="form-select flex-grow-0"
+                                    style={{ width: '130px' }}
+                                    value={searchType}
+                                    onChange={(e) => handleSearchTypeChange(e.target.value)}
+                                    title="Selecciona el criterio de búsqueda"
+                                >
+                                    <option value="pre_ndo">N° Oficio</option>
+                                    <option value="bim_cod">N° de Bien</option>
+                                </select>
+                                <Form.Control
+                                    type="text"
+                                    placeholder={searchType === 'pre_ndo' ? 'Buscar por número de oficio...' : 'Buscar por código de bien...'}
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                />
+                            </div>
+
+                            <Button type="submit" variant="outline-primary" disabled={!searchText.trim()} className="flex-shrink-0">
+                                <i className="bx bx-search me-1"></i>Buscar
+                            </Button>
+                            {searchQuery.value && (
+                                <Button type="button" variant="outline-secondary" className="flex-shrink-0" onClick={handleClearSearch}>
+                                    <i className="bx bx-x"></i>
+                                </Button>
+                            )}
+
+                            {/* Badge informativo si hay búsqueda activa */}
+                            {searchQuery.value && (
+                                <span className="badge bg-label-primary text-nowrap flex-shrink-0">
+                                    {searchQuery.type === 'pre_ndo' ? 'Oficio' : 'N° Bien'}: <strong>{searchQuery.value}</strong>
+                                </span>
+                            )}
+
+                            <Form.Select
                                 value={filtros.dep_origen_id}
                                 onChange={(e) => handleFiltroChange('dep_origen_id', e.target.value)}
+                                style={{ width: '160px', flexShrink: 0 }}
+                                title="Departamento Origen"
                             >
-                                <option value="">Departamento Origen</option>
+                                <option value="">Dep. Origen</option>
                                 {departamentos.map(dep => (
-                                    (dep.dep_ide !== 11) && ( 
+                                    (dep.dep_ide !== 11) && (
                                         <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
                                     )
                                 ))}
-                            </Form.Control>
-                        </Form.Group>
+                            </Form.Select>
 
-                        <Form.Group controlId="filtroDepDestino" className="flex-grow-1">
-                            <Form.Label className="visually-hidden">Almacen de Destino</Form.Label>
-                            <Form.Control
-                                as="select"
-                                value={filtros.dep_destino_id}
-                                onChange={(e) => handleFiltroChange('dep_destino_id', e.target.value)}
-                            >
-                                <option value="">Almacen de Destino</option>
-                                {departamentos
+                            <Form.Group controlId="filtroDepDestino" style={{ width: '160px', flexShrink: 0 }}>
+                                <Form.Label className="visually-hidden">Almacen de Destino</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    value={filtros.dep_destino_id}
+                                    onChange={(e) => handleFiltroChange('dep_destino_id', e.target.value)}
+                                >
+                                    <option value="">Almacen de Destino</option>
+                                    {departamentos
                                         .filter(dep => dep.dep_ide === DEP_ALMACEN_03 || dep.dep_ide === DEP_ALMACEN_04)
                                         .map(dep => (
                                             <option key={dep.dep_ide} value={dep.dep_ide}>
                                                 {dep.dep_nom}
                                             </option>
                                         ))}
-                            </Form.Control>
-                        </Form.Group>
+                                </Form.Control>
+                            </Form.Group>
 
-                        </div>
                     </Form>
-                        
-                    <hr className="my-2 w-100" />
-                        
-                    {/* Tabla de Almacén */}
+
+                    <hr className="my-2 w-100" /> {/* Separador visual */}
+
+                    {/* Tabla de Préstamos */}
                     {loading ? (
                         <div className="text-center my-4">
                             <Spinner animation="border" role="status" className="me-2" />
@@ -268,6 +283,7 @@ export const Almacen = () => {
                                         <th>N° Oficio/Transferencia</th>
                                         <th>Fecha Préstamo</th>
                                         <th>Departamento Origen</th>
+                                        {/* La columna de Departamento Destino se elimina */}
                                         <th>Estado</th>
                                         {hasPermission(userType, ACTIONS.JEFE_AREA) && (<th>Acciones</th>)}
                                     </tr>
@@ -277,22 +293,25 @@ export const Almacen = () => {
                                         data.map((prestamo) => (
                                             <tr key={prestamo.pre_ide}>
                                                 <td><strong>{truncateText(prestamo.pre_ndo)}</strong></td>
-                                                <td>{prestamo.pre_fec && new Date(prestamo.pre_fec).toLocaleDateString('es-ES') ||  'Sin fecha'}</td>
-                                                <td>{prestamo.departamento_origen_nombre || 'N/A'}</td> 
+                                                <td>{prestamo.pre_fec && new Date(prestamo.pre_fec).toLocaleDateString('es-ES') || 'Sin fecha'}</td>
+                                                {/* Usar los nombres que vienen directamente de la API */}
+                                                <td>{prestamo.departamento_origen_nombre || 'N/A'}</td>
+                                                {/* Se asume que el destino es el almacén, por lo que no se muestra */}
                                                 <td>{getEstadoPrestamoBadge(prestamo.pre_est)}</td>
                                                 {hasPermission(userType, ACTIONS.VIEW_LOAN_DETAILS) && (
                                                     <td>
-                                                    <Dropdown>
-                                                        <Dropdown.Toggle variant="secondary" id={`dropdown-${prestamo.pre_ide}`} className="nav-dropdown-dark-example">
-                                                            <i className="bx bx-dots-vertical-rounded"></i>
-                                                        </Dropdown.Toggle>
-                                                        <Dropdown.Menu>
-                                                            <Dropdown.Item href="#" onClick={() => handleVerDetalles(prestamo.pre_ide)}>
-                                                                <i className="bx bx-info-circle me-1"></i> Ver Detalles y Devolver
-                                                            </Dropdown.Item>
-                                                        </Dropdown.Menu>
-                                                    </Dropdown>
-                                                </td>) }
+                                                        <Dropdown>
+                                                            <Dropdown.Toggle variant="secondary" id={`dropdown-${prestamo.pre_ide}`} className="nav-dropdown-dark-example">
+                                                                <i className="bx bx-dots-vertical-rounded"></i>
+                                                            </Dropdown.Toggle>
+                                                            <Dropdown.Menu>
+                                                                <Dropdown.Item href="#" onClick={() => handleVerDetalles(prestamo.pre_ide)}>
+                                                                    <i className="bx bx-info-circle me-1"></i> Ver Detalles y Devolver
+                                                                </Dropdown.Item>
+                                                                {/* Aquí NO se permite modificar ni borrar préstamos directamente, solo ver/devolver */}
+                                                            </Dropdown.Menu>
+                                                        </Dropdown>
+                                                    </td>)}
                                             </tr>
                                         ))
                                     ) : (
@@ -304,9 +323,8 @@ export const Almacen = () => {
                             </Table>
                         </div>
                     )}
-                    
-                    {/* Controles de Paginación */}
-                    {!loading && !error && renderPagination()}
+
+                    {/* Aquí iría la paginación si tu endpoint /almacen la soportara */}
                 </div>
             </div>
             <ModalEnviarBienAlmacen
@@ -318,8 +336,8 @@ export const Almacen = () => {
                 show={showDetallesModal}
                 handleClose={handleCloseDetallesModal}
                 prestamoId={selectedPrestamoId}
-                onSuccess={() => setRefreshKey(prevKey => prevKey + 1)}
+                onSuccess={() => setRefreshKey(prevKey => prevKey + 1)} // Forzar recarga si se devuelve algo
             />
         </>
     );
-};
+};
