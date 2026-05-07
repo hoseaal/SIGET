@@ -9,6 +9,15 @@ export const obtenerTodas = async (req, res) => {
     }
 };
 
+export const generarProximoNumero = async (req, res) => {
+    try {
+        const numero = await ActividadesService.generarNroActividad();
+        res.json({ numero });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 export const obtenerPorId = async (req, res) => {
     try {
         const { id } = req.params;

@@ -8,8 +8,8 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     const [loading, setLoading] = useState(false);
     const [equipos, setEquipos] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
+    const [tiposFalla, setTiposFalla] = useState([]);
     const [formData, setFormData] = useState({
-        tipo_falla: 'Equipo de Computación',
         direc_id: '',
         equipo_id: '',
         asunto: '',
@@ -21,12 +21,11 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             fetchInitialData();
             setFormData(prev => ({ 
                 ...prev, 
-                direc_id: user.direc_id // Por defecto el del usuario logueado
+                direc_id: user.direc_id 
             }));
         }
     }, [show, user]);
 
-    // Cuando cambie el departamento seleccionado, recargar equipos de ese depto
     useEffect(() => {
         if (formData.direc_id) {
             fetchEquipos(formData.direc_id);
@@ -107,21 +106,8 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
                     <Row className="mb-3">
-                        <Col md={esTecnico ? 6 : 12}>
-                            <Form.Group>
-                                <Form.Label>Tipo de Falla</Form.Label>
-                                <Form.Select name="tipo_falla" value={formData.tipo_falla} onChange={handleChange}>
-                                    <option value="Equipo de Computación">Equipo de Computación</option>
-                                    <option value="Falla de Red / Internet">Falla de Red / Internet</option>
-                                    <option value="Impresora / Toner">Impresora / Toner</option>
-                                    <option value="Software / Aplicación">Software / Aplicación</option>
-                                    <option value="Otro">Otro</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        
-                        {esTecnico && (
-                            <Col md={6}>
+                        <Col md={12}>
+                            {esTecnico ? (
                                 <Form.Group>
                                     <Form.Label>Departamento Afectado</Form.Label>
                                     <Form.Select 
@@ -136,32 +122,35 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                                         ))}
                                     </Form.Select>
                                 </Form.Group>
-                            </Col>
-                        )}
+                            ) : (
+                                <div className="p-2 bg-light rounded border mb-2">
+                                    <small className="text-muted d-block">Solicitante:</small>
+                                    <strong>{user?.nombre}</strong> 
+                                    <small className="text-muted ms-3">Dpto:</small> {departamentos.find(d => d.id === user?.direc_id)?.nombre}
+                                </div>
+                            )}
+                        </Col>
                     </Row>
 
-
-                    {formData.tipo_falla === 'Equipo de Computación' && (
-                        <Form.Group className="mb-3">
-                            <Form.Label>Seleccionar Equipo (Opcional)</Form.Label>
-                            <Select
-                                options={equipoOptions}
-                                placeholder="Escriba Nro. Bien o Tipo para buscar..."
-                                isClearable
-                                onChange={handleSelectChange}
-                                value={equipoOptions.find(opt => opt.value === formData.equipo_id)}
-                                noOptionsMessage={() => "No se encontraron equipos"}
-                                theme={(theme) => ({
-                                    ...theme,
-                                    borderRadius: 5,
-                                    colors: {
-                                        ...theme.colors,
-                                        primary: '#007bff',
-                                    },
-                                })}
-                            />
-                        </Form.Group>
-                    )}
+                    <Form.Group className="mb-3">
+                        <Form.Label>Seleccionar Equipo (Opcional)</Form.Label>
+                        <Select
+                            options={equipoOptions}
+                            placeholder="Escriba Nro. Bien o Tipo para buscar..."
+                            isClearable
+                            onChange={handleSelectChange}
+                            value={equipoOptions.find(opt => opt.value === formData.equipo_id)}
+                            noOptionsMessage={() => "No se encontraron equipos"}
+                            theme={(theme) => ({
+                                ...theme,
+                                borderRadius: 5,
+                                colors: {
+                                    ...theme.colors,
+                                    primary: '#007bff',
+                                },
+                            })}
+                        />
+                    </Form.Group>
 
                     <Form.Group className="mb-3">
                         <Form.Label>Asunto / Título Breve</Form.Label>

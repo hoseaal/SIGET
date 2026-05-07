@@ -15,7 +15,9 @@ export class TransferenciaModel {
                 te.nombre as equipo_tipo,
                 u.username as usuario_crea,
                 ut.username as tecnico_recibe,
-                t.codigo_entrega
+                t.codigo_entrega,
+                t.clasificacion_id,
+                t.tipo_act
             FROM transferencia t
             JOIN status s ON t.status = s.id
             JOIN departamentos d_orig ON t.origen_id = d_orig.id
@@ -49,7 +51,9 @@ export class TransferenciaModel {
                 e.nro_bien as equipo_nro_bien,
                 te.nombre as equipo_tipo,
                 u.username as usuario_crea,
-                t.codigo_entrega
+                t.codigo_entrega,
+                t.clasificacion_id,
+                t.tipo_act
             FROM transferencia t
             JOIN status s ON t.status = s.id
             JOIN departamentos d_dest ON t.destino_id = d_dest.id
@@ -116,7 +120,9 @@ export class TransferenciaModel {
             prioridad,
             diagnostico_tecnico,
             solucion_tecnica,
-            fecha_entrega
+            fecha_entrega,
+            clasificacion_id,
+            tipo_act
         } = data
 
         const updates = []
@@ -149,6 +155,14 @@ export class TransferenciaModel {
         if (fecha_entrega) {
             updates.push('fecha_entrega = ?')
             params.push(fecha_entrega)
+        }
+        if (clasificacion_id !== undefined) {
+            updates.push('clasificacion_id = ?')
+            params.push(clasificacion_id)
+        }
+        if (tipo_act !== undefined) {
+            updates.push('tipo_act = ?')
+            params.push(tipo_act)
         }
 
         if (updates.length === 0) return false

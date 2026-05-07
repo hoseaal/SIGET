@@ -17,23 +17,41 @@ export class ActividadesService {
         return actividad;
     }
 
+    static async generarNroActividad() {
+        const year = new Date().getFullYear();
+        const prefix = `ACT-${year}-`;
+        const lastNumber = await actividadesModel.getLastActivityNumber(prefix);
+        
+        let nextSequence = 1;
+        if (lastNumber) {
+            const parts = lastNumber.split('-');
+            const lastSeq = parseInt(parts[parts.length - 1]);
+            if (!isNaN(lastSeq)) nextSequence = lastSeq + 1;
+        }
+        
+        return `${prefix}${String(nextSequence).padStart(4, '0')}`;
+    }
+
     static async crear(datos) {
         // 1. Validaciones básicas de campos obligatorios
-        const { nro_act, fecha, direc_id, equipo_id, usuario_id } = datos;
-        if (!nro_act || !fecha || !direc_id || !equipo_id || !usuario_id) {
+        const { nro_act, fecha, direc_id, usuario_id, tipo_act, clasificacion_id } = datos;
+        if (!nro_act || !fecha || !direc_id || !usuario_id || !tipo_act || !clasificacion_id) {
             throw new Error('Faltan campos obligatorios para registrar la actividad');
         }
 
-        // 2. Normalización de textos
-        const observacionesLimpias = datos.observaciones
-            ? datos.observaciones.trim().replace(/\s+/g, ' ').toUpperCase()
+        // 2. Normalización de textos y valores por defecto
+        const observationsFinal = datos.observaciones
+            ? datos.observaciones.trim().toUpperCase()
             : 'SIN OBSERVACIONES';
-
-        // 3. Llamada al modelo con los datos procesados
-        return await actividadesModel.create({
+            
+        const processedData = {
             ...datos,
-            observaciones: observacionesLimpias
-        });
+            equipo_id: datos.equipo_id || null,
+            descrip_id: datos.descrip_id || 1, // Por defecto 1 si no se usa
+            observaciones: observationsFinal
+        };
+
+        return await actividadesModel.create(processedData);
     }
 
     static async actualizar(id, datos) {

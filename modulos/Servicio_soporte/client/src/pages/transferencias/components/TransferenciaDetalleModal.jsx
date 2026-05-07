@@ -14,6 +14,15 @@ export const TransferenciaDetalleModal = ({ show, onHide, transferencia }) => {
         return 'secondary';
     };
 
+    const getPriorityBadge = (prio) => {
+        switch (prio) {
+            case 'Alta': return 'danger';
+            case 'Media': return 'warning';
+            case 'Baja': return 'info';
+            default: return 'secondary';
+        }
+    };
+
     return (
         <Modal show={show} onHide={onHide} size="lg" centered backdrop="static">
             <Modal.Header closeButton className="bg-light">
@@ -30,10 +39,15 @@ export const TransferenciaDetalleModal = ({ show, onHide, transferencia }) => {
                         <div className="fw-bold">{new Date(transferencia.fecha).toLocaleString()}</div>
                     </div>
                     <div className="text-end">
-                        <div className="text-muted small uppercase fw-bold mb-1">Estatus Actual</div>
-                        <Badge bg={getStatusBadge(transferencia.status_nombre)} className="px-3 py-2 fs-6">
-                            {transferencia.status_nombre}
-                        </Badge>
+                        <div className="text-muted small uppercase fw-bold mb-1">Estatus / Prioridad</div>
+                        <div className="d-flex gap-2 justify-content-end">
+                            <Badge bg={getPriorityBadge(transferencia.prioridad)} className="px-3 py-2 fs-6">
+                                {transferencia.prioridad || 'Media'}
+                            </Badge>
+                            <Badge bg={getStatusBadge(transferencia.status_nombre)} className="px-3 py-2 fs-6">
+                                {transferencia.status_nombre}
+                            </Badge>
+                        </div>
                     </div>
                 </div>
 

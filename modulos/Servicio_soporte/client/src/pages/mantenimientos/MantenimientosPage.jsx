@@ -140,7 +140,7 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                     <tr key={m.id}>
                                         <td><span className="fw-bold">{m.nro_caso}</span></td>
                                         <td>
-                                            <div className="fw-bold">{m.tipo_falla}</div>
+                                            <div className="fw-bold">{m.tipo_falla_nombre}</div>
                                             <div className="small text-muted">{m.asunto}</div>
                                         </td>
                                         <td>{m.equipo_nro_bien || <span className="text-muted">N/A</span>}</td>

@@ -12,13 +12,15 @@ export class MantenimientoModel {
                 d.nombre as depto_nombre,
                 e.nro_bien as equipo_nro_bien,
                 u.username as usuario_reporta,
-                ut.username as tecnico_asignado
+                ut.username as tecnico_asignado,
+                t.nombre as tipo_falla_nombre
             FROM mantenimiento m
             JOIN status s ON m.status = s.id
             JOIN departamentos d ON m.direc_id = d.id
             LEFT JOIN equipos e ON m.equipo_id = e.id
             JOIN usuarios u ON m.usuario_id = u.usuario_id
             LEFT JOIN usuarios ut ON m.usuario_tecnico_id = ut.usuario_id
+            LEFT JOIN tipo_act t ON m.tipo_falla = t.id
             ORDER BY m.fecha_solicitud DESC
         `)
         return rows
@@ -34,12 +36,14 @@ export class MantenimientoModel {
                 s.nombre as status_nombre,
                 d.nombre as depto_nombre,
                 e.nro_bien as equipo_nro_bien,
-                u.username as usuario_reporta
+                u.username as usuario_reporta,
+                t.nombre as tipo_falla_nombre
             FROM mantenimiento m
             JOIN status s ON m.status = s.id
             JOIN departamentos d ON m.direc_id = d.id
             LEFT JOIN equipos e ON m.equipo_id = e.id
             JOIN usuarios u ON m.usuario_id = u.usuario_id
+            LEFT JOIN tipo_act t ON m.tipo_falla = t.id
             WHERE m.direc_id = ?
             ORDER BY m.fecha_solicitud DESC
         `, [direc_id])
@@ -50,7 +54,24 @@ export class MantenimientoModel {
      * Obtiene un mantenimiento por ID
      */
     static async getById(id) {
-        const [rows] = await pool.query('SELECT * FROM mantenimiento WHERE id = ?', [id])
+        const [rows] = await pool.query(`
+            SELECT 
+                m.*, 
+                s.nombre as status_nombre,
+                d.nombre as depto_nombre,
+                e.nro_bien as equipo_nro_bien,
+                u.username as usuario_reporta,
+                ut.username as tecnico_asignado,
+                t.nombre as tipo_falla_nombre
+            FROM mantenimiento m
+            JOIN status s ON m.status = s.id
+            JOIN departamentos d ON m.direc_id = d.id
+            LEFT JOIN equipos e ON m.equipo_id = e.id
+            JOIN usuarios u ON m.usuario_id = u.usuario_id
+            LEFT JOIN usuarios ut ON m.usuario_tecnico_id = ut.usuario_id
+            LEFT JOIN tipo_act t ON m.tipo_falla = t.id
+            WHERE m.id = ?
+        `, [id])
         return rows[0] || null
     }
 

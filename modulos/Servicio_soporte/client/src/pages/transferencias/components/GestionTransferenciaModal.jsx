@@ -11,14 +11,18 @@ import { generateTransferPDF } from '../../../utils/ReporteTransferencia';
 export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferencia }) => {
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
-    
+    const [tiposAct, setTiposAct] = useState([]);
+    const [fetchingInitial, setFetchingInitial] = useState(false);
+
     // Form state
     const [formData, setFormData] = useState({
         status: '',
         prioridad: '',
         diagnostico_tecnico: '',
         solucion_tecnica: '',
-        codigo_validacion: ''
+        codigo_validacion: '',
+        clasificacion_id: null,
+        tipo_act: ''
     });
 
     useEffect(() => {
@@ -28,21 +32,42 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                 prioridad: transferencia.prioridad || 'Media',
                 diagnostico_tecnico: transferencia.diagnostico_tecnico || '',
                 solucion_tecnica: transferencia.solucion_tecnica || '',
-                codigo_validacion: ''
+                codigo_validacion: '',
+                clasificacion_id: transferencia.clasificacion_id || null,
+                tipo_act: transferencia.tipo_act || ''
             });
-            fetchUser();
+            fetchInitialData();
         }
     }, [show, transferencia]);
 
-    const fetchUser = async () => {
-        const res = await fetch('/api/auth/verify-auth', { credentials: 'include' });
-        const data = await res.json();
-        if (data.success) setUser(data.user);
+    const fetchInitialData = async () => {
+        try {
+            setFetchingInitial(true);
+            const [userRes, typesRes] = await Promise.all([
+                fetch('/api/auth/verify-auth', { credentials: 'include' }),
+                helpFetch.GET('/tipo_act')
+            ]);
+
+            const userData = await userRes.json();
+            if (userData.success) setUser(userData.user);
+            setTiposAct(typesRes);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setFetchingInitial(false);
+        }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleClasificacionChange = (id) => {
+        setFormData(prev => ({
+            ...prev,
+            clasificacion_id: prev.clasificacion_id === id ? null : id
+        }));
     };
 
     const handleSave = async () => {
@@ -51,25 +76,37 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
             return;
         }
 
+        // Si se marca como entregado, validar que tenga tipo de actividad y clasificación
+        if (parseInt(formData.status) === 7) {
+            if (!formData.tipo_act) {
+                toast.warning("Debe seleccionar el Tipo de Actividad para el reporte final.");
+                return;
+            }
+            if (!formData.clasificacion_id) {
+                toast.warning("Debe seleccionar una Clasificación para el reporte final.");
+                return;
+            }
+        }
+
         try {
             setLoading(true);
-            
+
             const payload = {
                 ...formData,
                 usuario_tecnico_id: user?.usuario_id
             };
 
             // Lógica automática de fechas
-            if (formData.status === 3) { // Recibido
+            if (parseInt(formData.status) === 3) { // Recibido
                 payload.fecha_recepcion = new Date().toISOString().slice(0, 19).replace('T', ' ');
             }
-            if (formData.status === 7) { // Entregado
+            if (parseInt(formData.status) === 7) { // Entregado
                 payload.fecha_entrega = new Date().toISOString().slice(0, 19).replace('T', ' ');
             }
 
             await helpFetch.PUT(`/transferencia/${transferencia.id}/status`, payload);
             toast.success("Gestión actualizada correctamente.");
-            
+
             // Si el estado es Entregado, generar el PDF automáticamente
             if (formData.status == 7) {
                 generateTransferPDF({
@@ -82,7 +119,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
             onSuccess();
         } catch (error) {
             console.error(error);
-            toast.error("Error al actualizar la transferencia.");
+            toast.error(error.message || "Error al actualizar la transferencia.");
         } finally {
             setLoading(false);
         }
@@ -90,7 +127,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
 
     if (!transferencia) return null;
 
-    const isPending = transferencia.status === 2; // Pendiente
+    const isEntregado = parseInt(transferencia.status) === 7;
 
     return (
         <Modal show={show} onHide={onHide} size="lg" backdrop="static">
@@ -116,12 +153,12 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                 <hr />
 
                 <h6 className="fw-bold mb-3"><i className="bx bx-wrench me-1"></i> Acción Técnica</h6>
-                
+
                 <Row className="mb-3">
                     <Col md={6}>
                         <Form.Group>
                             <Form.Label>Estado de la Transferencia</Form.Label>
-                            <Form.Select name="status" value={formData.status} onChange={handleChange}>
+                            <Form.Select name="status" value={formData.status} onChange={handleChange} disabled={isEntregado}>
                                 <option value="2">Pendiente (Sin recibir)</option>
                                 <option value="3">Recibido (En Soporte)</option>
                                 <option value="4">En Revisión</option>
@@ -135,7 +172,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                     <Col md={6}>
                         <Form.Group>
                             <Form.Label>Prioridad Asignada</Form.Label>
-                            <Form.Select name="prioridad" value={formData.prioridad} onChange={handleChange}>
+                            <Form.Select name="prioridad" value={formData.prioridad} onChange={handleChange} disabled={isEntregado}>
                                 <option value="Baja">Baja</option>
                                 <option value="Media">Media</option>
                                 <option value="Alta">Alta</option>
@@ -146,34 +183,120 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
 
                 <Form.Group className="mb-3">
                     <Form.Label>Diagnóstico Técnico</Form.Label>
-                    <Form.Control 
-                        as="textarea" 
-                        rows={2} 
+                    <Form.Control
+                        as="textarea"
+                        rows={2}
                         name="diagnostico_tecnico"
                         value={formData.diagnostico_tecnico}
                         onChange={handleChange}
                         placeholder="Describa los hallazgos técnicos..."
+                        disabled={isEntregado}
                     />
                 </Form.Group>
 
                 <Form.Group className="mb-3">
                     <Form.Label>Reporte de Solución / Entrega</Form.Label>
-                    <Form.Control 
-                        as="textarea" 
-                        rows={3} 
+                    <Form.Control
+                        as="textarea"
+                        rows={3}
                         name="solucion_tecnica"
                         value={formData.solucion_tecnica}
                         onChange={handleChange}
                         placeholder="Describa el mantenimiento realizado y el estado final del equipo..."
+                        disabled={isEntregado}
                     />
                 </Form.Group>
+
+                <Form.Group className="mb-4">
+                    <Form.Label className="fw-bold text-primary">Tipo de Actividad / Falla <span className="text-danger">*</span></Form.Label>
+                    <Form.Select
+                        name="tipo_act"
+                        value={formData.tipo_act}
+                        onChange={handleChange}
+                        disabled={isEntregado}
+                        required
+                        className={!formData.tipo_act && parseInt(formData.status) === 7 ? "border-danger" : ""}
+                    >
+                        <option value="">-- Seleccionar el tipo de falla detectada --</option>
+                        {tiposAct.map(t => (
+                            <option key={t.id} value={t.id}>{t.nombre}</option>
+                        ))}
+
+                    </Form.Select>
+                    <Form.Text className="text-muted">
+                        Esta información es necesaria para el reporte de actividades institucional.
+                    </Form.Text>
+                </Form.Group>
+
+                <div className="bg-light p-3 rounded border mb-3">
+                    <h6 className="fw-bold small text-muted mb-3 text-uppercase">Clasificación para Reporte de Actividades <span className="text-danger">*</span></h6>
+                    <Row>
+                        <Col md={4}>
+                            <div className="fw-bold small mb-2 border-bottom">Mant. Preventivo</div>
+                            <Form.Check
+                                type="checkbox"
+                                label="Software"
+                                checked={formData.clasificacion_id === 1}
+                                onChange={() => handleClasificacionChange(1)}
+                                id="chk-tra-prev-sw"
+                                disabled={isEntregado}
+                            />
+                            <Form.Check
+                                type="checkbox"
+                                label="Hardware"
+                                checked={formData.clasificacion_id === 2}
+                                onChange={() => handleClasificacionChange(2)}
+                                id="chk-tra-prev-hw"
+                                disabled={isEntregado}
+                            />
+                        </Col>
+                        <Col md={4}>
+                            <div className="fw-bold small mb-2 border-bottom">Mant. Correctivo</div>
+                            <Form.Check
+                                type="checkbox"
+                                label="Software"
+                                checked={formData.clasificacion_id === 3}
+                                onChange={() => handleClasificacionChange(3)}
+                                id="chk-tra-corr-sw"
+                                disabled={isEntregado}
+                            />
+                            <Form.Check
+                                type="checkbox"
+                                label="Hardware"
+                                checked={formData.clasificacion_id === 4}
+                                onChange={() => handleClasificacionChange(4)}
+                                id="chk-tra-corr-hw"
+                                disabled={isEntregado}
+                            />
+                        </Col>
+                        <Col md={4}>
+                            <div className="fw-bold small mb-2 border-bottom">Plat. Tecnológica</div>
+                            <Form.Check
+                                type="checkbox"
+                                label="Servicios / Redes"
+                                checked={formData.clasificacion_id === 5}
+                                onChange={() => handleClasificacionChange(5)}
+                                id="chk-tra-plat-serv"
+                                disabled={isEntregado}
+                            />
+                            <Form.Check
+                                type="checkbox"
+                                label="Informes"
+                                checked={formData.clasificacion_id === 6}
+                                onChange={() => handleClasificacionChange(6)}
+                                id="chk-tra-plat-inf"
+                                disabled={isEntregado}
+                            />
+                        </Col>
+                    </Row>
+                </div>
 
                 {formData.status == 7 && transferencia.status != 7 && (
                     <div className="bg-light p-3 rounded mb-3 border border-success">
                         <Form.Group>
                             <Form.Label className="text-success fw-bold">Código de Validación de Entrega <span className="text-danger">*</span></Form.Label>
-                            <Form.Control 
-                                type="text" 
+                            <Form.Control
+                                type="text"
                                 name="codigo_validacion"
                                 value={formData.codigo_validacion}
                                 onChange={handleChange}
@@ -194,7 +317,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                     <div className="alert alert-success d-flex align-items-center">
                         <i className="bx bx-check-circle me-2"></i>
                         <div>
-                            Al marcar como <strong>Entregado</strong>, se generará el reporte final de entrega para el usuario.
+                            Al marcar como <strong>Entregado</strong>, se registrará la actividad en el historial y se generará el reporte final.
                         </div>
                     </div>
                 )}

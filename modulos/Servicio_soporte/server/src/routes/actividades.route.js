@@ -1,5 +1,5 @@
 import express from 'express';
-import { obtenerTodas, obtenerPorId, crear, actualizar, eliminar } from '../controllers/actividades.controller.js';
+import { obtenerTodas, obtenerPorId, crear, actualizar, eliminar, generarProximoNumero } from '../controllers/actividades.controller.js';
 import { authenticate, checkRole } from '../auth/auth.middleware.js';
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.use(authenticate);
 router.use(checkRole([1, 2]));
 
 router.get('/', obtenerTodas);
+router.get('/proximo-numero', generarProximoNumero);
 router.get('/:id', obtenerPorId);
 router.post('/', crear);
 router.patch('/:id', actualizar);

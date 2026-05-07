@@ -7,7 +7,7 @@
     "devvv": "cd modulos/SOPORTE/backend && npm run dev",
     "startvv": "cd modulos/SOPORTE/frontend && npm run dev",
     "soport": "cd modulos/Servicio_soporte/server && npm start",
-    "soportt": "cd modulos/Servicio_soporte/client && npm run dev",
+    "soportt": "cd modulos/Servicio_soporte/client && npm run dev -- --host",
     "fullstack": "concurrently \"npm run start\" \"npm run dev\""
   },
   "dependencies": {

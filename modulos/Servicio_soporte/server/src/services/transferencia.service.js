@@ -1,4 +1,5 @@
 import { TransferenciaModel } from '../models/transferencia.model.js'
+import { actividadesModel } from '../models/actividades.model.js'
 
 export class TransferenciaService {
     static async getAll(user) {
@@ -24,7 +25,7 @@ export class TransferenciaService {
     }
 
     static async updateStatus(id, updateData) {
-        const { status, codigo_validacion } = updateData
+        const { status, codigo_validacion, clasificacion_id } = updateData
 
         const transfer = await TransferenciaModel.getById(id)
         if (!transfer) throw new Error('Transferencia no encontrada.')
@@ -34,24 +35,68 @@ export class TransferenciaService {
             if (transfer.codigo_entrega !== codigo_validacion) {
                 throw new Error('Código de validación incorrecto. El usuario debe proporcionar el código para completar la entrega.')
             }
+
+            // Registrar en el historial de actividades SM
+            // Consumimos los datos actuales y los nuevos para el registro
+            const activityData = {
+                ...transfer,
+                ...updateData
+            };
+            await this._registerInActivities(activityData);
         }
 
         return await TransferenciaModel.updateStatus(id, updateData)
     }
 
     // Métodos privados de apoyo
+    static async _registerInActivities(trans) {
+        try {
+            // Formatear el número de actividad (puedes usar el mismo contador que actividades o uno propio)
+            // Aquí usaremos la lógica de generarNroActividad del servicio de actividades para mantener consistencia
+            const year = new Date().getFullYear();
+            const prefix = `ACT-${year}-`;
+            const lastNumber = await actividadesModel.getLastActivityNumber(prefix);
+            
+            let nextSequence = 1;
+            if (lastNumber) {
+                const parts = lastNumber.split('-');
+                const lastSeq = parseInt(parts[parts.length - 1]);
+                if (!isNaN(lastSeq)) nextSequence = lastSeq + 1;
+            }
+            const nro_act = `${prefix}${String(nextSequence).padStart(4, '0')}`;
+
+            // La solución técnica migra a observaciones en el historial
+            const observaciones_act = trans.solucion_tecnica || `MANTENIMIENTO FINALIZADO (TRANSFERENCIA ${trans.nro_caso})`;
+
+            await actividadesModel.create({
+                nro_act,
+                fecha: new Date(),
+                direc_id: trans.origen_id,
+                descrip_id: 1, // Default
+                equipo_id: trans.equipo_id,
+                tipo_act: trans.tipo_act || 1, // Usar el tipo seleccionado en el modal
+                observaciones: observaciones_act.toUpperCase(),
+                usuario_id: trans.usuario_tecnico_id || trans.usuario_id,
+                clasificacion_id: trans.clasificacion_id || null
+            });
+            console.log(`Actividad ${nro_act} registrada automáticamente desde transferencia ${trans.nro_caso}`);
+        } catch (error) {
+            console.error('Error al registrar actividad automática desde transferencia:', error);
+            // No lanzamos error para no bloquear el cambio de estado de la transferencia
+        }
+    }
+
     static _filterData(data, user) {
         if (!user) return data.map(({ codigo_entrega, ...rest }) => rest)
 
         return data.map(t => {
-            const { codigo_entrega, prioridad, ...rest } = t
+            const { codigo_entrega, ...rest } = t
 
-            // Solo el dueño puede ver el código (o si es necesario, el admin)
+            // Solo el dueño puede ver el código
             const esDueno = String(user.usuario_id) === String(t.usuario_id)
 
-            // Si es el dueño, devolvemos todo el objeto (incluyendo el código)
-            // Si no, devolvemos el objeto sin el código
-            return esDueno ? { codigo_entrega, ...rest } : { prioridad, ...rest }
+            // Devolvemos el código solo al dueño, el resto de campos (incluyendo prioridad) siempre
+            return esDueno ? t : rest
         })
     }
 

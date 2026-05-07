@@ -18,11 +18,19 @@ export class MantenimientoService {
     }
 
     static async updateStatus(id, updateData) {
-        const { status, usuario_tecnico_id, diagnostico, solucion } = updateData
+        const { 
+            status, usuario_tecnico_id, diagnostico, solucion,
+            clasificacion_id
+        } = updateData
 
-        // 1. Actualizar el mantenimiento
+        // 1. Verificar si el mantenimiento existe
         const maintenance = await MantenimientoModel.getById(id)
         if (!maintenance) throw new Error('Mantenimiento no encontrado')
+
+        // 2. Validar si ya está entregado (status 7)
+        if (parseInt(maintenance.status) === 7) {
+            throw new Error('Este mantenimiento ya ha sido entregado y no puede modificarse.')
+        }
 
         const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
@@ -39,7 +47,11 @@ export class MantenimientoService {
         // 2. Si se finaliza, registrar en atividades_sm
         if (success && parseInt(status) === 7) {
             const updatedMaint = await MantenimientoModel.getById(id)
-            await this._registerInActivities(updatedMaint)
+            // Pasar la clasificación explícitamente si viene en updateData
+            await this._registerInActivities({
+                ...updatedMaint,
+                clasificacion_id
+            })
         }
 
         return success
@@ -47,14 +59,13 @@ export class MantenimientoService {
     static async filteredData(data, user) {
         if (!user) return data
         return data.map(t => {
-            const { prioridad, ...rest } = t
+            const { ...rest } = t
 
             // Solo el dueño puede ver el código (o si es necesario, el admin)
             const esDueno = String(user.usuario_id) === String(t.usuario_id)
 
-            // Si es el dueño, devolvemos todo el objeto (incluyendo el código)
-            // Si no, devolvemos el objeto sin el código
-            return esDueno ? { ...rest } : { prioridad, ...rest }
+            // Devolvemos todo el objeto siempre (en mantenimientos no hay código secreto como en transferencias)
+            return t
         })
     }
     // Métodos privados
@@ -74,23 +85,26 @@ export class MantenimientoService {
 
     static async _registerInActivities(maint) {
         // Mapear los datos del mantenimiento al formato de actividades_sm
+        const observations_act = maint.solucion || `MANTENIMIENTO FINALIZADO (CASO ${maint.nro_caso})`;
+
         const activityData = {
             nro_act: maint.nro_caso,
             fecha: maint.fecha_fin || new Date(),
             direc_id: maint.direc_id,
             descrip_id: 1, // ID genérico de descripción
-            equipo_id: maint.equipo_id || 0,
-            tipo_act: 1, // ID genérico para Mantenimiento
-            observaciones: `MANTENIMIENTO FINALIZADO. DIAGNÓSTICO: ${maint.diagnostico || 'N/A'}. SOLUCIÓN: ${maint.solucion || 'N/A'}`.toUpperCase(),
-            usuario_id: maint.usuario_tecnico_id || maint.usuario_id
+            equipo_id: maint.equipo_id || null,
+            tipo_act: maint.tipo_falla || 1, // Usar el tipo de falla del mantenimiento como tipo de actividad
+            observaciones: observations_act.toUpperCase(),
+            usuario_id: maint.usuario_tecnico_id || maint.usuario_id,
+            // Nuevo campo de clasificación normalizado
+            clasificacion_id: maint.clasificacion_id || null
         }
 
         try {
             await actividadesModel.create(activityData)
+            console.log(`✅ Actividad registrada automáticamente para el caso ${maint.nro_caso}`)
         } catch (error) {
-            console.error('Error al registrar actividad automática:', error)
-            // No lanzamos error para no romper el flujo del mantenimiento, 
-            // pero lo logueamos
+            console.error(`❌ Error al registrar actividad automática para el caso ${maint.nro_caso}:`, error.message)
         }
     }
 }
