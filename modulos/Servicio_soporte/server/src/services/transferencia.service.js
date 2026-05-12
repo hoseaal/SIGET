@@ -72,7 +72,6 @@ export class TransferenciaService {
                 nro_act,
                 fecha: new Date(),
                 direc_id: trans.origen_id,
-                descrip_id: 1, // Default
                 equipo_id: trans.equipo_id,
                 tipo_act: trans.tipo_act || 1, // Usar el tipo seleccionado en el modal
                 observaciones: observaciones_act.toUpperCase(),

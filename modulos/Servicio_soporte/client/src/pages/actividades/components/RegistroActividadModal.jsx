@@ -18,8 +18,7 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
         equipo_id: "",
         tipo_act: "",
         clasificacion_id: "",
-        observaciones: "",
-        descrip_id: 1
+        observaciones: ""
     });
 
     const clasificaciones = [

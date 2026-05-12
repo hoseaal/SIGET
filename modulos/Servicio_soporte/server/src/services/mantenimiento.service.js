@@ -18,7 +18,7 @@ export class MantenimientoService {
     }
 
     static async updateStatus(id, updateData) {
-        const { 
+        const {
             status, usuario_tecnico_id, diagnostico, solucion,
             clasificacion_id
         } = updateData
@@ -45,7 +45,7 @@ export class MantenimientoService {
         const success = await MantenimientoModel.update(id, dataToUpdate)
 
         // 2. Si se finaliza, registrar en atividades_sm
-        if (success && parseInt(status) === 7) {
+        if (success && parseInt(status) == 7) {
             const updatedMaint = await MantenimientoModel.getById(id)
             // Pasar la clasificación explícitamente si viene en updateData
             await this._registerInActivities({
@@ -91,7 +91,6 @@ export class MantenimientoService {
             nro_act: maint.nro_caso,
             fecha: maint.fecha_fin || new Date(),
             direc_id: maint.direc_id,
-            descrip_id: 1, // ID genérico de descripción
             equipo_id: maint.equipo_id || null,
             tipo_act: maint.tipo_falla || 1, // Usar el tipo de falla del mantenimiento como tipo de actividad
             observaciones: observations_act.toUpperCase(),

@@ -172,6 +172,7 @@ export const UsuariosPage = () => {
                             ) : filteredUsuarios.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="text-center py-4 text-muted">
+                                        <div className="mb-2"><i className="bx bx-info-circle fs-1"></i></div>
                                         No se encontraron usuarios registrados
                                     </td>
                                 </tr>

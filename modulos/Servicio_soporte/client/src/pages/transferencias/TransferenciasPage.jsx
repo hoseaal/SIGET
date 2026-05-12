@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup } from "react-bootstrap";
+import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup, Pagination } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
 import { TransferenciaModal } from "./components/TransferenciaModal";
 import { TransferenciaDetalleModal } from "./components/TransferenciaDetalleModal";
+import { PaginationComponent } from "../../components/molecul/PaginationComponent";
 
 export const TransferenciasPage = () => {
     const [transferencias, setTransferencias] = useState([]);
@@ -18,6 +19,10 @@ export const TransferenciasPage = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [selectedTransfer, setSelectedTransfer] = useState(null);
+
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     const fetchData = async () => {
         try {
@@ -55,6 +60,11 @@ export const TransferenciasPage = () => {
         fetchData();
     }, []);
 
+    // Resetear a la página 1 cuando cambian los filtros
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterStatus, filterDepto]);
+
     const filteredData = transferencias.filter(t => {
         const matchesSearch = t.nro_caso.toLowerCase().includes(searchTerm.toLowerCase()) ||
             t.equipo_nro_bien.toLowerCase().includes(searchTerm.toLowerCase());
@@ -62,6 +72,12 @@ export const TransferenciasPage = () => {
         const matchesDepto = filterDepto === "" || String(t.origen_id) === filterDepto;
         return matchesSearch && matchesStatus && matchesDepto;
     });
+
+    // Lógica de Paginación
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentTransferencias = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+
 
     const getStatusBadge = (nombre) => {
         const n = nombre.toLowerCase();
@@ -175,7 +191,7 @@ export const TransferenciasPage = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredData.map(t => (
+                                currentTransferencias.map(t => (
                                     <tr key={t.id}>
                                         <td>
                                             <span className="fw-bold text-primary">{t.nro_caso}</span>
@@ -225,6 +241,14 @@ export const TransferenciasPage = () => {
                             )}
                         </tbody>
                     </Table>
+
+                    {/* Controles de Paginación */}
+                    <PaginationComponent 
+                        currentPage={currentPage}
+                        totalItems={filteredData.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                    />
                 </Card.Body>
             </Card>
 

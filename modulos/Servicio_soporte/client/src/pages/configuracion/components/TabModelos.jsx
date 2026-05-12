@@ -117,6 +117,7 @@ export const TabModelos = () => {
                     ) : dataList.length === 0 ? (
                         <tr>
                             <td colSpan="4" className="text-center py-4 text-muted">
+                                <div className="mb-2"><i className="bx bx-info-circle fs-1"></i></div>
                                 No hay modelos registrados
                             </td>
                         </tr>

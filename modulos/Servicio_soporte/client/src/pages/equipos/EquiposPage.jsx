@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup } from "react-bootstrap";
+import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup, Pagination } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
 import { ModalEquipo } from "./components/ModalEquipo";
 import { ModalDetalleEquipo } from "./components/ModalDetalleEquipo";
+import { PaginationComponent } from "../../components/PaginationComponent";
 
 export const EquiposPage = () => {
     const [equipos, setEquipos] = useState([]);
@@ -20,6 +21,10 @@ export const EquiposPage = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalDetalleVisible, setModalDetalleVisible] = useState(false);
     const [selectedEquipo, setSelectedEquipo] = useState(null);
+
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(2);
 
     const fetchEquipos = async () => {
         try {
@@ -51,6 +56,11 @@ export const EquiposPage = () => {
         fetchEquipos();
         fetchMaestros();
     }, []);
+
+    // Resetear a la página 1 cuando cambian los filtros
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterTipo, filterDep]);
 
     const handleOpenCreate = () => {
         setSelectedEquipo(null);
@@ -88,6 +98,12 @@ export const EquiposPage = () => {
         const matchesDep = filterDep === "" || eq.departamento === filterDep;
         return matchesSearch && matchesTipo && matchesDep;
     });
+
+    // Lógica de Paginación
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentEquipos = filteredEquipos.slice(indexOfFirstItem, indexOfLastItem);
+
 
     const getBadgeVariant = (tipo) => {
         const t = tipo?.toLowerCase() || "";
@@ -180,7 +196,7 @@ export const EquiposPage = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredEquipos.map(eq => (
+                                currentEquipos.map(eq => (
                                     <tr key={eq.id}>
                                         <td><strong>{eq.nro_bien}</strong></td>
                                         <td>
@@ -238,6 +254,14 @@ export const EquiposPage = () => {
                             )}
                         </tbody>
                     </Table>
+
+                    {/* Controles de Paginación */}
+                    <PaginationComponent
+                        currentPage={currentPage}
+                        totalItems={filteredEquipos.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                    />
                 </Card.Body>
             </Card>
 

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup } from "react-bootstrap";
+import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup, Pagination } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
 import { SolicitudMantenimientoModal } from "./components/SolicitudMantenimientoModal";
 import { GestionMantenimientoModal } from "./components/GestionMantenimientoModal";
+import { PaginationComponent } from "../../components/molecul/PaginationComponent";
 
 export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
     const [mantenimientos, setMantenimientos] = useState([]);
@@ -18,6 +19,10 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
     const [showSolicitud, setShowSolicitud] = useState(false);
     const [showGestion, setShowGestion] = useState(false);
     const [selectedMaint, setSelectedMaint] = useState(null);
+
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     const fetchData = async () => {
         try {
@@ -46,6 +51,11 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
         fetchData();
     }, [isTechnicalDashboard]);
 
+    // Resetear a la página 1 cuando cambian los filtros
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterStatus, filterDepto]);
+
     const filteredData = mantenimientos.filter(m => {
         const matchesSearch = m.nro_caso.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (m.equipo_nro_bien && m.equipo_nro_bien.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -54,6 +64,12 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
         const matchesDepto = filterDepto === "" || String(m.direc_id) === filterDepto;
         return matchesSearch && matchesStatus && matchesDepto;
     });
+
+    // Lógica de Paginación
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentMantenimientos = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+
 
     const getStatusBadge = (nombre) => {
         const n = nombre.toLowerCase();
@@ -134,9 +150,14 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                             {loading ? (
                                 <tr><td colSpan="7" className="text-center py-5"><Spinner animation="border" variant="primary" /></td></tr>
                             ) : filteredData.length === 0 ? (
-                                <tr><td colSpan="7" className="text-center py-5 text-muted">No se encontraron registros.</td></tr>
+                                <tr>
+                                    <td colSpan="7" className="text-center py-5 text-muted">
+                                        <div className="mb-2"><i className="bx bx-info-circle fs-1"></i></div>
+                                        No hay mantenimientos registradas para su departamento.
+                                    </td>
+                                </tr>
                             ) : (
-                                filteredData.map(m => (
+                                currentMantenimientos.map(m => (
                                     <tr key={m.id}>
                                         <td><span className="fw-bold">{m.nro_caso}</span></td>
                                         <td>
@@ -160,6 +181,14 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                             )}
                         </tbody>
                     </Table>
+
+                    {/* Controles de Paginación */}
+                    <PaginationComponent 
+                        currentPage={currentPage}
+                        totalItems={filteredData.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                    />
                 </Card.Body>
             </Card>
 
