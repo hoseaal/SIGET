@@ -3,15 +3,19 @@ import { Modal, Button, Form, Row, Col, Spinner } from 'react-bootstrap';
 import Select from 'react-select';
 import { toast } from 'react-toastify';
 import helpFetch from '../../../utils/helpFetch';
+import { Nav } from 'react-bootstrap';
 
 export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) => {
     const [loading, setLoading] = useState(false);
     const [equipos, setEquipos] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
     const [tiposFalla, setTiposFalla] = useState([]);
+    const [fetchingInitial, setFetchingInitial] = useState(false);
+    const [activeTab, setActiveTab] = useState('general'); // 'general' o 'toner'
     const [formData, setFormData] = useState({
         direc_id: '',
         equipo_id: '',
+        tipo_falla: '',
         asunto: '',
         descripcion: ''
     });
@@ -19,9 +23,9 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     useEffect(() => {
         if (show && user) {
             fetchInitialData();
-            setFormData(prev => ({ 
-                ...prev, 
-                direc_id: user.direc_id 
+            setFormData(prev => ({
+                ...prev,
+                direc_id: user.direc_id
             }));
         }
     }, [show, user]);
@@ -34,12 +38,39 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
 
     const fetchInitialData = async () => {
         try {
-            const deps = await helpFetch.GET('/departamento');
+            setFetchingInitial(true);
+            const [deps, types] = await Promise.all([
+                helpFetch.GET('/departamento'),
+                helpFetch.GET('/tipo_act')
+            ]);
             setDepartamentos(deps);
+            setTiposFalla(types);
         } catch (error) {
             console.error(error);
+            toast.error("Error al cargar datos maestros");
+        } finally {
+            setFetchingInitial(false);
         }
     };
+
+    // Sincronizar tipo_falla según el tab activo
+    useEffect(() => {
+        if (tiposFalla.length > 0) {
+            let targetType;
+            if (activeTab === 'general') {
+                targetType = tiposFalla.find(t => t.nombre.toUpperCase() === 'OTRO');
+            } else {
+                targetType = tiposFalla.find(t =>
+                    t.nombre.toLowerCase().includes('informe asignacion de toner') ||
+                    t.nombre.toLowerCase().includes('toner')
+                );
+            }
+
+            if (targetType) {
+                setFormData(prev => ({ ...prev, tipo_falla: targetType.id }));
+            }
+        }
+    }, [activeTab, tiposFalla]);
 
     const fetchEquipos = async (deptoId) => {
         try {
@@ -57,10 +88,14 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
 
     // Handler especial para react-select
     const handleSelectChange = (selectedOption) => {
-        setFormData(prev => ({ 
-            ...prev, 
-            equipo_id: selectedOption ? selectedOption.value : '' 
+        setFormData(prev => ({
+            ...prev,
+            equipo_id: selectedOption ? selectedOption.value : ''
         }));
+    };
+
+    const isTonerReport = () => {
+        return activeTab === 'toner';
     };
 
     const handleSubmit = async (e) => {
@@ -90,11 +125,19 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     const esTecnico = user?.rol_id === 1 || user?.rol_id === 2;
 
     // Preparar opciones para react-select
+    const getFilteredEquipos = () => {
+        let filtered = [...equipos];
+        if (isTonerReport()) {
+            filtered = filtered.filter(e => e.tipo_de_equipo?.toLowerCase().includes('impresora'));
+        }
+        return filtered;
+    };
+
     const equipoOptions = [
         { value: '', label: '-- No aplica / No listado --' },
-        ...equipos.map(e => ({
+        ...getFilteredEquipos().map(e => ({
             value: e.id,
-            label: `${e.nro_bien} - ${e.tipo_nombre} (${e.modelo_nombre || 'S/M'})`
+            label: `${e.nro_bien} -  ${e.tipo_de_equipo || 'S/T'} - Marca: ${e.marca_nombre || 'S/M'} ${e.modelo_nombre ? `(${e.modelo_nombre})` : ''}`
         }))
     ];
 
@@ -105,14 +148,44 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             </Modal.Header>
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
+                    <Nav variant="pills" activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="d-flex justify-content-center mb-4">
+                        <Nav.Item>
+                            <Nav.Link eventKey="general" className="fw-bold px-4">
+                                <i className="bx bx-wrench me-1"></i> Mantenimiento General
+                            </Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Nav.Link eventKey="toner" className="fw-bold px-4">
+                                <i className="bx bx-droplet me-1"></i> Solicitud de Tóner
+                            </Nav.Link>
+                        </Nav.Item>
+                    </Nav>
+
+                    <Row className="mb-3">
+                        <Col md={12}>
+                            {fetchingInitial ? (
+                                <div className="text-center p-2"><Spinner size="sm" /></div>
+                            ) : (
+                                <div className="p-2 px-3 bg-light rounded border border-primary border-opacity-25 mb-2 d-flex align-items-center">
+                                    <i className={`bx ${activeTab === 'toner' ? 'bx-droplet text-primary' : 'bx-cog text-secondary'} fs-4 me-2`}></i>
+                                    <div>
+                                        <span className="fw-bold">
+                                            {activeTab === 'toner' ? 'REPORTE DE TÓNER / CONSUMIBLE' : 'MANTENIMIENTO TÉCNICO GENERAL'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </Col>
+                    </Row>
+
                     <Row className="mb-3">
                         <Col md={12}>
                             {esTecnico ? (
                                 <Form.Group>
                                     <Form.Label>Departamento Afectado</Form.Label>
-                                    <Form.Select 
-                                        name="direc_id" 
-                                        value={formData.direc_id} 
+                                    <Form.Select
+                                        name="direc_id"
+                                        value={formData.direc_id}
                                         onChange={handleChange}
                                         required
                                     >
@@ -125,7 +198,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                             ) : (
                                 <div className="p-2 bg-light rounded border mb-2">
                                     <small className="text-muted d-block">Solicitante:</small>
-                                    <strong>{user?.nombre}</strong> 
+                                    <strong>{user?.nombre}</strong>
                                     <small className="text-muted ms-3">Dpto:</small> {departamentos.find(d => d.id === user?.direc_id)?.nombre}
                                 </div>
                             )}
@@ -154,10 +227,10 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
 
                     <Form.Group className="mb-3">
                         <Form.Label>Asunto / Título Breve</Form.Label>
-                        <Form.Control 
-                            name="asunto" 
-                            value={formData.asunto} 
-                            onChange={handleChange} 
+                        <Form.Control
+                            name="asunto"
+                            value={formData.asunto}
+                            onChange={handleChange}
                             placeholder="Ej: Monitor no enciende, No hay internet..."
                             required
                         />
@@ -165,12 +238,12 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
 
                     <Form.Group className="mb-3">
                         <Form.Label>Descripción Detallada</Form.Label>
-                        <Form.Control 
-                            as="textarea" 
-                            rows={4} 
-                            name="descripcion" 
-                            value={formData.descripcion} 
-                            onChange={handleChange} 
+                        <Form.Control
+                            as="textarea"
+                            rows={4}
+                            name="descripcion"
+                            value={formData.descripcion}
+                            onChange={handleChange}
                             placeholder="Describa el problema lo más detallado posible..."
                             required
                         />

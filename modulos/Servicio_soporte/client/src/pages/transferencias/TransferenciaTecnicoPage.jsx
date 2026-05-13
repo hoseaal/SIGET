@@ -21,7 +21,7 @@ export const TransferenciaTecnicoPage = () => {
 
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage] = useState(3);
 
     const fetchData = async () => {
         try {
@@ -96,7 +96,7 @@ export const TransferenciaTecnicoPage = () => {
                 <span className="text-muted fw-light">Soporte Técnico /</span> Tablero de Transferencias
             </h4>
 
-            <Row className="mb-4">
+            <Row className="mb-4 d-flex justify-content-center">
                 <Col md={3}>
                     <Card className="bg-primary text-white">
                         <Card.Body className="text-center">

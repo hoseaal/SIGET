@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
 import { SolicitudMantenimientoModal } from "./components/SolicitudMantenimientoModal";
 import { GestionMantenimientoModal } from "./components/GestionMantenimientoModal";
-import { PaginationComponent } from "../../components/molecul/PaginationComponent";
+import { PaginationComponent } from "../../components/PaginationComponent";
 
 export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
     const [mantenimientos, setMantenimientos] = useState([]);
@@ -22,7 +22,7 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
 
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage] = useState(3);
 
     const fetchData = async () => {
         try {
@@ -141,8 +141,9 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                 <th>Caso #</th>
                                 <th>Tipo / Asunto</th>
                                 <th>Equipo</th>
-                                <th>Fecha</th>
-                                <th>Estatus</th>
+                                <th className="text-center">Fecha de Solicitud</th>
+                                <th className="text-center">Fecha de Fin</th>
+                                <th className="text-center">Estatus</th>
                                 <th className="text-center">Acción</th>
                             </tr>
                         </thead>
@@ -165,9 +166,10 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                             <div className="small text-muted">{m.asunto}</div>
                                         </td>
                                         <td>{m.equipo_nro_bien || <span className="text-muted">N/A</span>}</td>
-                                        <td>{new Date(m.fecha_solicitud).toLocaleDateString()}</td>
-                                        <td>
-                                            <Badge bg={getStatusBadge(m.status_nombre)} className="bg-label-primary">
+                                        <td className="text-center">{new Date(m.fecha_solicitud).toLocaleDateString()}</td>
+                                        <td className="text-center">{new Date(m.fecha_fin).toLocaleDateString()}</td>
+                                        <td className="text-center">
+                                            <Badge bg={getStatusBadge(m.status_nombre)} className="bg-label-primary text-center">
                                                 {m.status_nombre}
                                             </Badge>
                                         </td>
@@ -183,7 +185,7 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                     </Table>
 
                     {/* Controles de Paginación */}
-                    <PaginationComponent 
+                    <PaginationComponent
                         currentPage={currentPage}
                         totalItems={filteredData.length}
                         itemsPerPage={itemsPerPage}
