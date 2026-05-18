@@ -61,8 +61,8 @@ const Sidebar = () => {
                     <span className="app-brand-text demo menu-text fw-bold ms-2">SIGET</span>
                 </Link>
 
-                <a href="#" className="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
-                    <i className="bx bx-chevron-left bx-sm align-middle"></i>
+                <a href="#" role="button" aria-label="Cerrar menú lateral" className="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+                    <i className="bx bx-chevron-left bx-sm align-middle" aria-hidden="true"></i>
                 </a>
             </div>
 
@@ -102,7 +102,7 @@ const MenuItem = ({ item }) => {
                 className={`menu-link ${item.submenu ? 'menu-toggle' : ''}`}
                 target={item.link.includes('http') ? '_blank' : undefined}
             >
-                <i className={`menu-icon tf-icons ${item.icon}`}></i>
+                <i className={`menu-icon tf-icons ${item.icon}`} aria-hidden="true"></i>
                 <div>{item.text}</div>
             </NavLink>
             {hasSubmenu && (

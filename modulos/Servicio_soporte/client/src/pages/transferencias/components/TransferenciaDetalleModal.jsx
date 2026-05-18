@@ -39,7 +39,7 @@ export const TransferenciaDetalleModal = ({ show, onHide, transferencia }) => {
                         <div className="fw-bold">{new Date(transferencia.fecha).toLocaleString()}</div>
                     </div>
                     <div className="text-end">
-                        <div className="text-muted small uppercase fw-bold mb-1">Estatus / Prioridad</div>
+                        <div className="text-muted small uppercase fw-bold mb-1"> Prioridad / Estatus </div>
                         <div className="d-flex gap-2 justify-content-end">
                             <Badge bg={getPriorityBadge(transferencia.prioridad)} className="px-3 py-2 fs-6">
                                 {transferencia.prioridad || 'Media'}

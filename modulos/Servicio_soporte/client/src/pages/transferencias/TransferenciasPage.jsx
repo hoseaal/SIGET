@@ -233,7 +233,7 @@ export const TransferenciasPage = () => {
                                                     setDetailModalVisible(true);
                                                 }}
                                             >
-                                                <i className="bx bx-show me-1"></i> Detalle
+                                                <i className="bx bx-show me-1"></i>
                                             </Button>
                                         </td>
                                     </tr>

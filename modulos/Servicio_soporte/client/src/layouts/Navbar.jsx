@@ -82,8 +82,8 @@ const Navbar = () => {
     <>
     <BSNavbar expand="xl" className="layout-navbar container-xxl navbar-detached bg-navbar-theme">
       <div className="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-        <a aria-label='toggle for sidebar' className="nav-item nav-link px-0 me-xl-4" href="#">
-        <i className="bx bx-menu bx-sm"></i>
+        <a aria-label="Abrir menú lateral" role="button" className="nav-item nav-link px-0 me-xl-4" href="#">
+          <i className="bx bx-menu bx-sm" aria-hidden="true"></i>
         </a>
       </div>
 
