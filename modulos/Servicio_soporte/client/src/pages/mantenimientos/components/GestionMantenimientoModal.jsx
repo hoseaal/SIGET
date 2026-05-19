@@ -104,7 +104,7 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
     return (
         <Modal show={show} onHide={onHide} size="lg" backdrop="static">
             <Modal.Header closeButton>
-                <Modal.Title>Detalle de Mantenimiento: {mantenimiento.nro_caso}</Modal.Title>
+                <Modal.Title>Detalle de Mantenimiento: Oficio {mantenimiento.nro_caso}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Row className="mb-4">

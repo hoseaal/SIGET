@@ -80,15 +80,15 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
     };
 
     const handleSelectChange = (selectedOption) => {
-        setFormData(prev => ({ 
-            ...prev, 
-            equipo_id: selectedOption ? selectedOption.value : "" 
+        setFormData(prev => ({
+            ...prev,
+            equipo_id: selectedOption ? selectedOption.value : ""
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!formData.direc_id || !formData.tipo_act || !formData.clasificacion_id) {
             toast.warning("Por favor complete los campos obligatorios.");
             return;
@@ -132,12 +132,12 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label className="fw-semibold">Nro. Actividad</Form.Label>
-                                        <Form.Control 
-                                            type="text" 
-                                            name="nro_act" 
-                                            value={formData.nro_act} 
-                                            onChange={handleChange} 
-                                            required 
+                                        <Form.Control
+                                            type="text"
+                                            name="nro_act"
+                                            value={formData.nro_act}
+                                            onChange={handleChange}
+                                            required
                                             readOnly
                                             className="bg-light border-0 fw-bold text-primary"
                                         />
@@ -146,12 +146,12 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label className="fw-semibold">Fecha</Form.Label>
-                                        <Form.Control 
-                                            type="date" 
-                                            name="fecha" 
-                                            value={formData.fecha} 
-                                            onChange={handleChange} 
-                                            required 
+                                        <Form.Control
+                                            type="date"
+                                            name="fecha"
+                                            value={formData.fecha}
+                                            onChange={handleChange}
+                                            required
                                         />
                                     </Form.Group>
                                 </Col>
@@ -161,10 +161,10 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                 <Col md={12}>
                                     <Form.Group>
                                         <Form.Label className="fw-semibold">Departamento Solicitante</Form.Label>
-                                        <Form.Select 
-                                            name="direc_id" 
-                                            value={formData.direc_id} 
-                                            onChange={handleChange} 
+                                        <Form.Select
+                                            name="direc_id"
+                                            value={formData.direc_id}
+                                            onChange={handleChange}
                                             required
                                         >
                                             <option value="">-- Seleccionar Departamento --</option>
@@ -180,10 +180,10 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                 <Col md={12}>
                                     <Form.Group>
                                         <Form.Label className="fw-semibold">Tipo de Actividad (Descripción del Reporte)</Form.Label>
-                                        <Form.Select 
-                                            name="tipo_act" 
-                                            value={formData.tipo_act} 
-                                            onChange={handleChange} 
+                                        <Form.Select
+                                            name="tipo_act"
+                                            value={formData.tipo_act}
+                                            onChange={handleChange}
                                             required
                                         >
                                             <option value="">-- Seleccionar Tipo de Falla/Actividad --</option>
@@ -200,51 +200,51 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                 <Row>
                                     <Col md={4}>
                                         <div className="fw-bold small mb-2 border-bottom">Mant. Preventivo</div>
-                                        <Form.Check 
-                                            type="checkbox" 
-                                            label="Software" 
-                                            checked={formData.clasificacion_id === 1} 
+                                        <Form.Check
+                                            type="checkbox"
+                                            label="Software"
+                                            checked={formData.clasificacion_id === 1}
                                             onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 1 }))}
                                             id="chk-prev-sw"
                                         />
-                                        <Form.Check 
-                                            type="checkbox" 
-                                            label="Hardware" 
-                                            checked={formData.clasificacion_id === 2} 
+                                        <Form.Check
+                                            type="checkbox"
+                                            label="Hardware"
+                                            checked={formData.clasificacion_id === 2}
                                             onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 2 }))}
                                             id="chk-prev-hw"
                                         />
                                     </Col>
                                     <Col md={4}>
                                         <div className="fw-bold small mb-2 border-bottom">Mant. Correctivo</div>
-                                        <Form.Check 
-                                            type="checkbox" 
-                                            label="Software" 
-                                            checked={formData.clasificacion_id === 3} 
+                                        <Form.Check
+                                            type="checkbox"
+                                            label="Software"
+                                            checked={formData.clasificacion_id === 3}
                                             onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 3 }))}
                                             id="chk-corr-sw"
                                         />
-                                        <Form.Check 
-                                            type="checkbox" 
-                                            label="Hardware" 
-                                            checked={formData.clasificacion_id === 4} 
+                                        <Form.Check
+                                            type="checkbox"
+                                            label="Hardware"
+                                            checked={formData.clasificacion_id === 4}
                                             onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 4 }))}
                                             id="chk-corr-hw"
                                         />
                                     </Col>
                                     <Col md={4}>
                                         <div className="fw-bold small mb-2 border-bottom">Plat. Tecnológica</div>
-                                        <Form.Check 
-                                            type="checkbox" 
-                                            label="Servicios / Redes" 
-                                            checked={formData.clasificacion_id === 5} 
+                                        <Form.Check
+                                            type="checkbox"
+                                            label="Servicios / Redes"
+                                            checked={formData.clasificacion_id === 5}
                                             onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 5 }))}
                                             id="chk-plat-serv"
                                         />
-                                        <Form.Check 
-                                            type="checkbox" 
-                                            label="Informes" 
-                                            checked={formData.clasificacion_id === 6} 
+                                        <Form.Check
+                                            type="checkbox"
+                                            label="Informes"
+                                            checked={formData.clasificacion_id === 6}
                                             onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 6 }))}
                                             id="chk-plat-inf"
                                         />
@@ -257,9 +257,9 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                 <Select
                                     placeholder="Buscar por Nro. Bien..."
                                     isClearable
-                                    options={equipos.map(e => ({ 
-                                        value: e.id, 
-                                        label: `${e.nro_bien} - ${e.nombre || e.tipo_nombre || 'Equipo'}` 
+                                    options={equipos.map(e => ({
+                                        value: e.id,
+                                        label: `${e.nro_bien} -  ${e.tipo_de_equipo || 'S/T'} - Marca: ${e.marca_nombre || 'S/M'} ${e.modelo_nombre ? `(${e.modelo_nombre})` : ''}`
                                     }))}
                                     onChange={handleSelectChange}
                                     noOptionsMessage={() => "No se encontraron equipos"}
@@ -276,11 +276,11 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
 
                             <Form.Group className="mb-2">
                                 <Form.Label className="fw-semibold">Observaciones / Solución</Form.Label>
-                                <Form.Control 
-                                    as="textarea" 
-                                    rows={4} 
-                                    name="observaciones" 
-                                    value={formData.observaciones} 
+                                <Form.Control
+                                    as="textarea"
+                                    rows={4}
+                                    name="observaciones"
+                                    value={formData.observaciones}
                                     onChange={handleChange}
                                     placeholder="Describa brevemente la labor realizada..."
                                 />

@@ -32,8 +32,9 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
 
             if (userData.success) {
                 setUser(userData.user);
+                const isAdmin = userData.user.rol_id === 1;
                 const [maintData, depsData] = await Promise.all([
-                    isTechnicalDashboard ? helpFetch.GET("/mantenimiento") : helpFetch.GET(`/mantenimiento/depto/${userData.user.direc_id}`),
+                    (isTechnicalDashboard || isAdmin) ? helpFetch.GET("/mantenimiento") : helpFetch.GET(`/mantenimiento/depto/${userData.user.direc_id}`),
                     helpFetch.GET("/departamento")
                 ]);
                 setMantenimientos(maintData);
@@ -98,17 +99,17 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                 </Card.Header>
                 <Card.Body>
                     <Row className="mb-4 g-3">
-                        <Col md={isTechnicalDashboard ? 4 : 6}>
+                        <Col md={(isTechnicalDashboard || user?.rol_id === 1) ? 4 : 6}>
                             <InputGroup>
                                 <InputGroup.Text><i className="bx bx-search"></i></InputGroup.Text>
                                 <Form.Control
-                                    placeholder="Buscar por Caso, Bien o Asunto..."
+                                    placeholder="Buscar por Nro. Oficio, Bien o Asunto..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </InputGroup>
                         </Col>
-                        {isTechnicalDashboard && (
+                        {(isTechnicalDashboard || user?.rol_id === 1) && (
                             <Col md={3}>
                                 <Form.Select value={filterDepto} onChange={(e) => setFilterDepto(e.target.value)}>
                                     <option value="">Todos los Deptos</option>
@@ -118,7 +119,7 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                 </Form.Select>
                             </Col>
                         )}
-                        <Col md={isTechnicalDashboard ? 3 : 4}>
+                        <Col md={(isTechnicalDashboard || user?.rol_id === 1) ? 3 : 4}>
                             <Form.Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                                 <option value="">Todos los estados</option>
                                 <option value="2">Pendiente</option>
@@ -138,7 +139,7 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                     <Table responsive hover className="align-middle">
                         <thead className="table-light">
                             <tr>
-                                <th>Caso #</th>
+                                <th>Nro. de Oficio</th>
                                 <th>Tipo / Asunto</th>
                                 <th>Equipo</th>
                                 <th className="text-center">Fecha de Solicitud</th>
@@ -162,12 +163,14 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                     <tr key={m.id}>
                                         <td><span className="fw-bold">{m.nro_caso}</span></td>
                                         <td>
-                                            <div className="fw-bold">{m.tipo_falla_nombre}</div>
-                                            <div className="small text-muted">{m.asunto}</div>
+                                            <div className="fw-bold">{m.asunto}</div>
+                                            <div className="small text-muted">{m.tipo_falla_nombre}</div>
                                         </td>
                                         <td>{m.equipo_nro_bien || <span className="text-muted">N/A</span>}</td>
                                         <td className="text-center">{new Date(m.fecha_solicitud).toLocaleDateString()}</td>
-                                        <td className="text-center">{new Date(m.fecha_fin).toLocaleDateString()}</td>
+                                        <td className="text-center">
+                                            {m.fecha_fin ? new Date(m.fecha_fin).toLocaleDateString() : <span className="text-muted">N/A</span>}
+                                        </td>
                                         <td className="text-center">
                                             <Badge bg={getStatusBadge(m.status_nombre)} className="bg-label-primary text-center">
                                                 {m.status_nombre}

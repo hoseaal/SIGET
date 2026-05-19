@@ -76,6 +76,16 @@ export class MantenimientoModel {
     }
 
     /**
+     * Obtiene un mantenimiento por Nro. de Caso (Nro. de Oficio)
+     */
+    static async getByNroCaso(nro_caso) {
+        const [rows] = await pool.query(`
+            SELECT * FROM mantenimiento WHERE nro_caso = ?
+        `, [nro_caso])
+        return rows[0] || null
+    }
+
+    /**
      * Obtiene el último número de caso para mantenimientos
      */
     static async getLastCaseNumber(prefix) {

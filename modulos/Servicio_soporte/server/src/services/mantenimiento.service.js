@@ -8,13 +8,30 @@ export class MantenimientoService {
     }
 
     static async getByDepto(direc_id, user) {
+        if (user && user.rol_id === 1) {
+            const data = await MantenimientoModel.getAll()
+            return this.filteredData(data, user)
+        }
         const data = await MantenimientoModel.getByDepto(direc_id)
         return this.filteredData(data, user)
     }
 
     static async create(data) {
-        const nro_caso = await this._generateCaseNumber()
-        return await MantenimientoModel.create({ ...data, nro_caso })
+        let { nro_caso } = data
+        if (!nro_caso || !nro_caso.trim()) {
+            nro_caso = await this._generateCaseNumber()
+        } else {
+            const existing = await MantenimientoModel.getByNroCaso(nro_caso.trim())
+            if (existing) {
+                throw new Error(`El Nro. de Oficio "${nro_caso}" ya está registrado.`)
+            }
+            nro_caso = nro_caso.trim()
+        }
+
+        return await MantenimientoModel.create({
+            ...data,
+            nro_caso
+        })
     }
 
     static async updateStatus(id, updateData) {
@@ -85,7 +102,7 @@ export class MantenimientoService {
 
     static async _registerInActivities(maint) {
         // Mapear los datos del mantenimiento al formato de actividades_sm
-        const observations_act = maint.solucion || `MANTENIMIENTO FINALIZADO (CASO ${maint.nro_caso})`;
+        const observations_act = maint.solucion || `MANTENIMIENTO FINALIZADO (OFICIO ${maint.nro_caso})`;
 
         const activityData = {
             nro_act: maint.nro_caso,

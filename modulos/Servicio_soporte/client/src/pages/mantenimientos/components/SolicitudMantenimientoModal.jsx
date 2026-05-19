@@ -13,6 +13,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     const [fetchingInitial, setFetchingInitial] = useState(false);
     const [activeTab, setActiveTab] = useState('general'); // 'general' o 'toner'
     const [formData, setFormData] = useState({
+        nro_caso: '',
         direc_id: '',
         equipo_id: '',
         tipo_falla: '',
@@ -23,10 +24,14 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     useEffect(() => {
         if (show && user) {
             fetchInitialData();
-            setFormData(prev => ({
-                ...prev,
-                direc_id: user.direc_id
-            }));
+            setFormData({
+                nro_caso: '',
+                direc_id: user.direc_id || '',
+                equipo_id: '',
+                tipo_falla: '',
+                asunto: '',
+                descripcion: ''
+            });
         }
     }, [show, user]);
 
@@ -105,18 +110,44 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             return;
         }
 
+        if (activeTab === 'toner' && (!formData.nro_caso || !formData.nro_caso.trim())) {
+            toast.warning("El Nro. de Oficio es requerido para la solicitud de tóner.");
+            return;
+        }
+
         try {
             setLoading(true);
             const payload = {
                 ...formData,
+                nro_caso: activeTab === 'toner' ? formData.nro_caso : undefined,
                 usuario_id: user.usuario_id
             };
             await helpFetch.POST('/mantenimiento', payload);
             toast.success("Solicitud registrada correctamente.");
+            setFormData({
+                nro_caso: '',
+                direc_id: user?.direc_id || '',
+                equipo_id: '',
+                tipo_falla: '',
+                asunto: '',
+                descripcion: ''
+            });
             onSuccess();
         } catch (error) {
             console.error(error);
-            toast.error("Error al registrar la solicitud.");
+            let userMsg = "Error al registrar la solicitud.";
+            try {
+                if (error.message.includes('{')) {
+                    const rawMsg = error.message.substring(error.message.indexOf('{'));
+                    const jsonErr = JSON.parse(rawMsg);
+                    if (jsonErr && jsonErr.message) {
+                        userMsg = jsonErr.message;
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            toast.error(userMsg);
         } finally {
             setLoading(false);
         }
@@ -204,6 +235,19 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                             )}
                         </Col>
                     </Row>
+
+                    {activeTab === 'toner' && (
+                        <Form.Group className="mb-3">
+                            <Form.Label>Nro. de Oficio <span className="text-danger">*</span></Form.Label>
+                            <Form.Control
+                                name="nro_caso"
+                                value={formData.nro_caso}
+                                onChange={handleChange}
+                                placeholder="Ej: DDRRHH-O-087-2026"
+                                required
+                            />
+                        </Form.Group>
+                    )}
 
                     <Form.Group className="mb-3">
                         <Form.Label>Seleccionar Equipo (Opcional)</Form.Label>
