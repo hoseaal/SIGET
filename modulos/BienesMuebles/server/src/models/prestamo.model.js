@@ -424,6 +424,10 @@ export class PrestamoModel {
       whereClauses.push('tp.pre_ndo LIKE ?')
       params.push(`%${filters.pre_ndo}%`)
     }
+    if (filters.bim_cod) {
+      whereClauses.push('tp.pre_ide IN (SELECT tdd2.pre_ide FROM ttrdpr tdd2 JOIN tmab_m tm2 ON tdd2.bim_ide = tm2.bim_ide WHERE tm2.bim_cod LIKE ?)')
+      params.push(`%${filters.bim_cod}%`)
+    }
     if (filters.dep_origen_id) {
       whereClauses.push('tp.dep_origen_ide = ?')
       params.push(filters.dep_origen_id)
@@ -495,6 +499,10 @@ export class PrestamoModel {
     if (filters.pre_ndo) {
       whereClauses.push('tp.pre_ndo LIKE ?')
       params.push(`%${filters.pre_ndo}%`)
+    }
+    if (filters.bim_cod) {
+      whereClauses.push('tp.pre_ide IN (SELECT tdd2.pre_ide FROM ttrdpr tdd2 JOIN tmab_m tm2 ON tdd2.bim_ide = tm2.bim_ide WHERE tm2.bim_cod LIKE ?)')
+      params.push(`%${filters.bim_cod}%`)
     }
     if (filters.dep_origen_id) {
       whereClauses.push('tp.dep_origen_ide = ?')

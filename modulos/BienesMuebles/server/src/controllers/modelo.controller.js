@@ -2,8 +2,17 @@ import { ModeloService } from '../services/modelo.service.js'
 
 export const obtenerModelos = async (req, res) => {
   try {
-    const modelos = await ModeloService.obtenerTodos()
-    res.json(modelos)
+    const page = req.query.page ? parseInt(req.query.page) : null
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10
+    const search = req.query.search || ''
+
+    if (page || search) {
+      const result = await ModeloService.obtenerPagina({ page: page || 1, limit, search })
+      res.json(result)
+    } else {
+      const modelos = await ModeloService.obtenerTodos()
+      res.json(modelos)
+    }
   } catch (error) {
     res.status(500).json({ error: error.message })
   }

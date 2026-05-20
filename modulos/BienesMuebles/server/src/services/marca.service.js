@@ -32,4 +32,18 @@ export class MarcaService {
     if (!existe) throw new Error('Marca no existe')
     return await MarcaModel.delete(id)
   }
+
+  static async obtenerPagina ({ page = 1, limit = 10, search = '' }) {
+    if (page < 1 || limit < 1) throw new Error('Parámetros de paginación inválidos')
+    const result = await MarcaModel.getPage({ page, limit, search })
+    return {
+      data: result.data,
+      meta: {
+        page: Number(page),
+        limit: Number(limit),
+        total: Number(result.total),
+        totalPages: Math.ceil(result.total / limit)
+      }
+    }
+  }
 }

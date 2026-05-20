@@ -32,4 +32,25 @@ export class CategoriaModel {
     const [result] = await pool.query('DELETE FROM tmacat WHERE cat_ide = ?', [id])
     return result.affectedRows > 0
   }
+
+  static async getPage ({ page = 1, limit = 10, search = '' }) {
+    const offset = (page - 1) * limit
+    const params = []
+    const countParams = []
+    let whereClause = ''
+
+    if (search.trim()) {
+      whereClause = 'WHERE cat_cat LIKE ?'
+      params.push(`%${search}%`)
+      countParams.push(`%${search}%`)
+    }
+
+    const dataQuery = `SELECT * FROM tmacat ${whereClause} ORDER BY cat_ide ASC LIMIT ? OFFSET ?`
+    const countQuery = `SELECT COUNT(*) as total FROM tmacat ${whereClause}`
+
+    const [rows] = await pool.query(dataQuery, [...params, limit, offset])
+    const [[{ total }]] = await pool.query(countQuery, countParams)
+
+    return { data: rows, total }
+  }
 }

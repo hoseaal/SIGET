@@ -314,10 +314,6 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 />
             );
         }
-        // Excluir 'dep_ide' de este renderizado genérico (se muestra arriba manualmente)
-        if (fieldName === 'dep_ide') {
-            return null;
-        }
 
         return (
             <Form.Control
@@ -376,42 +372,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                         </div>
                     ) : (
                         <Row className="mb-6 g-3">
-                            {/* Información de Ubicación (Solo Lectura) */}
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Departamento Propietario (Origen):</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        value={bienData?.departamento || ''}
-                                        disabled={true}
-                                        readOnly={true}
-                                        className="form-control-readonly"
-                                        style={{ fontWeight: '500' }}
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>{getUbicacionLabel()}</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        value={prestamoInfo
-                                            ? `${prestamoInfo.departamento_destino_nombre}`
-                                            : 'En resguardo del propietario'}
-                                        disabled={true}
-                                        readOnly={true}
-                                        className={prestamoInfo ? 'form-control-readonly border-info' : 'form-control-readonly'}
-                                        style={{ fontWeight: 'bold', color: prestamoInfo ? '#007bff' : '#6c757d' }}
-                                    />
-                                    {prestamoInfo && (
-                                        <Form.Text className="text-muted">
-                                            Este bien tiene un movimiento activo. Puede editar sus características físicas, pero no su departamento origen.
-                                        </Form.Text>
-                                    )}
-                                </Form.Group>
-                            </Col>
 
-                            <div className="border-bottom my-2"></div> {/* Separador */}
 
                             {/* Renderizado dinámico de columnas */}
                             {columns.map((column) => {

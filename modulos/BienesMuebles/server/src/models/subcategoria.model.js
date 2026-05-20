@@ -51,4 +51,37 @@ export class SubcategoriaModel {
     const [result] = await pool.query('DELETE FROM tessca WHERE sca_ide = ?', [id])
     return result.affectedRows > 0
   }
+
+  static async getPage ({ page = 1, limit = 10, search = '' }) {
+    const offset = (page - 1) * limit
+    const params = []
+    const countParams = []
+    let whereClause = ''
+
+    if (search.trim()) {
+      whereClause = 'WHERE s.sca_sca LIKE ? OR c.cat_cat LIKE ?'
+      params.push(`%${search}%`, `%${search}%`)
+      countParams.push(`%${search}%`, `%${search}%`)
+    }
+
+    const dataQuery = `
+      SELECT s.sca_ide, s.sca_sca, s.cat_ide, c.cat_cat
+      FROM tessca s
+      JOIN tmacat c ON s.cat_ide = c.cat_ide
+      ${whereClause}
+      ORDER BY s.sca_ide ASC
+      LIMIT ? OFFSET ?
+    `
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM tessca s
+      JOIN tmacat c ON s.cat_ide = c.cat_ide
+      ${whereClause}
+    `
+
+    const [rows] = await pool.query(dataQuery, [...params, limit, offset])
+    const [[{ total }]] = await pool.query(countQuery, countParams)
+
+    return { data: rows, total }
+  }
 }

@@ -39,6 +39,7 @@ export const getNormalLoansPaginated = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10
     const filters = {
       pre_ndo: req.query.pre_ndo,
+      bim_cod: req.query.bim_cod,
       dep_origen_id: req.query.dep_origen_id,
       dep_destino_id: req.query.dep_destino_id
     }
@@ -58,6 +59,7 @@ export const getWarehouseItemsPaginated = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10
     const filters = {
       pre_ndo: req.query.pre_ndo,
+      bim_cod: req.query.bim_cod,
       dep_origen_id: req.query.dep_origen_id,
       dep_destino_id: req.query.dep_destino_id
     }

@@ -11,6 +11,8 @@ export const Prestamos = () => {
     const [error, setError] = useState(null);     // Estado de error
 
     const [refreshKey, setRefreshKey] = useState(0); // Para forzar una recarga de datos
+    const [page, setPage] = useState(1);
+    const [meta, setMeta] = useState({});
 
     const [searchText, setSearchText] = useState('');          // Texto en el input de búsqueda
     const [searchType, setSearchType] = useState('pre_ndo');   // 'pre_ndo' | 'bim_cod'
@@ -55,13 +57,14 @@ export const Prestamos = () => {
 
         fetchUserData();
     }, []);
+
     // --- Cargar datos de préstamos normales activos ---
     useEffect(() => {
         const loadPrestamos = async () => {
             setLoading(true);
             setError(null);
             try {
-                let url = `/api/prestamos/normales?`;
+                let url = `/api/prestamos/normales/pagina?page=${page}&limit=10&`;
 
                 // Añadir filtros a la URL
                 if (searchQuery.value) {
@@ -87,20 +90,20 @@ export const Prestamos = () => {
                 }
                 const result = await response.json();
 
-                // Si la API devuelve un objeto con una propiedad 'data', úsala.
-                // De lo contrario, asume que el resultado es directamente el array.
-                setData(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : []);
+                setData(Array.isArray(result.data) ? result.data : []);
+                setMeta(result.meta || {});
             } catch (err) {
                 console.error('Error al cargar préstamos normales:', err);
                 setError('No se pudieron cargar los préstamos. ' + err.message);
                 setData([]);
+                setMeta({});
             } finally {
                 setLoading(false);
             }
         };
 
         loadPrestamos();
-    }, [filtros.dep_origen_id, filtros.dep_destino_id, searchQuery, refreshKey, showDetallesModal]); // Dependencias del useEffect
+    }, [page, filtros.dep_origen_id, filtros.dep_destino_id, searchQuery, refreshKey, showDetallesModal]); // Dependencias del useEffectl useEffect
 
     // --- Cargar la lista de departamentos para los filtros ---
     useEffect(() => {
@@ -125,11 +128,13 @@ export const Prestamos = () => {
     const handleSearch = (e) => {
         e.preventDefault();
         setSearchQuery({ type: searchType, value: searchText.trim() });
+        setPage(1);
     };
 
     const handleClearSearch = () => {
         setSearchText('');
         setSearchQuery({ type: searchType, value: '' });
+        setPage(1);
     };
 
     const handleSearchTypeChange = (newType) => {
@@ -138,12 +143,13 @@ export const Prestamos = () => {
         if (searchQuery.value) {
             setSearchText('');
             setSearchQuery({ type: newType, value: '' });
+            setPage(1);
         }
     };
 
     const handleFiltroChange = (filterName, value) => {
         setFiltros(prev => ({ ...prev, [filterName]: value }));
-        // No hay paginación implementada en este ejemplo, así que no se resetea la página
+        setPage(1);
     };
 
     // --- Funciones de Utilidad para la UI ---
@@ -317,7 +323,74 @@ export const Prestamos = () => {
                         </div>
                     )}
 
-                    {/* Aquí iría la paginación si tu endpoint /normales la soportara */}
+                    {/* Dynamic Pagination Bar */}
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 px-4 py-3 bg-light border-top rounded-bottom mt-4">
+                        <div className="text-muted small">
+                            {meta.total > 0 ? (
+                                <span>
+                                    Mostrando <strong>{((page - 1) * 10) + 1}</strong> a{' '}
+                                    <strong>{Math.min(page * 10, meta.total)}</strong> de{' '}
+                                    <strong>{meta.total}</strong> préstamos
+                                </span>
+                            ) : (
+                                <span>No hay resultados</span>
+                            )}
+                        </div>
+                        <nav aria-label="Navegación de páginas">
+                            <ul className="pagination pagination-sm mb-0">
+                                <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                                    <button
+                                        type="button"
+                                        className="page-link d-flex align-items-center"
+                                        onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                                        aria-label="Anterior"
+                                    >
+                                        <i className="bx bx-chevron-left me-1"></i> Anterior
+                                    </button>
+                                </li>
+                                
+                                {Array.from({ length: meta.totalPages || 1 }, (_, i) => i + 1).map((p) => {
+                                    const totalPages = meta.totalPages || 1;
+                                    if (totalPages > 6) {
+                                        if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) {
+                                            return (
+                                                <li key={p} className={`page-item ${page === p ? 'active' : ''}`}>
+                                                    <button type="button" className="page-link" onClick={() => setPage(p)}>
+                                                        {p}
+                                                    </button>
+                                                </li>
+                                            );
+                                        } else if ((p === 2 && page > 3) || (p === totalPages - 1 && page < totalPages - 2)) {
+                                            return (
+                                                <li key={p} className="page-item disabled">
+                                                    <span className="page-link">...</span>
+                                                </li>
+                                            );
+                                        }
+                                        return null;
+                                    }
+                                    return (
+                                        <li key={p} className={`page-item ${page === p ? 'active' : ''}`}>
+                                            <button type="button" className="page-link" onClick={() => setPage(p)}>
+                                                {p}
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+
+                                <li className={`page-item ${page === (meta.totalPages || 1) ? 'disabled' : ''}`}>
+                                    <button
+                                        type="button"
+                                        className="page-link d-flex align-items-center"
+                                        onClick={() => setPage(prev => Math.min(prev + 1, meta.totalPages || prev + 1))}
+                                        aria-label="Siguiente"
+                                    >
+                                        Siguiente <i className="bx bx-chevron-right ms-1"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </div>
             <ModalRegistrarPrestamo

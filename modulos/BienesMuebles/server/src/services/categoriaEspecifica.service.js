@@ -51,7 +51,18 @@ export class CategoriaEspecificaService {
   }
 
   static async buscarPorNombre (searchTerm, { page, limit }) {
-    if (!searchTerm.trim()) throw new Error('Término de búsqueda requerido')
-    return await CategoriaEspecificaModel.searchByNombre(searchTerm, { page, limit })
+    if (!searchTerm || !searchTerm.trim()) {
+      return await this.obtenerPagina({ page, limit })
+    }
+    const result = await CategoriaEspecificaModel.searchByNombre(searchTerm, { page, limit })
+    return {
+      data: result.data,
+      meta: {
+        page: Number(page),
+        limit: Number(limit),
+        total: Number(result.total),
+        totalPages: Math.ceil(result.total / limit)
+      }
+    }
   }
 }
