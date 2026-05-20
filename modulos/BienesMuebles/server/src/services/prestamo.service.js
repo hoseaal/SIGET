@@ -40,10 +40,6 @@ export class PrestamoService {
       if (inWarehouseMalEstado) {
         throw new Error(`El bien con ID '${bim_ide}' ya está registrado como en almacén por mal estado (Oficio: ${inWarehouseMalEstado.pre_ndo}).`)
       }
-      // Asegurarse de que el bien no se esté "prestando" a sí mismo (a su propio departamento de origen)
-      if (bienExists.dep_ide === dep_ide) {
-        throw new Error(`El bien con ID '${bim_ide}' ya se encuentra en el departamento de destino (${bienExists.departamento}).`)
-      }
     }
     return await PrestamoModel.create(data)
   }
