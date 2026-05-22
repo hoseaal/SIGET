@@ -11,6 +11,9 @@ export class MantenimientoModel {
                 s.nombre as status_nombre,
                 d.nombre as depto_nombre,
                 e.nro_bien as equipo_nro_bien,
+                te.nombre as equipo_tipo_nombre,
+                ma.nombre as equipo_marca_nombre,
+                mo.nombre as equipo_modelo_nombre,
                 u.username as usuario_reporta,
                 ut.username as tecnico_asignado,
                 t.nombre as tipo_falla_nombre
@@ -18,6 +21,9 @@ export class MantenimientoModel {
             JOIN status s ON m.status = s.id
             JOIN departamentos d ON m.direc_id = d.id
             LEFT JOIN equipos e ON m.equipo_id = e.id
+            LEFT JOIN tipo_equipo te ON e.tipo_equipo = te.id
+            LEFT JOIN marca ma ON e.marca_id = ma.id
+            LEFT JOIN modelo mo ON e.modelo_id = mo.id
             JOIN usuarios u ON m.usuario_id = u.usuario_id
             LEFT JOIN usuarios ut ON m.usuario_tecnico_id = ut.usuario_id
             LEFT JOIN tipo_act t ON m.tipo_falla = t.id
@@ -36,12 +42,18 @@ export class MantenimientoModel {
                 s.nombre as status_nombre,
                 d.nombre as depto_nombre,
                 e.nro_bien as equipo_nro_bien,
+                te.nombre as equipo_tipo_nombre,
+                ma.nombre as equipo_marca_nombre,
+                mo.nombre as equipo_modelo_nombre,
                 u.username as usuario_reporta,
                 t.nombre as tipo_falla_nombre
             FROM mantenimiento m
             JOIN status s ON m.status = s.id
             JOIN departamentos d ON m.direc_id = d.id
             LEFT JOIN equipos e ON m.equipo_id = e.id
+            LEFT JOIN tipo_equipo te ON e.tipo_equipo = te.id
+            LEFT JOIN marca ma ON e.marca_id = ma.id
+            LEFT JOIN modelo mo ON e.modelo_id = mo.id
             JOIN usuarios u ON m.usuario_id = u.usuario_id
             LEFT JOIN tipo_act t ON m.tipo_falla = t.id
             WHERE m.direc_id = ?
@@ -60,6 +72,9 @@ export class MantenimientoModel {
                 s.nombre as status_nombre,
                 d.nombre as depto_nombre,
                 e.nro_bien as equipo_nro_bien,
+                te.nombre as equipo_tipo_nombre,
+                ma.nombre as equipo_marca_nombre,
+                mo.nombre as equipo_modelo_nombre,
                 u.username as usuario_reporta,
                 ut.username as tecnico_asignado,
                 t.nombre as tipo_falla_nombre
@@ -67,6 +82,9 @@ export class MantenimientoModel {
             JOIN status s ON m.status = s.id
             JOIN departamentos d ON m.direc_id = d.id
             LEFT JOIN equipos e ON m.equipo_id = e.id
+            LEFT JOIN tipo_equipo te ON e.tipo_equipo = te.id
+            LEFT JOIN marca ma ON e.marca_id = ma.id
+            LEFT JOIN modelo mo ON e.modelo_id = mo.id
             JOIN usuarios u ON m.usuario_id = u.usuario_id
             LEFT JOIN usuarios ut ON m.usuario_tecnico_id = ut.usuario_id
             LEFT JOIN tipo_act t ON m.tipo_falla = t.id

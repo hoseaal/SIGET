@@ -115,6 +115,11 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             return;
         }
 
+        if (activeTab === 'toner' && !formData.equipo_id) {
+            toast.warning("Debe seleccionar el equipo (impresora) para la solicitud de tóner.");
+            return;
+        }
+
         try {
             setLoading(true);
             const payload = {
@@ -168,7 +173,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
         { value: '', label: '-- No aplica / No listado --' },
         ...getFilteredEquipos().map(e => ({
             value: e.id,
-            label: `${e.nro_bien} -  ${e.tipo_de_equipo || 'S/T'} - Marca: ${e.marca_nombre || 'S/M'} ${e.modelo_nombre ? `(${e.modelo_nombre})` : ''}`
+            label: `${e.nro_bien} - ${e.tipo_de_equipo || 'S/T'} - Marca: ${e.marca_nombre || 'S/M'}` + (e.modelo_nombre ? ' (' + e.modelo_nombre + ')' : '')
         }))
     ];
 
@@ -250,14 +255,23 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                     )}
 
                     <Form.Group className="mb-3">
-                        <Form.Label>Seleccionar Equipo (Opcional)</Form.Label>
+                        <Form.Label>
+                            {activeTab === 'toner' ? (
+                                <>Seleccionar Equipo (Impresora) <span className="text-danger">*</span></>
+                            ) : (
+                                'Seleccionar Equipo (Opcional)'
+                            )}
+                        </Form.Label>
                         <Select
                             options={equipoOptions}
                             placeholder="Escriba Nro. Bien o Tipo para buscar..."
                             isClearable
                             onChange={handleSelectChange}
-                            value={equipoOptions.find(opt => opt.value === formData.equipo_id)}
-                            noOptionsMessage={() => "No se encontraron equipos"}
+                            value={equipoOptions.find(opt => opt.value === formData.equipo_id) || null}
+                            noOptionsMessage={() => activeTab === 'toner' ? 'No hay impresoras registradas en este departamento' : 'No se encontraron equipos'}
+                            styles={activeTab === 'toner' && !formData.equipo_id ? {
+                                control: (base) => ({ ...base, borderColor: '#dc3545' })
+                            } : undefined}
                             theme={(theme) => ({
                                 ...theme,
                                 borderRadius: 5,
@@ -267,6 +281,11 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                                 },
                             })}
                         />
+                        {activeTab === 'toner' && !formData.equipo_id && (
+                            <div className="text-warning" style={{ fontSize: '0.85em', marginTop: '4px' }}>
+                                Seleccione la impresora que requiere tóner.
+                            </div>
+                        )}
                     </Form.Group>
 
                     <Form.Group className="mb-3">

@@ -5,6 +5,7 @@ import helpFetch from "../../utils/helpFetch";
 import { SolicitudMantenimientoModal } from "./components/SolicitudMantenimientoModal";
 import { GestionMantenimientoModal } from "./components/GestionMantenimientoModal";
 import { PaginationComponent } from "../../components/PaginationComponent";
+import { exportInformeTonerPDF } from "../../utils/exportInformeTonerPDF";
 
 export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
     const [mantenimientos, setMantenimientos] = useState([]);
@@ -177,9 +178,16 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                             </Badge>
                                         </td>
                                         <td className="text-center">
-                                            <Button size="sm" variant="primary" onClick={() => { setSelectedMaint(m); setShowGestion(true); }}>
-                                                <i className={`bx ${isTechnicalDashboard ? 'bx-cog' : 'bx-show'}`}></i>
-                                            </Button>
+                                            <div className="d-flex justify-content-center gap-1">
+                                                <Button size="sm" variant="primary" onClick={() => { setSelectedMaint(m); setShowGestion(true); }}>
+                                                    <i className={`bx ${isTechnicalDashboard ? 'bx-cog' : 'bx-show'}`}></i>
+                                                </Button>
+                                                {(m.tipo_falla === 10 || m.tipo_falla === 14) && (
+                                                    <Button size="sm" variant="danger" title="Exportar Informe de Tóner" onClick={() => exportInformeTonerPDF(m, user)}>
+                                                        <i className="bx bxs-file-pdf me-1"></i>
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

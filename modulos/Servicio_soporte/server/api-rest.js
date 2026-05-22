@@ -22,6 +22,7 @@ import actividades from './src/routes/actividades.route.js'
 import status from './src/routes/status.route.js'
 import transferencia from './src/routes/transferencia.route.js'
 import mantenimiento from './src/routes/mantenimiento.route.js'
+import dashboard from './src/routes/dashboard.route.js'
 
 import cookieParser from 'cookie-parser';
 const app = express()
@@ -63,6 +64,7 @@ app.use('/api/actividades', actividades)
 app.use('/api/status', status)
 app.use('/api/transferencia', transferencia)
 app.use('/api/mantenimiento', mantenimiento)
+app.use('/api/dashboard', dashboard)
 
 const PORT = 5002
 app.listen(PORT, () => {

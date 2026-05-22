@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Row, Col, Badge, Spinner } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import helpFetch from '../../../utils/helpFetch';
+import { exportInformeTonerPDF } from '../../../utils/exportInformeTonerPDF';
 
 export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimiento, isTechnical }) => {
     const [loading, setLoading] = useState(false);
@@ -27,8 +28,8 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                 clasificacion_id: mantenimiento.clasificacion_id || null,
                 tipo_falla: mantenimiento.tipo_falla || ''
             });
+            fetchUser();
             if (isTechnical) {
-                fetchUser();
                 fetchTiposAct();
             }
         }
@@ -300,6 +301,11 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                 )}
             </Modal.Body>
             <Modal.Footer>
+                {(mantenimiento.tipo_falla === 10 || mantenimiento.tipo_falla === 14) && (
+                    <Button variant="danger" className="me-auto" onClick={() => exportInformeTonerPDF(mantenimiento, user)}>
+                        <i className="bx bx-file-pdf me-1"></i> Exportar Informe
+                    </Button>
+                )}
                 <Button variant="secondary" onClick={onHide}>Cerrar</Button>
                 {(isTechnical && !isEntregado) && (
                     <Button variant="primary" onClick={handleSave} disabled={loading}>

@@ -4,7 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>SIGET - Inicio</title>
+    <title>SIGET - Dashboard Principal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <meta name="Sistema de gestión para la contraloría del estado táchira" content="">
   <meta name="SIGET" content="">
 
@@ -35,6 +36,7 @@
       <nav id="navmenu" class="navmenu">
         <ul>
           <li><a href="#hero" class="active">Inicio<br></a></li>
+          <li><a href="#dashboard">Dashboard</a></li>
           <li><a href="#about">Detalles</a></li>
           <li><a href="#services">Departamentos</a></li>
         </ul>
@@ -165,6 +167,155 @@
 
     </section><!-- /About Alt Section -->
 
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="dashboard section">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Dashboard General</h2>
+        <p>Resumen en tiempo real del estado de todos los módulos del sistema</p>
+      </div>
+
+      <div class="container">
+        <!-- Fila 1: KPIs Principales -->
+        <div class="row gy-4" id="kpiRow">
+          <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="kpi-card kpi-blue">
+              <div class="kpi-icon"><i class="bi bi-pc-display"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-value" id="totalEquipos">-</span>
+                <p class="kpi-label">Equipos Registrados</p>
+              </div>
+              <small class="kpi-sub">Servicio Soporte</small>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="kpi-card kpi-green">
+              <div class="kpi-icon"><i class="bi bi-activity-log"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-value" id="totalActividades">-</span>
+                <p class="kpi-label">Actividades de Soporte</p>
+              </div>
+              <small class="kpi-sub">Órdenes de Trabajo</small>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="kpi-card kpi-orange">
+              <div class="kpi-icon"><i class="bi bi-box-seam"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-value" id="totalBienes">-</span>
+                <p class="kpi-label">Bienes Muebles</p>
+              </div>
+              <small class="kpi-sub">Dirección de Bienes</small>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+            <div class="kpi-card kpi-purple">
+              <div class="kpi-icon"><i class="bi bi-people"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-value" id="totalEmpleados">-</span>
+                <p class="kpi-label">Empleados</p>
+              </div>
+              <small class="kpi-sub">Recursos Humanos</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 2: KPIs Secundarios -->
+        <div class="row gy-4 mt-2" id="kpiRow2">
+          <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="kpi-card kpi-teal">
+              <div class="kpi-icon"><i class="bi bi-arrow-left-right"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-value" id="totalTransferencias">-</span>
+                <p class="kpi-label">Transferencias</p>
+              </div>
+              <small class="kpi-sub">Movimientos de Equipos</small>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="kpi-card kpi-red">
+              <div class="kpi-icon"><i class="bi bi-tools"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-value" id="totalMantenimientos">-</span>
+                <p class="kpi-label">Mantenimientos</p>
+              </div>
+              <small class="kpi-sub">Historial de Servicio</small>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="kpi-card kpi-info">
+              <div class="kpi-icon"><i class="bi bi-diagram-3"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-value" id="totalDepartamentos">-</span>
+                <p class="kpi-label">Departamentos</p>
+              </div>
+              <small class="kpi-sub">Direcciones Activas</small>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+            <div class="kpi-card kpi-dark">
+              <div class="kpi-icon"><i class="bi bi-hdd-stack"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-value" id="totalComponentes">-</span>
+                <p class="kpi-label">Componentes</p>
+              </div>
+              <small class="kpi-sub">Hardware Registrado</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fila 3: Gráfico y Accesos Rápidos -->
+        <div class="row gy-4 mt-2">
+          <div class="col-lg-7" data-aos="fade-up" data-aos-delay="100">
+            <div class="chart-card">
+              <h5 class="chart-title"><i class="bi bi-bar-chart-fill"></i> Distribución por Tipo de Equipo</h5>
+              <div class="chart-container">
+                <canvas id="equiposChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-5" data-aos="fade-up" data-aos-delay="200">
+            <div class="quick-access-card">
+              <h5 class="chart-title"><i class="bi bi-lightning-fill"></i> Acceso Rápido a Módulos</h5>
+              <div class="module-list">
+                <a href="http://192.168.1.4:8080" class="module-item" target="_blank">
+                  <div class="module-icon" style="background:#e8f4fd;color:#2487ce;"><i class="bi bi-box-seam"></i></div>
+                  <div class="module-info">
+                    <strong>Bienes Muebles</strong>
+                    <small>Gestión de inventario</small>
+                  </div>
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+                <a href="http://localhost:5002" class="module-item" target="_blank">
+                  <div class="module-icon" style="background:#e8f8f0;color:#28a745;"><i class="bi bi-pc-display"></i></div>
+                  <div class="module-info">
+                    <strong>Soporte Técnico</strong>
+                    <small>Equipos y actividades</small>
+                  </div>
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+                <a href="http://localhost:5003" class="module-item" target="_blank">
+                  <div class="module-icon" style="background:#fef3e2;color:#fd7e14;"><i class="bi bi-cpu"></i></div>
+                  <div class="module-info">
+                    <strong>Inventario PC</strong>
+                    <small>Especificaciones técnicas</small>
+                  </div>
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+                <a href="#" class="module-item" target="_blank">
+                  <div class="module-icon" style="background:#f0e6ff;color:#6f42c1;"><i class="bi bi-person-badge"></i></div>
+                  <div class="module-info">
+                    <strong>Recursos Humanos</strong>
+                    <small>Nómina y empleados</small>
+                  </div>
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Services Section -->
     <section id="services" class="services section light-background">
 
@@ -250,6 +401,115 @@
 
   <!-- Main JS File -->
   <script src="assets/js/main.js"></script>
+  <!-- Dashboard JS -->
+  <script>
+    const API_SOPORTE = 'http://localhost:5002/api';
+    const API_TECH = 'http://localhost:5003/api';
+    const API_BIENES = 'http://localhost:5001/api';
+
+    async function fetchJSON(url) {
+      try {
+        const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch { return null; }
+    }
+
+    function animateValue(el, target) {
+      if (!el) return;
+      const start = 0, duration = 800;
+      const startTime = performance.now();
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        el.textContent = Math.floor(progress * (target - start) + start).toLocaleString('es-VE');
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    function setValue(id, val) {
+      const el = document.getElementById(id);
+      if (el && val !== null && val !== undefined) {
+        animateValue(el, Number(val));
+      } else if (el) {
+        el.textContent = '0';
+      }
+    }
+
+    async function loadDashboard() {
+      // Servicio Soporte (puerto 5002)
+      const [equipos, actividades, mantenimientos, transferencias, deptos, componentes, tipoEq, usuarios] = await Promise.all([
+        fetchJSON(`${API_SOPORTE}/equipo`),
+        fetchJSON(`${API_SOPORTE}/actividades`),
+        fetchJSON(`${API_SOPORTE}/mantenimiento`),
+        fetchJSON(`${API_SOPORTE}/transferencia`),
+        fetchJSON(`${API_SOPORTE}/departamento`),
+        fetchJSON(`${API_SOPORTE}/tipo_componente`),
+        fetchJSON(`${API_SOPORTE}/tipo_equipo`),
+        fetchJSON(`${API_SOPORTE}/user`),
+      ]);
+
+      setValue('totalEquipos', Array.isArray(equipos) ? equipos.length : 0);
+      setValue('totalActividades', Array.isArray(actividades) ? actividades.length : 0);
+      setValue('totalMantenimientos', Array.isArray(mantenimientos) ? mantenimientos.length : 0);
+      setValue('totalTransferencias', Array.isArray(transferencias) ? transferencias.length : 0);
+      setValue('totalDepartamentos', Array.isArray(deptos) ? deptos.length : 0);
+      setValue('totalComponentes', Array.isArray(componentes) ? componentes.length : 0);
+
+      // Bienes Muebles (puerto 5001)
+      const bienesCount = await fetchJSON(`${API_BIENES}/bienes/count?inc=1`);
+      setValue('totalBienes', bienesCount?.meta?.total || 0);
+
+      // RRHH - empleados (intentar desde Bienes API)
+      const empleados = await fetchJSON(`${API_BIENES}/empleados`);
+      setValue('totalEmpleados', Array.isArray(empleados) ? empleados.length : (empleados?.meta?.total || 0));
+
+      // Chart: Equipos por tipo
+      if (Array.isArray(tipoEq) && tipoEq.length > 0 && Array.isArray(equipos)) {
+        const counts = tipoEq.map(t => {
+          const count = equipos.filter(e => Number(e.tipo_equipo) === t.id).length;
+          return { label: t.nombre, count };
+        }).filter(c => c.count > 0);
+        if (counts.length > 0) renderChart(counts);
+      } else {
+        document.querySelector('.chart-container').innerHTML =
+          '<p class="text-center text-muted p-4">Conecta los servidores para ver estadísticas</p>';
+      }
+    }
+
+    function renderChart(data) {
+      const ctx = document.getElementById('equiposChart').getContext('2d');
+      const colors = ['#2487ce','#28a745','#fd7e14','#6f42c1','#20c997','#dc3545','#17a2b8'];
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: data.map(d => d.label),
+          datasets: [{
+            data: data.map(d => d.count),
+            backgroundColor: colors.slice(0, data.length),
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, font: { size: 12 } } }
+          },
+          cutout: '65%'
+        }
+      });
+    }
+
+    // Cargar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadDashboard);
+    } else {
+      loadDashboard();
+    }
+  </script>
 </body>
 
 </html>
