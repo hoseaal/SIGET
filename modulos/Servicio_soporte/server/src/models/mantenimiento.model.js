@@ -10,6 +10,7 @@ export class MantenimientoModel {
                 m.*, 
                 s.nombre as status_nombre,
                 d.nombre as depto_nombre,
+                dd.nombre as depto_destino_nombre,
                 e.nro_bien as equipo_nro_bien,
                 te.nombre as equipo_tipo_nombre,
                 ma.nombre as equipo_marca_nombre,
@@ -20,6 +21,7 @@ export class MantenimientoModel {
             FROM mantenimiento m
             JOIN status s ON m.status = s.id
             JOIN departamentos d ON m.direc_id = d.id
+            LEFT JOIN departamentos dd ON m.depto_destino_id = dd.id
             LEFT JOIN equipos e ON m.equipo_id = e.id
             LEFT JOIN tipo_equipo te ON e.tipo_equipo = te.id
             LEFT JOIN marca ma ON e.marca_id = ma.id
@@ -41,6 +43,7 @@ export class MantenimientoModel {
                 m.*, 
                 s.nombre as status_nombre,
                 d.nombre as depto_nombre,
+                dd.nombre as depto_destino_nombre,
                 e.nro_bien as equipo_nro_bien,
                 te.nombre as equipo_tipo_nombre,
                 ma.nombre as equipo_marca_nombre,
@@ -50,6 +53,7 @@ export class MantenimientoModel {
             FROM mantenimiento m
             JOIN status s ON m.status = s.id
             JOIN departamentos d ON m.direc_id = d.id
+            LEFT JOIN departamentos dd ON m.depto_destino_id = dd.id
             LEFT JOIN equipos e ON m.equipo_id = e.id
             LEFT JOIN tipo_equipo te ON e.tipo_equipo = te.id
             LEFT JOIN marca ma ON e.marca_id = ma.id
@@ -71,6 +75,7 @@ export class MantenimientoModel {
                 m.*, 
                 s.nombre as status_nombre,
                 d.nombre as depto_nombre,
+                dd.nombre as depto_destino_nombre,
                 e.nro_bien as equipo_nro_bien,
                 te.nombre as equipo_tipo_nombre,
                 ma.nombre as equipo_marca_nombre,
@@ -81,6 +86,7 @@ export class MantenimientoModel {
             FROM mantenimiento m
             JOIN status s ON m.status = s.id
             JOIN departamentos d ON m.direc_id = d.id
+            LEFT JOIN departamentos dd ON m.depto_destino_id = dd.id
             LEFT JOIN equipos e ON m.equipo_id = e.id
             LEFT JOIN tipo_equipo te ON e.tipo_equipo = te.id
             LEFT JOIN marca ma ON e.marca_id = ma.id
@@ -104,6 +110,20 @@ export class MantenimientoModel {
     }
 
     /**
+     * Verifica si un equipo tiene una asignación de toner previa
+     */
+    static async checkTonerPrevio(equipo_id, current_mantenimiento_id) {
+        const [rows] = await pool.query(`
+            SELECT COUNT(*) as total FROM mantenimiento 
+            WHERE equipo_id = ? 
+            AND tipo_falla IN (10, 14) 
+            AND id < ? 
+            AND status = 7
+        `, [equipo_id, current_mantenimiento_id || 999999999]);
+        return rows[0].total > 0;
+    }
+
+    /**
      * Obtiene el último número de caso para mantenimientos
      */
     static async getLastCaseNumber(prefix) {
@@ -119,12 +139,12 @@ export class MantenimientoModel {
      * Crea un nuevo registro de mantenimiento
      */
     static async create(data) {
-        const { nro_caso, usuario_id, direc_id, tipo_falla, equipo_id, asunto, descripcion } = data
+        const { nro_caso, usuario_id, direc_id, depto_destino_id, tipo_falla, equipo_id, asunto, descripcion } = data
         const [result] = await pool.query(`
             INSERT INTO mantenimiento 
-            (nro_caso, usuario_id, direc_id, tipo_falla, equipo_id, asunto, descripcion, prioridad, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'Media', 2)
-        `, [nro_caso, usuario_id, direc_id, tipo_falla, equipo_id || null, asunto, descripcion])
+            (nro_caso, usuario_id, direc_id, depto_destino_id, tipo_falla, equipo_id, asunto, descripcion, prioridad, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Media', 2)
+        `, [nro_caso, usuario_id, direc_id, depto_destino_id || null, tipo_falla, equipo_id || null, asunto, descripcion])
         
         return { id: result.insertId, ...data, prioridad: 'Media' }
     }

@@ -20,6 +20,18 @@ export class MantenimientoController {
         }
     }
 
+    static async checkToner(req, res) {
+        try {
+            const { equipoId } = req.params;
+            const { maintId } = req.query; // opcional
+            const { MantenimientoModel } = await import('../models/mantenimiento.model.js');
+            const tieneTonerPrevio = await MantenimientoModel.checkTonerPrevio(equipoId, maintId);
+            res.json({ tieneTonerPrevio });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
     static async create(req, res) {
         try {
             const result = await MantenimientoService.create(req.body)

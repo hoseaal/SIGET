@@ -15,6 +15,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     const [formData, setFormData] = useState({
         nro_caso: '',
         direc_id: '',
+        depto_destino_id: '',
         equipo_id: '',
         tipo_falla: '',
         asunto: '',
@@ -27,6 +28,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             setFormData({
                 nro_caso: '',
                 direc_id: user.direc_id || '',
+                depto_destino_id: '',
                 equipo_id: '',
                 tipo_falla: '',
                 asunto: '',
@@ -61,21 +63,19 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     // Sincronizar tipo_falla según el tab activo
     useEffect(() => {
         if (tiposFalla.length > 0) {
-            let targetType;
-            if (activeTab === 'general') {
-                targetType = tiposFalla.find(t => t.nombre.toUpperCase() === 'OTRO');
-            } else {
-                targetType = tiposFalla.find(t =>
+            if (activeTab === 'toner') {
+                const targetType = tiposFalla.find(t =>
                     t.nombre.toLowerCase().includes('informe asignacion de toner') ||
                     t.nombre.toLowerCase().includes('toner')
                 );
-            }
-
-            if (targetType) {
-                setFormData(prev => ({ ...prev, tipo_falla: targetType.id }));
+                if (targetType) {
+                    setFormData(prev => ({ ...prev, tipo_falla: targetType.id }));
+                }
+            } else {
+                setFormData(prev => ({ ...prev, tipo_falla: '' }));
             }
         }
-    }, [activeTab, tiposFalla]);
+    }, [activeTab, tiposFalla, formData.depto_destino_id]);
 
     const fetchEquipos = async (deptoId) => {
         try {
@@ -105,8 +105,13 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.asunto || !formData.descripcion || !formData.direc_id) {
+        if (!formData.asunto || !formData.descripcion || !formData.direc_id || !formData.depto_destino_id) {
             toast.warning("Por favor complete los campos obligatorios.");
+            return;
+        }
+
+        if (activeTab === 'general' && !formData.tipo_falla) {
+            toast.warning("Por favor seleccione un Tipo de Falla / Requerimiento.");
             return;
         }
 
@@ -132,6 +137,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             setFormData({
                 nro_caso: '',
                 direc_id: user?.direc_id || '',
+                depto_destino_id: '',
                 equipo_id: '',
                 tipo_falla: '',
                 asunto: '',
@@ -167,6 +173,14 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             filtered = filtered.filter(e => e.tipo_de_equipo?.toLowerCase().includes('impresora'));
         }
         return filtered;
+    };
+
+    const getFilteredTiposFalla = () => {
+        if (!formData.depto_destino_id) return [];
+        return tiposFalla.filter(t => 
+            String(t.depto_id) === String(formData.depto_destino_id) || 
+            t.nombre.toUpperCase() === 'OTRO'
+        );
     };
 
     const equipoOptions = [
@@ -206,7 +220,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                                     <i className={`bx ${activeTab === 'toner' ? 'bx-droplet text-primary' : 'bx-cog text-secondary'} fs-4 me-2`}></i>
                                     <div>
                                         <span className="fw-bold">
-                                            {activeTab === 'toner' ? 'REPORTE DE TÓNER / CONSUMIBLE' : 'MANTENIMIENTO TÉCNICO GENERAL'}
+                                            {activeTab === 'toner' ? 'REPORTE DE TÓNER / CONSUMIBLE' : 'MANTENIMIENTO GENERAL'}
                                         </span>
                                     </div>
                                 </div>
@@ -240,6 +254,42 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                             )}
                         </Col>
                     </Row>
+
+                    <Row className="mb-3">
+                        <Col md={12}>
+                            <Form.Group>
+                                <Form.Label>Departamento de Destino <span className="text-danger">*</span></Form.Label>
+                                <Form.Select
+                                    name="depto_destino_id"
+                                    value={formData.depto_destino_id}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">-- Seleccionar --</option>
+                                    {departamentos.map(d => (
+                                        <option key={d.id} value={d.id}>{d.nombre}</option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                    </Row>
+
+                    {activeTab === 'general' && formData.depto_destino_id && (
+                        <Form.Group className="mb-3">
+                            <Form.Label>Tipo de Requerimiento / Falla <span className="text-danger">*</span></Form.Label>
+                            <Form.Select
+                                name="tipo_falla"
+                                value={formData.tipo_falla}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">-- Seleccionar --</option>
+                                {getFilteredTiposFalla().map(t => (
+                                    <option key={t.id} value={t.id}>{t.nombre}</option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                    )}
 
                     {activeTab === 'toner' && (
                         <Form.Group className="mb-3">

@@ -9,6 +9,7 @@ router.use(authenticate)
 
 router.get('/', authenticate, MantenimientoController.getAll)
 router.get('/depto/:id', authenticate, MantenimientoController.getByDepto)
+router.get('/checkToner/:equipoId', authenticate, MantenimientoController.checkToner)
 router.post('/', authenticate, MantenimientoController.create)
 router.put('/:id/status', authenticate, MantenimientoController.updateStatus)
 

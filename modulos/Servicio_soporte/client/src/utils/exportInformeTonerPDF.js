@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import helpFetch from "./helpFetch";
 
 /**
  * Formatea un texto en Title Case con excepciones para preposiciones y palabras clave.
@@ -21,7 +22,7 @@ const formatTitleCase = (text) => {
  * @param {Object} mantenimiento - Datos del mantenimiento.
  * @param {Object} usuarioTecnico - Datos del técnico logueado.
  */
-export const exportInformeTonerPDF = (mantenimiento, usuarioTecnico) => {
+export const exportInformeTonerPDF = async (mantenimiento, usuarioTecnico) => {
     const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -91,8 +92,19 @@ export const exportInformeTonerPDF = (mantenimiento, usuarioTecnico) => {
     const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
     const reqMonth = meses[requestDate.getMonth()];
 
-    // Redacción justificada
-    const p1 = `Tengo a bien dirigirme a usted en la oportunidad de saludarle y notificarle que por oficio Nro. ${mantenimiento.nro_caso}, del día ${reqDay} de ${reqMonth} del año en curso se solicitó inspección técnica de la ${equipoFull}, con BM: ${nroBien} que se encuentra en ${depto}, la cual se encuentra en perfecto estado de funcionamiento, pero requiere cambio de consumible. Cabe destacar que dicha impresora no tiene asignación anterior de toner.`;
+    // Consultar si tiene tóner previo
+    let tieneTonerPrevio = false;
+    if (mantenimiento.equipo_id) {
+        try {
+            const response = await helpFetch.GET(`/mantenimiento/checkToner/${mantenimiento.equipo_id}?maintId=${mantenimiento.id}`);
+            tieneTonerPrevio = response.tieneTonerPrevio;
+        } catch (error) {
+            console.error("Error comprobando tóner previo:", error);
+        }
+    }
+
+    const textoAdicional = tieneTonerPrevio ? "" : " Cabe destacar que dicha impresora no tiene asignación anterior de toner.";
+    const p1 = `Tengo a bien dirigirme a usted en la oportunidad de saludarle y notificarle que por oficio Nro. ${mantenimiento.nro_caso}, del día ${reqDay} de ${reqMonth} del año en curso se solicitó inspección técnica de la ${equipoFull}, con BM: ${nroBien} que se encuentra en ${depto}, la cual se encuentra en perfecto estado de funcionamiento, pero requiere cambio de consumible.${textoAdicional}`;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
