@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup'; // Importar InputGroup
-import Alert from "../../components/atoms/Alert";
+import Alert from "../../../components/atoms/Alert";
 
 function ModalContraseña({ show, handleClose, rowData, idColumn, onSuccess }) {
     // Solo necesitamos las contraseñas, no todos los datos del formulario inicial
@@ -103,39 +103,39 @@ function ModalContraseña({ show, handleClose, rowData, idColumn, onSuccess }) {
             <Modal.Body>
                 <Form onSubmit={handleSubmit}>
                     <Form.Group controlId="password" className="mb-3">
-                        <Form.Label column sm={4}>Nueva Contraseña</Form.Label> 
-                            <InputGroup>
-                                <InputGroup.Text>
-                                    <i className="bx bx-key"></i> 
-                                </InputGroup.Text>
-                                <Form.Control
-                                    type="password"
-                                    autoComplete="new-password" 
-                                    value={passwordData.password}
-                                    onChange={handleChange}
-                                    name="password"
-                                    placeholder=""
-                                    required 
-                                />
-                            </InputGroup>
+                        <Form.Label column sm={4}>Nueva Contraseña</Form.Label>
+                        <InputGroup>
+                            <InputGroup.Text>
+                                <i className="bx bx-key"></i>
+                            </InputGroup.Text>
+                            <Form.Control
+                                type="password"
+                                autoComplete="new-password"
+                                value={passwordData.password}
+                                onChange={handleChange}
+                                name="password"
+                                placeholder=""
+                                required
+                            />
+                        </InputGroup>
                     </Form.Group>
 
                     <Form.Group controlId="confirmPassword" className="mb-3">
-                        <Form.Label column sm={4}>Confirmar Contraseña</Form.Label> 
-                            <InputGroup>
-                                <InputGroup.Text>
-                                    <i className="bx bx-key"></i> 
-                                </InputGroup.Text>
-                                <Form.Control
-                                    type="password"
-                                    autoComplete="new-password"
-                                    value={passwordData.confirmPassword}
-                                    onChange={handleChange}
-                                    name="confirmPassword"
-                                    placeholder=""
-                                    required
-                                />
-                            </InputGroup>
+                        <Form.Label column sm={4}>Confirmar Contraseña</Form.Label>
+                        <InputGroup>
+                            <InputGroup.Text>
+                                <i className="bx bx-key"></i>
+                            </InputGroup.Text>
+                            <Form.Control
+                                type="password"
+                                autoComplete="new-password"
+                                value={passwordData.confirmPassword}
+                                onChange={handleChange}
+                                name="confirmPassword"
+                                placeholder=""
+                                required
+                            />
+                        </InputGroup>
                     </Form.Group>
                 </Form>
             </Modal.Body>

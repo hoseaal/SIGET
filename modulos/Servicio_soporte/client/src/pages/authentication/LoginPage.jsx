@@ -1,43 +1,42 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import './page-auth.css'
 import { useNavigate } from "react-router-dom";
 import { AuthWrapper } from "./AuthWrapper";
 import Alert from "../../components/atoms/Alert";
 
+const loginSchema = z.object({
+    ci: z.string().min(1, "Ingrese su nombre de usuario"),
+    password: z.string().min(1, "Ingrese su contraseña")
+});
+
 export const LoginPage = () => {
-    const [formEnviado, setFormEnviado] = useState(false); // Estado para alternar vista
-    const [mensajeMostrado, setMensajeMostrado] = useState(false); 
-    const [errorMessage, setErrorMessage] = useState(false); 
+    const [formEnviado, setFormEnviado] = useState(false);
+    const [mensajeMostrado, setMensajeMostrado] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(false);
 
     const navigate = useNavigate();
-    
-    
-    
-    const [formData, setFormData] = useState({
-        ci: '',
-        password: ''
+
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        resolver: zodResolver(loginSchema),
+        defaultValues: {
+            ci: '',
+            password: ''
+        }
     });
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: type === 'checkbox' ? checked : value,
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            credentials: 'include', // 🔑 Para que el backend mande la cookie
-            body: JSON.stringify(formData),
+            credentials: 'include',
+            body: JSON.stringify(data),
             });
 
             if (!res.ok) {
@@ -48,7 +47,6 @@ export const LoginPage = () => {
             const responseData = await res.json();
 
             if (responseData.success) {
-            console.log(responseData.user);
             setFormEnviado(true);
             setMensajeMostrado(true);
             setTimeout(() => {
@@ -60,30 +58,27 @@ export const LoginPage = () => {
             setMensajeMostrado(true);
             setErrorMessage(error.message);
 
-            setFormData(prev => ({ ...prev, password: '' }));
-
             setTimeout(() => {
             setMensajeMostrado(false);
             }, 3000);
         }
-        };
+    };
     return (
         <AuthWrapper>
             <h4 className="mb-2">Bienvenido al modulo de Gestion de Recursos Humanos! 👋</h4>
             <p className="mb-4">Porfavor ingresa tus datos para acceder. </p>
 
-            <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>
+            <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit(onSubmit)}>
                 <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Nombre de usuario</label>
+                    <label htmlFor="ci" className="form-label">Nombre de usuario</label>
                     <input
                         type="text"
-                        className="form-control"
+                        className={`form-control ${errors.ci ? 'is-invalid' : ''}`}
                         id="ci"
-                        value={formData.ci}
-                        onChange={handleChange}
-                        name="ci"
+                        {...register("ci")}
                         placeholder=""
                         autoFocus />
+                    {errors.ci && <small className="text-danger">{errors.ci.message}</small>}
                 </div>
                 <div className="mb-3 form-password-toggle">
                     <div className="d-flex justify-content-between">
@@ -94,19 +89,18 @@ export const LoginPage = () => {
                             type="password"
                             autoComplete="true"
                             id="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="form-control"
-                            name="password"
+                            className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                            {...register("password")}
                             placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                             aria-describedby="password" />
                         <span className="input-group-text cursor-pointer"></span>
                     </div>
+                    {errors.password && <small className="text-danger">{errors.password.message}</small>}
                 </div>
                 <div className="mb-3">
                     <button aria-label='Click me' className="btn btn-primary d-grid w-100" type="submit">Ingresar</button>
                 </div>
-                {mensajeMostrado && 
+                {mensajeMostrado &&
                 <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
                 {formEnviado ? 'Iniciando sesion...' : `${errorMessage}`}
             </Alert>

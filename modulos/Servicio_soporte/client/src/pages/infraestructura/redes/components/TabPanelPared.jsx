@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner, Badge, Row, Col } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import helpFetch from "../../../../utils/helpFetch";
+
+const schema = z.object({
+    pisoId: z.string().min(1, "Seleccione un piso"),
+    selectedPanelSoport: z.string().min(1, "Seleccione un rack"),
+    ppSoporteId: z.string().min(1, "Seleccione un puerto")
+});
 
 export const TabPanelPared = () => {
     const [dataList, setDataList] = useState([]);
@@ -9,17 +18,18 @@ export const TabPanelPared = () => {
     const [panelesSoport, setPanelesSoport] = useState([]);
     const [puertosPanel, setPuertosPanel] = useState([]);
     const [loading, setLoading] = useState(true);
-    
-    // Modal states
+
     const [modalVisible, setModalVisible] = useState(false);
     const [modalAction, setModalAction] = useState('crear');
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    
-    // Form state
     const [currentId, setCurrentId] = useState(null);
-    const [pisoId, setPisoId] = useState('');
-    const [selectedPanelSoport, setSelectedPanelSoport] = useState('');
-    const [ppSoporteId, setPpSoporteId] = useState('');
+
+    const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { pisoId: "", selectedPanelSoport: "", ppSoporteId: "" }
+    });
+
+    const selectedPanelSoport = watch("selectedPanelSoport");
 
     const fetchDataList = async () => {
         try {
@@ -30,7 +40,7 @@ export const TabPanelPared = () => {
                 helpFetch.GET("/puertos_panel_s"),
                 helpFetch.GET("/panel_soport")
             ]);
-            
+
             setDataList(panelesPared);
             setPisos(pisosData);
             setPuertosPanel(puertosPanelData);
@@ -48,28 +58,28 @@ export const TabPanelPared = () => {
     }, []);
 
     const handleShowCreate = () => {
-        setPisoId('');
-        setSelectedPanelSoport('');
-        setPpSoporteId('');
+        reset({ pisoId: "", selectedPanelSoport: "", ppSoporteId: "" });
         setModalAction('crear');
         setModalVisible(true);
     };
 
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
-        setPisoId(item.piso || '');
-        setPpSoporteId(item.pp_soporte_id || '');
-        
-        // Resolver el rack padre a partir del puerto seleccionado
+
+        let panelSoportVal = "";
         if (item.pp_soporte_id) {
             const puertoEncontrado = puertosPanel.find(p => String(p.id) === String(item.pp_soporte_id));
             if (puertoEncontrado) {
-                setSelectedPanelSoport(puertoEncontrado.panel_soport_id);
+                panelSoportVal = String(puertoEncontrado.panel_soport_id);
             }
-        } else {
-            setSelectedPanelSoport('');
         }
-        
+
+        reset({
+            pisoId: String(item.piso || ""),
+            selectedPanelSoport: panelSoportVal,
+            ppSoporteId: String(item.pp_soporte_id || "")
+        });
+
         setModalAction('editar');
         setModalVisible(true);
     };
@@ -79,18 +89,17 @@ export const TabPanelPared = () => {
         setDeleteModalVisible(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             const isEdit = modalAction === 'editar';
             const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `/panel_pared/${currentId}` : `/panel_pared`;
 
-            await helpFetch[method](url, { 
-                piso: pisoId, 
-                pp_soporte_id: ppSoporteId 
+            await helpFetch[method](url, {
+                piso: data.pisoId,
+                pp_soporte_id: data.ppSoporteId
             });
-            
+
             toast.success(`Panel de pared ${isEdit ? 'actualizado' : 'registrado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
@@ -148,7 +157,7 @@ export const TabPanelPared = () => {
                                 <td><strong>#{item.id}</strong></td>
                                 <td>{item.nombre_piso || 'Desconocido'}</td>
                                 <td>
-                                    {item.puerto_servidor 
+                                    {item.puerto_servidor
                                         ? `Puerto ${item.puerto_servidor} (Patch Panel)`
                                         : <span className="text-muted">Sin enlace</span>}
                                 </td>
@@ -168,19 +177,17 @@ export const TabPanelPared = () => {
                 </tbody>
             </Table>
 
-            {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>{modalAction === 'crear' ? `Crear Panel de Pared` : `Editar Panel`}</Modal.Title>
                 </Modal.Header>
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Piso de Ubicación</Form.Label>
-                            <Form.Select 
-                                value={pisoId}
-                                onChange={(e) => setPisoId(e.target.value)}
-                                required
+                            <Form.Select
+                                {...register("pisoId")}
+                                isInvalid={!!errors.pisoId}
                             >
                                 <option value="">Seleccione un piso...</option>
                                 {pisos.map(p => (
@@ -189,19 +196,20 @@ export const TabPanelPared = () => {
                                     </option>
                                 ))}
                             </Form.Select>
+                            <Form.Control.Feedback type="invalid">{errors.pisoId?.message}</Form.Control.Feedback>
                         </Form.Group>
-                        
+
                         <Form.Group className="mb-3">
                             <Form.Label className="fw-bold text-primary">Conector de Enlace (Uplink)</Form.Label>
                             <Row className="g-2">
                                 <Col md={6}>
-                                    <Form.Select 
-                                        value={selectedPanelSoport}
+                                    <Form.Select
+                                        {...register("selectedPanelSoport")}
+                                        isInvalid={!!errors.selectedPanelSoport}
                                         onChange={(e) => {
-                                            setSelectedPanelSoport(e.target.value);
-                                            setPpSoporteId(''); // Reset puerto al cambiar rack
+                                            setValue("selectedPanelSoport", e.target.value);
+                                            setValue("ppSoporteId", "");
                                         }}
-                                        required
                                     >
                                         <option value="">1. Seleccionar Rack...</option>
                                         {panelesSoport.map(ps => (
@@ -210,13 +218,13 @@ export const TabPanelPared = () => {
                                             </option>
                                         ))}
                                     </Form.Select>
+                                    <Form.Control.Feedback type="invalid">{errors.selectedPanelSoport?.message}</Form.Control.Feedback>
                                 </Col>
                                 <Col md={6}>
-                                    <Form.Select 
-                                        value={ppSoporteId}
-                                        onChange={(e) => setPpSoporteId(e.target.value)}
+                                    <Form.Select
+                                        {...register("ppSoporteId")}
+                                        isInvalid={!!errors.ppSoporteId}
                                         disabled={!selectedPanelSoport}
-                                        required
                                     >
                                         <option value="">2. Seleccionar Puerto...</option>
                                         {puertosPanel
@@ -227,6 +235,7 @@ export const TabPanelPared = () => {
                                                 </option>
                                             ))}
                                     </Form.Select>
+                                    <Form.Control.Feedback type="invalid">{errors.ppSoporteId?.message}</Form.Control.Feedback>
                                 </Col>
                             </Row>
                             <Form.Text className="text-muted">Especifique a qué puerto del site central está conectada esta roseta.</Form.Text>
@@ -244,13 +253,12 @@ export const TabPanelPared = () => {
                 </Form>
             </Modal>
 
-            {/* Modal Eliminar */}
             <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas destruir este Panel de Pared? 
+                    ¿Estás seguro de que deseas destruir este Panel de Pared?
                     Todos los puertos finales (usuarios) en esta pared quedarán huérfanos.
                 </Modal.Body>
                 <Modal.Footer>

@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import helpFetch from "../../../../utils/helpFetch";
+
+const schema = z.object({
+    nroBien: z.string().min(1, "Ingrese el número de bien").max(50, "Máximo 50 caracteres"),
+    descripcion: z.string().min(1, "Ingrese una descripción").max(255, "Máximo 255 caracteres")
+});
 
 export const TabPanelSoport = () => {
     const [dataList, setDataList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalAction, setModalAction] = useState('crear');
-    
-    // Form state
     const [currentId, setCurrentId] = useState(null);
-    const [nroBien, setNroBien] = useState('');
-    const [descripcion, setDescripcion] = useState('');
-
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    
+    const [deleteItemLabel, setDeleteItemLabel] = useState('');
+
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { nroBien: "", descripcion: "" }
+    });
+
     const fetchDataList = async () => {
         try {
             setLoading(true);
@@ -34,35 +43,32 @@ export const TabPanelSoport = () => {
     }, []);
 
     const handleShowCreate = () => {
-        setNroBien('');
-        setDescripcion('');
+        reset({ nroBien: "", descripcion: "" });
         setModalAction('crear');
         setModalVisible(true);
     };
 
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
-        setNroBien(item.nro_bien || '');
-        setDescripcion(item.descripcion || '');
+        reset({ nroBien: item.nro_bien || "", descripcion: item.descripcion || "" });
         setModalAction('editar');
         setModalVisible(true);
     };
 
     const handleShowDelete = (item) => {
         setCurrentId(item.id);
-        setNroBien(item.nro_bien);
+        setDeleteItemLabel(item.nro_bien);
         setDeleteModalVisible(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             const isEdit = modalAction === 'editar';
             const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `/panel_soport/${currentId}` : `/panel_soport`;
 
-            await helpFetch[method](url, { nro_bien: nroBien, descripcion });
-            
+            await helpFetch[method](url, { nro_bien: data.nroBien, descripcion: data.descripcion });
+
             toast.success(`Panel de Soporte ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
@@ -136,34 +142,33 @@ export const TabPanelSoport = () => {
                 </tbody>
             </Table>
 
-            {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>{modalAction === 'crear' ? `Añadir Panel de Soporte` : `Editar Panel`}</Modal.Title>
                 </Modal.Header>
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Nro. de Bien (BN)</Form.Label>
-                            <Form.Control 
+                            <Form.Control
                                 type="text"
                                 placeholder="Ej. BN-12345"
-                                value={nroBien}
-                                onChange={(e) => setNroBien(e.target.value)}
-                                required
+                                {...register("nroBien")}
+                                isInvalid={!!errors.nroBien}
                                 autoFocus
                             />
+                            <Form.Control.Feedback type="invalid">{errors.nroBien?.message}</Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Descripción del Panel</Form.Label>
-                            <Form.Control 
+                            <Form.Control
                                 as="textarea"
                                 rows={2}
                                 placeholder="Ej. Patch para el ala oeste del piso 2"
-                                value={descripcion}
-                                onChange={(e) => setDescripcion(e.target.value)}
-                                required
+                                {...register("descripcion")}
+                                isInvalid={!!errors.descripcion}
                             />
+                            <Form.Control.Feedback type="invalid">{errors.descripcion?.message}</Form.Control.Feedback>
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
@@ -177,13 +182,12 @@ export const TabPanelSoport = () => {
                 </Form>
             </Modal>
 
-            {/* Modal Eliminar */}
             <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar el panel con bien <strong>"{nroBien}"</strong>? 
+                    ¿Estás seguro de que deseas eliminar el panel con bien <strong>"{deleteItemLabel}"</strong>?
                     <br/><br/>
                     <small className="text-danger">Asegúrese de que no tenga puertos amarrados a él, o la eliminación fallará.</small>
                 </Modal.Body>

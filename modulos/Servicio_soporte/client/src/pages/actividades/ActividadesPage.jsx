@@ -25,24 +25,6 @@ const getFriday = (monday) => {
     return friday;
 };
 
-const generateWeeksList = (numWeeks = 6) => {
-    const weeks = [];
-    const currentMonday = getMonday(new Date());
-
-    for (let i = 0; i < numWeeks; i++) {
-        const monday = new Date(currentMonday);
-        monday.setDate(currentMonday.getDate() - (i * 7));
-        const friday = getFriday(monday);
-
-        weeks.push({
-            start: monday,
-            end: friday,
-            label: i === 0 ? "Semana Actual" : `Sem. ${monday.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })} - ${friday.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}`
-        });
-    }
-    return weeks;
-};
-
 export const ActividadesPage = () => {
     const [actividades, setActividades] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -53,8 +35,31 @@ export const ActividadesPage = () => {
     const [showRegistro, setShowRegistro] = useState(false);
 
     // Estado para navegación semanal
-    const [weeks] = useState(generateWeeksList());
-    const [activeWeekIndex, setActiveWeekIndex] = useState(0);
+    const [selectedWeekStart, setSelectedWeekStart] = useState(() => getMonday(new Date()));
+    const selectedWeekEnd = getFriday(selectedWeekStart);
+
+    const goToPreviousWeek = () => {
+        setSelectedWeekStart(prev => {
+            const newDate = new Date(prev);
+            newDate.setDate(newDate.getDate() - 7);
+            return newDate;
+        });
+    };
+
+    const goToNextWeek = () => {
+        setSelectedWeekStart(prev => {
+            const newDate = new Date(prev);
+            newDate.setDate(newDate.getDate() + 7);
+            const currentMonday = getMonday(new Date());
+            return newDate <= currentMonday ? newDate : prev;
+        });
+    };
+
+    const jumpToWeek = (dateStr) => {
+        if (dateStr) {
+            setSelectedWeekStart(getMonday(new Date(dateStr)));
+        }
+    };
 
     // Estado para reporte mensual
     const [viewMode, setViewMode] = useState('semanal'); // 'semanal' o 'mensual'
@@ -123,7 +128,7 @@ export const ActividadesPage = () => {
     // Resetear a la página 1 cuando cambian los filtros o la semana
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, filterDepto, activeWeekIndex, viewMode, selectedMonth, selectedYear]);
+    }, [searchTerm, filterDepto, selectedWeekStart, viewMode, selectedMonth, selectedYear]);
 
     const handleExport = () => {
         if (filteredData.length === 0) {
@@ -159,8 +164,7 @@ export const ActividadesPage = () => {
 
         // Filtro por rango de fecha (Semana seleccionada - Solo modo semanal)
         const activityDate = new Date(a.fecha);
-        const currentWeek = weeks[activeWeekIndex];
-        const matchesWeek = activityDate >= currentWeek.start && activityDate <= currentWeek.end;
+        const matchesWeek = activityDate >= selectedWeekStart && activityDate <= selectedWeekEnd;
 
         return matchesSearch && matchesDepto && matchesWeek;
     });
@@ -296,16 +300,36 @@ export const ActividadesPage = () => {
                                 </Col>
                             </Row>
                             {/* Navegación Semanal */}
-                            <Nav variant="tabs" activeKey={activeWeekIndex} onSelect={(k) => setActiveWeekIndex(parseInt(k))} className="mb-0 ">
-                                {weeks.map((week, index) => (
-                                    <Nav.Item key={index}>
-                                        <Nav.Link eventKey={index} className="small px-3">
-                                            <i className={`bx bx-calendar${index === 0 ? '-check' : ''} me-1`}></i>
-                                            {week.label}
-                                        </Nav.Link>
-                                    </Nav.Item>
-                                ))}
-                            </Nav>
+                            <Row className="mb-3 align-items-center">
+                                <Col md={7}>
+                                    <div className="d-flex gap-2 align-items-center">
+                                        <Button variant="primary" size="md" onClick={goToNextWeek}
+                                            disabled={getMonday(new Date()) <= selectedWeekStart}>
+                                            Siguiente <i className="bx bx-chevron-right ms-1"></i>
+                                        </Button>
+                                        <Form.Control
+                                            type="date"
+                                            size="md"
+                                            style={{ maxWidth: '200px' }}
+                                            value={selectedWeekStart.toISOString().split('T')[0]}
+                                            onChange={(e) => jumpToWeek(e.target.value)}
+                                        />
+                                        <Button variant="primary" size="md" onClick={goToPreviousWeek}>
+                                            <i className="bx bx-chevron-left me-1"></i> Anterior
+                                        </Button>
+
+                                    </div>
+                                </Col>
+                                <Col md={5}>
+                                    <h6 className="mb-0 text-muted text-end ">
+                                        <i className="bx bx-calendar me-1"></i>
+                                        <span className="me-2">Semana del</span>
+                                        <strong className="mx-2 text-dark">{selectedWeekStart.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>
+                                        <span className="mx-2">al</span>
+                                        <strong className="mx-2 text-dark">{selectedWeekEnd.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>
+                                    </h6>
+                                </Col>
+                            </Row>
 
 
                             <Table responsive bordered hover className="align-middle text-center">

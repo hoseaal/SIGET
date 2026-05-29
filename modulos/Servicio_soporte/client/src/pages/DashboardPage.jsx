@@ -120,7 +120,7 @@ export const DashboardPage = () => {
           <Card>
             <Card.Body>
               <h5 className="card-title text-primary">
-                ¡Bienvenido {userData?.nombres || ''} {userData?.apellidos || ''} 🎉!
+                ¡Bienvenido {userData?.nombres || ''} {userData?.apellidos || ''} !
               </h5>
               <p className="mb-0">
                 Resumen del estado actual del servicio de Soporte Técnico SIGET.
@@ -291,8 +291,8 @@ export const DashboardPage = () => {
                         <td>
                           <Badge bg={
                             m.status_nombre === 'Resuelto' ? 'success' :
-                            m.status_nombre === 'En Proceso' ? 'warning' :
-                            m.status_nombre === 'Pendiente' ? 'danger' : 'secondary'
+                              m.status_nombre === 'En Proceso' ? 'warning' :
+                                m.status_nombre === 'Pendiente' ? 'danger' : 'secondary'
                           }>
                             {m.status_nombre}
                           </Badge>

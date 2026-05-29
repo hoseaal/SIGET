@@ -3,30 +3,52 @@ import { Modal, Button, Form, Row, Col, Badge, Spinner } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import helpFetch from '../../../utils/helpFetch';
 import { exportInformeTonerPDF } from '../../../utils/exportInformeTonerPDF';
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const gestionSchema = z.object({
+    status: z.string().min(1, "Debe seleccionar un estado"),
+    prioridad: z.string().optional(),
+    diagnostico: z.string().optional(),
+    solucion: z.string().optional(),
+    tipo_falla: z.string().optional(),
+    clasificacion_id: z.number().nullable().optional(),
+}).refine((data) => {
+    if (data.status === '7' && !data.tipo_falla) return false;
+    return true;
+}, { message: "Seleccione tipo de actividad", path: ["tipo_falla"] })
+.refine((data) => {
+    if (data.status === '7' && (data.clasificacion_id === null || data.clasificacion_id === undefined)) return false;
+    return true;
+}, { message: "Seleccione clasificación", path: ["clasificacion_id"] });
 
 export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimiento, isTechnical }) => {
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState(null);
     const [tiposAct, setTiposAct] = useState([]);
-    
-    const [formData, setFormData] = useState({
-        status: '',
-        prioridad: '',
-        diagnostico: '',
-        solucion: '',
-        clasificacion_id: null,
-        tipo_falla: ''
+
+    const { register, handleSubmit, formState: { errors }, control, reset, watch } = useForm({
+        resolver: zodResolver(gestionSchema),
+        defaultValues: {
+            status: '',
+            prioridad: 'Media',
+            diagnostico: '',
+            solucion: '',
+            tipo_falla: '',
+            clasificacion_id: null,
+        }
     });
 
     useEffect(() => {
         if (show && mantenimiento) {
-            setFormData({
-                status: mantenimiento.status || '',
+            reset({
+                status: String(mantenimiento.status || ''),
                 prioridad: mantenimiento.prioridad || 'Media',
                 diagnostico: mantenimiento.diagnostico || '',
                 solucion: mantenimiento.solucion || '',
                 clasificacion_id: mantenimiento.clasificacion_id || null,
-                tipo_falla: mantenimiento.tipo_falla || ''
+                tipo_falla: String(mantenimiento.tipo_falla || '')
             });
             fetchUser();
             if (isTechnical) {
@@ -50,40 +72,11 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleClasificacionChange = (id) => {
-        setFormData(prev => ({ 
-            ...prev, 
-            clasificacion_id: prev.clasificacion_id === id ? null : id 
-        }));
-    };
-
-    const handleSave = async () => {
-        if (!formData.status) {
-            toast.warning("Debe seleccionar un estado.");
-            return;
-        }
-
-        // Validaciones obligatorias para finalizar
-        if (parseInt(formData.status) === 7) {
-            if (!formData.tipo_falla) {
-                toast.warning("Debe seleccionar el Tipo de Actividad para el reporte final.");
-                return;
-            }
-            if (!formData.clasificacion_id) {
-                toast.warning("Debe seleccionar una Clasificación para el reporte final.");
-                return;
-            }
-        }
-
+    const onSubmit = async (data) => {
         try {
             setLoading(true);
             const payload = {
-                ...formData,
+                ...data,
                 usuario_tecnico_id: user?.usuario_id
             };
 
@@ -141,25 +134,23 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                                 <Form.Group>
                                     <Form.Label>Estado</Form.Label>
                                     <Form.Select 
-                                        name="status" 
-                                        value={formData.status} 
-                                        onChange={handleChange}
+                                        {...register("status")}
                                         disabled={isEntregado}
+                                        isInvalid={!!errors.status}
                                     >
                                         <option value="2">Pendiente</option>
                                         <option value="3">En Proceso / Reparación</option>
                                         <option value="7">Finalizado / Resuelto</option>
                                         <option value="8">Anulado</option>
                                     </Form.Select>
+                                    <Form.Control.Feedback type="invalid">{errors.status?.message}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>Prioridad</Form.Label>
                                     <Form.Select 
-                                        name="prioridad" 
-                                        value={formData.prioridad} 
-                                        onChange={handleChange}
+                                        {...register("prioridad")}
                                         disabled={isEntregado}
                                     >
                                         <option value="Baja">Baja</option>
@@ -174,9 +165,7 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                             <Form.Control
                                 as="textarea"
                                 rows={2}
-                                name="diagnostico"
-                                value={formData.diagnostico}
-                                onChange={handleChange}
+                                {...register("diagnostico")}
                                 placeholder="Describa el diagnóstico técnico..."
                                 disabled={isEntregado}
                             />
@@ -186,9 +175,7 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                             <Form.Control
                                 as="textarea"
                                 rows={2}
-                                name="solucion"
-                                value={formData.solucion}
-                                onChange={handleChange}
+                                {...register("solucion")}
                                 placeholder="Describa qué se hizo para resolver la falla..."
                                 disabled={isEntregado}
                             />
@@ -197,17 +184,16 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                         <Form.Group className="mb-4">
                             <Form.Label className="fw-bold text-primary">Confirmar Tipo de Actividad / Falla <span className="text-danger">*</span></Form.Label>
                             <Form.Select 
-                                name="tipo_falla" 
-                                value={formData.tipo_falla} 
-                                onChange={handleChange} 
+                                {...register("tipo_falla")}
                                 disabled={isEntregado}
-                                className={!formData.tipo_falla && parseInt(formData.status) === 7 ? "border-danger" : ""}
+                                isInvalid={!!errors.tipo_falla}
                             >
                                 <option value="">-- Seleccionar el tipo de falla detectada --</option>
                                 {tiposAct.map(t => (
                                     <option key={t.id} value={t.id}>{t.nombre}</option>
                                 ))}
                             </Form.Select>
+                            <Form.Control.Feedback type="invalid">{errors.tipo_falla?.message}</Form.Control.Feedback>
                         </Form.Group>
 
                         <div className="bg-light p-3 rounded border mb-3">
@@ -215,64 +201,91 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                             <Row>
                                 <Col md={4}>
                                     <div className="fw-bold small mb-2 border-bottom">Mant. Preventivo</div>
-                                    <Form.Check 
-                                        type="checkbox" 
-                                        label="Software" 
-                                        checked={formData.clasificacion_id === 1} 
-                                        onChange={() => handleClasificacionChange(1)}
-                                        id="chk-prev-sw"
-                                        disabled={isEntregado}
-                                    />
-                                    <Form.Check 
-                                        type="checkbox" 
-                                        label="Hardware" 
-                                        checked={formData.clasificacion_id === 2} 
-                                        onChange={() => handleClasificacionChange(2)}
-                                        id="chk-prev-hw"
-                                        disabled={isEntregado}
+                                    <Controller
+                                        name="clasificacion_id"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <>
+                                                <Form.Check 
+                                                    type="checkbox" 
+                                                    label="Software" 
+                                                    checked={field.value === 1} 
+                                                    onChange={() => field.onChange(field.value === 1 ? null : 1)}
+                                                    id="chk-prev-sw"
+                                                    disabled={isEntregado}
+                                                />
+                                                <Form.Check 
+                                                    type="checkbox" 
+                                                    label="Hardware" 
+                                                    checked={field.value === 2} 
+                                                    onChange={() => field.onChange(field.value === 2 ? null : 2)}
+                                                    id="chk-prev-hw"
+                                                    disabled={isEntregado}
+                                                />
+                                            </>
+                                        )}
                                     />
                                 </Col>
                                 <Col md={4}>
                                     <div className="fw-bold small mb-2 border-bottom">Mant. Correctivo</div>
-                                    <Form.Check 
-                                        type="checkbox" 
-                                        label="Software" 
-                                        checked={formData.clasificacion_id === 3} 
-                                        onChange={() => handleClasificacionChange(3)}
-                                        id="chk-corr-sw"
-                                        disabled={isEntregado}
-                                    />
-                                    <Form.Check 
-                                        type="checkbox" 
-                                        label="Hardware" 
-                                        checked={formData.clasificacion_id === 4} 
-                                        onChange={() => handleClasificacionChange(4)}
-                                        id="chk-corr-hw"
-                                        disabled={isEntregado}
+                                    <Controller
+                                        name="clasificacion_id"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <>
+                                                <Form.Check 
+                                                    type="checkbox" 
+                                                    label="Software" 
+                                                    checked={field.value === 3} 
+                                                    onChange={() => field.onChange(field.value === 3 ? null : 3)}
+                                                    id="chk-corr-sw"
+                                                    disabled={isEntregado}
+                                                />
+                                                <Form.Check 
+                                                    type="checkbox" 
+                                                    label="Hardware" 
+                                                    checked={field.value === 4} 
+                                                    onChange={() => field.onChange(field.value === 4 ? null : 4)}
+                                                    id="chk-corr-hw"
+                                                    disabled={isEntregado}
+                                                />
+                                            </>
+                                        )}
                                     />
                                 </Col>
                                 <Col md={4}>
                                     <div className="fw-bold small mb-2 border-bottom">Plat. Tecnológica</div>
-                                    <Form.Check 
-                                        type="checkbox" 
-                                        label="Servicios / Redes" 
-                                        checked={formData.clasificacion_id === 5} 
-                                        onChange={() => handleClasificacionChange(5)}
-                                        id="chk-plat-serv"
-                                        disabled={isEntregado}
-                                    />
-                                    <Form.Check 
-                                        type="checkbox" 
-                                        label="Informes" 
-                                        checked={formData.clasificacion_id === 6} 
-                                        onChange={() => handleClasificacionChange(6)}
-                                        id="chk-plat-inf"
-                                        disabled={isEntregado}
+                                    <Controller
+                                        name="clasificacion_id"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <>
+                                                <Form.Check 
+                                                    type="checkbox" 
+                                                    label="Servicios / Redes" 
+                                                    checked={field.value === 5} 
+                                                    onChange={() => field.onChange(field.value === 5 ? null : 5)}
+                                                    id="chk-plat-serv"
+                                                    disabled={isEntregado}
+                                                />
+                                                <Form.Check 
+                                                    type="checkbox" 
+                                                    label="Informes" 
+                                                    checked={field.value === 6} 
+                                                    onChange={() => field.onChange(field.value === 6 ? null : 6)}
+                                                    id="chk-plat-inf"
+                                                    disabled={isEntregado}
+                                                />
+                                            </>
+                                        )}
                                     />
                                 </Col>
                             </Row>
+                            {errors.clasificacion_id && (
+                                <div className="text-danger small mt-2">{errors.clasificacion_id.message}</div>
+                            )}
                         </div>
-                        {(formData.status == 7 && !isEntregado) && (
+                        {(parseInt(watch('status')) === 7 && !isEntregado) && (
                             <div className="alert alert-info py-2">
                                 <i className="bx bx-info-circle me-1"></i> Al finalizar, se registrará la actividad en el historial y el caso se cerrará permanentemente.
                             </div>
@@ -308,7 +321,7 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                 )}
                 <Button variant="secondary" onClick={onHide}>Cerrar</Button>
                 {(isTechnical && !isEntregado) && (
-                    <Button variant="primary" onClick={handleSave} disabled={loading}>
+                    <Button variant="primary" onClick={handleSubmit(onSubmit)} disabled={loading}>
                         {loading ? <Spinner size="sm" animation="border" className="me-1" /> : <i className="bx bx-save me-1"></i>}
                         Guardar Cambios
                     </Button>

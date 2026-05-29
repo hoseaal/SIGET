@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import helpFetch from "../../../utils/helpFetch";
+
+const schema = z.object({
+    nombre: z.string().min(1, "Ingrese el nombre del departamento").max(100, "Máximo 100 caracteres"),
+    pisoId: z.string().min(1, "Seleccione un piso")
+});
 
 export const TabDepartamentos = () => {
     const [dataList, setDataList] = useState([]);
     const [pisos, setPisos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
-    const [modalAction, setModalAction] = useState('crear'); // 'crear' | 'editar'
-
-    // Form state
+    const [modalAction, setModalAction] = useState('crear');
     const [currentId, setCurrentId] = useState(null);
-    const [nombre, setNombre] = useState('');
-    const [pisoId, setPisoId] = useState('');
-
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deleteItemLabel, setDeleteItemLabel] = useState('');
+
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { nombre: "", pisoId: "" }
+    });
 
     const fetchDataList = async () => {
         try {
@@ -40,34 +49,31 @@ export const TabDepartamentos = () => {
     }, []);
 
     const handleShowCreate = () => {
-        setNombre('');
-        setPisoId('');
+        reset({ nombre: "", pisoId: "" });
         setModalAction('crear');
         setModalVisible(true);
     };
 
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
-        setNombre(item.nombre);
-        setPisoId(item.piso_id || ''); // Asegurar default
+        reset({ nombre: item.nombre, pisoId: String(item.piso_id || "") });
         setModalAction('editar');
         setModalVisible(true);
     };
 
     const handleShowDelete = (item) => {
         setCurrentId(item.id);
-        setNombre(item.nombre);
+        setDeleteItemLabel(item.nombre);
         setDeleteModalVisible(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             const isEdit = modalAction === 'editar';
             const url = isEdit ? `/departamento/${currentId}` : `/departamento`;
             const method = isEdit ? 'PATCH' : 'POST';
 
-            await helpFetch[method](url, { nombre, piso_id: pisoId });
+            await helpFetch[method](url, { nombre: data.nombre, piso_id: data.pisoId });
 
             toast.success(`Departamento ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
@@ -143,30 +149,28 @@ export const TabDepartamentos = () => {
                 </tbody>
             </Table>
 
-            {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>{modalAction === 'crear' ? `Añadir Departamento` : `Editar Departamento`}</Modal.Title>
                 </Modal.Header>
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Nombre del Departamento</Form.Label>
                             <Form.Control
                                 type="text"
                                 placeholder="Ej. Recursos Humanos"
-                                value={nombre}
-                                onChange={(e) => setNombre(e.target.value)}
-                                required
+                                {...register("nombre")}
+                                isInvalid={!!errors.nombre}
                                 autoFocus
                             />
+                            <Form.Control.Feedback type="invalid">{errors.nombre?.message}</Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Piso al que pertenece</Form.Label>
                             <Form.Select
-                                value={pisoId}
-                                onChange={(e) => setPisoId(e.target.value)}
-                                required
+                                {...register("pisoId")}
+                                isInvalid={!!errors.pisoId}
                             >
                                 <option value="">Seleccione un piso...</option>
                                 {pisos.map(p => (
@@ -175,6 +179,7 @@ export const TabDepartamentos = () => {
                                     </option>
                                 ))}
                             </Form.Select>
+                            <Form.Control.Feedback type="invalid">{errors.pisoId?.message}</Form.Control.Feedback>
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
@@ -188,13 +193,12 @@ export const TabDepartamentos = () => {
                 </Form>
             </Modal>
 
-            {/* Modal Eliminar */}
             <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar este departamento <strong>"{nombre}"</strong>? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar este departamento <strong>"{deleteItemLabel}"</strong>? Esta acción no se puede deshacer.
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>

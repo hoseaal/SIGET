@@ -4,6 +4,31 @@ import Select from 'react-select';
 import { toast } from 'react-toastify';
 import helpFetch from '../../../utils/helpFetch';
 import { Nav } from 'react-bootstrap';
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const solicitudSchema = z.object({
+    nro_caso: z.string(),
+    direc_id: z.string().min(1, "Seleccione departamento"),
+    depto_destino_id: z.string().min(1, "Seleccione departamento destino"),
+    equipo_id: z.string(),
+    tipo_falla: z.string(),
+    asunto: z.string().min(1, "Ingrese el asunto").max(200),
+    descripcion: z.string().min(1, "Ingrese la descripción").max(1000),
+    activeTab: z.string(),
+}).refine((data) => {
+    if (data.activeTab === 'general' && data.depto_destino_id && !data.tipo_falla) return false;
+    return true;
+}, { message: "Seleccione tipo de falla", path: ["tipo_falla"] })
+.refine((data) => {
+    if (data.activeTab === 'toner' && !data.nro_caso?.trim()) return false;
+    return true;
+}, { message: "Ingrese el número de oficio", path: ["nro_caso"] })
+.refine((data) => {
+    if (data.activeTab === 'toner' && !data.equipo_id) return false;
+    return true;
+}, { message: "Seleccione el equipo (impresora)", path: ["equipo_id"] });
 
 export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) => {
     const [loading, setLoading] = useState(false);
@@ -11,37 +36,48 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     const [departamentos, setDepartamentos] = useState([]);
     const [tiposFalla, setTiposFalla] = useState([]);
     const [fetchingInitial, setFetchingInitial] = useState(false);
-    const [activeTab, setActiveTab] = useState('general'); // 'general' o 'toner'
-    const [formData, setFormData] = useState({
-        nro_caso: '',
-        direc_id: '',
-        depto_destino_id: '',
-        equipo_id: '',
-        tipo_falla: '',
-        asunto: '',
-        descripcion: ''
+    const [activeTab, setActiveTab] = useState('general');
+
+    const { register, handleSubmit, formState: { errors }, control, reset, setValue, watch, getValues } = useForm({
+        resolver: zodResolver(solicitudSchema),
+        defaultValues: {
+            nro_caso: '',
+            direc_id: '',
+            depto_destino_id: '',
+            equipo_id: '',
+            tipo_falla: '',
+            asunto: '',
+            descripcion: '',
+            activeTab: 'general'
+        }
     });
+
+    const watchedDirecId = watch('direc_id');
+    const watchedDeptoDestino = watch('depto_destino_id');
+    const watchedEquipoId = watch('equipo_id');
 
     useEffect(() => {
         if (show && user) {
             fetchInitialData();
-            setFormData({
+            setActiveTab('general');
+            reset({
                 nro_caso: '',
-                direc_id: user.direc_id || '',
+                direc_id: String(user.direc_id || ''),
                 depto_destino_id: '',
                 equipo_id: '',
                 tipo_falla: '',
                 asunto: '',
-                descripcion: ''
+                descripcion: '',
+                activeTab: 'general'
             });
         }
     }, [show, user]);
 
     useEffect(() => {
-        if (formData.direc_id) {
-            fetchEquipos(formData.direc_id);
+        if (watchedDirecId) {
+            fetchEquipos(watchedDirecId);
         }
-    }, [formData.direc_id]);
+    }, [watchedDirecId]);
 
     const fetchInitialData = async () => {
         try {
@@ -60,7 +96,6 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
         }
     };
 
-    // Sincronizar tipo_falla según el tab activo
     useEffect(() => {
         if (tiposFalla.length > 0) {
             if (activeTab === 'toner') {
@@ -69,13 +104,13 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                     t.nombre.toLowerCase().includes('toner')
                 );
                 if (targetType) {
-                    setFormData(prev => ({ ...prev, tipo_falla: targetType.id }));
+                    setValue('tipo_falla', String(targetType.id));
                 }
             } else {
-                setFormData(prev => ({ ...prev, tipo_falla: '' }));
+                setValue('tipo_falla', '');
             }
         }
-    }, [activeTab, tiposFalla, formData.depto_destino_id]);
+    }, [activeTab, tiposFalla, watchedDeptoDestino]);
 
     const fetchEquipos = async (deptoId) => {
         try {
@@ -86,62 +121,30 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    // Handler especial para react-select
-    const handleSelectChange = (selectedOption) => {
-        setFormData(prev => ({
-            ...prev,
-            equipo_id: selectedOption ? selectedOption.value : ''
-        }));
-    };
-
     const isTonerReport = () => {
         return activeTab === 'toner';
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!formData.asunto || !formData.descripcion || !formData.direc_id || !formData.depto_destino_id) {
-            toast.warning("Por favor complete los campos obligatorios.");
-            return;
-        }
-
-        if (activeTab === 'general' && !formData.tipo_falla) {
-            toast.warning("Por favor seleccione un Tipo de Falla / Requerimiento.");
-            return;
-        }
-
-        if (activeTab === 'toner' && (!formData.nro_caso || !formData.nro_caso.trim())) {
-            toast.warning("El Nro. de Oficio es requerido para la solicitud de tóner.");
-            return;
-        }
-
-        if (activeTab === 'toner' && !formData.equipo_id) {
-            toast.warning("Debe seleccionar el equipo (impresora) para la solicitud de tóner.");
-            return;
-        }
-
+    const onSubmit = async (data) => {
         try {
             setLoading(true);
             const payload = {
-                ...formData,
-                nro_caso: activeTab === 'toner' ? formData.nro_caso : undefined,
+                ...data,
+                nro_caso: activeTab === 'toner' ? data.nro_caso : undefined,
                 usuario_id: user.usuario_id
             };
             await helpFetch.POST('/mantenimiento', payload);
             toast.success("Solicitud registrada correctamente.");
-            setFormData({
+            setActiveTab('general');
+            reset({
                 nro_caso: '',
-                direc_id: user?.direc_id || '',
+                direc_id: String(user?.direc_id || ''),
                 depto_destino_id: '',
                 equipo_id: '',
                 tipo_falla: '',
                 asunto: '',
-                descripcion: ''
+                descripcion: '',
+                activeTab: 'general'
             });
             onSuccess();
         } catch (error) {
@@ -164,9 +167,13 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
         }
     };
 
+    const handleTabChange = (k) => {
+        setActiveTab(k);
+        setValue('activeTab', k);
+    };
+
     const esTecnico = user?.rol_id === 1 || user?.rol_id === 2;
 
-    // Preparar opciones para react-select
     const getFilteredEquipos = () => {
         let filtered = [...equipos];
         if (isTonerReport()) {
@@ -176,9 +183,9 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     };
 
     const getFilteredTiposFalla = () => {
-        if (!formData.depto_destino_id) return [];
+        if (!watchedDeptoDestino) return [];
         return tiposFalla.filter(t => 
-            String(t.depto_id) === String(formData.depto_destino_id) || 
+            String(t.depto_id) === String(watchedDeptoDestino) || 
             t.nombre.toUpperCase() === 'OTRO'
         );
     };
@@ -196,9 +203,9 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             <Modal.Header closeButton>
                 <Modal.Title>{esTecnico ? 'Registrar Mantenimiento (Admin/Técnico)' : 'Reportar Falla / Mantenimiento'}</Modal.Title>
             </Modal.Header>
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit(onSubmit)}>
                 <Modal.Body>
-                    <Nav variant="pills" activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="d-flex justify-content-center mb-4">
+                    <Nav variant="pills" activeKey={activeTab} onSelect={(k) => handleTabChange(k)} className="d-flex justify-content-center mb-4">
                         <Nav.Item>
                             <Nav.Link eventKey="general" className="fw-bold px-4">
                                 <i className="bx bx-wrench me-1"></i> Mantenimiento General
@@ -234,16 +241,15 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                                 <Form.Group>
                                     <Form.Label>Departamento Afectado</Form.Label>
                                     <Form.Select
-                                        name="direc_id"
-                                        value={formData.direc_id}
-                                        onChange={handleChange}
-                                        required
+                                        {...register("direc_id")}
+                                        isInvalid={!!errors.direc_id}
                                     >
                                         <option value="">-- Seleccionar --</option>
                                         {departamentos.map(d => (
                                             <option key={d.id} value={d.id}>{d.nombre}</option>
                                         ))}
                                     </Form.Select>
+                                    <Form.Control.Feedback type="invalid">{errors.direc_id?.message}</Form.Control.Feedback>
                                 </Form.Group>
                             ) : (
                                 <div className="p-2 bg-light rounded border mb-2">
@@ -260,34 +266,32 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                             <Form.Group>
                                 <Form.Label>Departamento de Destino <span className="text-danger">*</span></Form.Label>
                                 <Form.Select
-                                    name="depto_destino_id"
-                                    value={formData.depto_destino_id}
-                                    onChange={handleChange}
-                                    required
+                                    {...register("depto_destino_id")}
+                                    isInvalid={!!errors.depto_destino_id}
                                 >
                                     <option value="">-- Seleccionar --</option>
                                     {departamentos.map(d => (
                                         <option key={d.id} value={d.id}>{d.nombre}</option>
                                     ))}
                                 </Form.Select>
+                                <Form.Control.Feedback type="invalid">{errors.depto_destino_id?.message}</Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                     </Row>
 
-                    {activeTab === 'general' && formData.depto_destino_id && (
+                    {activeTab === 'general' && watchedDeptoDestino && (
                         <Form.Group className="mb-3">
                             <Form.Label>Tipo de Requerimiento / Falla <span className="text-danger">*</span></Form.Label>
                             <Form.Select
-                                name="tipo_falla"
-                                value={formData.tipo_falla}
-                                onChange={handleChange}
-                                required
+                                {...register("tipo_falla")}
+                                isInvalid={!!errors.tipo_falla}
                             >
                                 <option value="">-- Seleccionar --</option>
                                 {getFilteredTiposFalla().map(t => (
                                     <option key={t.id} value={t.id}>{t.nombre}</option>
                                 ))}
                             </Form.Select>
+                            <Form.Control.Feedback type="invalid">{errors.tipo_falla?.message}</Form.Control.Feedback>
                         </Form.Group>
                     )}
 
@@ -295,12 +299,11 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                         <Form.Group className="mb-3">
                             <Form.Label>Nro. de Oficio <span className="text-danger">*</span></Form.Label>
                             <Form.Control
-                                name="nro_caso"
-                                value={formData.nro_caso}
-                                onChange={handleChange}
+                                {...register("nro_caso")}
                                 placeholder="Ej: DDRRHH-O-087-2026"
-                                required
+                                isInvalid={!!errors.nro_caso}
                             />
+                            <Form.Control.Feedback type="invalid">{errors.nro_caso?.message}</Form.Control.Feedback>
                         </Form.Group>
                     )}
 
@@ -312,28 +315,34 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                                 'Seleccionar Equipo (Opcional)'
                             )}
                         </Form.Label>
-                        <Select
-                            options={equipoOptions}
-                            placeholder="Escriba Nro. Bien o Tipo para buscar..."
-                            isClearable
-                            onChange={handleSelectChange}
-                            value={equipoOptions.find(opt => opt.value === formData.equipo_id) || null}
-                            noOptionsMessage={() => activeTab === 'toner' ? 'No hay impresoras registradas en este departamento' : 'No se encontraron equipos'}
-                            styles={activeTab === 'toner' && !formData.equipo_id ? {
-                                control: (base) => ({ ...base, borderColor: '#dc3545' })
-                            } : undefined}
-                            theme={(theme) => ({
-                                ...theme,
-                                borderRadius: 5,
-                                colors: {
-                                    ...theme.colors,
-                                    primary: '#007bff',
-                                },
-                            })}
+                        <Controller
+                            name="equipo_id"
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    options={equipoOptions}
+                                    placeholder="Escriba Nro. Bien o Tipo para buscar..."
+                                    isClearable
+                                    onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                                    value={equipoOptions.find(opt => opt.value === field.value) || null}
+                                    noOptionsMessage={() => activeTab === 'toner' ? 'No hay impresoras registradas en este departamento' : 'No se encontraron equipos'}
+                                    styles={activeTab === 'toner' && !!errors.equipo_id ? {
+                                        control: (base) => ({ ...base, borderColor: '#dc3545' })
+                                    } : undefined}
+                                    theme={(theme) => ({
+                                        ...theme,
+                                        borderRadius: 5,
+                                        colors: {
+                                            ...theme.colors,
+                                            primary: '#007bff',
+                                        },
+                                    })}
+                                />
+                            )}
                         />
-                        {activeTab === 'toner' && !formData.equipo_id && (
-                            <div className="text-warning" style={{ fontSize: '0.85em', marginTop: '4px' }}>
-                                Seleccione la impresora que requiere tóner.
+                        {errors.equipo_id && (
+                            <div className="text-danger" style={{ fontSize: '0.85em', marginTop: '4px' }}>
+                                {errors.equipo_id.message}
                             </div>
                         )}
                     </Form.Group>
@@ -341,12 +350,11 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                     <Form.Group className="mb-3">
                         <Form.Label>Asunto / Título Breve</Form.Label>
                         <Form.Control
-                            name="asunto"
-                            value={formData.asunto}
-                            onChange={handleChange}
+                            {...register("asunto")}
                             placeholder="Ej: Monitor no enciende, No hay internet..."
-                            required
+                            isInvalid={!!errors.asunto}
                         />
+                        <Form.Control.Feedback type="invalid">{errors.asunto?.message}</Form.Control.Feedback>
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -354,12 +362,11 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                         <Form.Control
                             as="textarea"
                             rows={4}
-                            name="descripcion"
-                            value={formData.descripcion}
-                            onChange={handleChange}
+                            {...register("descripcion")}
                             placeholder="Describa el problema lo más detallado posible..."
-                            required
+                            isInvalid={!!errors.descripcion}
                         />
+                        <Form.Control.Feedback type="invalid">{errors.descripcion?.message}</Form.Control.Feedback>
                     </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>

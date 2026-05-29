@@ -2,10 +2,39 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col, Table, Card, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 import helpFetch from "../../../utils/helpFetch";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const equipoSchema = z.object({
+    nro_bien: z.string().min(1, "Ingrese número de bien").max(50),
+    tipo_equipo: z.string().min(1, "Seleccione tipo de equipo"),
+    direc_id: z.string().min(1, "Seleccione departamento"),
+    marca_id: z.string().min(1, "Seleccione marca"),
+    modelo_id: z.string().optional(),
+    pp_pared: z.string().min(1, "Seleccione puerto de pared"),
+    ip: z.string().optional(),
+    nombre_equipo: z.string().max(100).optional(),
+    sistema_operativo: z.string().max(100).optional(),
+    version_office: z.string().max(100).optional(),
+    elaborado_por: z.string().max(100).optional(),
+    observaciones: z.string().max(500).optional(),
+    toner_id: z.string().optional(),
+}).refine((data) => {
+    if (data.ip && data.ip.trim()) {
+        const ipv4Regex = /^(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+        return ipv4Regex.test(data.ip.trim());
+    }
+    return true;
+}, { message: "Formato IP inválido (ej. 192.168.1.50)", path: ["ip"] }).refine((data) => {
+    if (data.tipo_equipo === "2" && !data.toner_id) return false;
+    return true;
+}, { message: "Seleccione el modelo de tóner", path: ["toner_id"] });
 
 export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
     const isEdit = !!equipo;
     const [loadingMaestros, setLoadingMaestros] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Listas Maestras
     const [maestros, setMaestros] = useState({
@@ -19,35 +48,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
         tiposComponente: []
     });
 
-    // --- ESTADOS DEL FORMULARIO ---
-
-    // 1. Datos Generales
-    const [formGeneral, setFormGeneral] = useState({
-        nro_bien: "",
-        direc_id: "",
-        tipo_equipo: "",
-        pp_pared: "",
-        marca_id: "",
-        modelo_id: "",
-        ip: ""
-    });
-
     const [selectedPanel, setSelectedPanel] = useState("");
-
-    // 2. Detalles Computo (Tipo 1)
-    const [detallesComputo, setDetallesComputo] = useState({
-        nombre_equipo: "",
-        sistema_operativo: "",
-        version_office: "",
-        elaborado_por: "",
-        observaciones: ""
-    });
-
-    // 3. Detalles Impresora (Tipo 2)
-    const [detallesImpresora, setDetallesImpresora] = useState({
-        marca: "",
-        toner_id: ""
-    });
 
     // 4. Componentes (Para PC)
     const [componentes, setComponentes] = useState([]);
@@ -59,6 +60,28 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
         capacidad: "",
         nro_bien: ""
     });
+
+    const { register, handleSubmit, formState: { errors }, setValue, reset, watch } = useForm({
+        resolver: zodResolver(equipoSchema),
+        defaultValues: {
+            nro_bien: "",
+            tipo_equipo: "",
+            direc_id: "",
+            marca_id: "",
+            modelo_id: "",
+            pp_pared: "",
+            ip: "",
+            nombre_equipo: "",
+            sistema_operativo: "",
+            version_office: "",
+            elaborado_por: "",
+            observaciones: "",
+            toner_id: "",
+        }
+    });
+
+    const watchedTipoEquipo = watch('tipo_equipo');
+    const watchedMarcaId = watch('marca_id');
 
     // Cargar maestros al abrir el modal
     useEffect(() => {
@@ -87,20 +110,15 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                         tiposComponente: compTypes
                     });
 
-                    // Si es editar, poblar estados (simplificado para demostración, 
-                    // el backend getAll ya trae mucha info pero la edicion completa re-usará el registrar)
                     if (equipo) {
-                        setFormGeneral({
-                            nro_bien: equipo.nro_bien || "",
-                            direc_id: equipo.direc_id || "",
-                            tipo_equipo: equipo.tipo_equipo_id || "",
-                            pp_pared: equipo.pp_pared || "",
-                            marca_id: equipo.marca_id || "",
-                            modelo_id: equipo.modelo_id || "",
-                            ip: equipo.ip || ""
-                        });
+                        setValue("nro_bien", equipo.nro_bien || "");
+                        setValue("direc_id", String(equipo.direc_id || ""));
+                        setValue("tipo_equipo", String(equipo.tipo_equipo_id || ""));
+                        setValue("pp_pared", String(equipo.pp_pared || ""));
+                        setValue("marca_id", String(equipo.marca_id || ""));
+                        setValue("modelo_id", String(equipo.modelo_id || ""));
+                        setValue("ip", equipo.ip || "");
 
-                        // Determinar el panel seleccionado basándose en el puerto del equipo
                         if (equipo.pp_pared) {
                             const portObj = (ports || maestros.puertosPared).find(p => String(p.id) === String(equipo.pp_pared));
                             if (portObj) {
@@ -108,18 +126,13 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             }
                         }
 
-                        // Poblar detalles si es tipo PC (Tipo 1)
                         if (String(equipo.tipo_de_equipo).trim().toLowerCase() === "computador" || equipo.tipo_equipo_id === 1) {
-                            setDetallesComputo({
-                                nombre_equipo: equipo.nombre_equipo || "",
-                                sistema_operativo: equipo.sistema_operativo || "",
-                                version_office: equipo.version_office || "",
-                                elaborado_por: equipo.elaborado_por || "",
-                                observaciones: equipo.observaciones || ""
-                            });
+                            setValue("nombre_equipo", equipo.nombre_equipo || "");
+                            setValue("sistema_operativo", equipo.sistema_operativo || "");
+                            setValue("version_office", equipo.version_office || "");
+                            setValue("elaborado_por", equipo.elaborado_por || "");
+                            setValue("observaciones", equipo.observaciones || "");
 
-                            // Mapear componentes conservando sus IDs originales
-                            // Mapear componentes conservando sus IDs originales
                             const compsRaw = equipo.detalles || [];
                             const compsMapeados = compsRaw.map(c => ({
                                 id: c.id,
@@ -133,15 +146,28 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             setComponentes(compsMapeados);
                         }
 
-                        // Poblar detalles si es tipo Impresora (Tipo 2)
                         const esImpresora = String(equipo.tipo_de_equipo).toLowerCase().includes("impresora") || equipo.tipo_equipo_id === 2;
                         if (esImpresora) {
-                            setDetallesImpresora({
-                                toner_id: equipo.toner_id || ""
-                            });
+                            setValue("toner_id", String(equipo.toner_id || ""));
                         }
                     } else {
-                        resetForm();
+                        reset({
+                            nro_bien: "",
+                            tipo_equipo: "",
+                            direc_id: "",
+                            marca_id: "",
+                            modelo_id: "",
+                            pp_pared: "",
+                            ip: "",
+                            nombre_equipo: "",
+                            sistema_operativo: "",
+                            version_office: "",
+                            elaborado_por: "",
+                            observaciones: "",
+                            toner_id: "",
+                        });
+                        setSelectedPanel("");
+                        setComponentes([]);
                     }
                 } catch (err) {
                     console.error("Error cargando maestros:", err);
@@ -153,14 +179,6 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
             load();
         }
     }, [show, equipo]);
-
-    const resetForm = () => {
-        setFormGeneral({ nro_bien: "", direc_id: "", tipo_equipo: "", pp_pared: "", marca_id: "", modelo_id: "", ip: "" });
-        setSelectedPanel("");
-        setDetallesComputo({ nombre_equipo: "", sistema_operativo: "", version_office: "", elaborado_por: "", observaciones: "" });
-        setDetallesImpresora({ toner_id: "" });
-        setComponentes([]);
-    };
 
     const handleAddComponent = () => {
         if (!nuevoComp.tipo_id || !nuevoComp.serial) {
@@ -175,35 +193,33 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
         setComponentes(componentes.filter((_, i) => i !== index));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        // --- VALIDACIONES ---
-        if (!formGeneral.nro_bien || !formGeneral.tipo_equipo || !formGeneral.direc_id || !formGeneral.marca_id || !formGeneral.pp_pared) {
-            toast.error("Complete todos los campos de información general (Bien, Tipo, Depto, Marca, Red)");
-            return;
-        }
-
-        if (String(formGeneral.tipo_equipo) === "1") {
+    const onSubmit = async (data) => {
+        if (String(data.tipo_equipo) === "1") {
             if (componentes.length === 0) {
                 toast.error("Debe agregar al menos un componente interno para una computadora");
                 return;
             }
         }
 
-        if (String(formGeneral.tipo_equipo) === "2") {
-            if (!detallesImpresora.toner_id) {
-                toast.error("Debe seleccionar el modelo de tóner para la impresora");
-                return;
-            }
-        }
-
+        setIsSubmitting(true);
         try {
             const payload = {
-                general: formGeneral,
-                detallesComputo: String(formGeneral.tipo_equipo) === "1" ? detallesComputo : null,
-                detallesImpresora: String(formGeneral.tipo_equipo) === "2" ? detallesImpresora : null,
-                componentes: String(formGeneral.tipo_equipo) === "1" ? componentes : []
+                general: {
+                    ...data,
+                    nro_bien: data.nro_bien.trim(),
+                    ip: data.ip?.trim() || null
+                },
+                detallesComputo: String(data.tipo_equipo) === "1" ? {
+                    nombre_equipo: data.nombre_equipo,
+                    sistema_operativo: data.sistema_operativo,
+                    version_office: data.version_office,
+                    elaborado_por: data.elaborado_por,
+                    observaciones: data.observaciones
+                } : null,
+                detallesImpresora: String(data.tipo_equipo) === "2" ? {
+                    toner_id: data.toner_id
+                } : null,
+                componentes: String(data.tipo_equipo) === "1" ? componentes : []
             };
 
             if (isEdit) {
@@ -216,10 +232,11 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
             onSuccess();
         } catch (error) {
             toast.error(error.message || "Error al procesar solicitud");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    // Helper para obtener nombres de IDs para la tabla temporal de componentes
     const getCompTypeName = (id) => maestros.tiposComponente.find(t => String(t.id) === String(id))?.nombre || id;
 
     return (
@@ -229,7 +246,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                     {isEdit ? `Editar Equipo: ${equipo.nro_bien}` : "Registrar Nuevo Equipo"}
                 </Modal.Title>
             </Modal.Header>
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit(onSubmit)}>
                 <Modal.Body style={{ maxHeight: '75vh', overflowY: 'auto' }}>
                     {loadingMaestros ? (
                         <div className="text-center py-5">
@@ -248,69 +265,72 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                         <Form.Group>
                                             <Form.Label>Número de Bien</Form.Label>
                                             <Form.Control
-                                                required
+                                                {...register("nro_bien")}
                                                 placeholder="Ej. C-123"
-                                                value={formGeneral.nro_bien}
-                                                onChange={(e) => setFormGeneral({ ...formGeneral, nro_bien: e.target.value })}
+                                                isInvalid={!!errors.nro_bien}
                                             />
+                                            <Form.Control.Feedback type="invalid">{errors.nro_bien?.message}</Form.Control.Feedback>
                                         </Form.Group>
                                     </Col>
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Tipo de Equipo</Form.Label>
                                             <Form.Select
-                                                required
-                                                value={formGeneral.tipo_equipo}
-                                                onChange={(e) => setFormGeneral({ ...formGeneral, tipo_equipo: e.target.value })}
+                                                {...register("tipo_equipo")}
+                                                isInvalid={!!errors.tipo_equipo}
                                             >
                                                 <option value="">Seleccione...</option>
                                                 {maestros.tiposEquipo.map(t => (
                                                     <option key={t.id} value={t.id}>{t.nombre}</option>
                                                 ))}
                                             </Form.Select>
+                                            <Form.Control.Feedback type="invalid">{errors.tipo_equipo?.message}</Form.Control.Feedback>
                                         </Form.Group>
                                     </Col>
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Departamento</Form.Label>
                                             <Form.Select
-                                                required
-                                                value={formGeneral.direc_id}
-                                                onChange={(e) => setFormGeneral({ ...formGeneral, direc_id: e.target.value })}
+                                                {...register("direc_id")}
+                                                isInvalid={!!errors.direc_id}
                                             >
                                                 <option value="">Seleccione...</option>
                                                 {maestros.departamentos.map(d => (
                                                     <option key={d.id} value={d.id}>{d.nombre}</option>
                                                 ))}
                                             </Form.Select>
+                                            <Form.Control.Feedback type="invalid">{errors.direc_id?.message}</Form.Control.Feedback>
                                         </Form.Group>
                                     </Col>
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Marca</Form.Label>
-                                            <Form.Select
-                                                required
-                                                value={formGeneral.marca_id}
-                                                onChange={(e) => setFormGeneral({ ...formGeneral, marca_id: e.target.value, modelo_id: "" })}
-                                            >
+                                        <Form.Select
+                                            {...register("marca_id", {
+                                                onChange: (e) => {
+                                                    setValue("modelo_id", "");
+                                                }
+                                            })}
+                                            isInvalid={!!errors.marca_id}
+                                        >
                                                 <option value="">Seleccione...</option>
                                                 {maestros.marcas.map(m => (
                                                     <option key={m.id} value={m.id}>{m.nombre}</option>
                                                 ))}
                                             </Form.Select>
+                                            <Form.Control.Feedback type="invalid">{errors.marca_id?.message}</Form.Control.Feedback>
                                         </Form.Group>
                                     </Col>
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Modelo</Form.Label>
                                             <Form.Select
-                                                disabled={!formGeneral.marca_id}
-                                                value={formGeneral.modelo_id}
-                                                onChange={(e) => setFormGeneral({ ...formGeneral, modelo_id: e.target.value })}
+                                                disabled={!watchedMarcaId}
+                                                {...register("modelo_id")}
                                             >
                                                 <option value="">Seleccione...</option>
                                                 {maestros.modelos
-                                                    .filter(m => String(m.marca_id) === String(formGeneral.marca_id))
+                                                    .filter(m => String(m.marca_id) === String(watchedMarcaId))
                                                     .map(m => (
                                                         <option key={m.id} value={m.id}>{m.nombre}</option>
                                                     ))
@@ -322,10 +342,11 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                         <Form.Group>
                                             <Form.Label>Dirección IP (Opcional)</Form.Label>
                                             <Form.Control
+                                                {...register("ip")}
                                                 placeholder="Ej. 192.168.1.50"
-                                                value={formGeneral.ip}
-                                                onChange={(e) => setFormGeneral({ ...formGeneral, ip: e.target.value })}
+                                                isInvalid={!!errors.ip}
                                             />
+                                            <Form.Control.Feedback type="invalid">{errors.ip?.message}</Form.Control.Feedback>
                                         </Form.Group>
                                     </Col>
                                     <Col md={12}>
@@ -335,11 +356,10 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                         <Form.Group>
                                             <Form.Label className="fw-bold">1. Seleccionar Caja / Roseta de Pared</Form.Label>
                                             <Form.Select
-                                                required
                                                 value={selectedPanel}
                                                 onChange={(e) => {
                                                     setSelectedPanel(e.target.value);
-                                                    setFormGeneral({ ...formGeneral, pp_pared: "" }); // Reset puerto al cambiar pared
+                                                    setValue("pp_pared", "");
                                                 }}
                                             >
                                                 <option value="">Seleccione Roseta...</option>
@@ -355,10 +375,9 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                         <Form.Group>
                                             <Form.Label className="fw-bold">2. Seleccionar Puerto en esta Pared</Form.Label>
                                             <Form.Select
-                                                required
+                                                {...register("pp_pared")}
                                                 disabled={!selectedPanel}
-                                                value={formGeneral.pp_pared}
-                                                onChange={(e) => setFormGeneral({ ...formGeneral, pp_pared: e.target.value })}
+                                                isInvalid={!!errors.pp_pared}
                                             >
                                                 <option value="">
                                                     {!selectedPanel ? "Elija una roseta primero..." : "Seleccione Puerto..."}
@@ -371,6 +390,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                         </option>
                                                     ))}
                                             </Form.Select>
+                                            <Form.Control.Feedback type="invalid">{errors.pp_pared?.message}</Form.Control.Feedback>
                                         </Form.Group>
                                     </Col>
                                 </Row>
@@ -379,7 +399,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             {/* SECCION 2: ESPECIFICA SEGUN TIPO */}
 
                             {/* SI ES COMPUTADOR (ID 1) */}
-                            {String(formGeneral.tipo_equipo) === "1" && (
+                            {String(watchedTipoEquipo) === "1" && (
                                 <div className="mb-4">
                                     <h6 className="text-primary border-bottom pb-2 mb-3">
                                         <i className="bx bx-desktop me-1"></i> Detalles de Cómputo
@@ -389,9 +409,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                             <Form.Group>
                                                 <Form.Label>Nombre en Red</Form.Label>
                                                 <Form.Control
+                                                    {...register("nombre_equipo")}
                                                     placeholder="Ej. AUDITORIA-PC01"
-                                                    value={detallesComputo.nombre_equipo}
-                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, nombre_equipo: e.target.value })}
                                                 />
                                             </Form.Group>
                                         </Col>
@@ -399,9 +418,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                             <Form.Group>
                                                 <Form.Label>Sistema Operativo</Form.Label>
                                                 <Form.Control
+                                                    {...register("sistema_operativo")}
                                                     placeholder="Ej. Windows 11 Pro"
-                                                    value={detallesComputo.sistema_operativo}
-                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, sistema_operativo: e.target.value })}
                                                 />
                                             </Form.Group>
                                         </Col>
@@ -409,9 +427,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                             <Form.Group>
                                                 <Form.Label>Versión Office</Form.Label>
                                                 <Form.Control
+                                                    {...register("version_office")}
                                                     placeholder="Ej. 2021 LTSC"
-                                                    value={detallesComputo.version_office}
-                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, version_office: e.target.value })}
                                                 />
                                             </Form.Group>
                                         </Col>
@@ -421,9 +438,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                             <Form.Group>
                                                 <Form.Label>Registrado/Elaborado por</Form.Label>
                                                 <Form.Control
+                                                    {...register("elaborado_por")}
                                                     placeholder="Nombre del técnico"
-                                                    value={detallesComputo.elaborado_por}
-                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, elaborado_por: e.target.value })}
                                                 />
                                             </Form.Group>
                                         </Col>
@@ -432,8 +448,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                 <Form.Label>Observaciones Iniciales</Form.Label>
                                                 <Form.Control
                                                     as="textarea" rows={1}
-                                                    value={detallesComputo.observaciones}
-                                                    onChange={(e) => setDetallesComputo({ ...detallesComputo, observaciones: e.target.value })}
+                                                    {...register("observaciones")}
                                                 />
                                             </Form.Group>
                                         </Col>
@@ -527,7 +542,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                 <tbody>
                                                     {componentes.length === 0 ? (
                                                         <tr>
-                                                            <td colSpan="5" className="text-center py-2 text-muted">Añada componentes (RAM, Disco, etc.)</td>
+                                                            <td colSpan="7" className="text-center py-2 text-muted">Añada componentes (RAM, Disco, etc.)</td>
                                                         </tr>
                                                     ) : (
                                                         componentes.map((c, i) => (
@@ -552,7 +567,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             )}
 
                             {/* SI ES IMPRESORA (ID 2) */}
-                            {String(formGeneral.tipo_equipo) === "2" && (
+                            {String(watchedTipoEquipo) === "2" && (
                                 <div className="mb-4">
                                     <h6 className="text-primary border-bottom pb-2 mb-3">
                                         <i className="bx bx-printer me-1"></i> Detalles de Impresión
@@ -562,9 +577,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                             <Form.Group>
                                                 <Form.Label className="fw-bold">Seleccionar Modelo de Tóner Correspondiente</Form.Label>
                                                 <Form.Select
-                                                    required
-                                                    value={detallesImpresora.toner_id}
-                                                    onChange={(e) => setDetallesImpresora({ ...detallesImpresora, toner_id: e.target.value })}
+                                                    {...register("toner_id")}
+                                                    isInvalid={!!errors.toner_id}
                                                 >
                                                     <option value="">Seleccione tóner...</option>
                                                     {maestros.tiposToner
@@ -575,7 +589,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                         ))
                                                     }
                                                 </Form.Select>
-
+                                                <Form.Control.Feedback type="invalid">{errors.toner_id?.message}</Form.Control.Feedback>
                                             </Form.Group>
                                         </Col>
                                     </Row>
@@ -583,7 +597,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             )}
 
                             {/* Otros tipos (Escaner, etc) podrían añadirse aquí */}
-                            {(!formGeneral.tipo_equipo || (String(formGeneral.tipo_equipo) !== "1" && String(formGeneral.tipo_equipo) !== "2")) && formGeneral.tipo_equipo && (
+                            {(!watchedTipoEquipo || (String(watchedTipoEquipo) !== "1" && String(watchedTipoEquipo) !== "2")) && watchedTipoEquipo && (
                                 <div className="alert alert-info py-2">
                                     Este tipo de equipo no requiere detalles adicionales por ahora.
                                 </div>
@@ -592,9 +606,13 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="outline-secondary" onClick={onHide}>Cancelar</Button>
-                    <Button variant="primary" type="submit" disabled={loadingMaestros}>
-                        {isEdit ? "Guardar Cambios" : "Registrar Equipo"}
+                    <Button variant="outline-secondary" onClick={onHide} disabled={isSubmitting}>Cancelar</Button>
+                    <Button variant="primary" type="submit" disabled={loadingMaestros || isSubmitting}>
+                        {isSubmitting ? (
+                            <><Spinner as="span" animation="border" size="sm" className="me-2" />{isEdit ? "Guardando..." : "Registrando..."}</>
+                        ) : (
+                            isEdit ? "Guardar Cambios" : "Registrar Equipo"
+                        )}
                     </Button>
                 </Modal.Footer>
             </Form>

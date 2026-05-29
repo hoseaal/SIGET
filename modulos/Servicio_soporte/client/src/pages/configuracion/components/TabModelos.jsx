@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import helpFetch from "../../../utils/helpFetch";
+
+const schema = z.object({
+    nombre: z.string().min(1, "Ingrese el nombre del modelo").max(100, "Máximo 100 caracteres"),
+    marcaId: z.string().min(1, "Seleccione una marca")
+});
 
 export const TabModelos = () => {
     const [dataList, setDataList] = useState([]);
     const [marcas, setMarcas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
-    const [modalAction, setModalAction] = useState('crear'); // 'crear' | 'editar'
-
-    // Form state
+    const [modalAction, setModalAction] = useState('crear');
     const [currentId, setCurrentId] = useState(null);
-    const [nombre, setNombre] = useState('');
-    const [marcaId, setMarcaId] = useState('');
-
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deleteItemLabel, setDeleteItemLabel] = useState('');
+
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { nombre: "", marcaId: "" }
+    });
 
     const fetchDataList = async () => {
         try {
@@ -40,34 +49,31 @@ export const TabModelos = () => {
     }, []);
 
     const handleShowCreate = () => {
-        setNombre('');
-        setMarcaId('');
+        reset({ nombre: "", marcaId: "" });
         setModalAction('crear');
         setModalVisible(true);
     };
 
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
-        setNombre(item.nombre);
-        setMarcaId(item.marca_id || ''); // Asegurar default
+        reset({ nombre: item.nombre, marcaId: String(item.marca_id || "") });
         setModalAction('editar');
         setModalVisible(true);
     };
 
     const handleShowDelete = (item) => {
         setCurrentId(item.id);
-        setNombre(item.nombre);
+        setDeleteItemLabel(item.nombre);
         setDeleteModalVisible(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             const isEdit = modalAction === 'editar';
             const url = isEdit ? `/modelo/${currentId}` : `/modelo`;
             const method = isEdit ? 'PATCH' : 'POST';
 
-            await helpFetch[method](url, { nombre, marca_id: marcaId });
+            await helpFetch[method](url, { nombre: data.nombre, marca_id: data.marcaId });
 
             toast.success(`Modelo ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
@@ -143,30 +149,28 @@ export const TabModelos = () => {
                 </tbody>
             </Table>
 
-            {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>{modalAction === 'crear' ? `Añadir Modelo` : `Editar Modelo`}</Modal.Title>
                 </Modal.Header>
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Nombre del Modelo</Form.Label>
                             <Form.Control
                                 type="text"
                                 placeholder="Ej. OptiPlex 3050"
-                                value={nombre}
-                                onChange={(e) => setNombre(e.target.value)}
-                                required
+                                {...register("nombre")}
+                                isInvalid={!!errors.nombre}
                                 autoFocus
                             />
+                            <Form.Control.Feedback type="invalid">{errors.nombre?.message}</Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Marca a la que pertenece</Form.Label>
                             <Form.Select
-                                value={marcaId}
-                                onChange={(e) => setMarcaId(e.target.value)}
-                                required
+                                {...register("marcaId")}
+                                isInvalid={!!errors.marcaId}
                             >
                                 <option value="">Seleccione una marca...</option>
                                 {marcas.map(m => (
@@ -175,6 +179,7 @@ export const TabModelos = () => {
                                     </option>
                                 ))}
                             </Form.Select>
+                            <Form.Control.Feedback type="invalid">{errors.marcaId?.message}</Form.Control.Feedback>
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
@@ -188,13 +193,12 @@ export const TabModelos = () => {
                 </Form>
             </Modal>
 
-            {/* Modal Eliminar */}
             <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar el modelo <strong>"{nombre}"</strong>? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar el modelo <strong>"{deleteItemLabel}"</strong>? Esta acción no se puede deshacer.
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>

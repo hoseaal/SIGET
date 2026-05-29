@@ -26,7 +26,21 @@ async function baseFetch(input, init) {
     clearTimeout(timeoutId);
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
+      try {
+        const parsed = JSON.parse(errorText);
+        // Si el backend devuelve un arreglo de errores Zod
+        if (Array.isArray(parsed.error)) {
+          throw new Error(parsed.error.map(e => e.message).join(" | "));
+        }
+        // Si devuelve un mensaje de error simple
+        throw new Error(parsed.error || parsed.message || `Error HTTP ${response.status}`);
+      } catch (e) {
+        if (e.name === 'SyntaxError') {
+            // Si no es JSON (ej. HTML stacktrace) lanza un mensaje genérico para no romper la UI
+            throw new Error(`Error inesperado del servidor (${response.status}). Intente nuevamente.`);
+        }
+        throw e; // Re-lanzar el error que creamos dentro del try
+      }
     }
     return response;
   } catch (error) {

@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import helpFetch from "../../../utils/helpFetch";
+
+const schema = z.object({
+    nombre: z.string().min(1, "Ingrese un nombre").max(100, "Máximo 100 caracteres")
+});
 
 export const GenericMasterTab = ({ endpoint, titleItem }) => {
     const [dataList, setDataList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
-    const [modalAction, setModalAction] = useState('crear'); // 'crear' | 'editar'
-
+    const [modalAction, setModalAction] = useState('crear');
     const [currentId, setCurrentId] = useState(null);
-    const [nombre, setNombre] = useState('');
-
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deleteItemLabel, setDeleteItemLabel] = useState('');
+
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { nombre: "" }
+    });
 
     const fetchDataList = async () => {
         try {
@@ -32,32 +42,31 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
     }, [endpoint]);
 
     const handleShowCreate = () => {
-        setNombre('');
+        reset({ nombre: "" });
         setModalAction('crear');
         setModalVisible(true);
     };
 
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
-        setNombre(item.nombre);
+        reset({ nombre: item.nombre });
         setModalAction('editar');
         setModalVisible(true);
     };
 
     const handleShowDelete = (item) => {
         setCurrentId(item.id);
-        setNombre(item.nombre);
+        setDeleteItemLabel(item.nombre);
         setDeleteModalVisible(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             const isEdit = modalAction === 'editar';
             const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `${endpoint}/${currentId}` : endpoint;
 
-            await helpFetch[method](url, { nombre });
+            await helpFetch[method](url, { nombre: data.nombre });
 
             toast.success(`${titleItem} ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
@@ -131,23 +140,22 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
                 </tbody>
             </Table>
 
-            {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>{modalAction === 'crear' ? `Añadir ${titleItem}` : `Editar ${titleItem}`}</Modal.Title>
                 </Modal.Header>
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Nombre</Form.Label>
                             <Form.Control
                                 type="text"
                                 placeholder={`Ej. Ingrese ${titleItem.toLowerCase()}`}
-                                value={nombre}
-                                onChange={(e) => setNombre(e.target.value)}
-                                required
+                                {...register("nombre")}
+                                isInvalid={!!errors.nombre}
                                 autoFocus
                             />
+                            <Form.Control.Feedback type="invalid">{errors.nombre?.message}</Form.Control.Feedback>
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
@@ -161,13 +169,12 @@ export const GenericMasterTab = ({ endpoint, titleItem }) => {
                 </Form>
             </Modal>
 
-            {/* Modal Eliminar */}
             <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar este registro <strong>"{nombre}"</strong>? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar este registro <strong>"{deleteItemLabel}"</strong>? Esta acción no se puede deshacer.
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>

@@ -1,24 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import helpFetch from "../../../utils/helpFetch";
+
+const schema = z.object({
+    nombre: z.string().min(1, "Ingrese el nombre del tóner").max(100, "Máximo 100 caracteres"),
+    marcaId: z.string().optional(),
+    modeloId: z.string().optional(),
+    descripcion: z.string().max(255, "Máximo 255 caracteres").optional()
+});
 
 export const TabTipoToner = () => {
     const [dataList, setDataList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
-    const [modalAction, setModalAction] = useState('crear'); // 'crear' | 'editar'
-
+    const [modalAction, setModalAction] = useState('crear');
     const [currentId, setCurrentId] = useState(null);
-    const [nombre, setNombre] = useState('');
-    const [descripcion, setDescripcion] = useState('');
-    const [marcaId, setMarcaId] = useState('');
-    const [modeloId, setModeloId] = useState('');
-
     const [marcas, setMarcas] = useState([]);
     const [modelos, setModelos] = useState([]);
-
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deleteItemLabel, setDeleteItemLabel] = useState('');
+
+    const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { nombre: "", marcaId: "", modeloId: "", descripcion: "" }
+    });
+
+    const marcaId = watch("marcaId");
 
     const fetchDataList = async () => {
         try {
@@ -52,42 +63,40 @@ export const TabTipoToner = () => {
     }, []);
 
     const handleShowCreate = () => {
-        setNombre('');
-        setDescripcion('');
-        setMarcaId('');
-        setModeloId('');
+        reset({ nombre: "", descripcion: "", marcaId: "", modeloId: "" });
         setModalAction('crear');
         setModalVisible(true);
     };
 
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
-        setNombre(item.nombre);
-        setDescripcion(item.descripcion || '');
-        setMarcaId(item.marca_id || '');
-        setModeloId(item.modelo_id || '');
+        reset({
+            nombre: item.nombre,
+            descripcion: item.descripcion || "",
+            marcaId: String(item.marca_id || ""),
+            modeloId: String(item.modelo_id || "")
+        });
         setModalAction('editar');
         setModalVisible(true);
     };
 
     const handleShowDelete = (item) => {
         setCurrentId(item.id);
-        setNombre(item.nombre);
+        setDeleteItemLabel(item.nombre);
         setDeleteModalVisible(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             const isEdit = modalAction === 'editar';
             const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `/tipo_toner/${currentId}` : `/tipo_toner`;
 
             await helpFetch[method](url, {
-                nombre,
-                descripcion,
-                marca_id: marcaId || null,
-                modelo_id: modeloId || null
+                nombre: data.nombre,
+                descripcion: data.descripcion,
+                marca_id: data.marcaId || null,
+                modelo_id: data.modeloId || null
             });
 
             toast.success(`Tipo de Tóner ${isEdit ? 'actualizado' : 'creado'} con éxito`);
@@ -168,44 +177,45 @@ export const TabTipoToner = () => {
                 </tbody>
             </Table>
 
-            {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>{modalAction === 'crear' ? `Añadir Tipo de Tóner` : `Editar Tipo de Tóner`}</Modal.Title>
                 </Modal.Header>
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Nombre / Modelo del Tóner</Form.Label>
                             <Form.Control
                                 type="text"
                                 placeholder="Ej. HP 85A (CE285A)"
-                                value={nombre}
-                                onChange={(e) => setNombre(e.target.value)}
-                                required
+                                {...register("nombre")}
+                                isInvalid={!!errors.nombre}
                                 autoFocus
                             />
+                            <Form.Control.Feedback type="invalid">{errors.nombre?.message}</Form.Control.Feedback>
                         </Form.Group>
 
                         <div className="row">
                             <div className="col-md-6 mb-3">
                                 <Form.Label>Marca Asociada</Form.Label>
                                 <Form.Select
-                                    value={marcaId}
+                                    {...register("marcaId")}
+                                    isInvalid={!!errors.marcaId}
                                     onChange={(e) => {
-                                        setMarcaId(e.target.value);
-                                        setModeloId('');
+                                        setValue("marcaId", e.target.value);
+                                        setValue("modeloId", "");
                                     }}
                                 >
                                     <option value="">Seleccione marca...</option>
                                     {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
                                 </Form.Select>
+                                <Form.Control.Feedback type="invalid">{errors.marcaId?.message}</Form.Control.Feedback>
                             </div>
                             <div className="col-md-6 mb-3">
                                 <Form.Label>Modelo Asociado</Form.Label>
                                 <Form.Select
-                                    value={modeloId}
-                                    onChange={(e) => setModeloId(e.target.value)}
+                                    {...register("modeloId")}
+                                    isInvalid={!!errors.modeloId}
                                     disabled={!marcaId}
                                 >
                                     <option value="">Seleccione modelo...</option>
@@ -214,6 +224,7 @@ export const TabTipoToner = () => {
                                         .map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)
                                     }
                                 </Form.Select>
+                                <Form.Control.Feedback type="invalid">{errors.modeloId?.message}</Form.Control.Feedback>
                             </div>
                         </div>
 
@@ -223,9 +234,10 @@ export const TabTipoToner = () => {
                                 as="textarea"
                                 rows={2}
                                 placeholder="Ej. Compatible con impresoras LaserJet Pro M1132/M1212"
-                                value={descripcion}
-                                onChange={(e) => setDescripcion(e.target.value)}
+                                {...register("descripcion")}
+                                isInvalid={!!errors.descripcion}
                             />
+                            <Form.Control.Feedback type="invalid">{errors.descripcion?.message}</Form.Control.Feedback>
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
@@ -239,13 +251,12 @@ export const TabTipoToner = () => {
                 </Form>
             </Modal>
 
-            {/* Modal Eliminar */}
             <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar el tipo de tóner <strong>"{nombre}"</strong>? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar el tipo de tóner <strong>"{deleteItemLabel}"</strong>? Esta acción no se puede deshacer.
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>

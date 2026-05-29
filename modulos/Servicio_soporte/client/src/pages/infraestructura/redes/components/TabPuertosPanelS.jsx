@@ -1,23 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import helpFetch from "../../../../utils/helpFetch";
+
+const schema = z.object({
+    panelSoportId: z.string().min(1, "Seleccione un panel"),
+    nroPuerto: z.string().min(1, "Ingrese el número de puerto"),
+    pRouter: z.string().min(1, "Ingrese el puerto del router")
+});
 
 export const TabPuertosPanelS = () => {
     const [dataList, setDataList] = useState([]);
     const [paneles, setPaneles] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Modal states
     const [modalVisible, setModalVisible] = useState(false);
     const [modalAction, setModalAction] = useState('crear');
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-
-    // Form state
     const [currentId, setCurrentId] = useState(null);
-    const [nroPuerto, setNroPuerto] = useState('');
-    const [pRouter, setPRouter] = useState('');
-    const [panelSoportId, setPanelSoportId] = useState('');
+    const [deleteItemLabel, setDeleteItemLabel] = useState('');
+
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { panelSoportId: "", nroPuerto: "", pRouter: "" }
+    });
 
     const fetchDataList = async () => {
         try {
@@ -42,39 +51,38 @@ export const TabPuertosPanelS = () => {
     }, []);
 
     const handleShowCreate = () => {
-        setNroPuerto('');
-        setPRouter('');
-        setPanelSoportId('');
+        reset({ panelSoportId: "", nroPuerto: "", pRouter: "" });
         setModalAction('crear');
         setModalVisible(true);
     };
 
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
-        setNroPuerto(item.nro_puerto || '');
-        setPRouter(item.p_router || '');
-        setPanelSoportId(item.panel_soport_id || '');
+        reset({
+            panelSoportId: String(item.panel_soport_id || ""),
+            nroPuerto: String(item.nro_puerto || ""),
+            pRouter: String(item.p_router || "")
+        });
         setModalAction('editar');
         setModalVisible(true);
     };
 
     const handleShowDelete = (item) => {
         setCurrentId(item.id);
-        setNroPuerto(item.nro_puerto);
+        setDeleteItemLabel(item.nro_puerto);
         setDeleteModalVisible(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             const isEdit = modalAction === 'editar';
             const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `/puertos_panel_s/${currentId}` : `/puertos_panel_s`;
 
             await helpFetch[method](url, {
-                nro_puerto: parseInt(nroPuerto, 10),
-                p_router: parseInt(pRouter, 10),
-                panel_soport_id: parseInt(panelSoportId, 10)
+                nro_puerto: parseInt(data.nroPuerto, 10),
+                p_router: parseInt(data.pRouter, 10),
+                panel_soport_id: parseInt(data.panelSoportId, 10)
             });
 
             toast.success(`Puerto ${isEdit ? 'actualizado' : 'registrado'} con éxito`);
@@ -156,19 +164,17 @@ export const TabPuertosPanelS = () => {
                 </tbody>
             </Table>
 
-            {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>{modalAction === 'crear' ? `Asignar Puerto a Panel` : `Editar Asignación`}</Modal.Title>
                 </Modal.Header>
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Patch Panel (Soporte)</Form.Label>
                             <Form.Select
-                                value={panelSoportId}
-                                onChange={(e) => setPanelSoportId(e.target.value)}
-                                required
+                                {...register("panelSoportId")}
+                                isInvalid={!!errors.panelSoportId}
                             >
                                 <option value="">Seleccione un Patch Panel...</option>
                                 {paneles.map(p => (
@@ -177,6 +183,7 @@ export const TabPuertosPanelS = () => {
                                     </option>
                                 ))}
                             </Form.Select>
+                            <Form.Control.Feedback type="invalid">{errors.panelSoportId?.message}</Form.Control.Feedback>
                         </Form.Group>
                         <div className="row">
                             <div className="col-md-6">
@@ -186,10 +193,10 @@ export const TabPuertosPanelS = () => {
                                         type="number"
                                         min="1"
                                         placeholder="Ej. 24"
-                                        value={nroPuerto}
-                                        onChange={(e) => setNroPuerto(e.target.value)}
-                                        required
+                                        {...register("nroPuerto")}
+                                        isInvalid={!!errors.nroPuerto}
                                     />
+                                    <Form.Control.Feedback type="invalid">{errors.nroPuerto?.message}</Form.Control.Feedback>
                                 </Form.Group>
                             </div>
                             <div className="col-md-6">
@@ -198,10 +205,10 @@ export const TabPuertosPanelS = () => {
                                     <Form.Control
                                         type="text"
                                         placeholder="Ej. Gi1/0/24"
-                                        value={pRouter}
-                                        onChange={(e) => setPRouter(e.target.value)}
-                                        required
+                                        {...register("pRouter")}
+                                        isInvalid={!!errors.pRouter}
                                     />
+                                    <Form.Control.Feedback type="invalid">{errors.pRouter?.message}</Form.Control.Feedback>
                                     <Form.Text className="text-muted">ID del puerto a donde se conecta en el switch físico.</Form.Text>
                                 </Form.Group>
                             </div>
@@ -218,13 +225,12 @@ export const TabPuertosPanelS = () => {
                 </Form>
             </Modal>
 
-            {/* Modal Eliminar */}
             <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas desconectar y eliminar el puerto <strong>{nroPuerto}</strong>?
+                    ¿Estás seguro de que deseas desconectar y eliminar el puerto <strong>{deleteItemLabel}</strong>?
                     Esta acción podría dejar huérfanas rosetas de pared.
                 </Modal.Body>
                 <Modal.Footer>

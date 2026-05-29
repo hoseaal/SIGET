@@ -3,6 +3,19 @@ import { Modal, Button, Form, Row, Col, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 import Select from "react-select";
 import helpFetch from "../../../utils/helpFetch";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const actividadSchema = z.object({
+    nro_act: z.string(),
+    fecha: z.string().min(1, "La fecha es obligatoria"),
+    direc_id: z.string().min(1, "Seleccione departamento"),
+    tipo_act: z.string().min(1, "Seleccione tipo de actividad"),
+    clasificacion_id: z.number().min(1, "Seleccione clasificación"),
+    equipo_id: z.string().optional(),
+    observaciones: z.string().max(500).optional(),
+});
 
 export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
     const [loading, setLoading] = useState(false);
@@ -11,14 +24,17 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
     const [equipos, setEquipos] = useState([]);
     const [fetchingInitial, setFetchingInitial] = useState(false);
 
-    const [formData, setFormData] = useState({
-        nro_act: "",
-        fecha: new Date().toISOString().split("T")[0],
-        direc_id: "",
-        equipo_id: "",
-        tipo_act: "",
-        clasificacion_id: "",
-        observaciones: ""
+    const { register, handleSubmit, formState: { errors }, control, reset, setValue, watch } = useForm({
+        resolver: zodResolver(actividadSchema),
+        defaultValues: {
+            nro_act: "",
+            fecha: new Date().toISOString().split("T")[0],
+            direc_id: "",
+            equipo_id: "",
+            tipo_act: "",
+            clasificacion_id: 0,
+            observaciones: ""
+        }
     });
 
     const clasificaciones = [
@@ -30,6 +46,8 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
         { id: 6, nombre: "PLAT. TECNOLOGICA - INFORMES" }
     ];
 
+    const watchedDirecId = watch('direc_id');
+
     const fetchInitialData = async () => {
         try {
             setFetchingInitial(true);
@@ -40,7 +58,7 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
             ]);
             setDepartamentos(deps);
             setTiposAct(tipos);
-            setFormData(prev => ({ ...prev, nro_act: nextNum.numero }));
+            setValue("nro_act", nextNum.numero);
         } catch (error) {
             console.error(error);
             toast.error("Error al cargar datos iniciales");
@@ -53,7 +71,6 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
         if (!deptoId) return;
         try {
             const data = await helpFetch.GET("/equipo");
-            // Filtrar equipos por departamento
             setEquipos(data.filter(e => e.direc_id === parseInt(deptoId)));
         } catch (error) {
             console.error(error);
@@ -63,41 +80,31 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
     useEffect(() => {
         if (show) {
             fetchInitialData();
+            reset({
+                nro_act: "",
+                fecha: new Date().toISOString().split("T")[0],
+                direc_id: "",
+                equipo_id: "",
+                tipo_act: "",
+                clasificacion_id: 0,
+                observaciones: ""
+            });
         }
     }, [show]);
 
     useEffect(() => {
-        if (formData.direc_id) {
-            fetchEquipos(formData.direc_id);
+        if (watchedDirecId) {
+            fetchEquipos(watchedDirecId);
         } else {
             setEquipos([]);
         }
-    }, [formData.direc_id]);
+    }, [watchedDirecId]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleSelectChange = (selectedOption) => {
-        setFormData(prev => ({
-            ...prev,
-            equipo_id: selectedOption ? selectedOption.value : ""
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!formData.direc_id || !formData.tipo_act || !formData.clasificacion_id) {
-            toast.warning("Por favor complete los campos obligatorios.");
-            return;
-        }
-
+    const onSubmit = async (data) => {
         try {
             setLoading(true);
             const payload = {
-                ...formData,
+                ...data,
                 usuario_id: user.usuario_id
             };
             await helpFetch.POST("/actividades", payload);
@@ -119,7 +126,7 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                     Registrar Actividad Manual
                 </Modal.Title>
             </Modal.Header>
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit(onSubmit)}>
                 <Modal.Body className="pt-4">
                     {fetchingInitial ? (
                         <div className="text-center py-5">
@@ -134,10 +141,7 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                         <Form.Label className="fw-semibold">Nro. Actividad</Form.Label>
                                         <Form.Control
                                             type="text"
-                                            name="nro_act"
-                                            value={formData.nro_act}
-                                            onChange={handleChange}
-                                            required
+                                            {...register("nro_act")}
                                             readOnly
                                             className="bg-light border-0 fw-bold text-primary"
                                         />
@@ -148,11 +152,10 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                         <Form.Label className="fw-semibold">Fecha</Form.Label>
                                         <Form.Control
                                             type="date"
-                                            name="fecha"
-                                            value={formData.fecha}
-                                            onChange={handleChange}
-                                            required
+                                            {...register("fecha")}
+                                            isInvalid={!!errors.fecha}
                                         />
+                                        <Form.Control.Feedback type="invalid">{errors.fecha?.message}</Form.Control.Feedback>
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -162,16 +165,15 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                     <Form.Group>
                                         <Form.Label className="fw-semibold">Departamento Solicitante</Form.Label>
                                         <Form.Select
-                                            name="direc_id"
-                                            value={formData.direc_id}
-                                            onChange={handleChange}
-                                            required
+                                            {...register("direc_id")}
+                                            isInvalid={!!errors.direc_id}
                                         >
                                             <option value="">-- Seleccionar Departamento --</option>
                                             {departamentos.map(d => (
                                                 <option key={d.id} value={d.id}>{d.nombre}</option>
                                             ))}
                                         </Form.Select>
+                                        <Form.Control.Feedback type="invalid">{errors.direc_id?.message}</Form.Control.Feedback>
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -181,97 +183,118 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                     <Form.Group>
                                         <Form.Label className="fw-semibold">Tipo de Actividad (Descripción del Reporte)</Form.Label>
                                         <Form.Select
-                                            name="tipo_act"
-                                            value={formData.tipo_act}
-                                            onChange={handleChange}
-                                            required
+                                            {...register("tipo_act")}
+                                            isInvalid={!!errors.tipo_act}
                                         >
                                             <option value="">-- Seleccionar Tipo de Falla/Actividad --</option>
                                             {tiposAct.map(t => (
                                                 <option key={t.id} value={t.id}>{t.nombre}</option>
                                             ))}
                                         </Form.Select>
+                                        <Form.Control.Feedback type="invalid">{errors.tipo_act?.message}</Form.Control.Feedback>
                                     </Form.Group>
                                 </Col>
                             </Row>
 
                             <div className="bg-light p-3 rounded border mb-4">
                                 <h6 className="fw-bold small text-muted mb-3 text-uppercase">Clasificación para Historial SM</h6>
-                                <Row>
-                                    <Col md={4}>
-                                        <div className="fw-bold small mb-2 border-bottom">Mant. Preventivo</div>
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Software"
-                                            checked={formData.clasificacion_id === 1}
-                                            onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 1 }))}
-                                            id="chk-prev-sw"
-                                        />
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Hardware"
-                                            checked={formData.clasificacion_id === 2}
-                                            onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 2 }))}
-                                            id="chk-prev-hw"
-                                        />
-                                    </Col>
-                                    <Col md={4}>
-                                        <div className="fw-bold small mb-2 border-bottom">Mant. Correctivo</div>
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Software"
-                                            checked={formData.clasificacion_id === 3}
-                                            onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 3 }))}
-                                            id="chk-corr-sw"
-                                        />
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Hardware"
-                                            checked={formData.clasificacion_id === 4}
-                                            onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 4 }))}
-                                            id="chk-corr-hw"
-                                        />
-                                    </Col>
-                                    <Col md={4}>
-                                        <div className="fw-bold small mb-2 border-bottom">Plat. Tecnológica</div>
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Servicios / Redes"
-                                            checked={formData.clasificacion_id === 5}
-                                            onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 5 }))}
-                                            id="chk-plat-serv"
-                                        />
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Informes"
-                                            checked={formData.clasificacion_id === 6}
-                                            onChange={() => setFormData(prev => ({ ...prev, clasificacion_id: 6 }))}
-                                            id="chk-plat-inf"
-                                        />
-                                    </Col>
-                                </Row>
+                                <Controller
+                                    name="clasificacion_id"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Row>
+                                            <Col md={4}>
+                                                <div className="fw-bold small mb-2 border-bottom">Mant. Preventivo</div>
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    label="Software"
+                                                    checked={field.value === 1}
+                                                    onChange={() => field.onChange(1)}
+                                                    id="chk-prev-sw"
+                                                />
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    label="Hardware"
+                                                    checked={field.value === 2}
+                                                    onChange={() => field.onChange(2)}
+                                                    id="chk-prev-hw"
+                                                />
+                                            </Col>
+                                            <Col md={4}>
+                                                <div className="fw-bold small mb-2 border-bottom">Mant. Correctivo</div>
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    label="Software"
+                                                    checked={field.value === 3}
+                                                    onChange={() => field.onChange(3)}
+                                                    id="chk-corr-sw"
+                                                />
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    label="Hardware"
+                                                    checked={field.value === 4}
+                                                    onChange={() => field.onChange(4)}
+                                                    id="chk-corr-hw"
+                                                />
+                                            </Col>
+                                            <Col md={4}>
+                                                <div className="fw-bold small mb-2 border-bottom">Plat. Tecnológica</div>
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    label="Servicios / Redes"
+                                                    checked={field.value === 5}
+                                                    onChange={() => field.onChange(5)}
+                                                    id="chk-plat-serv"
+                                                />
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    label="Informes"
+                                                    checked={field.value === 6}
+                                                    onChange={() => field.onChange(6)}
+                                                    id="chk-plat-inf"
+                                                />
+                                            </Col>
+                                        </Row>
+                                    )}
+                                />
+                                {errors.clasificacion_id && (
+                                    <div className="text-danger small mt-2">{errors.clasificacion_id.message}</div>
+                                )}
                             </div>
 
                             <Form.Group className="mb-4">
                                 <Form.Label className="fw-semibold">Equipo / Bien Mueble (Opcional)</Form.Label>
-                                <Select
-                                    placeholder="Buscar por Nro. Bien..."
-                                    isClearable
-                                    options={equipos.map(e => ({
-                                        value: e.id,
-                                        label: `${e.nro_bien} -  ${e.tipo_de_equipo || 'S/T'} - Marca: ${e.marca_nombre || 'S/M'} ${e.modelo_nombre ? `(${e.modelo_nombre})` : ''}`
-                                    }))}
-                                    onChange={handleSelectChange}
-                                    noOptionsMessage={() => "No se encontraron equipos"}
-                                    theme={(theme) => ({
-                                        ...theme,
-                                        borderRadius: 5,
-                                        colors: {
-                                            ...theme.colors,
-                                            primary: '#007bff',
-                                        },
-                                    })}
+                                <Controller
+                                    name="equipo_id"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Select
+                                            placeholder="Buscar por Nro. Bien..."
+                                            isClearable
+                                            options={equipos.map(e => ({
+                                                value: e.id,
+                                                label: `${e.nro_bien} -  ${e.tipo_de_equipo || 'S/T'} - Marca: ${e.marca_nombre || 'S/M'} ${e.modelo_nombre ? `(${e.modelo_nombre})` : ''}`
+                                            }))}
+                                            onChange={(opt) => field.onChange(opt ? String(opt.value) : '')}
+                                            value={equipos.find(e => String(e.id) === String(field.value)) ? {
+                                                value: field.value,
+                                                label: `${equipos.find(e => String(e.id) === String(field.value))?.nro_bien} -  ${equipos.find(e => String(e.id) === String(field.value))?.tipo_de_equipo || 'S/T'}`
+                                            } : null}
+                                            noOptionsMessage={() => "No se encontraron equipos"}
+                                            theme={(theme) => ({
+                                                ...theme,
+                                                borderRadius: 5,
+                                                colors: {
+                                                    ...theme.colors,
+                                                    primary: '#007bff',
+                                                },
+                                            })}
+                                        />
+                                    )}
                                 />
+                                {errors.equipo_id && (
+                                    <div className="text-danger small mt-2">{errors.equipo_id.message}</div>
+                                )}
                             </Form.Group>
 
                             <Form.Group className="mb-2">
@@ -279,11 +302,11 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                                 <Form.Control
                                     as="textarea"
                                     rows={4}
-                                    name="observaciones"
-                                    value={formData.observaciones}
-                                    onChange={handleChange}
+                                    {...register("observaciones")}
                                     placeholder="Describa brevemente la labor realizada..."
+                                    isInvalid={!!errors.observaciones}
                                 />
+                                <Form.Control.Feedback type="invalid">{errors.observaciones?.message}</Form.Control.Feedback>
                             </Form.Group>
                         </>
                     )}

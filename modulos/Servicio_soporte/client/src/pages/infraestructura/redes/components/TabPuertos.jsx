@@ -1,22 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import helpFetch from "../../../../utils/helpFetch";
+
+const schema = z.object({
+    nroPuerto: z.string().min(1, "Ingrese el número de puerto").max(20, "Máximo 20 caracteres"),
+    panelId: z.string().min(1, "Seleccione un panel de pared")
+});
 
 export const TabPuertos = () => {
     const [dataList, setDataList] = useState([]);
     const [panelesPared, setPanelesPared] = useState([]);
     const [loading, setLoading] = useState(true);
-    
-    // Modal states
+
     const [modalVisible, setModalVisible] = useState(false);
     const [modalAction, setModalAction] = useState('crear');
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    
-    // Form state
     const [currentId, setCurrentId] = useState(null);
-    const [nroPuerto, setNroPuerto] = useState('');
-    const [panelId, setPanelId] = useState('');
+    const [deleteItemLabel, setDeleteItemLabel] = useState('');
+
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { nroPuerto: "", panelId: "" }
+    });
 
     const fetchDataList = async () => {
         try {
@@ -25,7 +34,7 @@ export const TabPuertos = () => {
                 helpFetch.GET("/puertos"),
                 helpFetch.GET("/panel_pared")
             ]);
-            
+
             setDataList(puertosData);
             setPanelesPared(panelesData);
         } catch (error) {
@@ -41,38 +50,38 @@ export const TabPuertos = () => {
     }, []);
 
     const handleShowCreate = () => {
-        setNroPuerto('');
-        setPanelId('');
+        reset({ nroPuerto: "", panelId: "" });
         setModalAction('crear');
         setModalVisible(true);
     };
 
     const handleShowEdit = (item) => {
         setCurrentId(item.id);
-        setNroPuerto(item.nro_puerto || '');
-        setPanelId(item.panel_id || '');
+        reset({
+            nroPuerto: item.nro_puerto || "",
+            panelId: String(item.panel_id || "")
+        });
         setModalAction('editar');
         setModalVisible(true);
     };
 
     const handleShowDelete = (item) => {
         setCurrentId(item.id);
-        setNroPuerto(item.nro_puerto);
+        setDeleteItemLabel(item.nro_puerto);
         setDeleteModalVisible(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             const isEdit = modalAction === 'editar';
             const method = isEdit ? 'PATCH' : 'POST';
             const url = isEdit ? `/puertos/${currentId}` : `/puertos`;
 
-            await helpFetch[method](url, { 
-                nro_puerto: nroPuerto, 
-                panel_id: panelId 
+            await helpFetch[method](url, {
+                nro_puerto: data.nroPuerto,
+                panel_id: data.panelId
             });
-            
+
             toast.success(`Puerto ${isEdit ? 'actualizado' : 'registrado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
@@ -148,30 +157,28 @@ export const TabPuertos = () => {
                 </tbody>
             </Table>
 
-            {/* Modal Crear/Editar */}
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>{modalAction === 'crear' ? `Añadir Puerto` : `Editar Puerto`}</Modal.Title>
                 </Modal.Header>
-                <Form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
                         <Form.Group className="mb-3">
                             <Form.Label>Nro. del Puerto (Etiqueta de la pared)</Form.Label>
-                            <Form.Control 
+                            <Form.Control
                                 type="text"
                                 placeholder="Ej. A-12"
-                                value={nroPuerto}
-                                onChange={(e) => setNroPuerto(e.target.value)}
-                                required
+                                {...register("nroPuerto")}
+                                isInvalid={!!errors.nroPuerto}
                                 autoFocus
                             />
+                            <Form.Control.Feedback type="invalid">{errors.nroPuerto?.message}</Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Seleccionar Caja/Roseta (Panel de Pared)</Form.Label>
-                            <Form.Select 
-                                value={panelId}
-                                onChange={(e) => setPanelId(e.target.value)}
-                                required
+                            <Form.Select
+                                {...register("panelId")}
+                                isInvalid={!!errors.panelId}
                             >
                                 <option value="">Seleccione a dónde pertenece...</option>
                                 {panelesPared.map(pp => (
@@ -180,6 +187,7 @@ export const TabPuertos = () => {
                                     </option>
                                 ))}
                             </Form.Select>
+                            <Form.Control.Feedback type="invalid">{errors.panelId?.message}</Form.Control.Feedback>
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
@@ -193,13 +201,12 @@ export const TabPuertos = () => {
                 </Form>
             </Modal>
 
-            {/* Modal Eliminar */}
             <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Eliminación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar la etiqueta de puerto <strong>"{nroPuerto}"</strong>?
+                    ¿Estás seguro de que deseas eliminar la etiqueta de puerto <strong>"{deleteItemLabel}"</strong>?
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>

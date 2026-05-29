@@ -10,6 +10,9 @@ import {
 // Aquí podrías agregar middlewares de autenticación o autorización si lo necesitas
 // import { authRequired } from '../middlewares/auth.middleware.js'
 
+import { validateSchema } from '../middlewares/validateSchema.js'
+import { updateUserSchema, updatePasswordSchema } from '../utils/schemas/userSchema.js'
+
 const router = Router()
 
 // Obtener todos los usuarios
@@ -22,10 +25,10 @@ router.get('/roles', obtenerRoles)
 router.get('/:id', obtenerUsuario)
 
 // Actualizar datos de un usuario (sin contraseña)
-router.put('/:id', actualizarUsuario)
+router.put('/:id', validateSchema(updateUserSchema), actualizarUsuario)
 
 // Actualizar la contraseña de un usuario
-router.put('/:id/password', actualizarClaveUsuario)
+router.put('/:id/password', validateSchema(updatePasswordSchema), actualizarClaveUsuario)
 
 // Eliminar un usuario
 router.delete('/:id', eliminarUsuario)

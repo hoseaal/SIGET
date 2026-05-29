@@ -4,6 +4,30 @@ import { toast } from 'react-toastify';
 import helpFetch from '../../../utils/helpFetch';
 import { generateTransferPDF } from '../../../utils/ReporteTransferencia';
 import { FichaTecnicaEquipoInline } from '../../equipos/components/FichaTecnicaEquipoInline';
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const gestionTransferenciaSchema = z.object({
+    status: z.string().min(1, "Debe seleccionar un estado"),
+    prioridad: z.string().optional(),
+    diagnostico_tecnico: z.string().optional(),
+    solucion_tecnica: z.string().optional(),
+    tipo_act: z.string().optional(),
+    clasificacion_id: z.number().nullable().optional(),
+    codigo_validacion: z.string().optional(),
+}).refine((data) => {
+    if (data.status === '7' && !data.tipo_act) return false;
+    return true;
+}, { message: "Seleccione tipo de actividad", path: ["tipo_act"] })
+.refine((data) => {
+    if (data.status === '7' && (data.clasificacion_id === null || data.clasificacion_id === undefined)) return false;
+    return true;
+}, { message: "Seleccione clasificación", path: ["clasificacion_id"] })
+.refine((data) => {
+    if (data.status === '7' && !data.codigo_validacion?.trim()) return false;
+    return true;
+}, { message: "Ingrese código de validación", path: ["codigo_validacion"] });
 
 /**
  * Modal para que el técnico gestione la transferencia.
@@ -20,27 +44,31 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
     const [fetchingEquipo, setFetchingEquipo] = useState(false);
     const [activeTab, setActiveTab] = useState('gestion');
 
-    // Form state
-    const [formData, setFormData] = useState({
-        status: '',
-        prioridad: '',
-        diagnostico_tecnico: '',
-        solucion_tecnica: '',
-        codigo_validacion: '',
-        clasificacion_id: null,
-        tipo_act: ''
+    const { register, handleSubmit, formState: { errors }, control, reset, watch } = useForm({
+        resolver: zodResolver(gestionTransferenciaSchema),
+        defaultValues: {
+            status: '',
+            prioridad: 'Media',
+            diagnostico_tecnico: '',
+            solucion_tecnica: '',
+            codigo_validacion: '',
+            clasificacion_id: null,
+            tipo_act: ''
+        }
     });
+
+    const watchedStatus = watch('status');
 
     useEffect(() => {
         if (show && transferencia) {
-            setFormData({
-                status: transferencia.status || '',
+            reset({
+                status: String(transferencia.status || ''),
                 prioridad: transferencia.prioridad || 'Media',
                 diagnostico_tecnico: transferencia.diagnostico_tecnico || '',
                 solucion_tecnica: transferencia.solucion_tecnica || '',
                 codigo_validacion: '',
                 clasificacion_id: transferencia.clasificacion_id || null,
-                tipo_act: transferencia.tipo_act || ''
+                tipo_act: String(transferencia.tipo_act || '')
             });
             fetchInitialData();
         }
@@ -72,49 +100,20 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleClasificacionChange = (id) => {
-        setFormData(prev => ({
-            ...prev,
-            clasificacion_id: prev.clasificacion_id === id ? null : id
-        }));
-    };
-
-    const handleSave = async () => {
-        if (!formData.status) {
-            toast.warning("Debe seleccionar un estado.");
-            return;
-        }
-
-        // Si se marca como entregado, validar que tenga tipo de actividad y clasificación
-        if (parseInt(formData.status) === 7) {
-            if (!formData.tipo_act) {
-                toast.warning("Debe seleccionar el Tipo de Actividad para el reporte final.");
-                return;
-            }
-            if (!formData.clasificacion_id) {
-                toast.warning("Debe seleccionar una Clasificación para el reporte final.");
-                return;
-            }
-        }
-
+    const onSubmit = async (data) => {
         try {
             setLoading(true);
 
             const payload = {
-                ...formData,
+                ...data,
                 usuario_tecnico_id: user?.usuario_id
             };
 
             // Lógica automática de fechas
-            if (parseInt(formData.status) === 3) { // Recibido
+            if (parseInt(data.status) === 3) { // Recibido
                 payload.fecha_recepcion = new Date().toISOString().slice(0, 19).replace('T', ' ');
             }
-            if (parseInt(formData.status) === 7) { // Entregado
+            if (parseInt(data.status) === 7) { // Entregado
                 payload.fecha_entrega = new Date().toISOString().slice(0, 19).replace('T', ' ');
             }
 
@@ -122,11 +121,11 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
             toast.success("Gestión actualizada correctamente.");
 
             // Si el estado es Entregado, generar el PDF automáticamente
-            if (formData.status == 7) {
+            if (data.status == 7) {
                 generateTransferPDF({
                     ...transferencia,
-                    diagnostico_tecnico: formData.diagnostico_tecnico,
-                    solucion_tecnica: formData.solucion_tecnica
+                    diagnostico_tecnico: data.diagnostico_tecnico,
+                    solucion_tecnica: data.solucion_tecnica
                 }, { nombre: user?.nombre || 'Técnico de Soporte' });
             }
 
@@ -183,7 +182,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label>Estado de la Transferencia</Form.Label>
-                                        <Form.Select name="status" value={formData.status} onChange={handleChange} disabled={isEntregado}>
+                                        <Form.Select {...register("status")} disabled={isEntregado} isInvalid={!!errors.status}>
                                             <option value="2">Pendiente (Sin recibir)</option>
                                             <option value="3">Recibido (En Soporte)</option>
                                             <option value="4">En Revisión</option>
@@ -192,12 +191,13 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                                             <option value="7">Entregado / Finalizado</option>
                                             <option value="8">Anulado</option>
                                         </Form.Select>
+                                        <Form.Control.Feedback type="invalid">{errors.status?.message}</Form.Control.Feedback>
                                     </Form.Group>
                                 </Col>
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label>Prioridad Asignada</Form.Label>
-                                        <Form.Select name="prioridad" value={formData.prioridad} onChange={handleChange} disabled={isEntregado}>
+                                        <Form.Select {...register("prioridad")} disabled={isEntregado}>
                                             <option value="Baja">Baja</option>
                                             <option value="Media">Media</option>
                                             <option value="Alta">Alta</option>
@@ -211,9 +211,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                                 <Form.Control
                                     as="textarea"
                                     rows={2}
-                                    name="diagnostico_tecnico"
-                                    value={formData.diagnostico_tecnico}
-                                    onChange={handleChange}
+                                    {...register("diagnostico_tecnico")}
                                     placeholder="Describa los hallazgos técnicos..."
                                     disabled={isEntregado}
                                 />
@@ -224,9 +222,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                                 <Form.Control
                                     as="textarea"
                                     rows={3}
-                                    name="solucion_tecnica"
-                                    value={formData.solucion_tecnica}
-                                    onChange={handleChange}
+                                    {...register("solucion_tecnica")}
                                     placeholder="Describa el mantenimiento realizado y el estado final del equipo..."
                                     disabled={isEntregado}
                                 />
@@ -235,18 +231,16 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                             <Form.Group className="mb-4">
                                 <Form.Label className="fw-bold text-primary">Tipo de Actividad / Falla <span className="text-danger">*</span></Form.Label>
                                 <Form.Select
-                                    name="tipo_act"
-                                    value={formData.tipo_act}
-                                    onChange={handleChange}
+                                    {...register("tipo_act")}
                                     disabled={isEntregado}
-                                    required
-                                    className={!formData.tipo_act && parseInt(formData.status) === 7 ? "border-danger" : ""}
+                                    isInvalid={!!errors.tipo_act}
                                 >
                                     <option value="">-- Seleccionar el tipo de falla detectada --</option>
                                     {tiposAct.map(t => (
                                         <option key={t.id} value={t.id}>{t.nombre}</option>
                                     ))}
                                 </Form.Select>
+                                <Form.Control.Feedback type="invalid">{errors.tipo_act?.message}</Form.Control.Feedback>
                                 <Form.Text className="text-muted">
                                     Esta información es necesaria para el reporte de actividades institucional.
                                 </Form.Text>
@@ -257,79 +251,105 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                                 <Row>
                                     <Col md={4}>
                                         <div className="fw-bold small mb-2 border-bottom">Mant. Preventivo</div>
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Software"
-                                            checked={formData.clasificacion_id === 1}
-                                            onChange={() => handleClasificacionChange(1)}
-                                            id="chk-tra-prev-sw"
-                                            disabled={isEntregado}
-                                        />
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Hardware"
-                                            checked={formData.clasificacion_id === 2}
-                                            onChange={() => handleClasificacionChange(2)}
-                                            id="chk-tra-prev-hw"
-                                            disabled={isEntregado}
+                                        <Controller
+                                            name="clasificacion_id"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <>
+                                                    <Form.Check
+                                                        type="checkbox"
+                                                        label="Software"
+                                                        checked={field.value === 1}
+                                                        onChange={() => field.onChange(field.value === 1 ? null : 1)}
+                                                        id="chk-tra-prev-sw"
+                                                        disabled={isEntregado}
+                                                    />
+                                                    <Form.Check
+                                                        type="checkbox"
+                                                        label="Hardware"
+                                                        checked={field.value === 2}
+                                                        onChange={() => field.onChange(field.value === 2 ? null : 2)}
+                                                        id="chk-tra-prev-hw"
+                                                        disabled={isEntregado}
+                                                    />
+                                                </>
+                                            )}
                                         />
                                     </Col>
                                     <Col md={4}>
                                         <div className="fw-bold small mb-2 border-bottom">Mant. Correctivo</div>
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Software"
-                                            checked={formData.clasificacion_id === 3}
-                                            onChange={() => handleClasificacionChange(3)}
-                                            id="chk-tra-corr-sw"
-                                            disabled={isEntregado}
-                                        />
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Hardware"
-                                            checked={formData.clasificacion_id === 4}
-                                            onChange={() => handleClasificacionChange(4)}
-                                            id="chk-tra-corr-hw"
-                                            disabled={isEntregado}
+                                        <Controller
+                                            name="clasificacion_id"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <>
+                                                    <Form.Check
+                                                        type="checkbox"
+                                                        label="Software"
+                                                        checked={field.value === 3}
+                                                        onChange={() => field.onChange(field.value === 3 ? null : 3)}
+                                                        id="chk-tra-corr-sw"
+                                                        disabled={isEntregado}
+                                                    />
+                                                    <Form.Check
+                                                        type="checkbox"
+                                                        label="Hardware"
+                                                        checked={field.value === 4}
+                                                        onChange={() => field.onChange(field.value === 4 ? null : 4)}
+                                                        id="chk-tra-corr-hw"
+                                                        disabled={isEntregado}
+                                                    />
+                                                </>
+                                            )}
                                         />
                                     </Col>
                                     <Col md={4}>
                                         <div className="fw-bold small mb-2 border-bottom">Plat. Tecnológica</div>
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Servicios / Redes"
-                                            checked={formData.clasificacion_id === 5}
-                                            onChange={() => handleClasificacionChange(5)}
-                                            id="chk-tra-plat-serv"
-                                            disabled={isEntregado}
-                                        />
-                                        <Form.Check
-                                            type="checkbox"
-                                            label="Informes"
-                                            checked={formData.clasificacion_id === 6}
-                                            onChange={() => handleClasificacionChange(6)}
-                                            id="chk-tra-plat-inf"
-                                            disabled={isEntregado}
+                                        <Controller
+                                            name="clasificacion_id"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <>
+                                                    <Form.Check
+                                                        type="checkbox"
+                                                        label="Servicios / Redes"
+                                                        checked={field.value === 5}
+                                                        onChange={() => field.onChange(field.value === 5 ? null : 5)}
+                                                        id="chk-tra-plat-serv"
+                                                        disabled={isEntregado}
+                                                    />
+                                                    <Form.Check
+                                                        type="checkbox"
+                                                        label="Informes"
+                                                        checked={field.value === 6}
+                                                        onChange={() => field.onChange(field.value === 6 ? null : 6)}
+                                                        id="chk-tra-plat-inf"
+                                                        disabled={isEntregado}
+                                                    />
+                                                </>
+                                            )}
                                         />
                                     </Col>
                                 </Row>
+                                {errors.clasificacion_id && (
+                                    <div className="text-danger small mt-2">{errors.clasificacion_id.message}</div>
+                                )}
                             </div>
 
-                            {formData.status == 7 && transferencia.status != 7 && (
+                            {watchedStatus == 7 && transferencia.status != 7 && (
                                 <div className="bg-light p-3 rounded mb-3 border border-success">
                                     <Form.Group>
                                         <Form.Label className="text-success fw-bold">Código de Validación de Entrega <span className="text-danger">*</span></Form.Label>
                                         <Form.Control
                                             type="text"
-                                            name="codigo_validacion"
-                                            value={formData.codigo_validacion}
-                                            onChange={handleChange}
+                                            {...register("codigo_validacion")}
                                             placeholder="Ingrese el código proporcionado por el usuario"
                                             maxLength={6}
                                             className="form-control-lg text-center fw-bold"
                                             style={{ letterSpacing: '5px' }}
-                                            required
+                                            isInvalid={!!errors.codigo_validacion}
                                         />
+                                        <Form.Control.Feedback type="invalid">{errors.codigo_validacion?.message}</Form.Control.Feedback>
                                         <Form.Text className="text-muted">
                                             Este código es obligatorio para finalizar la entrega y debe ser proporcionado por el usuario solicitante.
                                         </Form.Text>
@@ -337,7 +357,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                                 </div>
                             )}
 
-                            {formData.status == 7 && transferencia.status != 7 && (
+                            {watchedStatus == 7 && transferencia.status != 7 && (
                                 <div className="alert alert-success d-flex align-items-center">
                                     <i className="bx bx-check-circle me-2"></i>
                                     <div>
@@ -365,7 +385,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                 <Button variant="secondary" onClick={onHide} disabled={loading}>
                     Cerrar
                 </Button>
-                <Button variant="primary" onClick={handleSave} disabled={loading}>
+                <Button variant="primary" onClick={handleSubmit(onSubmit)} disabled={loading}>
                     {loading ? <Spinner size="sm" animation="border" className="me-1" /> : <i className="bx bx-save me-1"></i>}
                     Guardar Cambios
                 </Button>
