@@ -57,6 +57,7 @@ export class EquipoModel {
             t.modelo_id as toner_modelo_id,
             ma_t.nombre as toner_marca_nombre,
             mo_t.nombre as toner_modelo_nombre,
+            imp.asig_toner,
             ec.nombre_equipo, 
             ec.sistema_operativo, 
             ec.version_office, 
@@ -133,6 +134,7 @@ export class EquipoModel {
                     toner_marca_nombre: row.toner_marca_nombre,
                     toner_modelo_nombre: row.toner_modelo_nombre,
                     ip: row.ip,
+                    asig_toner: row.asig_toner || 0,
                     detalles: []
                 });
             }
@@ -160,5 +162,13 @@ export class EquipoModel {
         });
 
         return Array.from(equiposMap.values());
+    }
+
+    static async incrementarAsigToner(equipoId, connection = pool) {
+        const [result] = await connection.query(
+            'UPDATE impresoras SET asig_toner = asig_toner + 1 WHERE equipo_id = ?',
+            [equipoId]
+        );
+        return result.affectedRows > 0;
     }
 }

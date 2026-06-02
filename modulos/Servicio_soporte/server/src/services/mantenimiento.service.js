@@ -1,4 +1,5 @@
 import { MantenimientoModel } from '../models/mantenimiento.model.js'
+import { EquipoModel } from '../models/equipo.model.js'
 import { actividadesModel } from '../models/actividades.model.js'
 
 export class MantenimientoService {
@@ -69,6 +70,16 @@ export class MantenimientoService {
                 ...updatedMaint,
                 clasificacion_id
             })
+
+            // 3. Si es instalación de toner (tipo_falla 10 o 14), incrementar contador
+            if (updatedMaint.equipo_id && [10, 14].includes(parseInt(updatedMaint.tipo_falla))) {
+                try {
+                    await EquipoModel.incrementarAsigToner(updatedMaint.equipo_id)
+                    console.log(`✅ asig_toner incrementado para equipo ${updatedMaint.equipo_id}`)
+                } catch (error) {
+                    console.error(`❌ Error al incrementar asig_toner:`, error.message)
+                }
+            }
         }
 
         return success

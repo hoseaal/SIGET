@@ -1,4 +1,5 @@
 import { actividadesModel } from '../models/actividades.model.js';
+import { EquipoModel } from '../models/equipo.model.js';
 
 export class ActividadesService {
 
@@ -51,7 +52,19 @@ export class ActividadesService {
             observaciones: observationsFinal
         };
 
-        return await actividadesModel.create(processedData);
+        const result = await actividadesModel.create(processedData);
+
+        // 3. Si es instalación de toner (tipo_act 10 o 14) y tiene equipo, incrementar contador
+        if (datos.equipo_id && [10, 14].includes(parseInt(datos.tipo_act))) {
+            try {
+                await EquipoModel.incrementarAsigToner(datos.equipo_id);
+                console.log(`✅ asig_toner incrementado para equipo ${datos.equipo_id} desde actividades`);
+            } catch (error) {
+                console.error(`❌ Error al incrementar asig_toner desde actividades:`, error.message);
+            }
+        }
+
+        return result;
     }
 
     static async actualizar(id, datos) {

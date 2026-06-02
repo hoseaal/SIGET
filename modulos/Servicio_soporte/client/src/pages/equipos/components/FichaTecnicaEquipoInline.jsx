@@ -134,6 +134,13 @@ export const FichaTecnicaEquipoInline = ({ equipo }) => {
                             </div>
                         </Col>
                     </Row>
+                    <div className="mt-3 p-3 border rounded bg-light text-center">
+                        <div className="text-muted small mb-1">Tóneres Asignados</div>
+                        <div className="fw-bold fs-5 text-success d-flex align-items-center justify-content-center">
+                            <i className="bx bx-printer me-2"></i>
+                            {equipo.asig_toner || 0}
+                        </div>
+                    </div>
                 </div>
             )}
 

@@ -57,7 +57,15 @@ export const RegistroActividadModal = ({ show, onHide, onSuccess, user }) => {
                 helpFetch.GET("/actividades/proximo-numero")
             ]);
             setDepartamentos(deps);
-            setTiposAct(tipos);
+            const soporte = deps.find(d =>
+                d.nombre.toUpperCase().includes('DIVISIÓN DE SERVICIO TÉCNICO') ||
+                d.nombre.toUpperCase().includes('DIVISION DE SERVICIO TECNICO')
+            );
+            setTiposAct(
+                soporte
+                    ? tipos.filter(t => t.depto_id === soporte.id || t.nombre.toUpperCase() === 'OTRO')
+                    : tipos
+            );
             setValue("nro_act", nextNum.numero);
         } catch (error) {
             console.error(error);
