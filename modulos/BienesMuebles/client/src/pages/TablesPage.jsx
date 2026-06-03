@@ -1,6 +1,6 @@
-import imgImg5 from '../assets/img/avatars/5.png';
-import imgImg6 from '../assets/img/avatars/6.png';
-import imgImg7 from '../assets/img/avatars/7.png';
+import imgImg5 from '../../public/assets/img/avatars/5.png';
+import imgImg6 from '../../public/assets/img/avatars/6.png';
+import imgImg7 from '../../public/assets/img/avatars/7.png';
 import React from 'react'
 
 export const TablesPage = () => {

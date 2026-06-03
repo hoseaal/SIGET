@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import menuData from '../data/menuData.json';
 import { menuPermissions } from '../data/dataPermissions';
-import logoContraloria from '../../../assets/img/logo-contraloria-home2.png';
+import logoContraloria from '../../public/assets/img/logo-contraloria-home2.png';
 
 const Sidebar = () => {
     const [userType, setUserType] = useState(null);

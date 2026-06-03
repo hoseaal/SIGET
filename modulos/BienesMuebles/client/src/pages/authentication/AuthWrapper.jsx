@@ -1,4 +1,4 @@
-import imgLogoContraloriaHome2 from '../../../assets/img/logo-contraloria-home2.png';
+import imgLogoContraloriaHome2 from '../../../public/assets/img/logo-contraloria-home2.png';
 import React from 'react'
 import { Link } from 'react-router-dom'
 import './page-auth.css'
