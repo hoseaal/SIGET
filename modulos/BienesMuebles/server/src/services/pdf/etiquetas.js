@@ -94,13 +94,6 @@ export function generarEtiquetasPDF (bienes) {
       const effectiveLogoHeight = 60
       doc.text(titleText, titleX, contentY + (effectiveLogoHeight / 2) - (titleHeight / 2), { align: 'center', width: TAG_WIDTH - (tagContentPadding * 2) })
 
-      // Fecha actual (alineada a la derecha)
-      const currentDate = new Date()
-      const formattedDate = `${currentDate.getDate().toString().padStart(2, '0')}/${(currentDate.getMonth() + 1).toString().padStart(2, '0')}/${currentDate.getFullYear()}`
-      const dateText = `Fecha: ${formattedDate}`
-      doc.font('Helvetica').fontSize(8)
-      const dateWidth = doc.widthOfString(dateText)
-      doc.text(dateText, tagContentRightX - dateWidth, contentY)
 
       // Información del bien (alineada a la izquierda)
       contentY = Math.max(contentY + effectiveLogoHeight, currentY + tagContentPadding + titleHeight + 5)
@@ -110,6 +103,23 @@ export function generarEtiquetasPDF (bienes) {
       contentY += 14
       doc.text(`Ubicación: ${bien.departamento}`, tagContentX, contentY)
       contentY += 14
+      
+      // --- MODIFICACIÓN PARA DESCRIPCIÓN ---
+      // Definimos el ancho máximo permitido (Ancho de etiqueta - márgenes internos)
+      const maxTextWidth = TAG_WIDTH - (tagContentPadding * 2);
+      
+      // Escribimos la descripción con wrap y un alto máximo para que no pise la fecha
+      // Si el texto es muy largo, PDFKit lo cortará y añadirá "..."
+      doc.text(`Descripcion: ${bien.descripcion}`, tagContentX, contentY, {
+        width: maxTextWidth,
+        height: 28, // Permite aproximadamente 2 líneas de texto
+        ellipsis: true
+      });
+      
+      // Bajamos el cursor lo suficiente para la fecha (28 puntos de la descripción + un pequeño margen)
+      contentY += 32; 
+      // -------------------------------------
+
       doc.text(`Fecha de asignación: ${bien.bim_fec}`, tagContentX, contentY)
 
       currentY += TAG_HEIGHT + verticalSpacing

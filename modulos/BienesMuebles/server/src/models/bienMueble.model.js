@@ -217,6 +217,12 @@ export class BienMuebleModel {
       queryParams.push(filters.esu)
     }
 
+    if (filters.search) {
+      whereClauses.push('(b.bim_des LIKE ? OR b.bim_ide LIKE ?)')
+      queryParams.push(`%${filters.search}%`)
+      queryParams.push(`%${filters.search}%`)
+    }
+
     // Construcción de la consulta base
     let baseQuery = `SELECT b.*, d.dep_nom AS departamento FROM tmab_m b
     LEFT JOIN tesdep d ON b.dep_ide=d.dep_ide`
@@ -272,6 +278,12 @@ export class BienMuebleModel {
     if (filters.esu) {
       whereClauses.push('b.esu_ide = ?')
       queryParams.push(filters.esu)
+    }
+
+    if (filters.search) {
+      whereClauses.push('(b.bim_des LIKE ? OR b.bim_ide LIKE ?)')
+      queryParams.push(`%${filters.search}%`)
+      queryParams.push(`%${filters.search}%`)
     }
 
     if (filters.fechaIncorporacionDesde) {

@@ -69,7 +69,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
     const [originalData, setOriginalData] = useState({});
     const [columns, setColumns] = useState([]);
     const [bienData, setBienData] = useState(null);
-    const [prestamoInfo, setPrestamoInfo] = useState(null); 
+    const [prestamoInfo, setPrestamoInfo] = useState(null);
     const [selectOptions, setSelectOptions] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -89,7 +89,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 setSuccess('');
                 try {
                     const { columns: metaColumns, primaryKey } = await getTableMetadata('tmab_m');
-                    
+
                     const visibleColumns = metaColumns.filter(
                         col => col.name !== 'bim_inc' && col.name !== 'bim_fed'
                     );
@@ -97,7 +97,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     const formattedColumns = visibleColumns.map(col => {
                         const isPK = col.name === primaryKey;
                         const isEditable = Object.keys(editableFields).includes(col.name) && !isPK;
-                        
+
                         return {
                             originalName: col.name,
                             displayName: columnAliasBim[col.name] || col.name,
@@ -122,8 +122,8 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     const bienRes = await fetch(`/api/bienes/${BienId}`);
                     if (!bienRes.ok) throw new Error('No se pudo cargar el bien.');
                     const bienJson = await bienRes.json();
-                    const bien = Array.isArray(bienJson.data) ? bienJson.data[0] : bienJson; 
-                    
+                    const bien = Array.isArray(bienJson.data) ? bienJson.data[0] : bienJson;
+
                     setBienData(bien);
                     setOriginalData(bien);
                     setFormData(bien);
@@ -151,7 +151,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                             const data = await res.json();
                             return { [key]: Array.isArray(data.data) ? data.data : data };
                         });
-                    
+
                     const optionsResults = await Promise.all(optionPromises);
                     const allOptions = Object.assign({}, ...optionsResults);
                     setSelectOptions(allOptions);
@@ -176,10 +176,10 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
         setLoading(true);
         setError('');
         setSuccess('');
-        
+
         try {
             const changedFields = {};
-            
+
             Object.keys(editableFields).forEach(key => {
                 // Comparamos valores (convirtiendo a string por si acaso vienen números y strings mixtos)
                 if (String(formData[key]) !== String(originalData[key])) {
@@ -203,12 +203,12 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(changedFields),
             });
-            
+
             if (!response.ok) {
                 const errData = await response.json();
-                throw new Error(errData.message || 'Error al actualizar el registro.');
+                throw new Error(errData.message || errData.error || 'Error al actualizar el registro.');
             }
-            
+
             setSuccess('✓ Actualizado correctamente');
             setTimeout(() => {
                 handleClose();
@@ -259,15 +259,15 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 <Form.Control
                     type="text"
                     value={fieldDisplayMap[fieldName] || ''}
-                    disabled={true} 
+                    disabled={true}
                     readOnly={true}
                     className="form-control-readonly"
                 />
             );
         }
-        
+
         if (fieldName === 'bim_fec') {
-            const formattedDate = formData[fieldName] 
+            const formattedDate = formData[fieldName]
                 ? new Date(formData[fieldName]).toISOString().split('T')[0]
                 : '';
             return (
@@ -286,7 +286,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
             // Lógica para detectar dinámicamente qué campo es el ID y cuál el Label en el objeto
             const valueKey = options.length > 0 ? Object.keys(options[0]).find(k => k.endsWith('_ide')) : '';
             const displayKey = options.length > 0 ? Object.keys(options[0]).find(k => !k.endsWith('_ide') && k !== valueKey) : '';
-            
+
             return (
                 <Form.Select
                     name={fieldName}
@@ -301,29 +301,25 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 </Form.Select>
             );
         }
-        
+
         if (['bim_des', 'bim_obs'].includes(fieldName)) {
             return (
                 <Form.Control
-                    as="textarea" 
-                    rows={3} 
+                    as="textarea"
+                    rows={3}
                     name={fieldName}
-                    value={formData[fieldName] || ''} 
+                    value={formData[fieldName] || ''}
                     onChange={handleChange}
                     disabled={isDisabled}
                 />
             );
         }
-        // Excluir 'dep_ide' de este renderizado genérico (se muestra arriba manualmente)
-        if (fieldName === 'dep_ide') {
-            return null; 
-        }
 
         return (
             <Form.Control
-                type="text" 
+                type="text"
                 name={fieldName}
-                value={formData[fieldName] || ''} 
+                value={formData[fieldName] || ''}
                 onChange={handleChange}
                 readOnly={!column.isEditable}
                 disabled={isDisabled}
@@ -335,7 +331,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
     const getEstadoBadge = (est_ide) => {
         const estado = estadosBien.find(e => e.est_ide === Number(est_ide));
         if (!estado) return null;
-        
+
         return (
             <span className={`badge ${estado.badgeClass} me-1`}>
                 {estado.est_est}
@@ -356,7 +352,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
         <Modal show={show} onHide={handleClose} size="xl" backdrop="static">
             <Form onSubmit={handleSubmit}>
                 <Modal.Header closeButton>
-                    <Modal.Title className="w-100"> 
+                    <Modal.Title className="w-100">
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <span>Editar Bien: {bienData?.bim_ide}</span>
                             {bienData?.est_ide && (
@@ -375,43 +371,8 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                             <p className="mt-2">Cargando datos del bien...</p>
                         </div>
                     ) : (
-                        <Row className="mb-6 g-3"> 
-                            {/* Información de Ubicación (Solo Lectura) */}
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Departamento Propietario (Origen):</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        value={bienData?.departamento || ''}
-                                        disabled={true}
-                                        readOnly={true}
-                                        className="form-control-readonly"
-                                        style={{ fontWeight: '500' }}
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col md={6}>
-                                <Form.Group className="mb-3">
-                                    <Form.Label>{getUbicacionLabel()}</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        value={prestamoInfo 
-                                            ? `${prestamoInfo.departamento_destino_nombre}`
-                                            : 'En resguardo del propietario'}
-                                        disabled={true} 
-                                        readOnly={true}
-                                        className={prestamoInfo ? 'form-control-readonly border-info' : 'form-control-readonly'}
-                                        style={{ fontWeight: 'bold', color: prestamoInfo ? '#007bff' : '#6c757d' }}
-                                    />
-                                    {prestamoInfo && (
-                                        <Form.Text className="text-muted">
-                                            Este bien tiene un movimiento activo. Puede editar sus características físicas, pero no su departamento origen.
-                                        </Form.Text>
-                                    )}
-                                </Form.Group>
-                            </Col>
-                        
-                            <div className="border-bottom my-2"></div> {/* Separador */}
+                        <Row className="mb-6 g-3">
+
 
                             {/* Renderizado dinámico de columnas */}
                             {columns.map((column) => {
@@ -434,12 +395,12 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 <Modal.Footer>
                     {(error || success) && (
                         <div className="flex-grow-1">
-                             <Alert type={error ? 'danger' : 'success'}>{error || success}</Alert>
+                            <Alert type={error ? 'danger' : 'success'}>{error || success}</Alert>
                         </div>
                     )}
                     <Button variant="secondary" onClick={handleClose} disabled={loading}>Cancelar</Button>
                     <Button variant="primary" type="submit" disabled={loading}>
-                        {loading ? <><Spinner as="span" animation="border" size="sm" className="me-1"/> Guardando...</> : 'Guardar Cambios'}
+                        {loading ? <><Spinner as="span" animation="border" size="sm" className="me-1" /> Guardando...</> : 'Guardar Cambios'}
                     </Button>
                 </Modal.Footer>
             </Form>

@@ -33,4 +33,18 @@ export class SubcategoriaService {
     if (!existe) throw new Error('Subcategoría no existe')
     return await SubcategoriaModel.delete(id)
   }
+
+  static async obtenerPagina ({ page = 1, limit = 10, search = '' }) {
+    if (page < 1 || limit < 1) throw new Error('Parámetros de paginación inválidos')
+    const result = await SubcategoriaModel.getPage({ page, limit, search })
+    return {
+      data: result.data,
+      meta: {
+        page: Number(page),
+        limit: Number(limit),
+        total: Number(result.total),
+        totalPages: Math.ceil(result.total / limit)
+      }
+    }
+  }
 }

@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, Alert, Row, Col, Spinner } from 'react-bootstrap';
-import Select from 'react-select'; 
+import Select from 'react-select';
 
 function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
-    const DEP_ALMACEN_03 = 11; 
-    const DEP_ALMACEN_04 = 9;  
+    const DEP_ALMACEN_03 = 11;
+    const DEP_ALMACEN_04 = 9;
 
     const [formData, setFormData] = useState({
-        pre_ndo: '',                         
-        pre_tip: 'Oficio',            
-        pre_fec: new Date().toISOString().slice(0, 10), 
-        dep_origen_ide: '',                  
-        dep_ide: '',    
-        bienesSeleccionados: [],             
+        pre_ndo: '',
+        pre_tip: 'Oficio',
+        pre_fec: new Date().toISOString().slice(0, 10),
+        dep_origen_ide: '',
+        dep_ide: '',
+        bienesSeleccionados: [],
     });
 
     const [sinNumero, setSinNumero] = useState(false);
     const [departamentos, setDepartamentos] = useState([]);
     const [filteredBienes, setFilteredBienes] = useState([]); // Eliminamos bienesDisponibles
 
-    const [loading, setLoading] = useState(false); 
+    const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [alertMessage, setAlertMessage] = useState('');
     const [showAlert, setShowAlert] = useState(false);
@@ -31,7 +31,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                 pre_tip: 'Oficio',
                 pre_fec: new Date().toISOString().slice(0, 10),
                 dep_origen_ide: '',
-                dep_ide: '', 
+                dep_ide: '',
                 bienesSeleccionados: [],
             });
             setErrorMessage('');
@@ -50,7 +50,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
 
             const depData = await depRes.json();
             setDepartamentos(Array.isArray(depData) ? depData : (depData.data || []));
-            setFilteredBienes([]); 
+            setFilteredBienes([]);
         } catch (error) {
             console.error('Error fetching initial data:', error);
             setErrorMessage('No se pudieron cargar los datos necesarios.');
@@ -66,15 +66,15 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                 try {
                     const depOrigenId = parseInt(formData.dep_origen_ide);
                     const response = await fetch(`/api/bienes/all?inc=1&dep=${depOrigenId}`, { credentials: 'include' });
-                    
+
                     if (!response.ok) throw new Error('Error al cargar los bienes.');
-                    
+
                     const bienesData = await response.json();
                     const bienesFetched = Array.isArray(bienesData) ? bienesData : (bienesData.data || []);
-                    
+
                     console.log('Bienes obtenidos del backend:', bienesFetched);
                     setFilteredBienes(bienesFetched);
-                    
+
                     // Limpiar selección si los items ya no coinciden
                     setFormData(prev => ({
                         ...prev,
@@ -134,13 +134,6 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
             return;
         }
 
-        if (formData.dep_origen_ide === formData.dep_ide) {
-             setErrorMessage('El destino no puede ser el mismo que el origen.');
-             setShowAlert(true);
-             setLoading(false);
-             return;
-        }
-
         if (formData.bienesSeleccionados.length === 0) {
             setErrorMessage('Debe seleccionar al menos un bien.');
             setShowAlert(true);
@@ -155,7 +148,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
             dep_origen_ide: parseInt(formData.dep_origen_ide),
             dep_ide: parseInt(formData.dep_ide),
             bienes: formData.bienesSeleccionados,
-            pre_cla: 'A' 
+            pre_cla: 'A'
         };
 
         try {
@@ -172,7 +165,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                 setShowAlert(true);
                 setTimeout(() => {
                     handleClose();
-                    if (onSuccess) onSuccess(); 
+                    if (onSuccess) onSuccess();
                 }, 1500);
             } else {
                 throw new Error(responseData.error || 'Error al enviar al almacén.');
@@ -215,7 +208,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                             </Form.Group>
                         </Col>
                         <Col md={6} className="d-flex align-items-end pb-3">
-                                <Form.Group>
+                            <Form.Group>
                                 <Form.Check
                                     type="switch"
                                     id="sin-numero-switch"
@@ -272,7 +265,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                                     {departamentos
                                         .map(dep => (
                                             <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
-                                    ))}
+                                        ))}
                                 </Form.Control>
                             </Form.Group>
                         </Col>
@@ -287,7 +280,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                                             <option key={dep.dep_ide} value={dep.dep_ide}>
                                                 {dep.dep_nom}
                                             </option>
-                                    ))}
+                                        ))}
                                 </Form.Control>
                             </Form.Group>
                         </Col>
@@ -318,7 +311,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
                     Cancelar
                 </Button>
                 <Button variant="primary" onClick={handleSubmit} disabled={loading}>
-                    {loading ? <><Spinner as="span" animation="border" size="sm" className="me-1"/> Procesando...</> : 'Registrar Ingreso'}
+                    {loading ? <><Spinner as="span" animation="border" size="sm" className="me-1" /> Procesando...</> : 'Registrar Ingreso'}
                 </Button>
             </Modal.Footer>
         </Modal>

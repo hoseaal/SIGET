@@ -3,6 +3,9 @@ import { useState, useEffect } from "react"
 import { getTableMetadata } from '../../data/fetchData';
 import { Dropdown } from 'react-bootstrap';
 import ModalEditBm from '../Modales/modalEditBm';
+import ModalViewBm from '../Modales/modalViewBm';
+import ModalPrestarBienRapido from '../Modales/modalPrestarBienRapido';
+import ModalEnviarAlmacenRapido from '../Modales/modalEnviarAlmacenRapido';
 import { EstadoSelect, EstadoDeUsoSelect, DepartamentoSelect} from '../layouts/selectInfinito';
 import { hasPermission, ACTIONS } from '../../data/dataPermissions'
 
@@ -19,9 +22,18 @@ export const Bm1 = () => {
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
 
+    const [viewingItem, setViewingItem] = useState(null);
+    const [showViewModal, setShowViewModal] = useState(false);
+
+    const [lendingItem, setLendingItem] = useState(null);
+    const [showLendingModal, setShowLendingModal] = useState(false);
+
+    const [sendingItem, setSendingItem] = useState(null);
+    const [showSendingModal, setShowSendingModal] = useState(false);
+
     const [userData, setUserData] = useState([]);
 
-     const [search, setSearch] = useState();
+     const [search, setSearch] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
     const [filtros, setFiltros] = useState({
@@ -42,7 +54,6 @@ export const Bm1 = () => {
                     
                     const currentUserType = userDataResult.user.usu_tip;
                     setUserType(currentUserType);
-                    setFilteredMenuData(filterMenuByUserType(menuData, currentUserType));
                 } catch (error) {
                     console.error('Error fetching user data:', error);
                 }
@@ -61,26 +72,21 @@ export const Bm1 = () => {
     useEffect(() => {
     const loadData = async () => {
         try {
-            const limit = searchQuery ? 20 : 10;
-            let url;
-            
-            if (searchQuery) {
-                url = `/api/bienes/des?search=${encodeURIComponent(searchQuery)}&page=1&limit=20`;
-            } else {
-                url = `/api/bienes?inc=1&page=${page}&limit=${limit}`;
-                if (filtros.estado) url += `&estado=${filtros.estado}`;
-                if (filtros.condicion) url += `&con=${filtros.condicion}`;
-                if (filtros.departamento) url += `&dep=${filtros.departamento}`;
-            }
+            const limit = 10;
+            let url = `/api/bienes?inc=1&page=${page}&limit=${limit}`;
+            if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+            if (filtros.estado) url += `&estado=${filtros.estado}`;
+            if (filtros.condicion) url += `&con=${filtros.condicion}`;
+            if (filtros.departamento) url += `&dep=${filtros.departamento}`;
             
             const response = await fetch(url);
             const result = await response.json();
             setData(Array.isArray(result.data) ? result.data : result);
-            
             setMeta(result.meta || {});
         } catch (error) {
             console.error('Error:', error);
             setData([]);
+            setMeta({});
         }
     };
     
@@ -258,52 +264,64 @@ export const Bm1 = () => {
                             setSearchQuery(search); // Solo dispara búsqueda cuando se presiona el botón
                             setPage(1);
                         }}
-                        className=" d-flex gap-2 align-items-center"
-                        >
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Buscar bien por codigo o por descripcion..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                        <button type="submit" className="btn btn-outline-primary">
-                            Buscar
-                        </button>
-                        {search && (
-                            <button
-                            type="button"
-                            className="btn btn-outline-secondary"
-                            onClick={() => {
-                                setSearch('');
-                                setSearchQuery('');
-                                setPage(1);
-                                setFiltros('');
-                            }}
-                            >
-                            Limpiar
-                            </button>
-                        )}
-                        <hr className="my-5" />
+                        className="mb-4"
+                    >
+                        <div className="row g-3 align-items-center">
+                            <div className="col-12 col-md-5">
+                                <div className="input-group">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Buscar por código o descripción..."
+                                        value={search || ''}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+                                    <button type="submit" className="btn btn-outline-primary">
+                                        Buscar
+                                    </button>
+                                    {(searchQuery || search) && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary"
+                                            onClick={() => {
+                                                setSearch('');
+                                                setSearchQuery('');
+                                                setPage(1);
+                                                setFiltros({
+                                                    estado: null,
+                                                    condicion: null,
+                                                    departamento: null
+                                                });
+                                            }}
+                                        >
+                                            Limpiar
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="col-12 col-md-7">
+                                <div className="d-flex flex-wrap gap-2 justify-content-md-end">
+                                    <EstadoSelect
+                                        tipoBien={Estados}
+                                        value={filtros.estado}
+                                        onChange={handleEstadoChange}
+                                    />
 
-                            <EstadoSelect
-                                tipoBien={Estados}
-                                value={filtros.estado}
-                                onChange={handleEstadoChange}
-                            />
+                                    <EstadoDeUsoSelect
+                                        tipoBien={condicion}
+                                        value={filtros.condicion}
+                                        onChange={handleCondicionChange}
+                                    />
 
-                            <EstadoDeUsoSelect
-                                tipoBien={condicion}
-                                value={filtros.condicion}
-                                onChange={handleCondicionChange}
-                            />
-
-                            <DepartamentoSelect
-                                tipoBien={unidadAdmin}
-                                value={filtros.departamento}
-                                onChange={(depId) => setFiltros(prev => ({ ...prev, departamento: depId }))}
-                            />
-                        </form>
+                                    <DepartamentoSelect
+                                        tipoBien={unidadAdmin}
+                                        value={filtros.departamento}
+                                        onChange={(depId) => setFiltros(prev => ({ ...prev, departamento: depId }))}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                         <div className="table-responsive text-nowrap">
                         <table className="table table-bordered table-striped">
                             <thead>
@@ -312,14 +330,14 @@ export const Bm1 = () => {
                                     <th>Descripción</th>
                                     <th>Observación</th>
                                     <th>Estado</th>
-                                    {hasPermission(userType, ACTIONS.VIEW_LOAN_DETAILS) && (<th>Acciones</th> )}
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="table-border-bottom-0">
                                 {Object.entries(datosPorDepartamento).map(([depId, bienes]) => (
                                     <React.Fragment key={depId}>
                                         <tr className="bg-light">
-                                            <td colSpan={userType != '1' ? 5 : 4}>
+                                            <td colSpan={5}>
                                                 <strong>Departamento {depId}: {departamentosMap[depId] || `Departamento ${depId}`}</strong>
                                             </td>
                                         </tr>
@@ -329,22 +347,41 @@ export const Bm1 = () => {
                                                 <td>{truncateText(item.bim_des)}</td>
                                                 <td>{truncateText(item.bim_obs)}</td>
                                                 <td>{getEstadoBadge(item.est_ide)}</td>
-                                                {hasPermission(userType, ACTIONS.VIEW_LOAN_DETAILS) && (
-                                                    <td>
+                                                <td>
                                                     <Dropdown>
                                                         <Dropdown.Toggle variant="secondary" id={`dropdown-${depId}-${index}`} className="nav-dropdown-dark-example">
                                                             <i className="bx bx-dots-vertical-rounded"></i>
                                                         </Dropdown.Toggle>
                                                         <Dropdown.Menu>
                                                             <Dropdown.Item href="#" onClick={() => {
-                                                                setEditingItem(item);
-                                                                setShowUpdateModal(true);
+                                                                setViewingItem(item);
+                                                                setShowViewModal(true);
                                                             }}>
-                                                                <i className="bx bx-edit-alt me-1"></i> Editar
+                                                                <i className="bx bx-show me-1"></i> Vista
+                                                            </Dropdown.Item>
+                                                            {[3, 4, 5].includes(Number(userType)) && (
+                                                                <Dropdown.Item href="#" onClick={() => {
+                                                                    setEditingItem(item);
+                                                                    setShowUpdateModal(true);
+                                                                }}>
+                                                                    <i className="bx bx-edit-alt me-1"></i> Editar
+                                                                </Dropdown.Item>
+                                                            )}
+                                                            <Dropdown.Item href="#" onClick={() => {
+                                                                setLendingItem(item);
+                                                                setShowLendingModal(true);
+                                                            }}>
+                                                                <i className="bx bx-share-alt me-1"></i> Prestar bien
+                                                            </Dropdown.Item>
+                                                            <Dropdown.Item href="#" onClick={() => {
+                                                                setSendingItem(item);
+                                                                setShowSendingModal(true);
+                                                            }}>
+                                                                <i className="bx bx-archive-in me-1"></i> Enviar a almacén
                                                             </Dropdown.Item>
                                                         </Dropdown.Menu>
                                                     </Dropdown>
-                                                </td>)}
+                                                </td>
                                             </tr>
                                         ))}
                                     </React.Fragment>
@@ -352,34 +389,101 @@ export const Bm1 = () => {
                             </tbody>
                         </table>
                     </div>
-                    <div className="d-flex justify-content-between align-items-center px-4 pb-3"> 
-                        <span className="fw-semibold">{`Total de resultados: ${meta.total || '...'}` }</span>
+                    {/* Dynamic Pagination Bar */}
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 px-4 py-3 bg-light border-top rounded-bottom mt-4">
+                         <div className="text-muted small">
+                            {meta.total > 0 ? (
+                                <span>
+                                    Mostrando <strong>{((page - 1) * 10) + 1}</strong> a{' '}
+                                    <strong>{Math.min(page * 10, meta.total)}</strong> de{' '}
+                                    <strong>{meta.total}</strong> resultados
+                                </span>
+                            ) : (
+                                <span>No hay resultados</span>
+                            )}
+                        </div>
+                        <nav aria-label="Navegación de páginas">
+                            <ul className="pagination pagination-sm mb-0">
+                                <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                                    <button
+                                        type="button"
+                                        className="page-link d-flex align-items-center"
+                                        onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                                        aria-label="Anterior"
+                                    >
+                                        <i className="bx bx-chevron-left me-1"></i> Anterior
+                                    </button>
+                                </li>
+                                
+                                {Array.from({ length: meta.totalPages || 1 }, (_, i) => i + 1).map((p) => {
+                                    const totalPages = meta.totalPages || 1;
+                                    if (totalPages > 6) {
+                                        if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) {
+                                            return (
+                                                <li key={p} className={`page-item ${page === p ? 'active' : ''}`}>
+                                                    <button type="button" className="page-link" onClick={() => setPage(p)}>
+                                                        {p}
+                                                    </button>
+                                                </li>
+                                            );
+                                        } else if ((p === 2 && page > 3) || (p === totalPages - 1 && page < totalPages - 2)) {
+                                            return (
+                                                <li key={p} className="page-item disabled">
+                                                    <span className="page-link">...</span>
+                                                </li>
+                                            );
+                                        }
+                                        return null;
+                                    }
+                                    return (
+                                        <li key={p} className={`page-item ${page === p ? 'active' : ''}`}>
+                                            <button type="button" className="page-link" onClick={() => setPage(p)}>
+                                                {p}
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+
+                                <li className={`page-item ${page === (meta.totalPages || 1) ? 'disabled' : ''}`}>
+                                    <button
+                                        type="button"
+                                        className="page-link d-flex align-items-center"
+                                        onClick={() => setPage(prev => Math.min(prev + 1, meta.totalPages || prev + 1))}
+                                        aria-label="Siguiente"
+                                    >
+                                        Siguiente <i className="bx bx-chevron-right ms-1"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
-                    <div className="d-flex justify-content-between align-items-center px-4 pb-3">
-                    <button
-                    className="btn btn-outline-secondary"
-                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                    disabled={page === 1}
-                    >
-                    ← Anterior
-                    </button>
-
-                    <span className="fw-semibold">Página {page} de {meta.totalPages || '...'}</span>
-
-                    <button
-                    className="btn btn-outline-secondary"
-                    onClick={() => setPage(prev => Math.min(prev + 1, meta.totalPages || prev + 1))}
-                    disabled={page === meta.totalPages}
-                    >
-                    Siguiente →
-                    </button>
-                </div>
                 </div>
                 <ModalEditBm 
-                show={showUpdateModal}
-                handleClose={() => setShowUpdateModal(false)}
-                BienId={editingItem?.bim_ide} 
-                onSuccess={handleSuccess} />
+                    show={showUpdateModal}
+                    handleClose={() => setShowUpdateModal(false)}
+                    BienId={editingItem?.bim_ide} 
+                    onSuccess={handleSuccess} 
+                />
+
+                <ModalViewBm
+                    show={showViewModal}
+                    handleClose={() => setShowViewModal(false)}
+                    BienId={viewingItem?.bim_ide}
+                />
+
+                <ModalPrestarBienRapido
+                    show={showLendingModal}
+                    handleClose={() => setShowLendingModal(false)}
+                    item={lendingItem}
+                    onSuccess={handleSuccess}
+                />
+
+                <ModalEnviarAlmacenRapido
+                    show={showSendingModal}
+                    handleClose={() => setShowSendingModal(false)}
+                    item={sendingItem}
+                    onSuccess={handleSuccess}
+                />
 
                 
             </div>

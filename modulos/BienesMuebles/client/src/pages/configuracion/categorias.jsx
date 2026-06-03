@@ -62,7 +62,49 @@ export const Categorias = () => {
     'sca_ide': 'Sub-Categoría'
   };
 
-  // Cargar columnas y datos de categorías
+  // Estados para paginación y búsqueda: Categorías
+  const [meta, setMeta] = useState({});
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Estados para paginación y búsqueda: Subcategorías
+  const [meta2, setMeta2] = useState({});
+  const [page2, setPage2] = useState(1);
+  const [search2, setSearch2] = useState('');
+  const [searchQuery2, setSearchQuery2] = useState('');
+
+  // Estados para traducción de IDs (para mapas de Categorías y Subcategorías no paginados)
+  const [categoriasMap, setCategoriasMap] = useState({});
+  const [subCatMap, setSubCatMap] = useState({});
+
+  // Cargar mapas de IDs (unpaginated) para que las traducciones de ID a nombre siempre funcionen
+  useEffect(() => {
+    const loadMaps = async () => {
+      try {
+        const catRes = await fetch('/api/categorias', { credentials: 'include' });
+        const catData = await catRes.json();
+        const catMap = catData.reduce((acc, cat) => {
+          acc[cat.cat_ide] = cat.cat_cat;
+          return acc;
+        }, {});
+        setCategoriasMap(catMap);
+
+        const subRes = await fetch('/api/subcategorias', { credentials: 'include' });
+        const subData = await subRes.json();
+        const sCatMap = subData.reduce((acc, subCat) => {
+          acc[subCat.sca_ide] = subCat.sca_sca;
+          return acc;
+        }, {});
+        setSubCatMap(sCatMap);
+      } catch (error) {
+        console.error('Error cargando mapas:', error);
+      }
+    };
+    loadMaps();
+  }, [refreshKey]);
+
+  // Cargar columnas y datos de categorías (paginado)
   useEffect(() => {
     const loadCatData = async () => {
       try {
@@ -74,23 +116,22 @@ export const Categorias = () => {
         })));
         setIdColumn(primaryKey);
 
-        const res = await fetch('/api/categorias', { credentials: 'include' });
-        const data = await res.json();
-        setData(data);
+        const url = `/api/categorias?page=${page}&limit=10&search=${encodeURIComponent(searchQuery)}`;
+        const res = await fetch(url, { credentials: 'include' });
+        const result = await res.json();
+        setData(Array.isArray(result.data) ? result.data : []);
+        setMeta(result.meta || {});
       } catch (error) {
         console.error('Error cargando categorías:', error);
+        setData([]);
+        setMeta({});
       }
     };
 
     loadCatData();
-  }, [refreshKey]);
+  }, [refreshKey, page, searchQuery]);
 
-  const categoriasMap = data.reduce((acc, cat) => {
-        acc[cat.cat_ide] = cat.cat_cat; // Asume que cat_cat es el nombre
-        return acc;
-    }, {});
-
-  // Cargar columnas y datos de subcategorías
+  // Cargar columnas y datos de subcategorías (paginado)
   useEffect(() => {
     const loadSubCatData = async () => {
       try {
@@ -102,28 +143,26 @@ export const Categorias = () => {
         })));
         setIdColumn2(primaryKey);
 
-        const res = await fetch('/api/subcategorias', { credentials: 'include' });
-        const data = await res.json();
-        setData2(data);
+        const url = `/api/subcategorias?page=${page2}&limit=10&search=${encodeURIComponent(searchQuery2)}`;
+        const res = await fetch(url, { credentials: 'include' });
+        const result = await res.json();
+        setData2(Array.isArray(result.data) ? result.data : []);
+        setMeta2(result.meta || {});
       } catch (error) {
         console.error('Error cargando subcategorías:', error);
+        setData2([]);
+        setMeta2({});
       }
     };
 
     loadSubCatData();
-  }, [refreshKey]);
+  }, [refreshKey, page2, searchQuery2]);
 
-  
-    const subCatMap = data2.reduce((acc, subCat) => {
-        acc[subCat.sca_ide] = subCat.sca_sca; // Asume que sca_sca es el nombre
-        return acc;
-    }, {});
-
-    //Estados para paginación
-    const [meta3, setMeta3] = useState({});
-    const [page3, setPage3] = useState(1);
-    const [search3, setSearch3] = useState('');
-    const [searchQuery3, setSearchQuery3] = useState('');
+  // Estados para paginación: Categorías específicas
+  const [meta3, setMeta3] = useState({});
+  const [page3, setPage3] = useState(1);
+  const [search3, setSearch3] = useState('');
+  const [searchQuery3, setSearchQuery3] = useState('');
 
   useEffect(() => {
   const loadCatEsData = async () => {
@@ -179,6 +218,38 @@ export const Categorias = () => {
                     onSuccess={handleSuccess}
                 />
                 <div className="table-responsive text-nowrap">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            setSearchQuery(search); // Solo dispara búsqueda cuando se presiona el botón
+                            setPage(1);
+                        }}
+                        className="p-3 d-flex gap-2 align-items-center"
+                    >
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Buscar categoría..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <button type="submit" className="btn btn-outline-primary">
+                            Buscar
+                        </button>
+                        {search && (
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary"
+                                onClick={() => {
+                                    setSearch('');
+                                    setSearchQuery('');
+                                    setPage(1);
+                                }}
+                            >
+                                Limpiar
+                            </button>
+                        )}
+                    </form>
                 <table className="table table-striped">
                   <thead>
                     <tr>
@@ -241,6 +312,75 @@ export const Categorias = () => {
                         />
                 </table>
                 </div>
+
+                {/* Dynamic Pagination Bar for Categorías */}
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 px-4 py-3 bg-light border-top rounded-bottom">
+                    <div className="text-muted small">
+                        {meta.total > 0 ? (
+                            <span>
+                                Mostrando <strong>{((page - 1) * 10) + 1}</strong> a{' '}
+                                <strong>{Math.min(page * 10, meta.total)}</strong> de{' '}
+                                <strong>{meta.total}</strong> categorías
+                            </span>
+                        ) : (
+                            <span>No hay resultados</span>
+                        )}
+                    </div>
+                    <nav aria-label="Navegación de páginas">
+                        <ul className="pagination pagination-sm mb-0">
+                            <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                                <button
+                                    type="button"
+                                    className="page-link d-flex align-items-center"
+                                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                                    aria-label="Anterior"
+                                >
+                                    <i className="bx bx-chevron-left me-1"></i> Anterior
+                                </button>
+                            </li>
+                            
+                            {Array.from({ length: meta.totalPages || 1 }, (_, i) => i + 1).map((p) => {
+                                const totalPages = meta.totalPages || 1;
+                                if (totalPages > 6) {
+                                    if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) {
+                                        return (
+                                            <li key={p} className={`page-item ${page === p ? 'active' : ''}`}>
+                                                <button type="button" className="page-link" onClick={() => setPage(p)}>
+                                                    {p}
+                                                </button>
+                                            </li>
+                                        );
+                                    } else if ((p === 2 && page > 3) || (p === totalPages - 1 && page < totalPages - 2)) {
+                                        return (
+                                            <li key={p} className="page-item disabled">
+                                                <span className="page-link">...</span>
+                                            </li>
+                                        );
+                                    }
+                                    return null;
+                                }
+                                return (
+                                    <li key={p} className={`page-item ${page === p ? 'active' : ''}`}>
+                                        <button type="button" className="page-link" onClick={() => setPage(p)}>
+                                            {p}
+                                        </button>
+                                    </li>
+                                );
+                            })}
+
+                            <li className={`page-item ${page === (meta.totalPages || 1) ? 'disabled' : ''}`}>
+                                <button
+                                    type="button"
+                                    className="page-link d-flex align-items-center"
+                                    onClick={() => setPage(prev => Math.min(prev + 1, meta.totalPages || prev + 1))}
+                                    aria-label="Siguiente"
+                                >
+                                    Siguiente <i className="bx bx-chevron-right ms-1"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
             <hr className="my-5" />
             {/* subcategorias */}
@@ -264,6 +404,38 @@ export const Categorias = () => {
                     onSuccess={handleSuccess}
                 />
                 <div className="table-responsive text-nowrap">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            setSearchQuery2(search2); // Solo dispara búsqueda cuando se presiona el botón
+                            setPage2(1);
+                        }}
+                        className="p-3 d-flex gap-2 align-items-center"
+                    >
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Buscar sub-categoría..."
+                            value={search2}
+                            onChange={(e) => setSearch2(e.target.value)}
+                        />
+                        <button type="submit" className="btn btn-outline-primary">
+                            Buscar
+                        </button>
+                        {search2 && (
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary"
+                                onClick={() => {
+                                    setSearch2('');
+                                    setSearchQuery2('');
+                                    setPage2(1);
+                                }}
+                            >
+                                Limpiar
+                            </button>
+                        )}
+                    </form>
                     <table className="table table-striped">
                         <thead>
                             <tr>
@@ -351,6 +523,75 @@ export const Categorias = () => {
                         onSuccess={handleSuccess} 
                         />
                     </table>
+                </div>
+
+                {/* Dynamic Pagination Bar for Subcategorías */}
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 px-4 py-3 bg-light border-top rounded-bottom">
+                    <div className="text-muted small">
+                        {meta2.total > 0 ? (
+                            <span>
+                                Mostrando <strong>{((page2 - 1) * 10) + 1}</strong> a{' '}
+                                <strong>{Math.min(page2 * 10, meta2.total)}</strong> de{' '}
+                                <strong>{meta2.total}</strong> subcategorías
+                            </span>
+                        ) : (
+                            <span>No hay resultados</span>
+                        )}
+                    </div>
+                    <nav aria-label="Navegación de páginas">
+                        <ul className="pagination pagination-sm mb-0">
+                            <li className={`page-item ${page2 === 1 ? 'disabled' : ''}`}>
+                                <button
+                                    type="button"
+                                    className="page-link d-flex align-items-center"
+                                    onClick={() => setPage2(prev => Math.max(prev - 1, 1))}
+                                    aria-label="Anterior"
+                                >
+                                    <i className="bx bx-chevron-left me-1"></i> Anterior
+                                </button>
+                            </li>
+                            
+                            {Array.from({ length: meta2.totalPages || 1 }, (_, i) => i + 1).map((p) => {
+                                const totalPages = meta2.totalPages || 1;
+                                if (totalPages > 6) {
+                                    if (p === 1 || p === totalPages || Math.abs(p - page2) <= 1) {
+                                        return (
+                                            <li key={p} className={`page-item ${page2 === p ? 'active' : ''}`}>
+                                                <button type="button" className="page-link" onClick={() => setPage2(p)}>
+                                                    {p}
+                                                </button>
+                                            </li>
+                                        );
+                                    } else if ((p === 2 && page2 > 3) || (p === totalPages - 1 && page2 < totalPages - 2)) {
+                                        return (
+                                            <li key={p} className="page-item disabled">
+                                                <span className="page-link">...</span>
+                                            </li>
+                                        );
+                                    }
+                                    return null;
+                                }
+                                return (
+                                    <li key={p} className={`page-item ${page2 === p ? 'active' : ''}`}>
+                                        <button type="button" className="page-link" onClick={() => setPage2(p)}>
+                                            {p}
+                                        </button>
+                                    </li>
+                                );
+                            })}
+
+                            <li className={`page-item ${page2 === (meta2.totalPages || 1) ? 'disabled' : ''}`}>
+                                <button
+                                    type="button"
+                                    className="page-link d-flex align-items-center"
+                                    onClick={() => setPage2(prev => Math.min(prev + 1, meta2.totalPages || prev + 1))}
+                                    aria-label="Siguiente"
+                                >
+                                    Siguiente <i className="bx bx-chevron-right ms-1"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
             <hr className="my-5" />
@@ -514,25 +755,73 @@ export const Categorias = () => {
                     </table>
                 </div>
 
-                {/* Paginación */}
-                <div className="d-flex justify-content-between align-items-center px-4 pb-3">
-                    <button
-                    className="btn btn-outline-secondary"
-                    onClick={() => setPage3(prev => Math.max(prev - 1, 1))}
-                    disabled={page3 === 1}
-                    >
-                    ← Anterior
-                    </button>
+                {/* Dynamic Pagination Bar for Categorías Específicas */}
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 px-4 py-3 bg-light border-top rounded-bottom">
+                    <div className="text-muted small">
+                        {meta3.total > 0 ? (
+                            <span>
+                                Mostrando <strong>{((page3 - 1) * (searchQuery3 ? 20 : 10)) + 1}</strong> a{' '}
+                                <strong>{Math.min(page3 * (searchQuery3 ? 20 : 10), meta3.total)}</strong> de{' '}
+                                <strong>{meta3.total}</strong> categorías específicas
+                            </span>
+                        ) : (
+                            <span>No hay resultados</span>
+                        )}
+                    </div>
+                    <nav aria-label="Navegación de páginas">
+                        <ul className="pagination pagination-sm mb-0">
+                            <li className={`page-item ${page3 === 1 ? 'disabled' : ''}`}>
+                                <button
+                                    type="button"
+                                    className="page-link d-flex align-items-center"
+                                    onClick={() => setPage3(prev => Math.max(prev - 1, 1))}
+                                    aria-label="Anterior"
+                                >
+                                    <i className="bx bx-chevron-left me-1"></i> Anterior
+                                </button>
+                            </li>
+                            
+                            {Array.from({ length: meta3.totalPages || 1 }, (_, i) => i + 1).map((p) => {
+                                const totalPages = meta3.totalPages || 1;
+                                if (totalPages > 6) {
+                                    if (p === 1 || p === totalPages || Math.abs(p - page3) <= 1) {
+                                        return (
+                                            <li key={p} className={`page-item ${page3 === p ? 'active' : ''}`}>
+                                                <button type="button" className="page-link" onClick={() => setPage3(p)}>
+                                                    {p}
+                                                </button>
+                                            </li>
+                                        );
+                                    } else if ((p === 2 && page3 > 3) || (p === totalPages - 1 && page3 < totalPages - 2)) {
+                                        return (
+                                            <li key={p} className="page-item disabled">
+                                                <span className="page-link">...</span>
+                                            </li>
+                                        );
+                                    }
+                                    return null;
+                                }
+                                return (
+                                    <li key={p} className={`page-item ${page3 === p ? 'active' : ''}`}>
+                                        <button type="button" className="page-link" onClick={() => setPage3(p)}>
+                                            {p}
+                                        </button>
+                                    </li>
+                                );
+                            })}
 
-                    <span className="fw-semibold">Página {page3} de {meta3.totalPages || '...'}</span>
-
-                    <button
-                    className="btn btn-outline-secondary"
-                    onClick={() => setPage3(prev => Math.min(prev + 1, meta3.totalPages || prev + 1))}
-                    disabled={page3 === meta3.totalPages}
-                    >
-                    Siguiente →
-                    </button>
+                            <li className={`page-item ${page3 === (meta3.totalPages || 1) ? 'disabled' : ''}`}>
+                                <button
+                                    type="button"
+                                    className="page-link d-flex align-items-center"
+                                    onClick={() => setPage3(prev => Math.min(prev + 1, meta3.totalPages || prev + 1))}
+                                    aria-label="Siguiente"
+                                >
+                                    Siguiente <i className="bx bx-chevron-right ms-1"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
                 </div>
             </div>

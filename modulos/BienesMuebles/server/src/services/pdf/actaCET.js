@@ -19,17 +19,10 @@ export const generarActaCET = (datos) => {
         doc.pipe(stream)
 
         try {
-            // Get current date and time for dynamic content
-            const currentDate = new Date()
-            const day = currentDate.getDate()
-            const monthNames = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
-            const month = monthNames[currentDate.getMonth()]
-            const year = currentDate.getFullYear()
-            const hours = currentDate.getHours()
-            const minutes = currentDate.getMinutes()
-            const ampm = hours >= 12 ? 'pm' : 'am'
-            const formattedHours = hours % 12 || 12 // Convert to 12-hour format
-            const time = `${formattedHours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`
+        const day = datos.dia || 'XX';
+        const month = datos.mes || 'XXXXXX';
+        const yearNumber = parseInt(datos.anio) || 'XXXX';
+        const time = datos.hora || '--:--'; // Hora del cliente recibida
 
             // --- Header Section ---
             doc.font('Helvetica-Bold')
@@ -37,14 +30,14 @@ export const generarActaCET = (datos) => {
                 .text('ACTA C.E.T', { align: 'center' })
                 .moveDown(0.5)
                 .fontSize(12)
-                .text(`Nº ${datos.numeroActa || '01'}-${year}`, { align: 'center' }) // Use current year for consistency
+                .text(`Nº ${datos.numeroActa || '01'}-${yearNumber}`, { align: 'center' }) // Use current year for consistency
             doc.moveDown(1.5) // Add space after header
 
             // --- Main Justified Paragraph ---
             doc.font('Helvetica').fontSize(11)
 
             // Construct the main paragraph using the provided data and the current date/time
-            const mainParagraph = `En la ciudad de San Cristóbal, a los ${day} días del mes de ${month} de ${year}, siendo las ${time}, ` +
+            const mainParagraph = `En la ciudad de San Cristóbal, a los ${day} días del mes de ${month} de ${yearNumber}, siendo las ${time}, ` +
                                   `reunidos en la sede de la Contraloría del Estado Táchira, Municipio San Cristóbal, ` +
                                   `Parroquia la Concordia, en la Dirección de Administración, los Ciudadanos: ` +
                                   `${datos.nombreDirectorAdmin || '___'} titular de la cédula de identidad Nº V-${datos.ciDirectorAdmin || '__________'}, ${datos.nombreJefeCompras || '___'}, titular de la cédula de identidad Nº V-${datos.ciJefeCompras || '__________'}, Jefe de División General Bienes Compras e Inventarios; y ${datos.nombreDirectorAsignacion || '___'}, titular de Cédula de Identidad Nº V-${datos.ciDirectorAsignacion || '__________'}, Director de ${datos.unidadDestino || '__________________'}, para dejar constancia ` +
@@ -52,7 +45,7 @@ export const generarActaCET = (datos) => {
                                   `COMPRA (Código 03), del bien que se detalla a continuación: ` +
                                   `Nº${datos.codigoBien}, Marca: ${datos.marca || '__________________'}, ` +
                                   `Modelo: ${datos.modelo || '__________________'}, Color: ${datos.color || '__________________'} ` +
-                                  `${datos.descripcionIncorporacion || '_____________________________________'} . Se incorpora el anterior bien a la ${datos.unidadDestino || '______________________________________'}. ` +
+                                  `${datos.descripcionIncorporacion || '_____________________________________'}. Se incorpora el anterior bien a la ${datos.unidadDestino || '______________________________________'}. ` +
                                   `En fe de lo expuesto, se elaboran tres ejemplares a un solo tenor y un mismo efecto y en conformidad firman`
 
             doc.text(mainParagraph, {
