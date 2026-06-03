@@ -1,3 +1,6 @@
+import imgImg5 from '../assets/img/avatars/5.png';
+import imgImg6 from '../assets/img/avatars/6.png';
+import imgImg7 from '../assets/img/avatars/7.png';
 import React from 'react'
 
 export const TablesPage = () => {
@@ -34,7 +37,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -42,7 +45,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -50,7 +53,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -84,7 +87,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -92,7 +95,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -100,7 +103,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -135,7 +138,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -143,7 +146,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -151,7 +154,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -186,7 +189,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -194,7 +197,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -202,7 +205,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -260,7 +263,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -268,7 +271,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -276,7 +279,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -310,7 +313,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -318,7 +321,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -326,7 +329,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -361,7 +364,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -369,7 +372,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -377,7 +380,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -412,7 +415,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -420,7 +423,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -428,7 +431,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -486,7 +489,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -494,7 +497,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -502,7 +505,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -536,7 +539,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -544,7 +547,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -552,7 +555,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -587,7 +590,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -595,7 +598,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -603,7 +606,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -638,7 +641,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -646,7 +649,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -654,7 +657,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -712,7 +715,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -720,7 +723,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -728,7 +731,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -762,7 +765,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -770,7 +773,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -778,7 +781,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -813,7 +816,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -821,7 +824,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -829,7 +832,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -864,7 +867,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -872,7 +875,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -880,7 +883,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -938,7 +941,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -946,7 +949,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -954,7 +957,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -988,7 +991,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -996,7 +999,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1004,7 +1007,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1039,7 +1042,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1047,7 +1050,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1055,7 +1058,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1090,7 +1093,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1098,7 +1101,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1106,7 +1109,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1176,7 +1179,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1184,7 +1187,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1192,7 +1195,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1226,7 +1229,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1234,7 +1237,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1242,7 +1245,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1277,7 +1280,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1285,7 +1288,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1293,7 +1296,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1328,7 +1331,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1336,7 +1339,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1344,7 +1347,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1402,7 +1405,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1410,7 +1413,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1418,7 +1421,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1452,7 +1455,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1460,7 +1463,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1468,7 +1471,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1503,7 +1506,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1511,7 +1514,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1519,7 +1522,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1554,7 +1557,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1562,7 +1565,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1570,7 +1573,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1629,7 +1632,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Lilian Fuller">
-                                                <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                             </li>
                                             <li
                                                 data-bs-toggle="tooltip"
@@ -1637,7 +1640,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Sophia Wilkerson">
-                                                <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                             </li>
                                             <li
                                                 data-bs-toggle="tooltip"
@@ -1645,7 +1648,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Christina Parker">
-                                                <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                             </li>
                                         </ul>
                                     </td>
@@ -1683,7 +1686,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Lilian Fuller">
-                                                <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                             </li>
                                             <li
                                                 data-bs-toggle="tooltip"
@@ -1691,7 +1694,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Sophia Wilkerson">
-                                                <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                             </li>
                                             <li
                                                 data-bs-toggle="tooltip"
@@ -1699,7 +1702,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Christina Parker">
-                                                <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                             </li>
                                         </ul>
                                     </td>
@@ -1737,7 +1740,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Lilian Fuller">
-                                                <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                             </li>
                                             <li
                                                 data-bs-toggle="tooltip"
@@ -1745,7 +1748,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Sophia Wilkerson">
-                                                <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                             </li>
                                             <li
                                                 data-bs-toggle="tooltip"
@@ -1753,7 +1756,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Christina Parker">
-                                                <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                             </li>
                                         </ul>
                                     </td>
@@ -1791,7 +1794,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Lilian Fuller">
-                                                <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                             </li>
                                             <li
                                                 data-bs-toggle="tooltip"
@@ -1799,7 +1802,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Sophia Wilkerson">
-                                                <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                             </li>
                                             <li
                                                 data-bs-toggle="tooltip"
@@ -1807,7 +1810,7 @@ export const TablesPage = () => {
                                                 data-bs-placement="top"
                                                 className="avatar avatar-xs pull-up"
                                                 title="Christina Parker">
-                                                <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                                <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                             </li>
                                         </ul>
                                     </td>
@@ -1869,7 +1872,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1877,7 +1880,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1885,7 +1888,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1919,7 +1922,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1927,7 +1930,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1935,7 +1938,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -1970,7 +1973,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1978,7 +1981,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -1986,7 +1989,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2021,7 +2024,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2029,7 +2032,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2037,7 +2040,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2095,7 +2098,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2103,7 +2106,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2111,7 +2114,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2145,7 +2148,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2153,7 +2156,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2161,7 +2164,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2196,7 +2199,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2204,7 +2207,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2212,7 +2215,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2247,7 +2250,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2255,7 +2258,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2263,7 +2266,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2322,7 +2325,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2330,7 +2333,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2338,7 +2341,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2372,7 +2375,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2380,7 +2383,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2388,7 +2391,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2423,7 +2426,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2431,7 +2434,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2439,7 +2442,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2474,7 +2477,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2482,7 +2485,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2490,7 +2493,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2549,7 +2552,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2557,7 +2560,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2565,7 +2568,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2599,7 +2602,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2607,7 +2610,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2615,7 +2618,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2650,7 +2653,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2658,7 +2661,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2666,7 +2669,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2701,7 +2704,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2709,7 +2712,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2717,7 +2720,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2752,7 +2755,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2760,7 +2763,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2768,7 +2771,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2803,7 +2806,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2811,7 +2814,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2819,7 +2822,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2853,7 +2856,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2861,7 +2864,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2869,7 +2872,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2904,7 +2907,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2912,7 +2915,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2920,7 +2923,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -2955,7 +2958,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2963,7 +2966,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -2971,7 +2974,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -3006,7 +3009,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Lilian Fuller">
-                                            <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -3014,7 +3017,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Sophia Wilkerson">
-                                            <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                         </li>
                                         <li
                                             data-bs-toggle="tooltip"
@@ -3022,7 +3025,7 @@ export const TablesPage = () => {
                                             data-bs-placement="top"
                                             className="avatar avatar-xs pull-up"
                                             title="Christina Parker">
-                                            <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                            <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                         </li>
                                     </ul>
                                 </td>
@@ -3079,7 +3082,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Lilian Fuller">
-                                        <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                     </li>
                                     <li
                                         data-bs-toggle="tooltip"
@@ -3087,7 +3090,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Sophia Wilkerson">
-                                        <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                     </li>
                                     <li
                                         data-bs-toggle="tooltip"
@@ -3095,7 +3098,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Christina Parker">
-                                        <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                     </li>
                                 </ul>
                             </td>
@@ -3129,7 +3132,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Lilian Fuller">
-                                        <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                     </li>
                                     <li
                                         data-bs-toggle="tooltip"
@@ -3137,7 +3140,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Sophia Wilkerson">
-                                        <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                     </li>
                                     <li
                                         data-bs-toggle="tooltip"
@@ -3145,7 +3148,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Christina Parker">
-                                        <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                     </li>
                                 </ul>
                             </td>
@@ -3180,7 +3183,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Lilian Fuller">
-                                        <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                     </li>
                                     <li
                                         data-bs-toggle="tooltip"
@@ -3188,7 +3191,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Sophia Wilkerson">
-                                        <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                     </li>
                                     <li
                                         data-bs-toggle="tooltip"
@@ -3196,7 +3199,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Christina Parker">
-                                        <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                     </li>
                                 </ul>
                             </td>
@@ -3231,7 +3234,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Lilian Fuller">
-                                        <img aria-label='table image' src="../assets/img/avatars/5.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg5} alt="Avatar" className="rounded-circle" />
                                     </li>
                                     <li
                                         data-bs-toggle="tooltip"
@@ -3239,7 +3242,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Sophia Wilkerson">
-                                        <img aria-label='table image' src="../assets/img/avatars/6.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg6} alt="Avatar" className="rounded-circle" />
                                     </li>
                                     <li
                                         data-bs-toggle="tooltip"
@@ -3247,7 +3250,7 @@ export const TablesPage = () => {
                                         data-bs-placement="top"
                                         className="avatar avatar-xs pull-up"
                                         title="Christina Parker">
-                                        <img aria-label='table image' src="../assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
+                                        <img aria-label='table image' src={imgImg7} alt="Avatar" className="rounded-circle" />
                                     </li>
                                 </ul>
                             </td>
