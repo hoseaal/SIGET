@@ -1,255 +1,325 @@
 <!DOCTYPE html>
-<html lang="es">
+
+<html class="scroll-smooth" lang="es">
 
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>SIGET - Inicio</title>
-  <meta name="Sistema de gestión para la contraloría del estado táchira" content="">
-  <meta name="SIGET" content="">
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>SIGET - Sistema Integral de Gestión</title>
+  <meta content="Sistema Integral de Gestión para la Contraloría del Estado Táchira." name="description" />
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script
+    id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-tint": "#386286", "border-light": "rgba(18, 66, 101, 0.08)", "secondary-fixed": "#fee343", "tertiary-fixed": "#ffdad6", "on-primary-fixed-variant": "#1d4a6d", error: "#ba1a1a", "outline-variant": "#c2c7cf", "surface-container-highest": "#e4e2e2", "on-primary": "#ffffff", background: "#fbf9f8", "on-tertiary-container": "#ff887c", "inverse-surface": "#303030", "on-primary-container": "#86aed7", "primary-container": "#124265", outline: "#72777f", "inverse-primary": "#a2cbf4", "error-container": "#ffdad6", tertiary: "#5a0004", "surface-container-low": "#f5f3f3", "on-surface-variant": "#42474e", "surface-variant": "#e4e2e2", "inverse-on-surface": "#f2f0f0", "tertiary-container": "#840009", "surface-container-high": "#eae8e7", "primary-fixed": "#cee5ff", "on-secondary": "#ffffff", secondary: "#0ea5e9", "on-tertiary-fixed": "#410002", "tertiary-fixed-dim": "#ffb4ab", "on-secondary-container": "#0369a1", surface: "#fbf9f8", "secondary-container": "#e0f2fe", "on-error": "#ffffff", "surface-bright": "#fbf9f8", "on-error-container": "#93000a", "status-warning": "#fd7e14", "secondary-fixed-dim": "#e0c725", "surface-container": "#f0eded", "on-tertiary": "#ffffff", "surface-muted": "#f6fafd", "surface-container-lowest": "#ffffff", "surface-dim": "#dbd9d9", "on-tertiary-fixed-variant": "#93000c", "on-secondary-fixed": "#211b00", "on-surface": "#1b1c1c", "primary-fixed-dim": "#a2cbf4", "on-secondary-fixed-variant": "#514700", "status-error": "#df1529", "on-background": "#1b1c1c", "on-primary-fixed": "#001d33" }, borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" }, spacing: { "section-gap": "100px", "margin-desktop": "80px", "container-max": "1280px", "margin-mobile": "20px", base: "8px", gutter: "24px" }, fontFamily: { "headline-lg-mobile": ["Poppins"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Poppins"], "label-sm": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-lg": ["Poppins"], "headline-md": ["Poppins"], headline: ["poppins"], display: ["poppins"], body: ["Plus Jakarta Sans"], label: ["Plus Jakarta Sans"] }, fontSize: { "headline-lg-mobile": ["32px", { lineHeight: "1.2", fontWeight: "700" }], "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }], "headline-sm": ["24px", { lineHeight: "1.4", fontWeight: "600" }], "label-sm": ["12px", { lineHeight: "1", fontWeight: "600" }], "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }], "body-sm": ["14px", { lineHeight: "1.5", fontWeight: "400" }], "label-md": ["14px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "600" }], "headline-lg": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700" }], "headline-md": ["32px", { lineHeight: "1.3", fontWeight: "600" }] } } } };</script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+    }
 
-  <!-- Favicons -->
-  <link href="assets/img/logo-contraloria-home2.png" rel="icon">
+    .modern-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-  <!-- Fonts -->
-  <link href="assets/sources/fonts-family_roboto.css" rel="stylesheet">
+    .modern-card:hover {
+      transform: translateY(-4px);
+    }
 
-  <!-- Vendor CSS Files -->
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+    .glass-effect {
+      backdrop-filter: blur(12px);
+      background-color: rgba(251, 249, 248, 0.9);
+    }
 
-  <!-- Main CSS File -->
-  <link href="assets/css/main.css" rel="stylesheet">
+    .hero-gradient {
+      background: radial-gradient(circle at 50% 50%, rgba(36, 135, 206, 0.1) 0%, rgba(251, 249, 248, 1) 100%);
+    }
+  </style>
 </head>
 
-<body class="index-page">
-
-  <header id="header" class="header d-flex align-items-center sticky-top">
-    <div class="container-fluid container-xl position-relative d-flex align-items-center">
-      <a href="index.html" class="logo d-flex align-items-center me-auto">
-        <h1 class="sitename"><strong>SIGET</strong></h1>
-      </a>
-      <nav id="navmenu" class="navmenu">
-        <ul>
-          <li><a href="#hero" class="active">Inicio<br></a></li>
-          <li><a href="#about">Detalles</a></li>
-          <li><a href="#services">Departamentos</a></li>
-        </ul>
-        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+<body class="bg-surface text-on-surface font-body-md text-body-md overflow-x-hidden">
+  <!-- Header -->
+  <header class="fixed top-0 w-full z-50 glass-effect shadow-[0px_10px_30px_rgba(18,66,101,0.05)]">
+    <div class="flex justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto">
+      <div class="flex items-center gap-3">
+        <img src="assets/img/logo-contraloria-home1.png" alt="Logo Contraloría" class="h-10 w-auto" />
+        <div class="text-headline-sm font-headline-sm font-bold text-primary">SIGET</div>
+      </div>
+      <nav class="hidden md:flex items-center gap-8">
+        <a class="text-secondary border-b-2 border-secondary pb-1 font-label-md text-label-md" href="#hero">Inicio</a>
+        <a class="text-on-surface-variant hover:text-secondary transition-colors font-label-md text-label-md"
+          href="#about">Detalles</a>
+        <a class="text-on-surface-variant hover:text-secondary transition-colors font-label-md text-label-md"
+          href="#services">Departamentos</a>
       </nav>
+      <a class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md text-label-md hover:bg-secondary transition-colors shadow-sm"
+        href="#">Accede Ahora</a>
     </div>
   </header>
-
-  <main class="main">
+  <main>
     <!-- Hero Section -->
-    <section id="hero" class="hero section">
-      <img src="assets/img/hero-bg-abstract.jpg" alt="" data-aos="fade-in" class="">
-
-      <div class="container">
-        <div class="row justify-content-center" data-aos="zoom-out">
-          <div class="col-xl-7 col-lg-9 text-center">
-            <h1>Sistema Integral de Gestión</h1>
-            <h2>Para la Contraloría del Estado Táchira</h2>
+    <section class="pt-40 pb-20 px-margin-desktop hero-gradient overflow-hidden" id="hero">
+      <div class="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center">
+        <div class="z-10">
+          <span
+            class="inline-block px-4 py-1.5 rounded-full bg-secondary-container text-primary font-label-sm text-label-sm mb-6">
+            Gestión Fiscal Moderna
+          </span>
+          <h1 class="font-headline-lg text-headline-lg text-primary mb-6">Sistema Integral de Gestión</h1>
+          <h2 class="font-headline-md text-headline-md text-secondary mb-8">Para la Contraloría del Estado
+            Táchira</h2>
+          <div class="flex flex-wrap gap-4">
+            <a class="bg-secondary text-on-primary px-10 py-4 rounded-lg font-label-md text-label-md hover:scale-95 transition-transform flex items-center gap-2 shadow-lg shadow-secondary/20"
+              href="#services">
+              ¡Accede Ahora!
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
           </div>
         </div>
-        <div class="text-center" data-aos="zoom-out" data-aos-delay="100">
-          <a href="#services" class="btn-get-started">¡Accede Ahora!</a>
-        </div>
-
-        <div class="row gy-4 mt-5">
-          <div class="col-md-6 col-lg-3" data-aos="zoom-out" data-aos-delay="100">
-            <div class="icon-box">
-              <div class="icon"><i class="bi bi-file-check-fill"></i></div>
-              <h4 class="title"><a href="">Confiabilidad</a></h4>
-              <p class="description text-justify">Garantizamos procesos y resultados consistentes en la gestión de los
-                módulos del sistema</p>
-            </div>
-          </div><!--End Icon Box -->
-
-          <div class="col-md-6 col-lg-3" data-aos="zoom-out" data-aos-delay="200">
-            <div class="icon-box">
-              <div class="icon"><i class="bi bi-wrench-adjustable"></i></div>
-              <h4 class="title"><a href="">Automatización</a></h4>
-              <p class="description text-justify">Transformamos procesos manuales en flujos digitales eficientes,
-                reduciendo tiempos y errores</p>
-            </div>
-          </div><!--End Icon Box -->
-
-          <div class="col-md-6 col-lg-3" data-aos="zoom-out" data-aos-delay="300">
-            <div class="icon-box">
-              <div class="icon"><i class="bi bi-building-lock"></i></div>
-              <h4 class="title"><a href="">Seguridad</a></h4>
-              <p class="description text-justify">Protegemos los datos sensibles con acceso controlado</p>
-            </div>
-          </div><!--End Icon Box -->
-
-          <div class="col-md-6 col-lg-3" data-aos="zoom-out" data-aos-delay="400">
-            <div class="icon-box">
-              <div class="icon"><i class="bi bi-file-person"></i></div>
-              <h4 class="title"><a href="">Transparencia</a></h4>
-              <p class="description text-justify">Facil control de modificaciones hechas por usuarios</p>
-            </div>
-          </div><!--End Icon Box -->
+        <div class="relative lg:h-[500px] flex justify-center items-center">
+          <div class="absolute inset-0 bg-secondary/5 rounded-full blur-3xl"></div>
+          <img alt="Digital Administration Concept" class="relative z-10 w-full max-w-lg object-contain"
+            data-alt="A high-tech digital administration conceptual visualization featuring translucent data layers and sleek glowing interfaces. The background is a clean, bright minimalist studio setting with soft blue lighting. The overall mood is professional, efficient, and technologically advanced, echoing the corporate security and transparency of a government fiscal institution."
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmTBcfrvaL3BBnsh5FPM1aj4LAM9kQCx1EUMc3REqqAf_eoNoVJIILycjWTKu4DYk19_uTxhJbFZDOog1EvkxMUnqNzz-kjPexNlPtfh-pngti8oUhBh3k2_vkQdKRu0VqLGktV3DX2K9fO6uQj1ojOeBdmjHvcQJb2lh0eaFt-Ok30GAz_nNAuggny16nSZUVYjd_efKsq7PMRKRVU57fpd1Y83g5G8zxrkEqqcWKawGJrXbn3HltREwxMP_WDF1BjGm7fKz3TTc" />
         </div>
       </div>
-    </section><!-- /Hero Section -->
-
+    </section>
+    <!-- Departments Section -->
+    <section class="py-section-gap px-margin-desktop bg-surface-muted" id="services">
+      <div class="max-w-container-max mx-auto">
+        <div class="text-center mb-16">
+          <h2 class="font-headline-lg text-headline-lg text-primary mb-4">Departamentos</h2>
+          <p class="text-on-surface-variant max-w-2xl mx-auto">Módulos activos dentro del sistema integral de
+            la contraloría del estado Táchira diseñados para la excelencia operativa.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 justify-items-center">
+          <div
+            class="modern-card bg-surface-container-lowest rounded-2xl p-10 shadow-[0px_10px_30px_rgba(18,66,101,0.05)] max-w-md border border-border-light group">
+            <div class="mb-8 overflow-hidden rounded-xl bg-surface-container">
+              <img alt="Dirección de Recursos Humanos"
+                class="w-full h-48 object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuA09W2QU61fmjQDyOyn5p_yC7kmASFH2wjqZJat4ONg3qUrhm7fbPBEp_QRmzOfjKZ0mKzJI7pUnW97qtUFJQs--LuQlINhjvuV0NdtVjssDMqQWotllnCNF9wWLprayspCzwOXsW-OB8ej2oqRPPc6fkN-8YJPlNCLPoj4P0D3zYqJ4igVheiYV_5xh1hHC0tiDVPDAKWghIFxdrcKntyLATz__58Y7AK2ftjm3MlIfvwOL-9pdinkZSqmedE_0z9N9zplnBV-wMk" />
+            </div>
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary">
+                <span class="material-symbols-outlined">badge</span>
+              </div>
+              <h3 class="font-headline-sm text-headline-sm text-primary">Dirección de Recursos Humanos
+              </h3>
+            </div>
+            <p class="text-on-surface-variant mb-8 leading-relaxed">Gestión y automatización en los procesos
+              de nómina para los funcionarios en activo de la contraloría del estado Táchira.</p>
+            <a class="inline-flex items-center gap-2 text-secondary font-label-md text-label-md group-hover:gap-4 transition-all"
+              href="#">
+              Explorar Módulo <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </div>
+          <div
+            class="modern-card bg-surface-container-lowest rounded-2xl p-10 shadow-[0px_10px_30px_rgba(18,66,101,0.05)] max-w-md border border-border-light group">
+            <div class="mb-8 overflow-hidden rounded-xl bg-surface-container">
+              <img alt="Dirección de Bienes"
+                class="w-full h-48 object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTOkSpuRXehu4fHa9qlxk2XbSHS8HoNMgRWluyiTD5c6l75kxfWYjZEeBcv0cfZVdxGCFEIzp95d0-gxq0z4hgXxJmDUKniuND_3nGIBW1flS_TsHwq9iJsayVMAkR35Nocsv0GSgSk40cuXrRhVSfMrYJI6hW5AryFz5Rx9FRGlioi7tmAcru4ZnwURGPBhnQclFcikCp1Sj6WhxPAs_IwYwZNlyI1QddzHkTG31ozQSN-NFT4TRcXi8OkAIUWGK1lrFp2NNTQAM" />
+            </div>
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary">
+                <span class="material-symbols-outlined">inventory_2</span>
+              </div>
+              <h3 class="font-headline-sm text-headline-sm text-primary">Dirección de Bienes</h3>
+            </div>
+            <p class="text-on-surface-variant mb-8 leading-relaxed">Control y automatización de inventarios
+              de bienes en la contraloría del estado Táchira con precisión digital.</p>
+            <a class="inline-flex items-center gap-2 text-secondary font-label-md text-label-md group-hover:gap-4 transition-all"
+              href="/BienesMuebles">
+              Explorar Módulo <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
     <!-- About Section -->
-    <section id="about" class="about section">
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Sobre SIGET</h2>
-        <p>La solución para la Automatización de procesos en la Contraloría del Estado Táchira</p>
-      </div>
-      <!-- End Section Title -->
-      <div class="container">
-        <div class="row gy-4">
-          <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="100">
-            <p class="text-justify">
-              SIGET es el Sistema Integral de Gestión para la Contraloría del Estado Táchira, diseñado para transformar
-              digitalmente todos los procesos institucionales. Actualmente contamos con dos módulos operativos que están
-              revolucionando la gestión administrativa.
-            </p>
-            <ul>
-              <li><i class="bi bi-check2-circle"></i> <span><strong>Módulo de Recursos Humanos:</strong> Automatización
-                  completa de procesos de nómina para funcionarios en activo</span></li>
-              <li><i class="bi bi-check2-circle"></i> <span><strong>Módulo de Dirección de Bienes:</strong> Control
-                  integral de bienes e inventario</span></li>
-            </ul>
-          </div>
-          <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
-            <p class="text-justify">
-              Nuestro objetivo es eliminar los procesos manuales, reducir tiempos de respuesta y garantizar la
-              transparencia en todas las áreas de la institución. SIGET representa el compromiso con la innovación
-              tecnológica.
-            </p>
-            <p class="text-justify">
-              Cada módulo se desarrolla en colaboración con los departamentos, asegurando que las soluciones se adapten
-              perfectamente a sus necesidades operativas reales.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section><!-- /About Section -->
-
-    <!-- About Alt Section -->
-    <section id="about-alt" class="about-alt section">
-
-      <div class="container">
-        <div class="row gy-4">
-          <div class="col-lg-6 position-relative align-self-start" data-aos="fade-up" data-aos-delay="100">
-            <img src="assets/img/logo-contraloria-home3.png" class="img-fluid"
-              alt="Logo Contraloría del Estado Táchira">
-          </div>
-          <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="200">
-            <h3>SIGET: La automatización para una gestión fiscal eficiente</h3>
-            <p class="fst-italic text-justify">
-              "El sistema SIGET representa el compromiso de modernización institucional de la Contraloría del Estado
-              Táchira."
-            </p>
-            <ul>
-              <li><i class="bi bi-check2-all"></i> <span><strong>Eficiencia comprobada:</strong> Reducción de tiempos de
-                  espera.</span></li>
-              <li><i class="bi bi-check2-all"></i> <span><strong>Integración progresiva:</strong> Procesos funcionales
-                  pero tardíos que son automatizados.</span></li>
-              <li><i class="bi bi-check2-all"></i> <span><strong>Resultados tangibles:</strong> Los módulos actuales en
-                  funcionamiento permiten la exportanción de documentos vitales en la Contraloría del Estado
-                  Táchira.</span></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-    </section><!-- /About Alt Section -->
-
-    <!-- Services Section -->
-    <section id="services" class="services section light-background">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Departamentos</h2>
-        <p>Módulos activos dentro del sistema integral de la contraloría del estado Táchira</p>
-      </div>
-
-      <div class="container">
-        <div class="row gy-4 justify-content-center">
-          <div class="col-lg-4 col-md-6 d-flex justify-content-center" data-aos="fade-up" data-aos-delay="100">
-            <div class="service-item item-blue position-relative" style="max-width: 350px; width: 100%;">
-              <div class="icon">
-                <div class="icon-circle">
-                  <i class="bi bi-person-rolodex"></i>
-                </div>
-              </div>
-              <a href="#" class="stretched-link">
-                <h3 class="text-center">Dirección de Recursos Humanos</h3>
-              </a>
-              <p class="text-center">Gestión y automatización en los procesos de nómina para los funcionarios en activo
-                de la contraloría del estado Táchira</p>
+    <section class="py-section-gap px-margin-desktop bg-surface" id="about">
+      <div class="max-w-container-max mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <div class="space-y-8">
+            <div>
+              <span
+                class="text-secondary font-label-md text-label-md uppercase tracking-wider mb-2 block">Institución</span>
+              <h2 class="font-headline-lg text-headline-lg text-primary">Sobre SIGET</h2>
+              <p class="text-body-lg text-on-surface-variant mt-6 leading-relaxed">
+                SIGET es el Sistema Integral de Gestión para la Contraloría del Estado Táchira, diseñado
+                para transformar digitalmente todos los procesos institucionales. Actualmente contamos
+                con dos módulos operativos que están revolucionando la gestión administrativa.
+              </p>
             </div>
+            <ul class="space-y-6">
+              <li class="flex items-start gap-4">
+                <div class="mt-1 w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                  <span class="material-symbols-outlined text-[18px]">check</span>
+                </div>
+                <div>
+                  <h5 class="font-label-md text-label-md text-primary mb-1">Módulo de Recursos Humanos
+                  </h5>
+                  <p class="text-on-surface-variant text-body-sm">Automatización completa de procesos
+                    de nómina para funcionarios en activo.</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-4">
+                <div class="mt-1 w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                  <span class="material-symbols-outlined text-[18px]">check</span>
+                </div>
+                <div>
+                  <h5 class="font-label-md text-label-md text-primary mb-1">Módulo de Dirección de
+                    Bienes</h5>
+                  <p class="text-on-surface-variant text-body-sm">Control integral de bienes e
+                    inventario bajo estándares de auditoría fiscal.</p>
+                </div>
+              </li>
+            </ul>
           </div>
-
-          <div class="col-lg-4 col-md-6 d-flex justify-content-center" data-aos="fade-up" data-aos-delay="200">
-            <div class="service-item item-blue position-relative" style="max-width: 350px; width: 100%;">
-              <div class="icon">
-                <div class="icon-circle">
-                  <i class="bi bi-file-earmark-text"></i>
+          <div class="bg-surface-container-low rounded-3xl p-12 relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-64 h-64 bg-secondary/5 rounded-full blur-3xl"></div>
+            <div class="relative z-10 space-y-6">
+              <h3 class="font-headline-sm text-headline-sm text-primary">Eficiencia y Transparencia</h3>
+              <p class="text-on-surface-variant italic leading-relaxed">
+                "Nuestro objetivo es eliminar los procesos manuales, reducir tiempos de respuesta y
+                garantizar la transparencia en todas las áreas de la institución. SIGET representa el
+                compromiso con la innovación tecnológica."
+              </p>
+              <div class="pt-6 border-t border-border-light">
+                <p class="text-on-surface-variant text-body-md">
+                  Cada módulo se desarrolla en colaboración con los departamentos, asegurando que las
+                  soluciones se adapten perfectamente a sus necesidades operativas reales.
+                </p>
+              </div>
+              <div class="grid grid-cols-2 gap-4 mt-8">
+                <div class="p-4 bg-surface-container-lowest rounded-xl border border-border-light">
+                  <div class="text-headline-sm text-secondary mb-1">90%</div>
+                  <div class="text-label-sm text-on-surface-variant">Eficiencia Comprobada</div>
+                </div>
+                <div class="p-4 bg-surface-container-lowest rounded-xl border border-border-light">
+                  <div class="text-headline-sm text-secondary mb-1">100%</div>
+                  <div class="text-label-sm text-on-surface-variant">Transparencia Fiscal</div>
                 </div>
               </div>
-              <a href="http://siget.net/BienesMuebles/" class="stretched-link">
-                <h3 class="text-center">Dirección de Bienes</h3>
-              </a>
-              <p class="text-center">Control y automatización de inventarios de bienes en la contraloría del estado
-                Táchira</p>
             </div>
           </div>
         </div>
       </div>
-    </section><!-- /Services Section -->
-
+    </section>
+    <!-- Call to Action / Info Alt -->
+    <section class="py-section-gap px-margin-desktop bg-secondary-container">
+      <div class="max-w-container-max mx-auto text-center">
+        <h2 class="font-headline-lg text-headline-lg mb-6 text-primary">Automatización para una gestión fiscal eficiente
+        </h2>
+        <p class="text-on-surface-variant max-w-3xl mx-auto mb-10 text-body-lg">
+          El sistema SIGET representa el compromiso de modernización institucional de la Contraloría del
+          Estado Táchira, integrando procesos para resultados tangibles.
+        </p>
+        <div class="flex flex-wrap justify-center gap-12">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-secondary">task_alt</span>
+            <span class="font-label-md text-primary">Eficiencia comprobada</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-secondary">integration_instructions</span>
+            <span class="font-label-md text-primary">Integración progresiva</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-secondary">monitoring</span>
+            <span class="font-label-md text-primary">Resultados tangibles</span>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
-
-  <footer id="footer" class="footer light-background">
-
-    <div class="container footer-top">
-      <div class="row gy-4">
-        <div class="col-lg-5 col-md-12 footer-about">
-          <a href="index.html" class="logo d-flex align-items-center">
-            <span class="sitename"><strong>SIGET</strong></span>
+  <!-- Footer -->
+  <footer class="bg-surface-container py-16">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop max-w-container-max mx-auto">
+      <div class="col-span-1 md:col-span-1">
+        <div class="font-headline-sm text-headline-sm font-bold text-primary mb-6">SIGET</div>
+        <p class="text-on-surface-variant text-body-sm leading-relaxed">Sistema Integral de Gestión para la
+          Contraloría del Estado Táchira. Modernización al servicio del ciudadano.</p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <h6 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-2">Secciones</h6>
+        <a class="text-on-surface-variant hover:text-secondary transition-colors text-body-sm" href="#hero">Inicio</a>
+        <a class="text-on-surface-variant hover:text-secondary transition-colors text-body-sm"
+          href="#about">Detalles</a>
+        <a class="text-on-surface-variant hover:text-secondary transition-colors text-body-sm"
+          href="#services">Departamentos</a>
+      </div>
+      <div class="flex flex-col gap-4">
+        <h6 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-2">Legal</h6>
+        <a class="text-on-surface-variant hover:text-secondary transition-colors text-body-sm" href="#">Privacidad</a>
+        <a class="text-on-surface-variant hover:text-secondary transition-colors text-body-sm" href="#">Términos
+          de Servicio</a>
+        <a class="text-on-surface-variant hover:text-secondary transition-colors text-body-sm" href="#">Soporte</a>
+      </div>
+      <div class="flex flex-col gap-4">
+        <h6 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-2">Contacto</h6>
+        <div class="flex gap-4 mt-2">
+          <a class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary hover:bg-secondary hover:text-on-primary transition-all duration-300"
+            href="#">
+            <span class="material-symbols-outlined text-[20px]">share</span>
           </a>
-          <p>Sistema Integral de Gestión para la Contraloría del Estado Táchira.</p>
-          <div class="social-links d-flex mt-4">
-            <a href="https://twitter.com/CETachira"><i class="bi bi-twitter-x"></i></a>
-            <a href="https://www.youtube.com/channel/UCMo9xFixIBqTAwPXSDk2fAA"><i class="bi bi-youtube"></i></a>
-            <a href="contraloriaestadotachira.gob.ve"><i class="bi bi-google"></i></a>
-          </div>
+          <a class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary hover:bg-secondary hover:text-on-primary transition-all duration-300"
+            href="#">
+            <span class="material-symbols-outlined text-[20px]">mail</span>
+          </a>
+          <a class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-primary hover:bg-secondary hover:text-on-primary transition-all duration-300"
+            href="#">
+            <span class="material-symbols-outlined text-[20px]">language</span>
+          </a>
         </div>
-
       </div>
     </div>
+    <div class="max-w-container-max mx-auto px-margin-desktop mt-16 pt-8 border-t border-border-light text-center">
+      <p class="text-on-surface-variant font-body-sm text-body-sm">© 2024 SIGET - Sistema Integral de Gestión.
+        Todos los derechos reservados.</p>
+    </div>
   </footer>
+  <script>
+    // Header shadow on scroll
+    window.addEventListener('scroll', () => {
+      const header = document.querySelector('header');
+      if (window.scrollY > 50) {
+        header.classList.add('shadow-md');
+        header.classList.add('py-2');
+        header.classList.remove('py-4');
+      } else {
+        header.classList.remove('shadow-md');
+        header.classList.add('py-4');
+        header.classList.remove('py-2');
+      }
+    });
 
-  <!-- Scroll Top -->
-  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
-      class="bi bi-arrow-up-short"></i></a>
+    // Reveal animations on scroll
+    const observerOptions = {
+      threshold: 0.1
+    };
 
-  <!-- Preloader -->
-  <div id="preloader"></div>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+          entry.target.classList.remove('opacity-0', 'translate-y-8');
+        }
+      });
+    }, observerOptions);
 
-  <!-- Vendor JS Files -->
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
-  <script src="assets/vendor/aos/aos.js"></script>
-  <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
-  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
-  <script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
-  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
-
-  <!-- Main JS File -->
-  <script src="assets/js/main.js"></script>
+    document.querySelectorAll('.modern-card, section h2, section p, .icon-box').forEach(el => {
+      el.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-8');
+      observer.observe(el);
+    });
+  </script>
 </body>
 
 </html>

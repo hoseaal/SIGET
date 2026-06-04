@@ -1,28 +1,28 @@
 /* Fonts */
 :root {
-  --default-font: "Roboto",  system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --heading-font: "Raleway",  sans-serif;
-  --nav-font: "Poppins",  sans-serif;
+  --default-font: "Inter", system-ui, -apple-system, sans-serif;
+  --heading-font: "Outfit", sans-serif;
+  --nav-font: "Outfit", sans-serif;
 }
 
-/* Global Colors - The following color variables are used throughout the website. Updating them here will change the color scheme of the entire website */
+/* Global Colors - 2026 Standards */
 :root { 
-  --background-color: #ffffff; /* Background color for the entire website, including individual sections */
-  --default-color: #444444; /* Default color used for the majority of the text content across the entire website */
-  --heading-color: #124265; /* Color for headings, subheadings and title throughout the website */
-  --accent-color: #2487ce; /* Accent color that represents your brand on the website. It's used for buttons, links, and other elements that need to stand out */
-  --surface-color: #ffffff; /* The surface color is used as a background of boxed elements within sections, such as cards, icon boxes, or other elements that require a visual separation from the global background. */
-  --contrast-color: #ffffff; /* Contrast color for text, ensuring readability against backgrounds of accent, heading, or default colors. */
+  --background-color: #f8fafc; 
+  --default-color: #334155; 
+  --heading-color: #0f172a; 
+  --accent-color: #2563eb; 
+  --surface-color: rgba(255, 255, 255, 0.7); 
+  --contrast-color: #ffffff; 
 }
 
-/* Nav Menu Colors - The following color variables are used specifically for the navigation menu. They are separate from the global colors to allow for more customization options */
+/* Nav Menu Colors */
 :root {
-  --nav-color: #124265;  /* The default color of the main navmenu links */
-  --nav-hover-color: #2487ce; /* Applied to main navmenu links when they are hovered over or active */
-  --nav-mobile-background-color: #ffffff; /* Used as the background color for mobile navigation menu */
-  --nav-dropdown-background-color: #ffffff; /* Used as the background color for dropdown items that appear when hovering over primary navigation items */
-  --nav-dropdown-color: #124265; /* Used for navigation links of the dropdown items in the navigation menu. */
-  --nav-dropdown-hover-color: #2487ce; /* Similar to --nav-hover-color, this color is applied to dropdown navigation links when they are hovered over. */
+  --nav-color: #334155;
+  --nav-hover-color: #2563eb;
+  --nav-mobile-background-color: rgba(255, 255, 255, 0.95);
+  --nav-dropdown-background-color: #ffffff;
+  --nav-dropdown-color: #334155;
+  --nav-dropdown-hover-color: #2563eb;
 }
 
 /* Color Presets - These classes override global colors when applied to any section or element, providing reuse of the sam color scheme. */
@@ -220,11 +220,17 @@ h6 {
 --------------------------------------------------------------*/
 .header {
   color: var(--default-color);
-  background-color: var(--background-color);
-  padding: 20px 0;
-  transition: all 0.5s;
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 15px 30px;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 997;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  margin: 20px auto;
+  max-width: 90%;
+  border-radius: 100px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
 
 .header .logo {
@@ -1171,13 +1177,14 @@ section,
 # Services Section
 --------------------------------------------------------------*/
 .services .service-item {
-  background-color: var(--surface-color);
-  box-shadow: 0px 5px 90px 0px rgba(0, 0, 0, 0.1);
+  background: var(--surface-color);
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.08);
   height: 100%;
   padding: 60px 30px;
   text-align: center;
-  transition: 0.3s;
-  border-radius: 5px;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .services .service-item .icon {
@@ -1221,7 +1228,8 @@ section,
 }
 
 .services .service-item:hover {
-  box-shadow: 0px 5px 35px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.12);
+  transform: translateY(-8px);
 }
 
 .services .service-item.item-cyan i {
@@ -2059,6 +2067,140 @@ section,
 
 .service-item:hover .icon-circle i {
   color: white; /* Ícono blanco al hacer hover */
+}
+
+/* ---------------------------------
+   Modern 2026 Overrides
+---------------------------------- */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 160px 0 100px 0;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.hero img {
+  display: none;
+}
+
+.hero-bg-gradient {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at top left, rgba(37,99,235,0.06) 0%, rgba(255,255,255,0) 40%),
+              radial-gradient(circle at bottom right, rgba(14,165,233,0.06) 0%, rgba(255,255,255,0) 40%);
+  z-index: 0;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  background: rgba(37,99,235,0.1);
+  color: var(--accent-color);
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  font-size: 4.5rem;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+}
+
+.hero-subtitle {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.hero-description {
+  font-size: 1.25rem;
+  color: var(--default-color);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.bento-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.bento-box {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 24px;
+  padding: 40px 30px;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+  height: 100%;
+}
+
+.bento-box:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px -10px rgba(37,99,235,0.15);
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(37,99,235,0.2);
+}
+
+.bento-box .icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, rgba(37,99,235,0.1) 0%, rgba(37,99,235,0.05) 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--accent-color);
+  font-size: 28px;
+}
+
+.bento-box .title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--heading-color);
+}
+
+.bento-box .description {
+  font-size: 0.95rem;
+  color: var(--default-color);
+  margin: 0;
+}
+
+/* Modernize services section specifically */
+.services.section {
+  background-color: var(--background-color);
+}
+
+.modern-card {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.04) !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.modern-card:hover {
+  transform: translateY(-10px) !important;
+  box-shadow: 0 30px 60px rgba(37,99,235,0.12) !important;
+  border-color: rgba(37,99,235,0.3) !important;
 }
 
 /*--------------------------------------------------------------
