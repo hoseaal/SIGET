@@ -203,73 +203,71 @@ export const Almacen = () => {
                     {/* Sección de Filtros y Búsqueda */}
                     <Form onSubmit={handleSearch} className="d-flex align-items-center gap-2 mb-4">
 
-                            {/* Selector de tipo de búsqueda + input en grupo */}
-                            <div className="input-group flex-grow-1" style={{ minWidth: 0 }}>
-                                <select
-                                    className="form-select flex-grow-0"
-                                    style={{ width: '130px' }}
-                                    value={searchType}
-                                    onChange={(e) => handleSearchTypeChange(e.target.value)}
-                                    title="Selecciona el criterio de búsqueda"
-                                >
-                                    <option value="pre_ndo">N° Oficio</option>
-                                    <option value="bim_cod">N° de Bien</option>
-                                </select>
-                                <Form.Control
-                                    type="text"
-                                    placeholder={searchType === 'pre_ndo' ? 'Buscar por número de oficio...' : 'Buscar por código de bien...'}
-                                    value={searchText}
-                                    onChange={(e) => setSearchText(e.target.value)}
-                                />
-                            </div>
-
-                            <Button type="submit" variant="outline-primary" disabled={!searchText.trim()} className="flex-shrink-0">
-                                <i className="bx bx-search me-1"></i>Buscar
-                            </Button>
-                            {searchQuery.value && (
-                                <Button type="button" variant="outline-secondary" className="flex-shrink-0" onClick={handleClearSearch}>
-                                    <i className="bx bx-x"></i>
-                                </Button>
-                            )}
-
-                            {/* Badge informativo si hay búsqueda activa */}
-                            {searchQuery.value && (
-                                <span className="badge bg-label-primary text-nowrap flex-shrink-0">
-                                    {searchQuery.type === 'pre_ndo' ? 'Oficio' : 'N° Bien'}: <strong>{searchQuery.value}</strong>
-                                </span>
-                            )}
-
-                            <Form.Select
-                                value={filtros.dep_origen_id}
-                                onChange={(e) => handleFiltroChange('dep_origen_id', e.target.value)}
-                                style={{ width: '160px', flexShrink: 0 }}
-                                title="Departamento Origen"
+                        {/* Selector de tipo de búsqueda + input en grupo */}
+                        <div className="input-group flex-grow-1" style={{ minWidth: 0 }}>
+                            <select
+                                className="form-select flex-grow-0"
+                                style={{ width: '130px' }}
+                                value={searchType}
+                                onChange={(e) => handleSearchTypeChange(e.target.value)}
+                                title="Selecciona el criterio de búsqueda"
                             >
-                                <option value="">Dep. Origen</option>
-                                {departamentos.map(dep => (
-                                    (dep.dep_ide !== 11) && (
-                                        <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
-                                    )
-                                ))}
-                            </Form.Select>
+                                <option value="pre_ndo">N° Oficio</option>
+                                <option value="bim_cod">N° de Bien</option>
+                            </select>
+                            <Form.Control
+                                type="text"
+                                placeholder={searchType === 'pre_ndo' ? 'Buscar por número de oficio...' : 'Buscar por código de bien...'}
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                            />
+                        </div>
 
-                            <Form.Group controlId="filtroDepDestino" style={{ width: '160px', flexShrink: 0 }}>
-                                <Form.Label className="visually-hidden">Almacen de Destino</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    value={filtros.dep_destino_id}
-                                    onChange={(e) => handleFiltroChange('dep_destino_id', e.target.value)}
-                                >
-                                    <option value="">Almacen de Destino</option>
-                                    {departamentos
-                                        .filter(dep => dep.dep_ide === DEP_ALMACEN_03 || dep.dep_ide === DEP_ALMACEN_04)
-                                        .map(dep => (
-                                            <option key={dep.dep_ide} value={dep.dep_ide}>
-                                                {dep.dep_nom}
-                                            </option>
-                                        ))}
-                                </Form.Control>
-                            </Form.Group>
+                        <Button type="submit" variant="outline-primary" disabled={!searchText.trim()} className="flex-shrink-0">
+                            <i className="bx bx-search me-1"></i>Buscar
+                        </Button>
+                        {searchQuery.value && (
+                            <Button type="button" variant="outline-secondary" className="flex-shrink-0" onClick={handleClearSearch}>
+                                <i className="bx bx-x"></i>
+                            </Button>
+                        )}
+
+                        {/* Badge informativo si hay búsqueda activa */}
+                        {searchQuery.value && (
+                            <span className="badge bg-label-primary text-nowrap flex-shrink-0">
+                                {searchQuery.type === 'pre_ndo' ? 'Oficio' : 'N° Bien'}: <strong>{searchQuery.value}</strong>
+                            </span>
+                        )}
+
+                        <Form.Select
+                            value={filtros.dep_origen_id}
+                            onChange={(e) => handleFiltroChange('dep_origen_id', e.target.value)}
+                            style={{ width: '160px', flexShrink: 0 }}
+                            title="Departamento Origen"
+                        >
+                            <option value="">Dep. Origen</option>
+                            {departamentos.map(dep => (
+                                <option key={dep.dep_ide} value={dep.dep_ide}>{dep.dep_nom}</option>
+                            ))}
+                        </Form.Select>
+
+                        <Form.Group controlId="filtroDepDestino" style={{ width: '160px', flexShrink: 0 }}>
+                            <Form.Label className="visually-hidden">Almacen de Destino</Form.Label>
+                            <Form.Control
+                                as="select"
+                                value={filtros.dep_destino_id}
+                                onChange={(e) => handleFiltroChange('dep_destino_id', e.target.value)}
+                            >
+                                <option value="">Almacen de Destino</option>
+                                {departamentos
+                                    .filter(dep => dep.dep_ide === DEP_ALMACEN_03 || dep.dep_ide === DEP_ALMACEN_04)
+                                    .map(dep => (
+                                        <option key={dep.dep_ide} value={dep.dep_ide}>
+                                            {dep.dep_nom}
+                                        </option>
+                                    ))}
+                            </Form.Control>
+                        </Form.Group>
 
                     </Form>
 
@@ -357,7 +355,7 @@ export const Almacen = () => {
                                         <i className="bx bx-chevron-left me-1"></i> Anterior
                                     </button>
                                 </li>
-                                
+
                                 {Array.from({ length: meta.totalPages || 1 }, (_, i) => i + 1).map((p) => {
                                     const totalPages = meta.totalPages || 1;
                                     if (totalPages > 6) {
