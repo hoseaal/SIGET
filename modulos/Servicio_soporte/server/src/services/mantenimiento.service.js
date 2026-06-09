@@ -29,16 +29,19 @@ export class MantenimientoService {
             nro_caso = nro_caso.trim()
         }
 
+        const codigo_entrega = Math.floor(100000 + Math.random() * 900000).toString()
+
         return await MantenimientoModel.create({
             ...data,
-            nro_caso
+            nro_caso,
+            codigo_entrega
         })
     }
 
     static async updateStatus(id, updateData) {
         const {
             status, usuario_tecnico_id, diagnostico, solucion,
-            clasificacion_id
+            clasificacion_id, codigo_validacion
         } = updateData
 
         // 1. Verificar si el mantenimiento existe
@@ -50,9 +53,17 @@ export class MantenimientoService {
             throw new Error('Este mantenimiento ya ha sido entregado y no puede modificarse.')
         }
 
+        // 3. Validar código de seguridad al finalizar (status 7)
+        if (parseInt(status) === 7 && maintenance.status !== 7) {
+            if (!codigo_validacion || maintenance.codigo_entrega !== codigo_validacion) {
+                throw new Error('Código de seguridad incorrecto. El usuario debe proporcionar el código para finalizar el mantenimiento.')
+            }
+        }
+
         const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
         const dataToUpdate = { ...updateData }
+        delete dataToUpdate.codigo_validacion
         if (parseInt(status) === 3) { // Asumamos 3 es "En Proceso"
             dataToUpdate.fecha_inicio = now
         }
@@ -85,15 +96,15 @@ export class MantenimientoService {
         return success
     }
     static async filteredData(data, user) {
-        if (!user) return data
-        return data.map(t => {
-            const { ...rest } = t
+        if (!user) return data.map(({ codigo_entrega, ...rest }) => rest)
 
-            // Solo el dueño puede ver el código (o si es necesario, el admin)
+        return data.map(t => {
             const esDueno = String(user.usuario_id) === String(t.usuario_id)
 
-            // Devolvemos todo el objeto siempre (en mantenimientos no hay código secreto como en transferencias)
-            return t
+            if (esDueno) return t
+
+            const { codigo_entrega, ...rest } = t
+            return rest
         })
     }
     // Métodos privados

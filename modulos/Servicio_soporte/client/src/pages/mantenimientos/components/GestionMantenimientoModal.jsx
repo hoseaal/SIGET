@@ -15,6 +15,7 @@ const gestionSchema = z.object({
     solucion: z.string().optional(),
     tipo_falla: z.string().optional(),
     clasificacion_id: z.number().nullable().optional(),
+    codigo_validacion: z.string().optional(),
 }).refine((data) => {
     if (data.status === '7' && !data.tipo_falla) return false;
     return true;
@@ -22,7 +23,11 @@ const gestionSchema = z.object({
 .refine((data) => {
     if (data.status === '7' && (data.clasificacion_id === null || data.clasificacion_id === undefined)) return false;
     return true;
-}, { message: "Seleccione clasificación", path: ["clasificacion_id"] });
+}, { message: "Seleccione clasificación", path: ["clasificacion_id"] })
+.refine((data) => {
+    if (data.status === '7' && (!data.codigo_validacion || !data.codigo_validacion.trim())) return false;
+    return true;
+}, { message: "Ingrese el código de seguridad del usuario", path: ["codigo_validacion"] });
 
 export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimiento, isTechnical }) => {
     const [loading, setLoading] = useState(false);
@@ -41,6 +46,7 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
             solucion: '',
             tipo_falla: '',
             clasificacion_id: null,
+            codigo_validacion: '',
         }
     });
 
@@ -306,9 +312,25 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                                         )}
                                     </div>
                                     {(parseInt(watch('status')) === 7 && !isEntregado) && (
-                                        <div className="alert alert-info py-2">
-                                            <i className="bx bx-info-circle me-1"></i> Al finalizar, se registrará la actividad en el historial y el caso se cerrará permanentemente.
-                                        </div>
+                                        <>
+                                            <div className="alert alert-info py-2">
+                                                <i className="bx bx-info-circle me-1"></i> Al finalizar, se registrará la actividad en el historial y el caso se cerrará permanentemente.
+                                            </div>
+                                            <Form.Group className="mb-4">
+                                                <Form.Label className="fw-bold text-warning">
+                                                    <i className="bx bx-lock-alt me-1"></i> Código de Seguridad del Usuario <span className="text-danger">*</span>
+                                                </Form.Label>
+                                                <Form.Control
+                                                    {...register("codigo_validacion")}
+                                                    placeholder="Ingrese el código de 6 dígitos proporcionado por el usuario"
+                                                    isInvalid={!!errors.codigo_validacion}
+                                                    maxLength={6}
+                                                    className="border-warning"
+                                                />
+                                                <Form.Control.Feedback type="invalid">{errors.codigo_validacion?.message}</Form.Control.Feedback>
+                                                <Form.Text className="text-muted">Solicite al usuario el código de seguridad que se le mostró al crear el caso.</Form.Text>
+                                            </Form.Group>
+                                        </>
                                     )}
                                 </>
                             ) : (

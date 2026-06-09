@@ -145,16 +145,17 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                 <th>Equipo</th>
                                 <th className="text-center">Fecha de Solicitud</th>
                                 <th className="text-center">Fecha de Fin</th>
+                                <th className="text-center">Código Seguridad</th>
                                 <th className="text-center">Estatus</th>
                                 <th className="text-center">Acción</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="7" className="text-center py-5"><Spinner animation="border" variant="primary" /></td></tr>
+                                <tr><td colSpan="8" className="text-center py-5"><Spinner animation="border" variant="primary" /></td></tr>
                             ) : filteredData.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="text-center py-5 text-muted">
+                                    <td colSpan="8" className="text-center py-5 text-muted">
                                         <div className="mb-2"><i className="bx bx-info-circle fs-1"></i></div>
                                         No hay mantenimientos registradas para su departamento.
                                     </td>
@@ -171,6 +172,17 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                         <td className="text-center">{new Date(m.fecha_solicitud).toLocaleDateString()}</td>
                                         <td className="text-center">
                                             {m.fecha_fin ? new Date(m.fecha_fin).toLocaleDateString() : <span className="text-muted">N/A</span>}
+                                        </td>
+                                        <td className="text-center">
+                                            {parseInt(m.status) === 7 || parseInt(m.status) === 8 ? (
+                                                <span className="text-muted small">Finalizado</span>
+                                            ) : m.codigo_entrega ? (
+                                                <Badge bg="dark" className="fs-6 py-2 px-3">
+                                                    <i className="bx bx-lock-alt me-1"></i> {m.codigo_entrega}
+                                                </Badge>
+                                            ) : (
+                                                <i className="bx bx-lock-alt me-1"></i>
+                                            )}
                                         </td>
                                         <td className="text-center">
                                             <Badge bg={getStatusBadge(m.status_nombre)} className="bg-label-primary text-center">

@@ -21,14 +21,14 @@ const solicitudSchema = z.object({
     if (data.activeTab === 'general' && data.depto_destino_id && !data.tipo_falla) return false;
     return true;
 }, { message: "Seleccione tipo de falla", path: ["tipo_falla"] })
-.refine((data) => {
-    if (data.activeTab === 'toner' && !data.nro_caso?.trim()) return false;
-    return true;
-}, { message: "Ingrese el número de oficio", path: ["nro_caso"] })
-.refine((data) => {
-    if (data.activeTab === 'toner' && !data.equipo_id) return false;
-    return true;
-}, { message: "Seleccione el equipo (impresora)", path: ["equipo_id"] });
+    .refine((data) => {
+        if (data.activeTab === 'toner' && !data.nro_caso?.trim()) return false;
+        return true;
+    }, { message: "Ingrese el número de oficio", path: ["nro_caso"] })
+    .refine((data) => {
+        if (data.activeTab === 'toner' && !data.equipo_id) return false;
+        return true;
+    }, { message: "Seleccione el equipo (impresora)", path: ["equipo_id"] });
 
 export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) => {
     const [loading, setLoading] = useState(false);
@@ -37,6 +37,9 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     const [tiposFalla, setTiposFalla] = useState([]);
     const [fetchingInitial, setFetchingInitial] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
+    const [codigoGenerado, setCodigoGenerado] = useState(null);
+
+    const isAdmin = user?.rol_id === 1;
 
     const { register, handleSubmit, formState: { errors }, control, reset, setValue, watch, getValues } = useForm({
         resolver: zodResolver(solicitudSchema),
@@ -63,7 +66,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             reset({
                 nro_caso: '',
                 direc_id: String(user.direc_id || ''),
-                depto_destino_id: '',
+                depto_destino_id: isAdmin ? '' : '14',
                 equipo_id: '',
                 tipo_falla: '',
                 asunto: '',
@@ -133,20 +136,21 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                 nro_caso: activeTab === 'toner' ? data.nro_caso : undefined,
                 usuario_id: user.usuario_id
             };
-            await helpFetch.POST('/mantenimiento', payload);
+            const result = await helpFetch.POST('/mantenimiento', payload);
+            const code = result?.data?.codigo_entrega;
+            setCodigoGenerado(code);
             toast.success("Solicitud registrada correctamente.");
             setActiveTab('general');
             reset({
                 nro_caso: '',
                 direc_id: String(user?.direc_id || ''),
-                depto_destino_id: '',
+                depto_destino_id: isAdmin ? '' : '14',
                 equipo_id: '',
                 tipo_falla: '',
                 asunto: '',
                 descripcion: '',
                 activeTab: 'general'
             });
-            onSuccess();
         } catch (error) {
             console.error(error);
             let userMsg = "Error al registrar la solicitud.";
@@ -184,8 +188,8 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
 
     const getFilteredTiposFalla = () => {
         if (!watchedDeptoDestino) return [];
-        return tiposFalla.filter(t => 
-            String(t.depto_id) === String(watchedDeptoDestino) || 
+        return tiposFalla.filter(t =>
+            String(t.depto_id) === String(watchedDeptoDestino) ||
             t.nombre.toUpperCase() === 'OTRO'
         );
     };
@@ -198,8 +202,13 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
         }))
     ];
 
+    const handleClose = () => {
+        setCodigoGenerado(null);
+        onHide();
+    };
+
     return (
-        <Modal show={show} onHide={onHide} size="lg" backdrop="static">
+        <Modal show={show} onHide={handleClose} size="lg" backdrop="static">
             <Modal.Header closeButton>
                 <Modal.Title>{esTecnico ? 'Registrar Mantenimiento (Admin/Técnico)' : 'Reportar Falla / Mantenimiento'}</Modal.Title>
             </Modal.Header>
@@ -237,27 +246,22 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
 
                     <Row className="mb-3">
                         <Col md={12}>
-                            {esTecnico ? (
-                                <Form.Group>
-                                    <Form.Label>Departamento Afectado</Form.Label>
-                                    <Form.Select
-                                        {...register("direc_id")}
-                                        isInvalid={!!errors.direc_id}
-                                    >
-                                        <option value="">-- Seleccionar --</option>
-                                        {departamentos.map(d => (
-                                            <option key={d.id} value={d.id}>{d.nombre}</option>
-                                        ))}
-                                    </Form.Select>
-                                    <Form.Control.Feedback type="invalid">{errors.direc_id?.message}</Form.Control.Feedback>
-                                </Form.Group>
-                            ) : (
-                                <div className="p-2 bg-light rounded border mb-2">
-                                    <small className="text-muted d-block">Solicitante:</small>
-                                    <strong>{user?.nombre}</strong>
-                                    <small className="text-muted ms-3">Dpto:</small> {departamentos.find(d => d.id === user?.direc_id)?.nombre}
-                                </div>
-                            )}
+                            <Form.Group>
+                                <Form.Label>Departamento Afectado</Form.Label>
+                                <Form.Select
+                                    {...register("direc_id")}
+                                    disabled={!isAdmin}
+                                    isInvalid={!!errors.direc_id
+                                    }
+                                >
+                                    <option value="">Seleccione origen...</option>
+                                    {departamentos.map(dep => (
+                                        <option key={dep.id} value={dep.id}>{dep.nombre}</option>
+                                    ))}
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">{errors.origen_id?.message}</Form.Control.Feedback>
+                                {!isAdmin && <Form.Text className="text-muted">Asignado automáticamente por su perfil.</Form.Text>}
+                            </Form.Group>
                         </Col>
                     </Row>
 
@@ -270,9 +274,11 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                                     isInvalid={!!errors.depto_destino_id}
                                 >
                                     <option value="">-- Seleccionar --</option>
-                                    {departamentos.map(d => (
-                                        <option key={d.id} value={d.id}>{d.nombre}</option>
-                                    ))}
+                                    {departamentos
+                                        .filter(d => isAdmin || d.id === 14)
+                                        .map(d => (
+                                            <option key={d.id} value={d.id}>{d.nombre}</option>
+                                        ))}
                                 </Form.Select>
                                 <Form.Control.Feedback type="invalid">{errors.depto_destino_id?.message}</Form.Control.Feedback>
                             </Form.Group>
@@ -323,7 +329,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                                     options={equipoOptions}
                                     placeholder="Escriba Nro. Bien o Tipo para buscar..."
                                     isClearable
-                                    onChange={(opt) => field.onChange(opt ? opt.value : '')}
+                                    onChange={(opt) => field.onChange(opt ? String(opt.value) : '')}
                                     value={equipoOptions.find(opt => opt.value === field.value) || null}
                                     noOptionsMessage={() => activeTab === 'toner' ? 'No hay impresoras registradas en este departamento' : 'No se encontraron equipos'}
                                     styles={activeTab === 'toner' && !!errors.equipo_id ? {
@@ -370,11 +376,32 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                     </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={onHide} disabled={loading}>Cancelar</Button>
-                    <Button variant="primary" type="submit" disabled={loading}>
-                        {loading ? <Spinner size="sm" animation="border" className="me-1" /> : <i className="bx bx-send me-1"></i>}
-                        Enviar Reporte
-                    </Button>
+                    {codigoGenerado ? (
+                        <>
+                            <div className="w-100 text-center mb-2">
+                                <div className="alert alert-success py-3 px-4 mb-3">
+                                    <i className="bx bx-check-circle fs-3 d-block mb-2"></i>
+                                    <h6 className="fw-bold mb-2">¡Solicitud registrada con éxito!</h6>
+                                    <p className="mb-2">Su código de seguridad para entregar el equipo es:</p>
+                                    <div className="d-inline-block bg-dark text-warning fw-bold fs-3 px-4 py-2 rounded-3 border border-warning">
+                                        <i className="bx bx-lock-alt me-2"></i>{codigoGenerado}
+                                    </div>
+
+                                </div>
+                            </div>
+                            <Button variant="secondary" onClick={() => { setCodigoGenerado(null); onHide(); }}>
+                                Cerrar
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button variant="secondary" onClick={onHide} disabled={loading}>Cancelar</Button>
+                            <Button variant="primary" type="submit" disabled={loading}>
+                                {loading ? <Spinner size="sm" animation="border" className="me-1" /> : <i className="bx bx-send me-1"></i>}
+                                Enviar Reporte
+                            </Button>
+                        </>
+                    )}
                 </Modal.Footer>
             </Form>
         </Modal>

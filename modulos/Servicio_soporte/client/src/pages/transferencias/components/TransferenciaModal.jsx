@@ -26,6 +26,8 @@ export const TransferenciaModal = ({ show, onHide, onSuccess }) => {
     const [departamentos, setDepartamentos] = useState([]);
     const [user, setUser] = useState(null);
 
+    const isAdmin = user?.rol_id === 1;
+
     const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm({
         resolver: zodResolver(transferenciaSchema),
         defaultValues: {
@@ -46,7 +48,7 @@ export const TransferenciaModal = ({ show, onHide, onSuccess }) => {
             reset({
                 origen_id: '',
                 equipo_id: '',
-                destino_id: '',
+                destino_id: '14',
                 asunto: '',
                 observaciones: ''
             });
@@ -81,11 +83,8 @@ export const TransferenciaModal = ({ show, onHide, onSuccess }) => {
             setDepartamentos(deps);
             setEquipos(allEquipos);
 
-            // 3. Pre-seleccionar Soporte Técnico como DESTINO
-            const soporte = deps.find(d => d.nombre.toUpperCase().includes('SERVICIO TECNICO') || d.nombre.toUpperCase().includes('SOPORTE'));
-            if (soporte) {
-                setValue('destino_id', String(soporte.id));
-            }
+            // 3. Pre-seleccionar División de Servicio Técnico como DESTINO (ID=14)
+            setValue('destino_id', '14');
 
             // 4. Pre-seleccionar departamento del usuario como ORIGEN (si existe)
             const userDepId = userData.user.direc_id;
@@ -147,7 +146,7 @@ export const TransferenciaModal = ({ show, onHide, onSuccess }) => {
                                         <Form.Label>Departamento de Origen <span className="text-danger">*</span></Form.Label>
                                         <Form.Select
                                             {...register("origen_id")}
-                                            disabled={user?.rol_id !== 1}
+                                            disabled={!isAdmin}
                                             isInvalid={!!errors.origen_id}
                                         >
                                             <option value="">Seleccione origen...</option>
@@ -156,19 +155,22 @@ export const TransferenciaModal = ({ show, onHide, onSuccess }) => {
                                             ))}
                                         </Form.Select>
                                         <Form.Control.Feedback type="invalid">{errors.origen_id?.message}</Form.Control.Feedback>
-                                        {user?.rol_id !== 1 && <Form.Text className="text-muted">Asignado automáticamente por su perfil.</Form.Text>}
+                                        {!isAdmin && <Form.Text className="text-muted">Asignado automáticamente por su perfil.</Form.Text>}
                                     </Form.Group>
                                 </Col>
                                 <Col md={6}>
                                     <Form.Group>
                                         <Form.Label>Entregar a (Destino) <span className="text-danger">*</span></Form.Label>
-                                        <Form.Select {...register("destino_id")} isInvalid={!!errors.destino_id}>
+                                        <Form.Select
+                                            {...register("destino_id")}
+                                            isInvalid={!!errors.destino_id}
+                                        >
                                             <option value="">Seleccione destino...</option>
                                             {departamentos
-                                                .filter(d => d.nombre.toUpperCase().includes("DIVISIÓN DE SERVICIO TÉCNICO") || d.nombre.toUpperCase().includes("DIVISION DE SERVICIO TECNICO"))
+                                                .filter(d => isAdmin ? d.nombre.toUpperCase().includes("DIVISIÓN DE SERVICIO TÉCNICO") || d.nombre.toUpperCase().includes("DIVISION DE SERVICIO TECNICO") : d.id === 14)
                                                 .map(dep => (
-                                                <option key={dep.id} value={dep.id}>{dep.nombre}</option>
-                                            ))}
+                                                    <option key={dep.id} value={dep.id}>{dep.nombre}</option>
+                                                ))}
                                         </Form.Select>
                                         <Form.Control.Feedback type="invalid">{errors.destino_id?.message}</Form.Control.Feedback>
                                     </Form.Group>
