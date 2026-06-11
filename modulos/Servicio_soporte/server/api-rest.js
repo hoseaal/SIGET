@@ -2,7 +2,6 @@ import express from 'express'
 import { connectDB } from './src/utils/database.js'
 import cors from 'cors'
 import morgan from 'morgan'
-import descripcionesRouter from './src/routes/descripciones.route.js'
 import tipo_actRouter from './src/routes/tipo_act.route.js'
 import tipo_componente from './src/routes/tipo_componente.route.js'
 import tipo_toner from './src/routes/tipo_toner.route.js'
@@ -46,7 +45,6 @@ app.use(cors({
 
 app.use('/api/user', userRoutes)
 app.use('/api/auth', auth)
-app.use('/api/descripciones', descripcionesRouter)
 app.use('/api/tipo_act', tipo_actRouter)
 app.use('/api/tipo_componente', tipo_componente)
 app.use('/api/tipo_toner', tipo_toner)

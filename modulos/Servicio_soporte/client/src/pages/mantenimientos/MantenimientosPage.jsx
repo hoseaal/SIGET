@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup, Pagination } from "react-bootstrap";
+import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup, Modal } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
 import { SolicitudMantenimientoModal } from "./components/SolicitudMantenimientoModal";
@@ -20,6 +20,8 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
     const [showSolicitud, setShowSolicitud] = useState(false);
     const [showGestion, setShowGestion] = useState(false);
     const [selectedMaint, setSelectedMaint] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
@@ -78,8 +80,20 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
         if (n.includes('pendiente')) return 'warning';
         if (n.includes('proceso') || n.includes('revisión')) return 'info';
         if (n.includes('finalizado') || n.includes('listo')) return 'success';
-        if (n.includes('anulado')) return 'danger';
         return 'secondary';
+    };
+
+    const handleDeleteMantenimiento = async () => {
+        if (!deleteTarget) return;
+        try {
+            await helpFetch.DELETE(`/mantenimiento/${deleteTarget.id}`);
+            toast.success("Registro eliminado correctamente.");
+            setShowDeleteModal(false);
+            setDeleteTarget(null);
+            fetchData();
+        } catch (error) {
+            toast.error(error.message || "Error al eliminar el registro.");
+        }
     };
 
     return (
@@ -126,7 +140,6 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                 <option value="2">Pendiente</option>
                                 <option value="3">En Proceso</option>
                                 <option value="7">Finalizado</option>
-                                <option value="8">Anulado</option>
                             </Form.Select>
                         </Col>
                         <Col md={2}>
@@ -174,7 +187,7 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                             {m.fecha_fin ? new Date(m.fecha_fin).toLocaleDateString() : <span className="text-muted">N/A</span>}
                                         </td>
                                         <td className="text-center">
-                                            {parseInt(m.status) === 7 || parseInt(m.status) === 8 ? (
+                                            {parseInt(m.status) === 7 ? (
                                                 <span className="text-muted small">Finalizado</span>
                                             ) : m.codigo_entrega ? (
                                                 <Badge bg="dark" className="fs-6 py-2 px-3">
@@ -194,6 +207,11 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                                                 <Button size="sm" variant="primary" onClick={() => { setSelectedMaint(m); setShowGestion(true); }}>
                                                     <i className={`bx ${isTechnicalDashboard ? 'bx-cog' : 'bx-show'}`}></i>
                                                 </Button>
+                                                {!isTechnicalDashboard && user?.usuario_id === m.usuario_id && parseInt(m.status) === 2 && (
+                                                    <Button size="sm" variant="danger" title="Anular" onClick={() => { setDeleteTarget(m); setShowDeleteModal(true); }}>
+                                                        <i className="bx bx-trash"></i>
+                                                    </Button>
+                                                )}
                                                 {(m.tipo_falla === 10 || m.tipo_falla === 14) && (
                                                     <Button size="sm" variant="danger" title="Exportar Informe de Tóner" onClick={() => exportInformeTonerPDF(m, user)}>
                                                         <i className="bx bxs-file-pdf me-1"></i>
@@ -231,6 +249,25 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
                 mantenimiento={selectedMaint}
                 isTechnical={isTechnicalDashboard}
             />
+
+            <Modal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setDeleteTarget(null); }} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirmar Eliminación</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    ¿Está seguro de que desea eliminar la solicitud <strong>{deleteTarget?.nro_caso}</strong>?
+                    <br /><br />
+                    <span className="text-danger"><i className="bx bx-info-circle me-1"></i> Esta acción no se puede deshacer.</span>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={handleDeleteMantenimiento}>
+                        <i className="bx bx-trash me-1"></i> Eliminar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

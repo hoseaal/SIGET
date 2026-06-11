@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup, Pagination } from "react-bootstrap";
+import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup, Modal } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
 import { TransferenciaModal } from "./components/TransferenciaModal";
@@ -19,6 +19,8 @@ export const TransferenciasPage = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [selectedTransfer, setSelectedTransfer] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
@@ -85,9 +87,21 @@ export const TransferenciasPage = () => {
         if (n.includes('recibido') || n.includes('revisión')) return 'info';
         if (n.includes('reparación')) return 'primary';
         if (n.includes('listo') || n.includes('entregado')) return 'success';
-        if (n.includes('anulado')) return 'danger';
         return 'secondary';
     };
+
+        const handleDeleteTransferencia = async () => {
+            if (!deleteTarget) return;
+            try {
+                await helpFetch.DELETE(`/transferencia/${deleteTarget.id}`);
+                toast.success("Registro eliminado correctamente.");
+                setShowDeleteModal(false);
+                setDeleteTarget(null);
+                fetchData();
+            } catch (error) {
+                toast.error(error.message || "Error al eliminar el registro.");
+            }
+        };
 
     const getPriorityBadge = (prio) => {
         switch (prio) {
@@ -153,7 +167,6 @@ export const TransferenciasPage = () => {
                                 <option value="5">En Reparación</option>
                                 <option value="6">Listo para Entrega</option>
                                 <option value="7">Entregado</option>
-                                <option value="8">Anulado</option>
                             </Form.Select>
                         </Col>
                         <Col md={2} className="text-end">
@@ -215,7 +228,7 @@ export const TransferenciasPage = () => {
                                             </Badge>
                                         </td>
                                         <td className="text-center">
-                                            {t.status !== 7 && t.status !== 8 ? (
+                                            {parseInt(t.status) !== 7 ? (
                                                 <Badge bg="dark" className="fs-6 py-2 px-3">
                                                     <i className="bx bx-lock-alt me-1"></i> {t.codigo_entrega}
                                                 </Badge>
@@ -224,17 +237,29 @@ export const TransferenciasPage = () => {
                                             )}
                                         </td>
                                         <td className="text-center">
-                                            <Button
-                                                size="sm"
-                                                variant="primary"
-                                                title="Ver Detalles Completos"
-                                                onClick={() => {
-                                                    setSelectedTransfer(t);
-                                                    setDetailModalVisible(true);
-                                                }}
-                                            >
-                                                <i className="bx bx-show me-1"></i>
-                                            </Button>
+                                            <div className="d-flex justify-content-center gap-1">
+                                                <Button
+                                                    size="sm"
+                                                    variant="primary"
+                                                    title="Ver Detalles Completos"
+                                                    onClick={() => {
+                                                        setSelectedTransfer(t);
+                                                        setDetailModalVisible(true);
+                                                    }}
+                                                >
+                                                    <i className="bx bx-show me-1"></i>
+                                                </Button>
+                                                {user?.usuario_id === t.usuario_id && parseInt(t.status) === 2 && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="danger"
+                                                        title="Anular"
+                                                        onClick={() => { setDeleteTarget(t); setShowDeleteModal(true); }}
+                                                    >
+                                                        <i className="bx bx-trash"></i>
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -266,6 +291,25 @@ export const TransferenciasPage = () => {
                 }}
                 transferencia={selectedTransfer}
             />
+
+            <Modal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setDeleteTarget(null); }} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirmar Eliminación</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    ¿Está seguro de que desea eliminar la transferencia <strong>{deleteTarget?.nro_caso}</strong>?
+                    <br /><br />
+                    <span className="text-danger"><i className="bx bx-info-circle me-1"></i> Esta acción no se puede deshacer.</span>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={handleDeleteTransferencia}>
+                        <i className="bx bx-trash me-1"></i> Eliminar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

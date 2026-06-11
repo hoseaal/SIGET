@@ -167,7 +167,6 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
                                                     <option value="2">Pendiente</option>
                                                     <option value="3">En Proceso / Reparación</option>
                                                     <option value="7">Finalizado / Resuelto</option>
-                                                    <option value="8">Anulado</option>
                                                 </Form.Select>
                                                 <Form.Control.Feedback type="invalid">{errors.status?.message}</Form.Control.Feedback>
                                             </Form.Group>

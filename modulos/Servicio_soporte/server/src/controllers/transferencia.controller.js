@@ -52,10 +52,20 @@ export class TransferenciaController {
         }
     }
 
+    static async delete(req, res) {
+        try {
+            const { id } = req.params
+            await TransferenciaService.delete(id, req.user)
+            res.json({ message: 'Registro eliminado correctamente.' })
+        } catch (error) {
+            res.status(500).json({ message: error.message })
+        }
+    }
+
     static async updateStatus(req, res) {
         try {
             const { id } = req.params
-            const success = await TransferenciaService.updateStatus(id, req.body)
+            const success = await TransferenciaService.updateStatus(id, req.body, req.user)
 
             if (!success) {
                 return res.status(404).json({ message: 'Transferencia no encontrada o sin cambios.' })

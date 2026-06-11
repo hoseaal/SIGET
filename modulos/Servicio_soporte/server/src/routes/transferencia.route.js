@@ -6,6 +6,7 @@ const router = Router()
 
 router.get('/', authenticate, TransferenciaController.getAll)
 router.get('/origen/:id', authenticate, TransferenciaController.getByOrigen)
+router.delete('/:id', authenticate, TransferenciaController.delete)
 router.post('/', authenticate, TransferenciaController.create)
 router.put('/:id/status', authenticate, TransferenciaController.updateStatus)
 

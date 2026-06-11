@@ -34,11 +34,20 @@ export class MantenimientoService {
         return await MantenimientoModel.create({
             ...data,
             nro_caso,
+            tipo_falla: data.tipo_falla || 22,
             codigo_entrega
         })
     }
 
-    static async updateStatus(id, updateData) {
+    static async delete(id, user) {
+        const maintenance = await MantenimientoModel.getById(id)
+        if (!maintenance) throw new Error('Mantenimiento no encontrado')
+        if (String(maintenance.usuario_id) !== String(user.usuario_id)) throw new Error('Solo el usuario que creó el registro puede eliminarlo')
+        if (parseInt(maintenance.status) !== 2) throw new Error('Solo se pueden eliminar registros con estado Pendiente')
+        return await MantenimientoModel.delete(id)
+    }
+
+    static async updateStatus(id, updateData, user) {
         const {
             status, usuario_tecnico_id, diagnostico, solucion,
             clasificacion_id, codigo_validacion

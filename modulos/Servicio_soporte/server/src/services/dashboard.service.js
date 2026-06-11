@@ -38,16 +38,35 @@ export class DashboardService {
             // 4. Métricas de Transferencias (Total)
             const [[totalTransferenciasRow]] = await pool.query('SELECT COUNT(*) as total FROM transferencia')
             const totalTransferencias = totalTransferenciasRow.total
+
+            // Por Status
+            const [transferenciasPorStatus] = await pool.query(`
+                SELECT s.nombre as status_nombre, s.id as status_id, COUNT(t.id) as cantidad
+                FROM status s
+                LEFT JOIN transferencia t ON s.id = t.status
+                GROUP BY s.id, s.nombre
+                HAVING cantidad > 0
+            `)
             
             // 5. Mantenimientos recientes (últimos 5)
-            const [mantenimientosRecientes] = await pool.query(`
+            let queryRecientes = `
                 SELECT m.id, m.nro_caso, m.asunto, m.fecha_solicitud, s.nombre as status_nombre, u.nombres as usuario_nombres
                 FROM mantenimiento m
                 JOIN status s ON m.status = s.id
                 JOIN usuarios u ON m.usuario_id = u.usuario_id
-                ORDER BY m.fecha_solicitud DESC
-                LIMIT 5
-            `)
+            `
+            const paramsRecientes = []
+
+            if (user?.rol_id === 3) {
+                queryRecientes += ` WHERE m.status = 2 AND m.direc_id = ?`
+                paramsRecientes.push(user.direc_id)
+            } else {
+                queryRecientes += ` WHERE m.status = 2`
+            }
+
+            queryRecientes += ` ORDER BY m.fecha_solicitud DESC LIMIT 6`
+
+            const [mantenimientosRecientes] = await pool.query(queryRecientes, paramsRecientes)
 
             return {
                 mantenimientos: {
@@ -63,7 +82,8 @@ export class DashboardService {
                     total: totalActividades
                 },
                 transferencias: {
-                    total: totalTransferencias
+                    total: totalTransferencias,
+                    porStatus: transferenciasPorStatus
                 }
             }
         } catch (error) {

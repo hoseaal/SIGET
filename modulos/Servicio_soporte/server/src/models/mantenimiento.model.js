@@ -150,6 +150,14 @@ export class MantenimientoModel {
     }
 
     /**
+     * Elimina un mantenimiento por ID (hard delete)
+     */
+    static async delete(id) {
+        const [result] = await pool.query('DELETE FROM mantenimiento WHERE id = ?', [id])
+        return result.affectedRows > 0
+    }
+
+    /**
      * Actualiza el estado y datos técnicos del mantenimiento
      */
     static async update(id, data) {

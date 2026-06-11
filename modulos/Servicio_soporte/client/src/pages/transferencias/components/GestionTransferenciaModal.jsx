@@ -189,7 +189,6 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
                                             <option value="5">En Reparación</option>
                                             <option value="6">Listo para Entrega</option>
                                             <option value="7">Entregado / Finalizado</option>
-                                            <option value="8">Anulado</option>
                                         </Form.Select>
                                         <Form.Control.Feedback type="invalid">{errors.status?.message}</Form.Control.Feedback>
                                     </Form.Group>

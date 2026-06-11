@@ -13,15 +13,10 @@ const solicitudSchema = z.object({
     direc_id: z.string().min(1, "Seleccione departamento"),
     depto_destino_id: z.string().min(1, "Seleccione departamento destino"),
     equipo_id: z.string(),
-    tipo_falla: z.string(),
     asunto: z.string().min(1, "Ingrese el asunto").max(200),
     descripcion: z.string().min(1, "Ingrese la descripción").max(1000),
     activeTab: z.string(),
 }).refine((data) => {
-    if (data.activeTab === 'general' && data.depto_destino_id && !data.tipo_falla) return false;
-    return true;
-}, { message: "Seleccione tipo de falla", path: ["tipo_falla"] })
-    .refine((data) => {
         if (data.activeTab === 'toner' && !data.nro_caso?.trim()) return false;
         return true;
     }, { message: "Ingrese el número de oficio", path: ["nro_caso"] })
@@ -34,7 +29,6 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     const [loading, setLoading] = useState(false);
     const [equipos, setEquipos] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
-    const [tiposFalla, setTiposFalla] = useState([]);
     const [fetchingInitial, setFetchingInitial] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
     const [codigoGenerado, setCodigoGenerado] = useState(null);
@@ -48,7 +42,6 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             direc_id: '',
             depto_destino_id: '',
             equipo_id: '',
-            tipo_falla: '',
             asunto: '',
             descripcion: '',
             activeTab: 'general'
@@ -56,8 +49,6 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     });
 
     const watchedDirecId = watch('direc_id');
-    const watchedDeptoDestino = watch('depto_destino_id');
-    const watchedEquipoId = watch('equipo_id');
 
     useEffect(() => {
         if (show && user) {
@@ -68,7 +59,6 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                 direc_id: String(user.direc_id || ''),
                 depto_destino_id: isAdmin ? '' : '14',
                 equipo_id: '',
-                tipo_falla: '',
                 asunto: '',
                 descripcion: '',
                 activeTab: 'general'
@@ -85,12 +75,8 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
     const fetchInitialData = async () => {
         try {
             setFetchingInitial(true);
-            const [deps, types] = await Promise.all([
-                helpFetch.GET('/departamento'),
-                helpFetch.GET('/tipo_act')
-            ]);
+            const deps = await helpFetch.GET('/departamento');
             setDepartamentos(deps);
-            setTiposFalla(types);
         } catch (error) {
             console.error(error);
             toast.error("Error al cargar datos maestros");
@@ -98,22 +84,6 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             setFetchingInitial(false);
         }
     };
-
-    useEffect(() => {
-        if (tiposFalla.length > 0) {
-            if (activeTab === 'toner') {
-                const targetType = tiposFalla.find(t =>
-                    t.nombre.toLowerCase().includes('informe asignacion de toner') ||
-                    t.nombre.toLowerCase().includes('toner')
-                );
-                if (targetType) {
-                    setValue('tipo_falla', String(targetType.id));
-                }
-            } else {
-                setValue('tipo_falla', '');
-            }
-        }
-    }, [activeTab, tiposFalla, watchedDeptoDestino]);
 
     const fetchEquipos = async (deptoId) => {
         try {
@@ -146,7 +116,6 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                 direc_id: String(user?.direc_id || ''),
                 depto_destino_id: isAdmin ? '' : '14',
                 equipo_id: '',
-                tipo_falla: '',
                 asunto: '',
                 descripcion: '',
                 activeTab: 'general'
@@ -186,25 +155,21 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
         return filtered;
     };
 
-    const getFilteredTiposFalla = () => {
-        if (!watchedDeptoDestino) return [];
-        return tiposFalla.filter(t =>
-            String(t.depto_id) === String(watchedDeptoDestino) ||
-            t.nombre.toUpperCase() === 'OTRO'
-        );
-    };
-
     const equipoOptions = [
         { value: '', label: '-- No aplica / No listado --' },
         ...getFilteredEquipos().map(e => ({
-            value: e.id,
+            value: String(e.id),
             label: `${e.nro_bien} - ${e.tipo_de_equipo || 'S/T'} - Marca: ${e.marca_nombre || 'S/M'}` + (e.modelo_nombre ? ' (' + e.modelo_nombre + ')' : '')
         }))
     ];
 
     const handleClose = () => {
         setCodigoGenerado(null);
-        onHide();
+        if (codigoGenerado) {
+            onSuccess();
+        } else {
+            onHide();
+        }
     };
 
     return (
@@ -248,18 +213,23 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                         <Col md={12}>
                             <Form.Group>
                                 <Form.Label>Departamento Afectado</Form.Label>
-                                <Form.Select
-                                    {...register("direc_id")}
-                                    disabled={!isAdmin}
-                                    isInvalid={!!errors.direc_id
-                                    }
-                                >
-                                    <option value="">Seleccione origen...</option>
-                                    {departamentos.map(dep => (
-                                        <option key={dep.id} value={dep.id}>{dep.nombre}</option>
-                                    ))}
-                                </Form.Select>
-                                <Form.Control.Feedback type="invalid">{errors.origen_id?.message}</Form.Control.Feedback>
+                                <Controller
+                                    name="direc_id"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Form.Select
+                                            {...field}
+                                            disabled={!isAdmin}
+                                            isInvalid={!!errors.direc_id}
+                                        >
+                                            <option value="">Seleccione departamento...</option>
+                                            {departamentos.map(dep => (
+                                                <option key={dep.id} value={dep.id}>{dep.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    )}
+                                />
+                                <Form.Control.Feedback type="invalid">{errors.direc_id?.message}</Form.Control.Feedback>
                                 {!isAdmin && <Form.Text className="text-muted">Asignado automáticamente por su perfil.</Form.Text>}
                             </Form.Group>
                         </Col>
@@ -269,37 +239,27 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
                         <Col md={12}>
                             <Form.Group>
                                 <Form.Label>Departamento de Destino <span className="text-danger">*</span></Form.Label>
-                                <Form.Select
-                                    {...register("depto_destino_id")}
-                                    isInvalid={!!errors.depto_destino_id}
-                                >
-                                    <option value="">-- Seleccionar --</option>
-                                    {departamentos
-                                        .filter(d => isAdmin || d.id === 14)
-                                        .map(d => (
-                                            <option key={d.id} value={d.id}>{d.nombre}</option>
-                                        ))}
-                                </Form.Select>
+                                <Controller
+                                    name="depto_destino_id"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Form.Select
+                                            {...field}
+                                            isInvalid={!!errors.depto_destino_id}
+                                        >
+                                            <option value="">-- Seleccionar --</option>
+                                            {departamentos
+                                                .filter(d => d.id === 14)
+                                                .map(d => (
+                                                    <option key={d.id} value={d.id}>{d.nombre}</option>
+                                                ))}
+                                        </Form.Select>
+                                    )}
+                                />
                                 <Form.Control.Feedback type="invalid">{errors.depto_destino_id?.message}</Form.Control.Feedback>
                             </Form.Group>
                         </Col>
                     </Row>
-
-                    {activeTab === 'general' && watchedDeptoDestino && (
-                        <Form.Group className="mb-3">
-                            <Form.Label>Tipo de Requerimiento / Falla <span className="text-danger">*</span></Form.Label>
-                            <Form.Select
-                                {...register("tipo_falla")}
-                                isInvalid={!!errors.tipo_falla}
-                            >
-                                <option value="">-- Seleccionar --</option>
-                                {getFilteredTiposFalla().map(t => (
-                                    <option key={t.id} value={t.id}>{t.nombre}</option>
-                                ))}
-                            </Form.Select>
-                            <Form.Control.Feedback type="invalid">{errors.tipo_falla?.message}</Form.Control.Feedback>
-                        </Form.Group>
-                    )}
 
                     {activeTab === 'toner' && (
                         <Form.Group className="mb-3">
@@ -389,7 +349,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
 
                                 </div>
                             </div>
-                            <Button variant="secondary" onClick={() => { setCodigoGenerado(null); onHide(); }}>
+                            <Button variant="secondary" onClick={handleClose}>
                                 Cerrar
                             </Button>
                         </>

@@ -144,6 +144,7 @@ export const ModalUsuario = ({ show, onHide, onSuccess, usuario }) => {
                 const registerData = {
                     username: data.username,
                     password1: data.password1,
+                    password2: data.password1,
                     nombre: data.nombres,
                     ape: data.apellidos,
                     rol_id: data.rol_id,

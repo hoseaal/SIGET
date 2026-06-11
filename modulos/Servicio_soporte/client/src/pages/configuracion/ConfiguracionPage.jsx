@@ -11,7 +11,7 @@ import { TabTipoToner } from "./components/TabTipoToner";
 
 export const ConfiguracionPage = () => {
     // Controlar la pestaña activa
-    const [key, setKey] = useState("descripciones");
+    const [key, setKey] = useState("tiposFalla");
 
     return (
         <>
@@ -27,8 +27,8 @@ export const ConfiguracionPage = () => {
                         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)}>
                             <Nav variant="pills" className="flex-column flex-sm-row mb-4 flex-wrap">
                                 <Nav.Item>
-                                    <Nav.Link eventKey="descripciones">
-                                        <i className="bx bx-list-ul me-1"></i> Descripciones
+                                    <Nav.Link eventKey="tiposFalla">
+                                        <i className="bx bx-error-circle me-1"></i> Tipos de Falla
                                     </Nav.Link>
                                 </Nav.Item>
                                 <Nav.Item>
@@ -79,8 +79,8 @@ export const ConfiguracionPage = () => {
                             </Nav>
 
                             <Tab.Content className="p-0 border-0 bg-transparent">
-                                <Tab.Pane eventKey="descripciones">
-                                    <GenericMasterTab endpoint="/descripciones" titleItem="Descripción" />
+                                <Tab.Pane eventKey="tiposFalla">
+                                    <GenericMasterTab endpoint="/tipo_act" titleItem="Tipo de Falla" />
                                 </Tab.Pane>
 
                                 <Tab.Pane eventKey="tiposActividad">

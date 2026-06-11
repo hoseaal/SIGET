@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Card, Row, Col, Spinner, Table, Badge } from "react-bootstrap";
+import { Card, Row, Col, Spinner, Table, Badge, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { menuPermissions } from "../data/dataPermissions";
 import {
   BarChart,
   Bar,
@@ -42,6 +44,7 @@ const fetchApiData = async (url, accessToken) => {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a83232', '#6b32a8'];
 
 export const DashboardPage = () => {
+  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [dashboardData, setDashboardData] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -103,6 +106,9 @@ export const DashboardPage = () => {
   }
 
   // Preparar datos para los gráficos
+  const userRole = userData?.rol_id;
+  const hasAccess = (path) => menuPermissions[path]?.includes(userRole) ?? false;
+
   const pieChartData = dashboardData?.mantenimientos?.porStatus?.map(item => ({
     name: item.status_nombre,
     value: item.cantidad
@@ -111,6 +117,11 @@ export const DashboardPage = () => {
   const barChartData = dashboardData?.equipos?.porTipo?.map(item => ({
     name: item.tipo_nombre,
     count: item.cantidad
+  })) || [];
+
+  const transferenciasPieData = dashboardData?.transferencias?.porStatus?.map(item => ({
+    name: item.status_nombre,
+    value: item.cantidad
   })) || [];
 
   return (
@@ -130,186 +141,232 @@ export const DashboardPage = () => {
         </Col>
       </div>
 
-      <div className="row">
-        {/* KPI: Mantenimientos */}
-        <Col lg={3} md={6} className="mb-4">
-          <Card className="h-100">
-            <Card.Body>
-              <div className="d-flex align-items-center mb-2">
-                <div className="avatar me-2">
-                  <span className="avatar-initial rounded bg-label-danger"><i className="bx bx-wrench"></i></span>
+      <div className="d-flex justify-content-center row">
+        {hasAccess("/Mantenimientos") && (
+          <Col lg={3} md={6} className="mb-4">
+            <Card className="h-100">
+              <Card.Body>
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-2">
+                    <span className="avatar-initial rounded bg-label-danger"><i className="bx bx-wrench"></i></span>
+                  </div>
+                  <span className="fw-semibold">Mantenimientos</span>
                 </div>
-                <span className="fw-semibold">Mantenimientos</span>
-              </div>
-              <h4 className="card-title mb-1">{dashboardData?.mantenimientos?.total || 0}</h4>
-              <small className="text-muted">Tickets Totales</small>
-            </Card.Body>
-          </Card>
-        </Col>
+                <h4 className="card-title mb-1">{dashboardData?.mantenimientos?.total || 0}</h4>
+                <small className="text-muted">Tickets Totales</small>
+              </Card.Body>
+            </Card>
+          </Col>
+        )}
 
-        {/* KPI: Equipos */}
-        <Col lg={3} md={6} className="mb-4">
-          <Card className="h-100">
-            <Card.Body>
-              <div className="d-flex align-items-center mb-2">
-                <div className="avatar me-2">
-                  <span className="avatar-initial rounded bg-label-primary"><i className="bx bx-desktop"></i></span>
+        {hasAccess("/Equipos") && (
+          <Col lg={3} md={6} className="mb-4">
+            <Card className="h-100">
+              <Card.Body>
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-2">
+                    <span className="avatar-initial rounded bg-label-primary"><i className="bx bx-desktop"></i></span>
+                  </div>
+                  <span className="fw-semibold">Equipos</span>
                 </div>
-                <span className="fw-semibold">Equipos</span>
-              </div>
-              <h4 className="card-title mb-1">{dashboardData?.equipos?.total || 0}</h4>
-              <small className="text-muted">Equipos Registrados</small>
-            </Card.Body>
-          </Card>
-        </Col>
+                <h4 className="card-title mb-1">{dashboardData?.equipos?.total || 0}</h4>
+                <small className="text-muted">Equipos Registrados</small>
+              </Card.Body>
+            </Card>
+          </Col>
+        )}
 
-        {/* KPI: Actividades */}
-        <Col lg={3} md={6} className="mb-4">
-          <Card className="h-100">
-            <Card.Body>
-              <div className="d-flex align-items-center mb-2">
-                <div className="avatar me-2">
-                  <span className="avatar-initial rounded bg-label-success"><i className="bx bx-task"></i></span>
+        {hasAccess("/Actividades") && (
+          <Col lg={3} md={6} className="mb-4">
+            <Card className="h-100">
+              <Card.Body>
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-2">
+                    <span className="avatar-initial rounded bg-label-success"><i className="bx bx-task"></i></span>
+                  </div>
+                  <span className="fw-semibold">Actividades</span>
                 </div>
-                <span className="fw-semibold">Actividades</span>
-              </div>
-              <h4 className="card-title mb-1">{dashboardData?.actividades?.total || 0}</h4>
-              <small className="text-muted">Realizadas</small>
-            </Card.Body>
-          </Card>
-        </Col>
+                <h4 className="card-title mb-1">{dashboardData?.actividades?.total || 0}</h4>
+                <small className="text-muted">Realizadas</small>
+              </Card.Body>
+            </Card>
+          </Col>
+        )}
 
-        {/* KPI: Transferencias */}
-        <Col lg={3} md={6} className="mb-4">
-          <Card className="h-100">
-            <Card.Body>
-              <div className="d-flex align-items-center mb-2">
-                <div className="avatar me-2">
-                  <span className="avatar-initial rounded bg-label-info"><i className="bx bx-transfer"></i></span>
+        {hasAccess("/Transferencias") && (
+          <Col lg={3} md={6} className="mb-4">
+            <Card className="h-100">
+              <Card.Body>
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-2">
+                    <span className="avatar-initial rounded bg-label-info"><i className="bx bx-transfer"></i></span>
+                  </div>
+                  <span className="fw-semibold">Transferencias</span>
                 </div>
-                <span className="fw-semibold">Transferencias</span>
-              </div>
-              <h4 className="card-title mb-1">{dashboardData?.transferencias?.total || 0}</h4>
-              <small className="text-muted">Movimientos de equipos</small>
-            </Card.Body>
-          </Card>
-        </Col>
+                <h4 className="card-title mb-1">{dashboardData?.transferencias?.total || 0}</h4>
+                <small className="text-muted">Movimientos de equipos</small>
+              </Card.Body>
+            </Card>
+          </Col>
+        )}
       </div>
 
-      <div className="row">
-        {/* Gráfico de Mantenimientos por Estado */}
-        <Col md={6} lg={4} className="mb-4">
-          <Card className="h-100">
-            <Card.Header>
-              <h5 className="card-title m-0">Estado de los Mantenimientos</h5>
-            </Card.Header>
-            <Card.Body>
-              {pieChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={pieChartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {pieChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value, name) => [`${value} tickets`, name]} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="text-center text-muted p-3">No hay datos de mantenimientos.</p>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-
-        {/* Gráfico de Equipos por Tipo */}
-        <Col md={6} lg={8} className="mb-4">
-          <Card className="h-100">
-            <Card.Header>
-              <h5 className="card-title m-0">Equipos Registrados por Tipo</h5>
-            </Card.Header>
-            <Card.Body>
-              {barChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={barChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip formatter={(value) => value.toLocaleString('es-VE')} />
-                    <Legend />
-                    <Bar dataKey="count" fill="#8884d8" name="Cantidad de Equipos">
-                      {barChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="text-center text-muted p-3">No hay datos de equipos.</p>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </div>
-
-      <div className="row">
-        {/* Mantenimientos Recientes */}
-        <Col xs={12} className="mb-4">
-          <Card>
-            <Card.Header>
-              <h5 className="card-title m-0">Últimos Tickets de Mantenimiento</h5>
-            </Card.Header>
-            <Card.Body className="p-0">
-              <Table responsive hover className="m-0">
-                <thead>
-                  <tr>
-                    <th>Nro. Caso</th>
-                    <th>Asunto</th>
-                    <th>Fecha</th>
-                    <th>Solicitante</th>
-                    <th>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dashboardData?.mantenimientos?.recientes?.length > 0 ? (
-                    dashboardData.mantenimientos.recientes.map((m) => (
-                      <tr key={m.id}>
-                        <td><strong>{m.nro_caso || 'N/A'}</strong></td>
-                        <td>{m.asunto}</td>
-                        <td>{new Date(m.fecha_solicitud).toLocaleDateString()}</td>
-                        <td>{m.usuario_nombres}</td>
-                        <td>
-                          <Badge bg={
-                            m.status_nombre === 'Resuelto' ? 'success' :
-                              m.status_nombre === 'En Proceso' ? 'warning' :
-                                m.status_nombre === 'Pendiente' ? 'danger' : 'secondary'
-                          }>
-                            {m.status_nombre}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))
+      {(hasAccess("/Mantenimientos") || hasAccess("/Equipos") || hasAccess("/Transferencias")) && (
+        <div className="row d-flex justify-content-center">
+          {hasAccess("/Mantenimientos") && (
+            <Col md={6} lg={(hasAccess("/Transferencias") ? 6 : 12)} className="mb-4">
+              <Card className="h-100">
+                <Card.Header>
+                  <h5 className="card-title m-0">Estado de los Mantenimientos</h5>
+                </Card.Header>
+                <Card.Body>
+                  {pieChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={pieChartData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={5}
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {pieChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value, name) => [`${value} tickets`, name]} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
                   ) : (
-                    <tr>
-                      <td colSpan="5" className="text-center text-muted py-3">No hay mantenimientos recientes.</td>
-                    </tr>
+                    <p className="text-center text-muted p-3">No hay datos de mantenimientos.</p>
                   )}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
-      </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          )}
+          {hasAccess("/Transferencias") && (
+            <Col md={6} lg={hasAccess("/Equipos") ? 6 : (hasAccess("/Mantenimientos") ? 6 : 12)} className="mb-4">
+              <Card className="h-100">
+                <Card.Header>
+                  <h5 className="card-title m-0">Estado de las Transferencias</h5>
+                </Card.Header>
+                <Card.Body>
+                  {transferenciasPieData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={transferenciasPieData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={5}
+                          dataKey="value"
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {transferenciasPieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value, name) => [`${value} transferencias`, name]} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <p className="text-center text-muted p-3">No hay datos de transferencias.</p>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          )}
+          {hasAccess("/Equipos") && (
+            <Col md={6} lg={8} className="mb-4">
+              <Card className="h-100">
+                <Card.Header>
+                  <h5 className="card-title m-0">Equipos Registrados por Tipo</h5>
+                </Card.Header>
+                <Card.Body>
+                  {barChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={barChartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                        <YAxis allowDecimals={false} />
+                        <Tooltip formatter={(value) => value.toLocaleString('es-VE')} />
+                        <Legend />
+                        <Bar dataKey="count" fill="#8884d8" name="Cantidad de Equipos">
+                          {barChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <p className="text-center text-muted p-3">No hay datos de equipos.</p>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          )}
+        </div>
+      )}
+
+      {hasAccess("/Mantenimientos") && (
+        <div className="row">
+          <Col xs={12} className="mb-4">
+            <Card>
+              <Card.Header className="d-flex justify-content-between align-items-center">
+                <h5 className="card-title m-0">Últimos Tickets de Mantenimiento</h5>
+                <Button variant="outline-primary" size="sm" onClick={() => navigate("/Mantenimientos")}>
+                  <i className="bx bx-list-ul me-1"></i> Ver todos
+                </Button>
+              </Card.Header>
+              <Card.Body className="p-0">
+                  <Table responsive hover className="m-0">
+                    <thead>
+                      <tr>
+                        <th>Nro. Caso</th>
+                        <th>Asunto</th>
+                        <th>Fecha</th>
+                        <th>Solicitante</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dashboardData?.mantenimientos?.recientes?.length > 0 ? (
+                        dashboardData.mantenimientos.recientes.map((m) => (
+                          <tr key={m.id}>
+                            <td><strong>{m.nro_caso || 'N/A'}</strong></td>
+                            <td>{m.asunto}</td>
+                            <td>{new Date(m.fecha_solicitud).toLocaleDateString()}</td>
+                            <td>{m.usuario_nombres}</td>
+                            <td>
+                              <Badge bg={
+                                m.status_nombre === 'Resuelto' ? 'success' :
+                                  m.status_nombre === 'En Proceso' ? 'warning' :
+                                    m.status_nombre === 'Pendiente' ? 'danger' : 'secondary'
+                              }>
+                                {m.status_nombre}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" className="text-center text-muted py-3">No hay mantenimientos recientes.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </Table>
+              </Card.Body>
+            </Card>
+          </Col>
+        </div>
+      )}
     </>
   );
 };

@@ -24,7 +24,15 @@ export class TransferenciaService {
         })
     }
 
-    static async updateStatus(id, updateData) {
+    static async delete(id, user) {
+        const transfer = await TransferenciaModel.getById(id)
+        if (!transfer) throw new Error('Transferencia no encontrada')
+        if (String(transfer.usuario_id) !== String(user.usuario_id)) throw new Error('Solo el usuario que creó el registro puede eliminarlo')
+        if (parseInt(transfer.status) !== 2) throw new Error('Solo se pueden eliminar registros con estado Pendiente')
+        return await TransferenciaModel.delete(id)
+    }
+
+    static async updateStatus(id, updateData, user) {
         const { status, codigo_validacion, clasificacion_id } = updateData
 
         const transfer = await TransferenciaModel.getById(id)

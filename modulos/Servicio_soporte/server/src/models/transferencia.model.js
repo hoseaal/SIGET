@@ -110,6 +110,14 @@ export class TransferenciaModel {
     }
 
     /**
+     * Elimina una transferencia por ID (hard delete)
+     */
+    static async delete(id) {
+        const [result] = await pool.query('DELETE FROM transferencia WHERE id = ?', [id])
+        return result.affectedRows > 0
+    }
+
+    /**
      * Actualiza el estatus y datos técnicos
      */
     static async updateStatus(id, data) {
