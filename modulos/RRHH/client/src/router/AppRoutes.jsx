@@ -11,7 +11,11 @@ import { Sobrevivientes } from "../pages/empleados/Sobrevivientes/Sobrevivientes
 
 import { Reportes } from "../pages/Reportes/Reportes"
 import { ObrerosFijos } from "../pages/empleados/ObrerosFijos/ObrerosFijos.jsx";
-import { NominaActivos } from "../pages/nomina/FuncionariosActivos/NominaActivos.jsx";
+import { NominaActivos } from "../pages/nomina/NominaActivos.jsx";
+import { NominaObreros } from "../pages/nomina/NominaObreros.jsx";
+import { NominaJubilados } from "../pages/nomina/NominaJubilados.jsx";
+import { NominaPensionados } from "../pages/nomina/NominaPensionados.jsx";
+import { NominaSobrevivientes } from "../pages/nomina/NominaSobrevivientes.jsx";
 
 import { Prestamos } from "../pages/prestamos/prestamos";
 import { Almacen } from "../pages/prestamos/almacen.jsx"
@@ -19,6 +23,8 @@ import { Almacen } from "../pages/prestamos/almacen.jsx"
 import { ClasificacionyCargos } from "../pages/configuracion/ClasificacionyCargos";
 import { TablaSalarios } from "../pages/configuracion/tablaSalarios"
 import { EstructuraOrganizacional } from "../pages/configuracion/EstructuraOrganizacional.jsx";
+import { VacacionesConfig } from "../pages/configuracion/vacaciones.jsx";
+import { VacacionesGestion } from "../pages/Vacaciones/VacacionesGestion.jsx";
 import { Bitacora } from "../pages/configuracion/bitacora.jsx";
 
 import { DashboardPage } from "../pages/DashboardPage";
@@ -57,6 +63,12 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
+            <Route path="/Configuracion/Vacaciones" element={
+                <ProtectedRoute>
+                    <VacacionesConfig />
+                </ProtectedRoute>
+            } />
+
             <Route path="/Configuracion/Bitacora" element={
                 <ProtectedRoute>
                     <Bitacora />
@@ -87,6 +99,18 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
+            <Route path="/Personal/Vacaciones/Funcionarios" element={
+                <ProtectedRoute>
+                    <VacacionesGestion tipoEmpleado="funcionario" />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Personal/Vacaciones/Obreros" element={
+                <ProtectedRoute>
+                    <VacacionesGestion tipoEmpleado="obrero" />
+                </ProtectedRoute>
+            } />
+
             <Route path="/Personal/Jubilados" element={
                 <ProtectedRoute>
                     <Jubilados />
@@ -109,6 +133,30 @@ const AppRoutes = () => {
             <Route path="/Nomina/FuncionariosActivos" element={
                 <ProtectedRoute>
                     <NominaActivos />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Nomina/ObrerosFijos" element={
+                <ProtectedRoute>
+                    <NominaObreros />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Nomina/Jubilados" element={
+                <ProtectedRoute>
+                    <NominaJubilados />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Nomina/Pensionados" element={
+                <ProtectedRoute>
+                    <NominaPensionados />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Nomina/Sobrevivientes" element={
+                <ProtectedRoute>
+                    <NominaSobrevivientes />
                 </ProtectedRoute>
             } />
 

@@ -9,6 +9,7 @@ import ModalVerPerfil from '../../Modales/ModalVerPerfil';
 import ModalCargaFamiliar from '../../Modales/modalCargaFamiliar';
 import ModalCambioEstatus from '../../Modales/ModalCambioEstatus';
 import ModalEncargoTemporal from '../../Modales/ModalEncargoTemporal';
+import ModalRetroactivos from '../../Modales/ModalRetroactivos';
 
 export const FuncionariosActivos = () => {
     const [data, setData] = useState([]);
@@ -36,6 +37,8 @@ export const FuncionariosActivos = () => {
 
     const [showEncargo, setShowEncargo] = useState(false);
     const [encargoItem, setEncargoItem] = useState(null);
+    const [showRetroactivos, setShowRetroactivos] = useState(false);
+    const [retroactivoItem, setRetroactivoItem] = useState(null);
 
     // Estado para recargar los datos
     const [refreshKey, setRefreshKey] = useState(0);
@@ -128,6 +131,10 @@ export const FuncionariosActivos = () => {
         setPage(1);
     };
 
+    const getCargoFuncionario = (item) => {
+        return item.cargo_cet_nombre || item.cargo_onapre_nombre || item.enc_cargo || null;
+    };
+
     return (
         <>
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -190,6 +197,7 @@ export const FuncionariosActivos = () => {
                                     <th>Cédula</th>
                                     <th>Nombres</th>
                                     <th>Apellidos</th>
+                                    <th>Cargo</th>
                                     <th>Dirección</th>
                                     {/* {hasPermission(userType, ACTIONS.JEFE_AREA) && <th>Acciones</th>} */}
                                     <th>Acciones</th>
@@ -202,6 +210,11 @@ export const FuncionariosActivos = () => {
                                             <td><span className="fw-semibold">{item.cedula}</span></td>
                                             <td>{item.nombres}</td>
                                             <td>{item.apellidos}</td>
+                                            <td> <span className="badge bg-label-info">
+                                                {getCargoFuncionario(item) || (
+                                                <span className="text-muted fst-italic">Sin asignar</span>
+                                            )}</span>
+                                            </td>
                                             <td>
                                                 {/* Mostramos la dirección del encargo si lo tiene, sino la base */}
                                                 {item.enc_direccion || item.direccion_nombre || (
@@ -251,6 +264,13 @@ export const FuncionariosActivos = () => {
                                                         </Dropdown.Item>
                                                         <Dropdown.Item href="#" onClick={(e) => {
                                                             e.preventDefault();
+                                                            setRetroactivoItem(item.empleado_id);
+                                                            setShowRetroactivos(true);
+                                                        }}>
+                                                            <i className="bx bx-receipt me-1"></i> Retroactivos
+                                                        </Dropdown.Item>
+                                                        <Dropdown.Item href="#" onClick={(e) => {
+                                                            e.preventDefault();
                                                             setEstatusItem(item);
                                                             setShowEstatus(true);
                                                         }}>
@@ -264,7 +284,7 @@ export const FuncionariosActivos = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="text-center py-4 text-muted">
+                                        <td colSpan="6" className="text-center py-4 text-muted">
                                             No se encontraron funcionarios activos.
                                         </td>
                                     </tr>
@@ -362,6 +382,12 @@ export const FuncionariosActivos = () => {
                 show={showEncargo}
                 handleClose={() => setShowEncargo(false)}
                 empleado_id={encargoItem}
+            />
+            <ModalRetroactivos
+                show={showRetroactivos}
+                handleClose={() => setShowRetroactivos(false)}
+                empleado_id={retroactivoItem}
+                onChanged={() => setRefreshKey(prev => prev + 1)}
             />
             </div>
 

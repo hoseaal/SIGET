@@ -7,11 +7,11 @@ export class ObreroModel {
     const where = []
     const params = []
 
-    // Filtro estricto para Obreros Fijos
+    // Filtro estricto para Obreros Fijos (incluye Chofer)
     where.push(`c.condicion_laboral_id = 1`)
     where.push(`(
-      cet.nombre LIKE '%OBRERO%' OR cet.nombre LIKE '%ASEADOR%' OR cet.nombre LIKE '%MENSAJERO%' OR cet.nombre LIKE '%VIGILANTE%' OR
-      ona.nombre LIKE '%OBRERO%' OR ona.nombre LIKE '%ASEADOR%' OR ona.nombre LIKE '%MENSAJERO%' OR ona.nombre LIKE '%VIGILANTE%'
+      cet.nombre LIKE '%OBRERO%' OR cet.nombre LIKE '%ASEADOR%' OR cet.nombre LIKE '%MENSAJERO%' OR cet.nombre LIKE '%VIGILANTE%' OR cet.nombre LIKE '%CHOFER%' OR
+      ona.nombre LIKE '%OBRERO%' OR ona.nombre LIKE '%ASEADOR%' OR ona.nombre LIKE '%MENSAJERO%' OR ona.nombre LIKE '%VIGILANTE%' OR ona.nombre LIKE '%CHOFER%'
     )`)
 
     // Filtro global de búsqueda
@@ -23,7 +23,14 @@ export class ObreroModel {
 
     // Filtros específicos de la tabla personal
     if (filters.profesion_id) { where.push('t.profesion_id = ?'); params.push(filters.profesion_id) }
-    if (filters.estatus_id) { where.push('t.estatus_id = ?'); params.push(filters.estatus_id) }
+    if (filters.estatus_id) {
+      if (Number(filters.estatus_id) === 1) {
+        where.push('t.estatus_id IN (1, 8, 9)')
+      } else {
+        where.push('t.estatus_id = ?')
+        params.push(filters.estatus_id)
+      }
+    }
     if (filters.genero) { where.push('t.genero = ?'); params.push(filters.genero) }
     if (filters.dep) {
       where.push('c.direccion_id = ?')
@@ -121,8 +128,8 @@ export class ObreroModel {
       LEFT JOIN unidades euni ON e.unidad_id = euni.unidad_id
 
       WHERE t.empleado_id = ? AND c.condicion_laboral_id = 1 AND (
-      cet.nombre LIKE '%OBRERO%' OR cet.nombre LIKE '%ASEADOR%' OR cet.nombre LIKE '%MENSAJERO%' OR cet.nombre LIKE '%VIGILANTE%' OR
-      ona.nombre LIKE '%OBRERO%' OR ona.nombre LIKE '%ASEADOR%' OR ona.nombre LIKE '%MENSAJERO%' OR ona.nombre LIKE '%VIGILANTE%'
+      cet.nombre LIKE '%OBRERO%' OR cet.nombre LIKE '%ASEADOR%' OR cet.nombre LIKE '%MENSAJERO%' OR cet.nombre LIKE '%VIGILANTE%' OR cet.nombre LIKE '%CHOFER%' OR
+      ona.nombre LIKE '%OBRERO%' OR ona.nombre LIKE '%ASEADOR%' OR ona.nombre LIKE '%MENSAJERO%' OR ona.nombre LIKE '%VIGILANTE%' OR ona.nombre LIKE '%CHOFER%'
       )
     `
     const [rows] = await pool.query(sql, [id])

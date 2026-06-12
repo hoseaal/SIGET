@@ -22,13 +22,13 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
         contacto_emergencia_1: '', telefono_emergencia_1: '',
         contacto_emergencia_2: '', telefono_emergencia_2: '',
         deportes: '', actividades_culturales: '',
-        profesion_id: '', estatus_id: 1, cuenta_bancaria: '',
+        estatus_id: 1, cuenta_bancaria: '',
         cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '',
         direccion_id: '', division_id: '', unidad_id: ''
     });
 
     const [catalogos, setCatalogos] = useState({
-        profesiones: [], estatus: [], cargosCET: [], cargosONAPRE: [],
+        cargosCET: [], cargosONAPRE: [],
         niveles: [], direcciones: [], divisiones: [], unidades: []
     });
 
@@ -49,9 +49,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                const [proRes, estRes, cetRes, onaRes, dirRes, divRes, uniRes, obreroRes] = await Promise.all([
-                    fetch('/api/profesiones'),
-                    fetch('/api/estatus'),
+                const [cetRes, onaRes, dirRes, divRes, uniRes, obreroRes] = await Promise.all([
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
@@ -62,8 +60,8 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
 
                 if (!obreroRes.ok) throw new Error('Error al obtener datos del obrero');
 
-                const [profesiones, estatus, cargosCETAll, cargosONAPREAll, direcciones, divisiones, unidades, obreroRaw] = await Promise.all([
-                    proRes.json(), estRes.json(), cetRes.json(), onaRes.json(), dirRes.json(), divRes.json(), uniRes.json(), obreroRes.json()
+                const [cargosCETAll, cargosONAPREAll, direcciones, divisiones, unidades, obreroRaw] = await Promise.all([
+                    cetRes.json(), onaRes.json(), dirRes.json(), divRes.json(), uniRes.json(), obreroRes.json()
                 ]);
 
                 const cargosONAPRE = cargosONAPREAll.filter(c => CARGO_REGEX.test(c.nombre));
@@ -82,7 +80,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                 }
 
                 setCatalogos({
-                    profesiones, estatus, cargosCET: cargosCETAll, cargosONAPRE,
+                    cargosCET: cargosCETAll, cargosONAPRE,
                     direcciones, divisiones, unidades, niveles: nivelesFetch
                 });
 
@@ -114,7 +112,6 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                     telefono_emergencia_2: obrero.telefono_emergencia_2 || '',
                     deportes: obrero.deportes || '',
                     actividades_culturales: obrero.actividades_culturales || '',
-                    profesion_id: obrero.profesion_id || '',
                     estatus_id: obrero.estatus_id || 1,
                     cuenta_bancaria: obrero.cuenta_bancaria || '',
                     cargo_cet_id: obrero.cargo_cet_id || '',
@@ -319,7 +316,17 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                                             <div className="col-md-4">
                                                 <Form.Group className="mb-3">
                                                     <Form.Label>Tipo de Sangre</Form.Label>
-                                                    <Form.Control type="text" name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange} />
+                                                <Form.Select name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange}>
+                                                    <option value="">Seleccione</option>
+                                                    <option value="A+">A+</option>
+                                                    <option value="A-">A-</option>
+                                                    <option value="B+">B+</option>
+                                                    <option value="B-">B-</option>
+                                                    <option value="AB+">AB+</option>
+                                                    <option value="AB-">AB-</option>
+                                                    <option value="O+">O+</option>
+                                                    <option value="O-">O-</option>
+                                                </Form.Select>
                                                 </Form.Group>
                                             </div>
                                             <div className="col-md-4">
@@ -433,27 +440,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                                                         <Form.Control type="date" name="fecha_ingreso" value={formData.fecha_ingreso} onChange={handleChange} required />
                                                     </Form.Group>
                                                 </div>
-                                                <div className="col-md-4">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Estatus</Form.Label>
-                                                        <Form.Select name="estatus_id" value={formData.estatus_id} onChange={handleChange}>
-                                                            {catalogos.estatus.map(e => (
-                                                                <option key={e.estatus_id} value={e.estatus_id}>{e.nombre}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                    </Form.Group>
-                                                </div>
-                                                <div className="col-md-4">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Profesión</Form.Label>
-                                                        <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
-                                                            <option value="">Seleccione</option>
-                                                            {catalogos.profesiones.map(p => (
-                                                                <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                    </Form.Group>
-                                                </div>
+                                {/* Estatus oculto */}
                                             </div>
 
                                             <div className="row mb-3">

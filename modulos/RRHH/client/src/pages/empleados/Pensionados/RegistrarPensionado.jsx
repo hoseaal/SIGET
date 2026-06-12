@@ -19,6 +19,7 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
         fecha_nacimiento: '',
         genero: '',
         estado_civil: 'Soltero',
+        tipo_sangre: '',
         telefono_fijo: '',
         celular: '',
         correo_principal: '',
@@ -29,6 +30,7 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
         contacto_emergencia_2: '',
         telefono_emergencia_2: '',
         profesion_id: '',
+        prima_profesional_id: '',
 
         // ── Datos Laborales (tabla datos_laborales + empleados) ──
         fecha_ingreso: '',
@@ -43,10 +45,12 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
         // ── Datos Pensión ──
         fecha_ingreso_pension: '',
         motivo_pension: '',
+        observacion: '',
     });
 
     const [catalogos, setCatalogos] = useState({
         profesiones: [],
+        primasProfesionales: [],
         cargosCET: [],
         cargosONAPRE: [],
         condicionesLaborales: [],
@@ -71,8 +75,9 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
 
         const fetchCatalogos = async () => {
             try {
-                const [proRes, cetRes, onapreRes, dirRes, condRes, divRes, uniRes] = await Promise.all([
+                const [proRes, primasProfRes, cetRes, onapreRes, dirRes, condRes, divRes, uniRes] = await Promise.all([
                     fetch('/api/profesiones'),
+                    fetch('/api/primas-profesionalizacion'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
@@ -81,13 +86,14 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                     fetch('/api/unidades'),
                 ]);
 
-                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades] = await Promise.all([
-                    proRes.json(), cetRes.json(), onapreRes.json(), dirRes.json(), condRes.json(), divRes.json(), uniRes.json(),
+                const [profesiones, primasProfesionales, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades] = await Promise.all([
+                    proRes.json(), primasProfRes.json(), cetRes.json(), onapreRes.json(), dirRes.json(), condRes.json(), divRes.json(), uniRes.json(),
                 ]);
 
                 setCatalogos(prev => ({
                     ...prev,
                     profesiones,
+                    primasProfesionales,
                     cargosCET,
                     cargosONAPRE,
                     condicionesLaborales,
@@ -151,11 +157,12 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
             correo_principal: '', correo_secundario: '', cuenta_bancaria: '',
             contacto_emergencia_1: '', telefono_emergencia_1: '',
             contacto_emergencia_2: '', telefono_emergencia_2: '',
-            profesion_id: '',
+            profesion_id: '', prima_profesional_id: '',
             fecha_ingreso: '', cargo_cet_id: '', cargo_onapre_id: '',
             condicion_laboral_id: '', nivel_salarial_id: '',
             direccion_id: '', division_id: '', unidad_id: '',
             fecha_ingreso_pension: '', motivo_pension: '',
+            observacion: '',
         });
         setErrorMessage('');
         setMensajeMostrado(false);
@@ -297,6 +304,39 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                             </div>
 
 
+                            <div className="row mb-3">
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Tipo de Sangre</Form.Label>
+                                        <Form.Select name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Teléfono Fijo</Form.Label>
+                                        <Form.Control type="text" name="telefono_fijo" placeholder="0276-0000000"
+                                            value={formData.telefono_fijo} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Celular</Form.Label>
+                                        <Form.Control type="text" name="celular" placeholder="0426-0000000"
+                                            value={formData.celular} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
+                            </div>
+
                             {/* Correos */}
                             <div className="row mb-3">
                                 <div className="col-md-6">
@@ -391,14 +431,14 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                             </div>
 
                             <div className="row mb-3">
-                                <div className="col-md-4">
+                                <div className="col-md-3">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Fecha de Ingreso</Form.Label>
                                         <Form.Control type="date" name="fecha_ingreso"
                                             value={formData.fecha_ingreso} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-4">
+                                <div className="col-md-3">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Profesión</Form.Label>
                                         <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
@@ -409,7 +449,18 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                                         </Form.Select>
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-4">
+                                <div className="col-md-3">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Escala de Profesionalización</Form.Label>
+                                        <Form.Select name="prima_profesional_id" value={formData.prima_profesional_id} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            {catalogos.primasProfesionales.map(p => (
+                                                <option key={p.prima_profesional_id} value={p.prima_profesional_id}>{p.descripcion}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-3">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Condición Laboral</Form.Label>
                                         <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
@@ -449,17 +500,7 @@ export const RegistrarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd 
                                         )}
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-4">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Condición Laboral</Form.Label>
-                                        <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
-                                            <option value="">Seleccione</option>
-                                            {catalogos.condicionesLaborales.map(c => (
-                                                <option key={c.condicion_laboral_id} value={c.condicion_laboral_id}>{c.nombre}</option>
-                                            ))}
-                                        </Form.Select>
-                                    </Form.Group>
-                                </div>
+
                             </div>
 
                             <div className="row mb-3">

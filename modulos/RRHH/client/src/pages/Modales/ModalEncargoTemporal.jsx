@@ -45,7 +45,8 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
         nivel_salarial_id: '',
         direccion_id: '',
         division_id: '',
-        unidad_id: ''
+        unidad_id: '',
+        observacion: ''
     };
     const [formData, setFormData] = useState(formInicial);
 
@@ -218,7 +219,8 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                 nivel_salarial_id: formData.nivel_salarial_id,
                 direccion_id: formData.direccion_id,
                 division_id: formData.division_id,
-                unidad_id: formData.unidad_id
+                unidad_id: formData.unidad_id,
+                observacion: formData.observacion
             };
 
             const res = await fetch('/api/encargos-temporales', {
@@ -475,6 +477,22 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                                                         <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
                                                     ))}
                                                 </Form.Select>
+                                            </Form.Group>
+                                        </div>
+
+                                        {/* Observacion */}
+                                        <div className="col-md-12">
+                                            <Form.Group>
+                                                <Form.Label className="small fw-bold text-muted">Observaciones (Opcional)</Form.Label>
+                                                <Form.Control
+                                                    as="textarea"
+                                                    rows={2}
+                                                    name="observacion"
+                                                    value={formData.observacion}
+                                                    onChange={handleChange}
+                                                    disabled={!!encargoActivo}
+                                                    placeholder="Ingrese alguna observación..."
+                                                />
                                             </Form.Group>
                                         </div>
 

@@ -30,7 +30,11 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
         primas_generales: '/api/primas',
         primas_profesionalizacion: '/api/primas-profesionalizacion',
         configuracion_antiguedad: '/api/antiguedad',
-        deducciones: '/api/deducciones'
+        deducciones: '/api/deducciones',
+        sueldos_pensionados: '/api/sueldo-pensionado',
+        sueldo_sobreviente: '/api/sueldo-sobreviviente',
+        configuracion_vacaciones: '/api/configuracion-vacaciones',
+        configuracion_vacaciones_obreros: '/api/configuracion-vacaciones-obreros'
     };
 
     // Al abrir el modal, cargamos los datos de la fila a editar

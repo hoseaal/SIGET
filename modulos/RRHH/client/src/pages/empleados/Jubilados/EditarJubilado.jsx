@@ -20,19 +20,19 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
         correo_principal: '', correo_secundario: '', cuenta_bancaria: '',
         contacto_emergencia_1: '', telefono_emergencia_1: '',
         contacto_emergencia_2: '', telefono_emergencia_2: '',
-        profesion_id: '',
+        profesion_id: '', prima_profesional_id: '',
 
         // ── Datos Laborales ──
         fecha_ingreso: '',
         cargo_cet_id: '', cargo_onapre_id: '', condicion_laboral_id: '',
         nivel_salarial_id: '', direccion_id: '', division_id: '', unidad_id: '',
 
-        // ── Datos Jubilación ──
-        porcentaje_jubilacion: '', fecha_efectiva: '',
+        // ── Datos de Jubilación ──
+        porcentaje_jubilacion: '', fecha_efectiva: '', observacion: '',
     });
 
     const [catalogos, setCatalogos] = useState({
-        profesiones: [], cargosCET: [],
+        profesiones: [], primasProfesionales: [], cargosCET: [],
         cargosONAPRE: [], condicionesLaborales: [], niveles: [],
         direcciones: [], divisiones: [], unidades: [],
     });
@@ -53,8 +53,9 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                const [proRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, jubRes] = await Promise.all([
+                const [proRes, primasProfRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, jubRes] = await Promise.all([
                     fetch('/api/profesiones'),
+                    fetch('/api/primas-profesionalizacion'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
@@ -66,8 +67,8 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
 
                 if (!jubRes.ok) throw new Error('Error al obtener datos del jubilado');
 
-                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades, jub] = await Promise.all([
-                    proRes.json(), cetRes.json(), onaRes.json(),
+                const [profesiones, primasProfesionales, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades, jub] = await Promise.all([
+                    proRes.json(), primasProfRes.json(), cetRes.json(), onaRes.json(),
                     dirRes.json(), condRes.json(), divRes.json(), uniRes.json(), jubRes.json(),
                 ]);
 
@@ -83,7 +84,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                 }
 
                 setCatalogos({
-                    profesiones, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
+                    profesiones, primasProfesionales, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
                     divisiones, unidades, niveles: nivelesFetch,
                 });
 
@@ -114,6 +115,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                     contacto_emergencia_2: jub.contacto_emergencia_2 || '',
                     telefono_emergencia_2: jub.telefono_emergencia_2 || '',
                     profesion_id: jub.profesion_id || '',
+                    prima_profesional_id: jub.prima_profesional_id || '',
                     fecha_ingreso: fmt(jub.fecha_ingreso),
                     cargo_cet_id: jub.cargo_cet_id || '',
                     cargo_onapre_id: jub.cargo_onapre_id || '',
@@ -124,6 +126,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                     unidad_id: jub.unidad_id || '',
                     porcentaje_jubilacion: jub.porcentaje_jubilacion || '',
                     fecha_efectiva: fmt(jub.fecha_efectiva),
+                    observacion: jub.observacion || '',
                 });
 
             } catch (error) {
@@ -200,7 +203,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
             }
         }
 
-        if (onSaveStart) onSaveStart();
+            if (onSaveStart) onSaveStart();
 
         try {
             const response = await fetch(`/api/jubilados/${jubilado_id}`, {
@@ -317,7 +320,17 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                                             <div className="col-md-4">
                                                 <Form.Group className="mb-3">
                                                     <Form.Label>Tipo de Sangre</Form.Label>
-                                                    <Form.Control type="text" name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange} />
+                                                    <Form.Select name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange}>
+                                                        <option value="">Seleccione</option>
+                                                        <option value="A+">A+</option>
+                                                        <option value="A-">A-</option>
+                                                        <option value="B+">B+</option>
+                                                        <option value="B-">B-</option>
+                                                        <option value="AB+">AB+</option>
+                                                        <option value="AB-">AB-</option>
+                                                        <option value="O+">O+</option>
+                                                        <option value="O-">O-</option>
+                                                    </Form.Select>
                                                 </Form.Group>
                                             </div>
                                             <div className="col-md-4">
@@ -418,13 +431,13 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                                             </div>
 
                                             <div className="row mb-3">
-                                                <div className="col-md-4">
+                                                <div className="col-md-3">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Fecha de Ingreso</Form.Label>
                                                         <Form.Control type="date" name="fecha_ingreso" value={formData.fecha_ingreso} onChange={handleChange} />
                                                     </Form.Group>
                                                 </div>
-                                                <div className="col-md-4">
+                                                <div className="col-md-3">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Profesión</Form.Label>
                                                         <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
@@ -435,7 +448,18 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                                                         </Form.Select>
                                                     </Form.Group>
                                                 </div>
-                                                <div className="col-md-4">
+                                                <div className="col-md-3">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Escala de Profesionalización</Form.Label>
+                                                        <Form.Select name="prima_profesional_id" value={formData.prima_profesional_id} onChange={handleChange}>
+                                                            <option value="">Seleccione</option>
+                                                            {catalogos.primasProfesionales.map(p => (
+                                                                <option key={p.prima_profesional_id} value={p.prima_profesional_id}>{p.descripcion}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-3">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Condición Laboral</Form.Label>
                                                         <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
@@ -475,17 +499,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                                                         )}
                                                     </Form.Group>
                                                 </div>
-                                                <div className="col-md-4">
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Condición Laboral</Form.Label>
-                                                        <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
-                                                            <option value="">Seleccione</option>
-                                                            {catalogos.condicionesLaborales.map(c => (
-                                                                <option key={c.condicion_laboral_id} value={c.condicion_laboral_id}>{c.nombre}</option>
-                                                            ))}
-                                                        </Form.Select>
-                                                    </Form.Group>
-                                                </div>
+
                                             </div>
 
                                             <div className="row mb-3">
@@ -552,7 +566,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                                             <h6 className="mt-2 text-primary mb-3">
                                                 <i className="bx bx-medal me-2"></i>3. Datos de Jubilación
                                             </h6>
-                                            <div className="row mb-3">
+                                             <div className="row mb-3">
                                                 <div className="col-md-6">
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Porcentaje de Jubilación (1–100)</Form.Label>
@@ -564,6 +578,17 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                                                     <Form.Group className="mb-3">
                                                         <Form.Label>Fecha Efectiva de Jubilación</Form.Label>
                                                         <Form.Control type="date" name="fecha_efectiva" value={formData.fecha_efectiva} onChange={handleChange} />
+                                                    </Form.Group>
+                                                </div>
+                                            </div>
+
+                                            <div className="row mb-3">
+                                                <div className="col-md-12">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Observaciones (Opcional)</Form.Label>
+                                                        <Form.Control as="textarea" rows={2} name="observacion"
+                                                            placeholder="Ingrese alguna observación..."
+                                                            value={formData.observacion} onChange={handleChange} />
                                                     </Form.Group>
                                                 </div>
                                             </div>

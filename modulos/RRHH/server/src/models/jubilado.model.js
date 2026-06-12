@@ -45,7 +45,7 @@ export class JubiladoModel {
     let sql = `
       SELECT e.*,
              TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) AS edad,
-             j.jubilado_id, j.porcentaje_jubilacion, j.fecha_efectiva,
+             j.jubilado_id, j.porcentaje_jubilacion, j.fecha_efectiva, j.observacion,
              dl.cargo_cet_id, dl.cargo_onapre_id, dl.condicion_laboral_id,
              dl.direccion_id, dl.division_id, dl.unidad_id,
              cet.nombre AS cargo_cet_nombre,
@@ -55,7 +55,22 @@ export class JubiladoModel {
              p.nombre AS profesion_nombre,
              dir.nombre AS direccion_nombre,
              divi.nombre AS division_nombre,
-             uni.nombre AS unidad_nombre
+             uni.nombre AS unidad_nombre,
+             (
+               SELECT ca.porcentaje_actual 
+               FROM configuracion_antiguedad ca
+               WHERE ca.anios_cumplidos <= (
+                 FLOOR((
+                   COALESCE((
+                     SELECT SUM(DATEDIFF(COALESCE(ra.fecha_fin, CURDATE()), ra.fecha_inicio))
+                     FROM registros_antiguedades ra
+                     WHERE ra.empleado_id = e.empleado_id
+                   ), 0) + DATEDIFF(CURDATE(), e.fecha_ingreso)
+                 ) / 365)
+               )
+               ORDER BY ca.anios_cumplidos DESC
+               LIMIT 1
+             ) AS porcentaje_antiguedad
       FROM empleados e
       INNER JOIN jubilados j ON e.empleado_id = j.empleado_id
       LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
@@ -98,7 +113,7 @@ export class JubiladoModel {
     const sql = `
       SELECT e.*,
              TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) AS edad,
-             j.jubilado_id, j.porcentaje_jubilacion, j.fecha_efectiva,
+             j.jubilado_id, j.porcentaje_jubilacion, j.fecha_efectiva, j.observacion,
              dl.cargo_cet_id, dl.cargo_onapre_id, dl.nivel_salarial_id,
              dl.nivel_salarial_antiguo_id, dl.condicion_laboral_id,
              dl.prima_profesional_id, dl.direccion_id, dl.division_id, dl.unidad_id,
@@ -109,7 +124,22 @@ export class JubiladoModel {
              p.nombre AS profesion_nombre,
              dir.nombre AS direccion_nombre,
              divi.nombre AS division_nombre,
-             uni.nombre AS unidad_nombre
+             uni.nombre AS unidad_nombre,
+             (
+               SELECT ca.porcentaje_actual 
+               FROM configuracion_antiguedad ca
+               WHERE ca.anios_cumplidos <= (
+                 FLOOR((
+                   COALESCE((
+                     SELECT SUM(DATEDIFF(COALESCE(ra.fecha_fin, CURDATE()), ra.fecha_inicio))
+                     FROM registros_antiguedades ra
+                     WHERE ra.empleado_id = e.empleado_id
+                   ), 0) + DATEDIFF(CURDATE(), e.fecha_ingreso)
+                 ) / 365)
+               )
+               ORDER BY ca.anios_cumplidos DESC
+               LIMIT 1
+             ) AS porcentaje_antiguedad
       FROM empleados e
       INNER JOIN jubilados j ON e.empleado_id = j.empleado_id
       LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
@@ -150,8 +180,13 @@ export class JubiladoModel {
         await connection.query('INSERT INTO datos_laborales SET ?', [contractPayload])
       }
 
-      // PASO 3: Crear registro de jubilación
-      const jubPayload = { ...jubilacionData, empleado_id: empleadoId }
+      // PASO 3: Crear registro de jubilación (Se crea la relación siempre)
+      const jubPayload = { 
+         porcentaje_jubilacion: 0,
+        fecha_efectiva: new Date(),
+        ...(jubilacionData || {}), 
+        empleado_id: empleadoId 
+      }
       const [resJub] = await connection.query('INSERT INTO jubilados SET ?', [jubPayload])
 
       await connection.commit()

@@ -116,7 +116,8 @@ export class EncargoTemporalModel {
     nivel_salarial_id,
     direccion_id,
     division_id,
-    unidad_id
+    unidad_id,
+    observacion
   }) {
     // Validar que no tenga un encargo activo
     const tieneActivo = await this.tieneEncargoActivo(empleado_id)
@@ -126,9 +127,9 @@ export class EncargoTemporalModel {
 
     const [result] = await pool.query(
       `INSERT INTO encargos_temporales 
-        (empleado_id, fecha_inicio, fecha_fin, estatus_encargo, cargo_cet_id, cargo_onapre_id, nivel_salarial_id, direccion_id, division_id, unidad_id)
-       VALUES (?, ?, NULL, 1, ?, ?, ?, ?, ?, ?)`,
-      [empleado_id, fecha_inicio, cargo_cet_id, cargo_onapre_id, nivel_salarial_id, direccion_id, division_id, unidad_id]
+        (empleado_id, fecha_inicio, fecha_fin, estatus_encargo, cargo_cet_id, cargo_onapre_id, nivel_salarial_id, direccion_id, division_id, unidad_id, observacion)
+       VALUES (?, ?, NULL, 1, ?, ?, ?, ?, ?, ?, ?)`,
+      [empleado_id, fecha_inicio, cargo_cet_id, cargo_onapre_id, nivel_salarial_id, direccion_id, division_id, unidad_id, observacion]
     )
 
     return { encargo_id: result.insertId }

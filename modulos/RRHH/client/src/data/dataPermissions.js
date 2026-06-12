@@ -22,14 +22,21 @@ export const menuPermissions = {
     "/Personal/Pensionados": [1, 2, 3, 4, 5],
 
     "/Personal/Sobrevivientes": [1, 2, 3, 4, 5],
+    "/Personal/Vacaciones/Funcionarios": [1, 2, 3, 4, 5],
+    "/Personal/Vacaciones/Obreros": [1, 2, 3, 4, 5],
 
     // Nomina
     "/Nomina/FuncionariosActivos": [1, 2, 3, 4, 5],
+    "/Nomina/ObrerosFijos": [1, 2, 3, 4, 5],
+    "/Nomina/Jubilados": [1, 2, 3, 4, 5],
+    "/Nomina/Pensionados": [1, 2, 3, 4, 5],
+    "/Nomina/Sobrevivientes": [1, 2, 3, 4, 5],
 
     // Configuración General
     "/Configuracion/EstructuraOrganizacional": [3, 4, 5],
     "/Configuracion/TablaSalarios": [3, 4, 5],
     "/Configuracion/Cargos": [3, 4, 5],
+    "/Configuracion/Vacaciones": [3, 4, 5],
 
     // Gestión de Usuarios
     "/Configuracion/NuevoUsuario": [5],

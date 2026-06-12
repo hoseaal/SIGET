@@ -3,28 +3,16 @@ import pool from '../utils/database.js'
 
 export class SobrevivienteModel {
 
-    static async _vincularNivelesSalariales (datosContratoClean) {
-        if (datosContratoClean && datosContratoClean.nivel_salarial_id) {
-           const [oldLevelRows] = await pool.query(`
-             SELECT nsa.nivel_salarial_antiguo_id
-             FROM niveles_salariales_antiguos nsa
-             INNER JOIN niveles_salariales ns ON ns.nombre = nsa.nombre
-             WHERE ns.nivel_salarial_id = ?
-           `, [datosContratoClean.nivel_salarial_id])
 
-           if (oldLevelRows && oldLevelRows.length > 0) {
-              datosContratoClean.nivel_salarial_antiguo_id = oldLevelRows[0].nivel_salarial_antiguo_id
-           }
-        }
-    }
 
     // --- HELPERS DE FILTRADO ---
     static _buildWhere(filters) {
         const where = []
         const params = []
 
-        // Filtro para Sobrevivientes (estatus_id = 7)
+        // Filtro para Sobrevivientes (estatus_id = 7) y status activo
         where.push('e.estatus_id = 7')
+        where.push('s.status = 1')
 
         if (filters.search) {
             where.push('(e.nombres LIKE ? OR e.apellidos LIKE ? OR e.cedula LIKE ?)')
@@ -63,7 +51,11 @@ export class SobrevivienteModel {
         uni.nombre AS unidad_nombre,
         prof.nombre AS profesion_nombre,
         ef.nombre AS estatus_nombre,
-        (SELECT COUNT(*) FROM sobreviviente s WHERE s.empleado_id = e.empleado_id) AS total_familiares
+        fam.nombres AS familiar_nombres,
+        fam.apellidos AS familiar_apellidos,
+        s.fecha_ingreso AS fecha_ingreso_beneficio,
+        s.observacion,
+        (SELECT COUNT(*) FROM sobreviviente s2 WHERE s2.empleado_id = e.empleado_id) AS total_familiares
       FROM empleados e
       LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
       LEFT JOIN cargos_cet cet ON dl.cargo_cet_id = cet.cargo_cet_id
@@ -74,7 +66,10 @@ export class SobrevivienteModel {
       LEFT JOIN unidades uni ON dl.unidad_id = uni.unidad_id
       LEFT JOIN profesiones prof ON e.profesion_id = prof.profesion_id
       LEFT JOIN estatus_funcionarios ef ON e.estatus_id = ef.estatus_id
+      INNER JOIN sobreviviente s ON e.empleado_id = s.empleado_id
+      LEFT JOIN nucleo_familiar fam ON s.familiar_id = fam.familiar_id
       ${whereClause}
+      GROUP BY e.empleado_id
       ORDER BY e.apellidos ASC, e.nombres ASC
     `
 
@@ -93,6 +88,7 @@ export class SobrevivienteModel {
       SELECT COUNT(*) as total 
       FROM empleados e 
       LEFT JOIN datos_laborales dl ON e.empleado_id = dl.empleado_id
+      INNER JOIN sobreviviente s ON e.empleado_id = s.empleado_id
       ${whereClause}
     `
         const [rows] = await pool.query(sql, params)
@@ -152,7 +148,9 @@ export class SobrevivienteModel {
         nf.telefono,
         nf.cuenta_bancaria,
         TIMESTAMPDIFF(YEAR, nf.fecha_nacimiento, CURDATE()) as edad,
-        s.id_sobreviviente
+        s.id_sobreviviente,
+        s.fecha_ingreso AS fecha_ingreso_beneficio,
+        s.observacion
       FROM nucleo_familiar nf
       INNER JOIN sobreviviente s ON nf.familiar_id = s.familiar_id
       WHERE s.empleado_id = ?
@@ -190,7 +188,7 @@ export class SobrevivienteModel {
 
             // PASO 2: Crear datos laborales si existen
             if (laboralData && Object.keys(laboralData).length > 0) {
-                await this._vincularNivelesSalariales(laboralData)
+
                 const laboralPayload = { ...laboralData, empleado_id: empleadoId }
                 await connection.query('INSERT INTO datos_laborales SET ?', [laboralPayload])
             }
@@ -211,10 +209,11 @@ export class SobrevivienteModel {
                 const [resFam] = await connection.query('INSERT INTO nucleo_familiar SET ?', [familiarPayload])
                 const familiarId = resFam.insertId
 
+                const status_val = familiarData.fecha_ingreso_beneficio ? 1 : 0;
                 // Vincular en tabla sobreviviente
                 await connection.query(
-                    'INSERT INTO sobreviviente (empleado_id, familiar_id) VALUES (?, ?)',
-                    [empleadoId, familiarId]
+                    'INSERT INTO sobreviviente (empleado_id, familiar_id, fecha_ingreso, status, observacion) VALUES (?, ?, ?, ?, ?)',
+                    [empleadoId, familiarId, familiarData.fecha_ingreso_beneficio || null, status_val, familiarData.observacion || null]
                 )
             }
 
@@ -249,9 +248,10 @@ export class SobrevivienteModel {
             const [resFam] = await connection.query('INSERT INTO nucleo_familiar SET ?', [familiarPayload])
             const familiarId = resFam.insertId
 
+            const status_val = familiarData.fecha_ingreso_beneficio ? 1 : 0;
             await connection.query(
-                'INSERT INTO sobreviviente (empleado_id, familiar_id) VALUES (?, ?)',
-                [empleado_id, familiarId]
+                'INSERT INTO sobreviviente (empleado_id, familiar_id, fecha_ingreso, status, observacion) VALUES (?, ?, ?, ?, ?)',
+                [empleado_id, familiarId, familiarData.fecha_ingreso_beneficio || null, status_val, familiarData.observacion || null]
             )
 
             await connection.commit()
@@ -276,7 +276,7 @@ export class SobrevivienteModel {
             }
 
             if (laboralData && Object.keys(laboralData).length > 0) {
-                await this._vincularNivelesSalariales(laboralData)
+
                 const [dlRows] = await connection.query('SELECT empleado_id FROM datos_laborales WHERE empleado_id = ?', [empleadoId])
                 if (dlRows.length > 0) {
                     await connection.query('UPDATE datos_laborales SET ? WHERE empleado_id = ?', [laboralData, empleadoId])
@@ -313,6 +313,25 @@ export class SobrevivienteModel {
             'UPDATE nucleo_familiar SET ? WHERE familiar_id = ?',
             [updateData, familiar_id]
         )
+
+        // Si se envió fecha_ingreso_beneficio u observacion, actualizar en la tabla sobreviviente
+        if (data.fecha_ingreso_beneficio !== undefined || data.observacion !== undefined) {
+            let updateQuery = 'UPDATE sobreviviente SET ';
+            let params = [];
+            if (data.fecha_ingreso_beneficio !== undefined) {
+                updateQuery += 'fecha_ingreso = ?, status = ?';
+                params.push(data.fecha_ingreso_beneficio || null, data.fecha_ingreso_beneficio ? 1 : 0);
+            }
+            if (data.observacion !== undefined) {
+                if (params.length > 0) updateQuery += ', ';
+                updateQuery += 'observacion = ?';
+                params.push(data.observacion || null);
+            }
+            updateQuery += ' WHERE familiar_id = ?';
+            params.push(familiar_id);
+            await pool.query(updateQuery, params);
+        }
+
         return result.affectedRows > 0
     }
 

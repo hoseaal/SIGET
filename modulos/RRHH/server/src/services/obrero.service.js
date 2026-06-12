@@ -97,15 +97,58 @@ export class ObreroService {
     }
   }
 
+  /**
+   * HELPER: Valida el salario del nivel asignado y asigna el nivel por defecto si es necesario.
+   * Si el salario está por debajo del mínimo de la escala, se registra una alerta y se fuerza al mínimo.
+   */
+  static async _validarYCorregirSalarioYContrato (datosContratoClean, esCreacion = false) {
+    if (!datosContratoClean) return
+
+    // 1. Asignar nivel por defecto si es creación y no viene asignado
+    if (esCreacion && !datosContratoClean.nivel_salarial_id) {
+      const [defaultRows] = await pool.query(
+        "SELECT nivel_salarial_id FROM niveles_salariales WHERE nombre = 'I' AND cargo_onapre_id = 40 LIMIT 1"
+      )
+      if (defaultRows.length > 0) {
+        datosContratoClean.nivel_salarial_id = defaultRows[0].nivel_salarial_id
+      }
+    }
+
+    // 2. Validar y corregir salario
+    if (datosContratoClean.nivel_salarial_id) {
+      const [levelRows] = await pool.query(
+        "SELECT salario_base FROM niveles_salariales WHERE nivel_salarial_id = ?",
+        [datosContratoClean.nivel_salarial_id]
+      )
+      const [minRows] = await pool.query(
+        "SELECT MIN(salario_base) AS salario_minimo FROM niveles_salariales"
+      )
+
+      if (levelRows.length > 0 && minRows.length > 0) {
+        const salario = Number(levelRows[0].salario_base)
+        const salarioMinimo = Number(minRows[0].salario_minimo)
+
+        if (salario < salarioMinimo) {
+          console.error(`[ALERTA DE SEGURIDAD] Intento de procesar/insertar salario por debajo del mínimo legal. Nivel: ${datosContratoClean.nivel_salarial_id}, Salario: ${salario}, Mínimo: ${salarioMinimo}`)
+          // Forzar a salario mínimo
+          await pool.query(
+            "UPDATE niveles_salariales SET salario_base = ? WHERE nivel_salarial_id = ?",
+            [salarioMinimo, datosContratoClean.nivel_salarial_id]
+          )
+        }
+      }
+    }
+  }
+
   static async _validarCargosObrero(cargo_cet_id, cargo_onapre_id) {
-    // Validar cargos para asegurar que sean Obrero, Aseador, Mensajero o Vigilante
-    const regex = /OBRERO|ASEADOR|MENSAJERO|VIGILANTE/i
+    // Validar cargos: Obrero, Aseador/Aseadora, Mensajero, Vigilante, Chofer
+    const regex = /OBRERO|ASEADOR|MENSAJERO|VIGILANTE|CHOFER/i
 
     if (cargo_cet_id) {
       const [cetRows] = await pool.query('SELECT nombre FROM cargos_cet WHERE cargo_cet_id = ?', [cargo_cet_id])
       if (cetRows.length === 0) throw new Error('Cargo CET no existe')
       if (!regex.test(cetRows[0].nombre)) {
-        throw new Error('El Cargo CET seleccionado no corresponde a un Obrero Fijo válido (Obrero, Aseador, Mensajero, Vigilante)')
+        throw new Error('El Cargo CET seleccionado no corresponde a un Obrero Fijo válido (Obrero, Aseador/Aseadora, Mensajero, Vigilante, Chofer)')
       }
     }
 
@@ -113,7 +156,7 @@ export class ObreroService {
       const [onaRows] = await pool.query('SELECT nombre FROM cargos_onapre WHERE cargo_onapre_id = ?', [cargo_onapre_id])
       if (onaRows.length === 0) throw new Error('Cargo ONAPRE no existe')
       if (!regex.test(onaRows[0].nombre)) {
-        throw new Error('El Cargo ONAPRE seleccionado no corresponde a un Obrero Fijo válido')
+        throw new Error('El Cargo ONAPRE seleccionado no corresponde a un Obrero Fijo válido (Obrero, Aseador/Aseadora, Mensajero, Vigilante, Chofer)')
       }
     }
   }
@@ -176,6 +219,9 @@ export class ObreroService {
     // Forzar condición laboral a Fijo (1)
     datosContratoClean.condicion_laboral_id = 1
 
+    // Validar y corregir salario
+    await this._validarYCorregirSalarioYContrato(datosContratoClean, true)
+
     await this._validarCargosObrero(datosContratoClean.cargo_cet_id, datosContratoClean.cargo_onapre_id)
 
     if (datosContratoClean) {
@@ -199,6 +245,9 @@ export class ObreroService {
 
     if (datosContratoClean) {
       datosContratoClean.condicion_laboral_id = 1 // Asegurar Obrero Fijo
+      
+      // Validar y corregir salario
+      await this._validarYCorregirSalarioYContrato(datosContratoClean, false)
       
       await this._validarCargosObrero(
         datosContratoClean.cargo_cet_id || existe.cargo_cet_id, 

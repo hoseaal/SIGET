@@ -16,7 +16,10 @@ const VerFamiliares = ({ show, handleClose, sobreviviente_id }) => {
                 const response = await fetch(`/api/sobrevivientes/${sobreviviente_id}/familiares`);
                 const result = await response.json();
                 if (result.success) {
-                    setFamiliares(result.data || []);
+                    const familiaresFiltrados = (result.data || []).filter(
+                        fam => fam.fecha_ingreso_beneficio && fam.edad >= 18
+                    );
+                    setFamiliares(familiaresFiltrados);
                 } else {
                     throw new Error(result.error || 'Error al cargar los familiares');
                 }
@@ -59,7 +62,7 @@ const VerFamiliares = ({ show, handleClose, sobreviviente_id }) => {
                             <div className="card shadow-sm border-0 mb-3" key={fam.familiar_id}>
                                 <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                                     <h5 className="mb-0 text-secondary">
-                                        <i className="bx bx-user-circle me-2"></i> 
+                                        <i className="bx bx-user-circle me-2"></i>
                                         {fam.nombres} {fam.apellidos}
                                     </h5>
                                     <span className={`badge ${fam.estatus ? 'bg-label-success' : 'bg-label-danger'}`}>
@@ -101,7 +104,7 @@ const VerFamiliares = ({ show, handleClose, sobreviviente_id }) => {
                                         <div className="col-12 mt-3">
                                             <small className="text-muted d-block mb-1">Dirección Registrada</small>
                                             <div className="p-2 bg-light rounded text-dark">
-                                                <i className="bx bx-map me-2 text-primary"></i> 
+                                                <i className="bx bx-map me-2 text-primary"></i>
                                                 {fam.direccion || 'Dirección no especificada'}
                                             </div>
                                         </div>

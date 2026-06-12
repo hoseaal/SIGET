@@ -18,6 +18,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
         apellidos: '',
         direccion_habitacion: '',
         profesion_id: '',
+        prima_profesional_id: '',
 
         // ── Datos Laborales ──
         fecha_ingreso: '',
@@ -38,10 +39,13 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
         familiar_direccion: '',
         familiar_telefono: '',
         familiar_cuenta_bancaria: '',
+        familiar_fecha_ingreso_beneficio: '',
+        familiar_observacion: '',
     });
 
     const [catalogos, setCatalogos] = useState({
         profesiones: [],
+        primasProfesionales: [],
         cargosCET: [],
         cargosONAPRE: [],
         condicionesLaborales: [],
@@ -66,8 +70,9 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
 
         const fetchCatalogos = async () => {
             try {
-                const [proRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes] = await Promise.all([
+                const [proRes, primasProfRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes] = await Promise.all([
                     fetch('/api/profesiones'),
+                    fetch('/api/primas-profesionalizacion'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
@@ -76,13 +81,14 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                     fetch('/api/unidades'),
                 ]);
 
-                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades] = await Promise.all([
-                    proRes.json(), cetRes.json(), onaRes.json(), dirRes.json(), condRes.json(), divRes.json(), uniRes.json(),
+                const [profesiones, primasProfesionales, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades] = await Promise.all([
+                    proRes.json(), primasProfRes.json(), cetRes.json(), onaRes.json(), dirRes.json(), condRes.json(), divRes.json(), uniRes.json(),
                 ]);
 
                 setCatalogos(prev => ({
                     ...prev,
                     profesiones,
+                    primasProfesionales,
                     cargosCET,
                     cargosONAPRE,
                     condicionesLaborales,
@@ -137,13 +143,14 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
         setFormData({
             cedula: '', nombres: '', apellidos: '',
             direccion_habitacion: '',
-            profesion_id: '',
+            profesion_id: '', prima_profesional_id: '',
             fecha_ingreso: '', cargo_cet_id: '', cargo_onapre_id: '',
             condicion_laboral_id: '', nivel_salarial_id: '',
             direccion_id: '', division_id: '', unidad_id: '',
             familiar_nombres: '', familiar_apellidos: '',
             familiar_fecha_nacimiento: '', familiar_parentesco: '',
             familiar_direccion: '', familiar_telefono: '', familiar_cuenta_bancaria: '',
+            familiar_fecha_ingreso_beneficio: '', familiar_observacion: '',
         });
         setErrorMessage('');
         setMensajeMostrado(false);
@@ -188,8 +195,8 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
             age--;
         }
 
-        if (age < 18) {
-            setErrorMessage('El familiar debe ser mayor o igual a 18 años.');
+        if (age <= 18) {
+            setErrorMessage('El familiar debe ser mayor de 18 años.');
             setMensajeMostrado(true);
             setTimeout(() => setMensajeMostrado(false), 3000);
             return;
@@ -319,18 +326,29 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                             <div className="row mb-3">
                                 <div className="col-md-4">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Fecha de Ingreso</Form.Label>
+                                        <Form.Label>Fecha de Ingreso (Opcional)</Form.Label>
                                         <Form.Control type="date" name="fecha_ingreso"
                                             value={formData.fecha_ingreso} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
                                 <div className="col-md-4">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Profesión</Form.Label>
+                                        <Form.Label>Profesión (Opcional)</Form.Label>
                                         <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
                                             <option value="">Seleccione</option>
                                             {catalogos.profesiones.map(p => (
                                                 <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-4">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Escala de Profesionalización (Opcional)</Form.Label>
+                                        <Form.Select name="prima_profesional_id" value={formData.prima_profesional_id} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            {catalogos.primasProfesionales.map(p => (
+                                                <option key={p.prima_profesional_id} value={p.prima_profesional_id}>{p.descripcion}</option>
                                             ))}
                                         </Form.Select>
                                     </Form.Group>
@@ -340,7 +358,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                             <div className="row mb-3">
                                 <div className="col-md-4">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Clasificación ONAPRE</Form.Label>
+                                        <Form.Label>Clasificación ONAPRE (Opcional)</Form.Label>
                                         <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
                                             <option value="">Seleccione clasificación</option>
                                             {catalogos.cargosONAPRE.map(c => (
@@ -351,7 +369,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                                 </div>
                                 <div className="col-md-4">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Cargo Interno (CET)</Form.Label>
+                                        <Form.Label>Cargo Interno (CET) (Opcional)</Form.Label>
                                         <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}
                                             disabled={!formData.cargo_onapre_id || cargosCETFiltrados.length === 0}>
                                             <option value="">Seleccione cargo</option>
@@ -366,7 +384,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                                 </div>
                                 <div className="col-md-4">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Condición Laboral</Form.Label>
+                                        <Form.Label>Condición Laboral (Opcional)</Form.Label>
                                         <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
                                             <option value="">Seleccione condicion</option>
                                             {catalogos.condicionesLaborales.map(c => (
@@ -380,7 +398,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                             <div className="row mb-3">
                                 <div className="col-md-12">
                                     <Form.Group className="mb-3">
-                                        <Form.Label>Nivel Salarial</Form.Label>
+                                        <Form.Label>Nivel Salarial (Opcional)</Form.Label>
                                         <Form.Select
                                             name="nivel_salarial_id"
                                             value={formData.nivel_salarial_id}
@@ -401,7 +419,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                             <div className="row mb-4">
                                 <div className="col-md-4">
                                     <Form.Group>
-                                        <Form.Label>Dirección</Form.Label>
+                                        <Form.Label>Dirección (Opcional)</Form.Label>
                                         <Form.Select name="direccion_id" value={formData.direccion_id} onChange={handleChange}>
                                             <option value="">Seleccione la Dirección</option>
                                             {catalogos.direcciones.map(d => (
@@ -451,6 +469,16 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                             <div className="alert alert-info mb-3">
                                 <i className="bx bx-info-circle me-1"></i>
                                 Registre los datos del familiar que tiene derecho como sobreviviente.
+                            </div>
+
+                            <div className="row mb-3">
+                                <div className="col-md-12">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Fecha de Ingreso al Beneficio</Form.Label>
+                                        <Form.Control type="date" name="familiar_fecha_ingreso_beneficio"
+                                            value={formData.familiar_fecha_ingreso_beneficio} onChange={handleChange} />
+                                    </Form.Group>
+                                </div>
                             </div>
 
                             <div className="row mb-3">
@@ -521,6 +549,15 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                                     <Form.Label>Dirección del Familiar</Form.Label>
                                     <Form.Control as="textarea" rows={2} name="familiar_direccion"
                                         value={formData.familiar_direccion} onChange={handleChange} />
+                                </Form.Group>
+                            </div>
+
+                            <div className="mb-3">
+                                <Form.Group>
+                                    <Form.Label>Observaciones (Opcional)</Form.Label>
+                                    <Form.Control as="textarea" rows={2} name="familiar_observacion"
+                                        placeholder="Ingrese alguna observación..."
+                                        value={formData.familiar_observacion} onChange={handleChange} />
                                 </Form.Group>
                             </div>
                         </>

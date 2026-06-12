@@ -137,10 +137,11 @@ export const Jubilados = () => {
                                     <th>Nombres</th>
                                     <th>Apellidos</th>
                                     <th>Cargo (CET)</th>
-                                    <th>Clasificación ONAPRE</th>
+                                    <th>Estatus</th>
                                     <th>% Jubilación</th>
+                                    <th>% Antigüedad</th>
                                     <th>Fecha Efectiva</th>
-                                    <th>Acciones</th>
+                                    <th className="text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="table-border-bottom-0">
@@ -166,11 +167,14 @@ export const Jubilados = () => {
                                                     : <span className="text-muted fst-italic">—</span>}
                                             </td>
                                             <td>
+                                                <span className="badge bg-label-secondary">{item.porcentaje_antiguedad || 0}%</span>
+                                            </td>
+                                            <td>
                                                 {item.fecha_efectiva
                                                     ? new Date(item.fecha_efectiva).toLocaleDateString('es-VE')
                                                     : <span className="text-muted fst-italic">—</span>}
                                             </td>
-                                            <td>
+                                            <td className="text-center">
                                                 <Dropdown>
                                                     <Dropdown.Toggle
                                                         variant="secondary"

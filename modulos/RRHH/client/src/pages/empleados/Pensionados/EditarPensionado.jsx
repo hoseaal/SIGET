@@ -20,7 +20,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
         correo_principal: '', correo_secundario: '', cuenta_bancaria: '',
         contacto_emergencia_1: '', telefono_emergencia_1: '',
         contacto_emergencia_2: '', telefono_emergencia_2: '',
-        profesion_id: '',
+        profesion_id: '', prima_profesional_id: '',
 
         // ── Datos Laborales ──
         fecha_ingreso: '',
@@ -30,10 +30,11 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
         // ── Datos Pensión ──
         fecha_ingreso_pension: '',
         motivo_pension: '',
+        observacion: '',
     });
 
     const [catalogos, setCatalogos] = useState({
-        profesiones: [], cargosCET: [], cargosONAPRE: [],
+        profesiones: [], primasProfesionales: [], cargosCET: [], cargosONAPRE: [],
         condicionesLaborales: [], niveles: [],
         direcciones: [], divisiones: [], unidades: [],
     });
@@ -54,8 +55,9 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                const [proRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, jubRes] = await Promise.all([
+                const [proRes, primasProfRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, jubRes] = await Promise.all([
                     fetch('/api/profesiones'),
+                    fetch('/api/primas-profesionalizacion'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
@@ -67,8 +69,8 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
 
                 if (!jubRes.ok) throw new Error('Error al obtener datos del pensionado');
 
-                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades, jubResData] = await Promise.all([
-                    proRes.json(), cetRes.json(), onaRes.json(),
+                const [profesiones, primasProfesionales, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades, jubResData] = await Promise.all([
+                    proRes.json(), primasProfRes.json(), cetRes.json(), onaRes.json(),
                     dirRes.json(), condRes.json(), divRes.json(), uniRes.json(), jubRes.json(),
                 ]);
 
@@ -86,7 +88,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                 }
 
                 setCatalogos({
-                    profesiones, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
+                    profesiones, primasProfesionales, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
                     divisiones, unidades, niveles: nivelesFetch,
                 });
 
@@ -116,6 +118,7 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                     contacto_emergencia_2: jub.contacto_emergencia_2 || '',
                     telefono_emergencia_2: jub.telefono_emergencia_2 || '',
                     profesion_id: jub.profesion_id || '',
+                    prima_profesional_id: jub.prima_profesional_id || '',
                     fecha_ingreso: fmt(jub.fecha_ingreso),
                     cargo_cet_id: jub.cargo_cet_id || '',
                     cargo_onapre_id: jub.cargo_onapre_id || '',
@@ -125,7 +128,8 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                     division_id: jub.division_id || '',
                     unidad_id: jub.unidad_id || '',
                     fecha_ingreso_pension: fmt(jub.fecha_ingreso_pension),
-                    motivo_pension: jub.observacion || '',
+                    motivo_pension: jub.motivo_pension || '',
+                    observacion: jub.observacion || '',
                 });
 
             } catch (error) {
@@ -308,6 +312,31 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                         <div className="row mb-3">
                                             <div className="col-md-6">
                                                 <Form.Group className="mb-3">
+                                                    <Form.Label>Tipo de Sangre</Form.Label>
+                                                    <Form.Select name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange}>
+                                                        <option value="">Seleccione</option>
+                                                        <option value="A+">A+</option>
+                                                        <option value="A-">A-</option>
+                                                        <option value="B+">B+</option>
+                                                        <option value="B-">B-</option>
+                                                        <option value="AB+">AB+</option>
+                                                        <option value="AB-">AB-</option>
+                                                        <option value="O+">O+</option>
+                                                        <option value="O-">O-</option>
+                                                    </Form.Select>
+                                                </Form.Group>
+                                            </div>
+                                            <div className="col-md-6">
+                                                <Form.Group className="mb-3">
+                                                    <Form.Label>Teléfono Residencial</Form.Label>
+                                                    <Form.Control type="text" name="telefono_fijo" value={formData.telefono_fijo} onChange={handleChange} />
+                                                </Form.Group>
+                                            </div>
+                                        </div>
+
+                                        <div className="row mb-3">
+                                            <div className="col-md-6">
+                                                <Form.Group className="mb-3">
                                                     <Form.Label>Celular</Form.Label>
                                                     <Form.Control type="text" name="celular"
                                                         value={formData.celular} onChange={handleChange} />
@@ -414,6 +443,17 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                                             <option value="">Seleccione</option>
                                                             {catalogos.profesiones.map(p => (
                                                                 <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Escala de Profesionalización</Form.Label>
+                                                        <Form.Select name="prima_profesional_id" value={formData.prima_profesional_id} onChange={handleChange}>
+                                                            <option value="">Seleccione</option>
+                                                            {catalogos.primasProfesionales.map(p => (
+                                                                <option key={p.prima_profesional_id} value={p.prima_profesional_id}>{p.descripcion}</option>
                                                             ))}
                                                         </Form.Select>
                                                     </Form.Group>
@@ -540,6 +580,17 @@ export const EditarPensionado = ({ show, handleClose, onSaveStart, onSaveEnd, pe
                                                 <Form.Label>Motivo de Pensión</Form.Label>
                                                 <Form.Control type="text" name="motivo_pension"
                                                     value={formData.motivo_pension} onChange={handleChange} />
+                                            </Form.Group>
+                                        </div>
+                                    </div>
+
+                                    <div className="row mb-3">
+                                        <div className="col-md-12">
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Observaciones (Opcional)</Form.Label>
+                                                <Form.Control as="textarea" rows={2} name="observacion"
+                                                    placeholder="Ingrese alguna observación..."
+                                                    value={formData.observacion} onChange={handleChange} />
                                             </Form.Group>
                                         </div>
                                     </div>

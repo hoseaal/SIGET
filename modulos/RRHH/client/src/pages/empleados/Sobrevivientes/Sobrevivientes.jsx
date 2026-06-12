@@ -194,9 +194,10 @@ export const Sobrevivientes = () => {
                                     <th>Cédula</th>
                                     <th>Nombres</th>
                                     <th>Apellidos</th>
-                                    <th>Cargo (CET)</th>
-                                    <th>Dirección</th>
-                                    <th>Familiares</th>
+                                    <th>Nombre Familiar</th>
+                                    <th>Apellido Familiar</th>
+                                    <th>Ingreso Beneficio</th>
+
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -218,17 +219,14 @@ export const Sobrevivientes = () => {
                                             <td><span className="fw-semibold">{item.cedula}</span></td>
                                             <td>{item.nombres}</td>
                                             <td>{item.apellidos}</td>
+                                            <td>{item.familiar_nombres || <span className="text-muted fst-italic">—</span>}</td>
+                                            <td>{item.familiar_apellidos || <span className="text-muted fst-italic">—</span>}</td>
                                             <td>
                                                 <span className="badge bg-label-info">
-                                                    {item.cargo_cet_nombre || <span className="text-muted fst-italic">—</span>}
+                                                    {item.fecha_ingreso_beneficio ? new Date(item.fecha_ingreso_beneficio).toLocaleDateString('es-VE') : <span className="text-muted fst-italic">—</span>}
                                                 </span>
                                             </td>
-                                            <td>{item.direccion_nombre || <span className="text-muted fst-italic">—</span>}</td>
-                                            <td>
-                                                <span className={`badge ${item.total_familiares > 0 ? 'bg-label-success' : 'bg-label-warning'}`}>
-                                                    {item.total_familiares || 0} familiar(es)
-                                                </span>
-                                            </td>
+
                                             <td>
                                                 <Dropdown>
                                                     <Dropdown.Toggle
@@ -274,7 +272,7 @@ export const Sobrevivientes = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="7" className="text-center py-4 text-muted">
+                                        <td colSpan="8" className="text-center py-4 text-muted">
                                             No se encontraron sobrevivientes registrados.
                                         </td>
                                     </tr>

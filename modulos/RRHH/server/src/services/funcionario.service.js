@@ -101,6 +101,49 @@ export class FuncionarioService {
     }
   }
 
+  /**
+   * HELPER: Valida el salario del nivel asignado y asigna el nivel por defecto si es necesario.
+   * Si el salario está por debajo del mínimo de la escala, se registra una alerta y se fuerza al mínimo.
+   */
+  static async _validarYCorregirSalarioYContrato (datosContratoClean, esCreacion = false) {
+    if (!datosContratoClean) return
+
+    // 1. Asignar nivel por defecto si es creación y no viene asignado
+    if (esCreacion && !datosContratoClean.nivel_salarial_id) {
+      const [defaultRows] = await pool.query(
+        "SELECT nivel_salarial_id FROM niveles_salariales WHERE nombre = 'I' AND cargo_onapre_id = 40 LIMIT 1"
+      )
+      if (defaultRows.length > 0) {
+        datosContratoClean.nivel_salarial_id = defaultRows[0].nivel_salarial_id
+      }
+    }
+
+    // 2. Validar y corregir salario
+    if (datosContratoClean.nivel_salarial_id) {
+      const [levelRows] = await pool.query(
+        "SELECT salario_base FROM niveles_salariales WHERE nivel_salarial_id = ?",
+        [datosContratoClean.nivel_salarial_id]
+      )
+      const [minRows] = await pool.query(
+        "SELECT MIN(salario_base) AS salario_minimo FROM niveles_salariales"
+      )
+
+      if (levelRows.length > 0 && minRows.length > 0) {
+        const salario = Number(levelRows[0].salario_base)
+        const salarioMinimo = Number(minRows[0].salario_minimo)
+
+        if (salario < salarioMinimo) {
+          console.error(`[ALERTA DE SEGURIDAD] Intento de procesar/insertar salario por debajo del mínimo legal. Nivel: ${datosContratoClean.nivel_salarial_id}, Salario: ${salario}, Mínimo: ${salarioMinimo}`)
+          // Forzar a salario mínimo
+          await pool.query(
+            "UPDATE niveles_salariales SET salario_base = ? WHERE nivel_salarial_id = ?",
+            [salarioMinimo, datosContratoClean.nivel_salarial_id]
+          )
+        }
+      }
+    }
+  }
+
   // --- MÉTODOS PÚBLICOS ---
 
   static async obtenerConFiltros (query) {
@@ -167,6 +210,9 @@ export class FuncionarioService {
 
     // 2. Si hay contrato, validar jerarquía
     if (datosContratoClean) {
+      // Validar y corregir salario
+      await this._validarYCorregirSalarioYContrato(datosContratoClean, true)
+
       const jerarquia = await this._validarJerarquia(
         datosContratoClean.direccion_id,
         datosContratoClean.division_id,
@@ -192,6 +238,9 @@ export class FuncionarioService {
 
     // 2. Si hay contrato y se está cambiando la ubicación, re-validar jerarquía
     if (datosContratoClean) {
+      // Validar y corregir salario
+      await this._validarYCorregirSalarioYContrato(datosContratoClean, false)
+
       if (datosContratoClean.direccion_id !== undefined || datosContratoClean.division_id !== undefined || datosContratoClean.unidad_id !== undefined) {
          // Re-calculamos jerarquía
          const jerarquia = await this._validarJerarquia(
@@ -276,11 +325,11 @@ export class FuncionarioService {
       await connection.query('UPDATE empleados SET estatus_id = ? WHERE empleado_id = ?', [nuevo_estatus_id, empleado_id])
 
       // 3. Lógica específica por tipo de estatus
-      if (Number(nuevo_estatus_id) === 3) {
+      const estatusNum = Number(nuevo_estatus_id)
+      
+      if (estatusNum === 3) {
         // JUBILADO: Requiere entrada en la tabla 'jubilados'
         const { porcentaje_jubilacion, fecha_efectiva } = datos_adicionales || {}
-        
-        // Verificar si ya existe en jubilados
         const [existeJub] = await connection.query('SELECT jubilado_id FROM jubilados WHERE empleado_id = ?', [empleado_id])
         
         if (existeJub.length > 0) {
@@ -292,6 +341,56 @@ export class FuncionarioService {
           await connection.query(
             'INSERT INTO jubilados (empleado_id, porcentaje_jubilacion, fecha_efectiva) VALUES (?, ?, ?)',
             [empleado_id, porcentaje_jubilacion || 0, fecha_efectiva || new Date()]
+          )
+        }
+      } else if (estatusNum === 4) {
+        // PENSIONADO: Requiere entrada en la tabla 'pensionado'
+        const { observacion, fecha_ingreso_pension } = datos_adicionales || {}
+        const [existePen] = await connection.query('SELECT empleado_id FROM pensionado WHERE empleado_id = ?', [empleado_id])
+        
+        if (existePen.length > 0) {
+          await connection.query(
+            'UPDATE pensionado SET observacion = ?, fecha_ingreso = ? WHERE empleado_id = ?',
+            [observacion || '', fecha_ingreso_pension || new Date(), empleado_id]
+          )
+        } else {
+          await connection.query(
+            'INSERT INTO pensionado (empleado_id, observacion, fecha_ingreso) VALUES (?, ?, ?)',
+            [empleado_id, observacion || '', fecha_ingreso_pension || new Date()]
+          )
+        }
+      } else if (estatusNum === 7) {
+        // SOBREVIVIENTE: Generalmente requiere vincular con un familiar. 
+        // Si no se pasan datos de familiar, al menos aseguramos que no rompa, 
+        // aunque un sobreviviente sin familiar vinculado es inusual en la lógica de negocio.
+        if (datos_adicionales && datos_adicionales.familiar_id) {
+          const [existeSob] = await connection.query('SELECT id_sobreviviente FROM sobreviviente WHERE empleado_id = ? AND familiar_id = ?', [empleado_id, datos_adicionales.familiar_id])
+          if (existeSob.length === 0) {
+            await connection.query(
+              'INSERT INTO sobreviviente (empleado_id, familiar_id, status) VALUES (?, ?, 1)',
+              [empleado_id, datos_adicionales.familiar_id]
+            )
+          }
+        } else if (datos_adicionales && datos_adicionales.familiar_nuevo) {
+          const familiarData = datos_adicionales.familiar_nuevo;
+          const familiarPayload = {
+              cedula: familiarData.cedula || null,
+              nombres: familiarData.nombres,
+              apellidos: familiarData.apellidos,
+              fecha_nacimiento: familiarData.fecha_nacimiento || null,
+              parentesco: familiarData.parentesco || null,
+              direccion: familiarData.direccion || null,
+              telefono: familiarData.telefono || null,
+              cuenta_bancaria: familiarData.cuenta_bancaria || null,
+              estatus: 1
+          }
+          const [resFam] = await connection.query('INSERT INTO nucleo_familiar SET ?', [familiarPayload])
+          const familiarId = resFam.insertId
+
+          const status_val = familiarData.fecha_ingreso_beneficio ? 1 : 0;
+          await connection.query(
+              'INSERT INTO sobreviviente (empleado_id, familiar_id, fecha_ingreso, status, observacion) VALUES (?, ?, ?, ?, ?)',
+              [empleado_id, familiarId, familiarData.fecha_ingreso_beneficio || null, status_val, familiarData.observacion || null]
           )
         }
       }

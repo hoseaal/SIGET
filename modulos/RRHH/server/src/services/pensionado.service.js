@@ -30,10 +30,9 @@ export class PensionadoService {
         ]
 
         // Campos propios de la tabla `pensionado`
-        // Mapeamos 'motivo_pension' -> 'observacion'
-        // Mapeamos 'fecha_ingreso' -> 'fecha_ingreso' (pension)
+        // Mapeamos 'fecha_ingreso_pension' -> 'fecha_ingreso' (pension)
         const camposPension = [
-            'fecha_ingreso_pension', 'motivo_pension'
+            'fecha_ingreso_pension', 'motivo_pension', 'observacion'
         ]
 
         const datosPersonalClean = {}
@@ -58,9 +57,7 @@ export class PensionadoService {
             
             // Mapeo específico para pensión
             if (isPension) {
-                if (key === 'motivo_pension') {
-                    targetObj['observacion'] = val
-                } else if (key === 'fecha_ingreso_pension') {
+                if (key === 'fecha_ingreso_pension') {
                     targetObj['fecha_ingreso'] = val
                 } else {
                     targetObj[key] = val

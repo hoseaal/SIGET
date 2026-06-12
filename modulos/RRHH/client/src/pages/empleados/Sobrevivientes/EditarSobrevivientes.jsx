@@ -17,7 +17,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
         cedula: '', nombres: '', apellidos: '',
         fecha_nacimiento: '', genero: '',
         direccion_habitacion: '',
-        profesion_id: '',
+        profesion_id: '', prima_profesional_id: '',
         fecha_ingreso: '',
         cargo_cet_id: '', cargo_onapre_id: '', condicion_laboral_id: '',
         nivel_salarial_id: '', direccion_id: '', division_id: '', unidad_id: '',
@@ -32,12 +32,12 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
     const [editingFamiliar, setEditingFamiliar] = useState(null);
     const [familiarForm, setFamiliarForm] = useState({
         cedula: '', nombres: '', apellidos: '', fecha_nacimiento: '', parentesco: '',
-        direccion: '', telefono: '', cuenta_bancaria: ''
+        direccion: '', telefono: '', cuenta_bancaria: '', fecha_ingreso_beneficio: '', observacion: ''
     });
     const [savingFamiliar, setSavingFamiliar] = useState(false);
 
     const [catalogos, setCatalogos] = useState({
-        profesiones: [], cargosCET: [], cargosONAPRE: [],
+        profesiones: [], primasProfesionales: [], cargosCET: [], cargosONAPRE: [],
         condicionesLaborales: [], niveles: [],
         direcciones: [], divisiones: [], unidades: [],
     });
@@ -77,8 +77,9 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
             setIsLoadingData(true);
             setErrorMessage('');
             try {
-                const [proRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, sobRes] = await Promise.all([
+                const [proRes, primasProfRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, sobRes] = await Promise.all([
                     fetch('/api/profesiones'),
+                    fetch('/api/primas-profesionalizacion'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
@@ -90,8 +91,8 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
 
                 if (!sobRes.ok) throw new Error('Error al obtener datos del sobreviviente');
 
-                const [profesiones, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades, sobResData] = await Promise.all([
-                    proRes.json(), cetRes.json(), onaRes.json(),
+                const [profesiones, primasProfesionales, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades, sobResData] = await Promise.all([
+                    proRes.json(), primasProfRes.json(), cetRes.json(), onaRes.json(),
                     dirRes.json(), condRes.json(), divRes.json(), uniRes.json(), sobRes.json(),
                 ]);
 
@@ -109,7 +110,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                 }
 
                 setCatalogos({
-                    profesiones, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
+                    profesiones, primasProfesionales, cargosCET, cargosONAPRE, condicionesLaborales, direcciones,
                     divisiones, unidades, niveles: nivelesFetch,
                 });
 
@@ -127,6 +128,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                     genero: sob.genero || '',
                     direccion_habitacion: sob.direccion_habitacion || '',
                     profesion_id: sob.profesion_id || '',
+                    prima_profesional_id: sob.prima_profesional_id || '',
                     fecha_ingreso: fmt(sob.fecha_ingreso),
                     cargo_cet_id: sob.cargo_cet_id || '',
                     cargo_onapre_id: sob.cargo_onapre_id || '',
@@ -238,7 +240,10 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
 
     const handleAddFamiliar = () => {
         setEditingFamiliar(null);
-        setFamiliarForm({ cedula: '', nombres: '', apellidos: '', fecha_nacimiento: '', parentesco: '', direccion: '', telefono: '', cuenta_bancaria: '' });
+        setFamiliarForm({ 
+            cedula: '', nombres: '', apellidos: '', fecha_nacimiento: '', parentesco: '', 
+            direccion: '', telefono: '', cuenta_bancaria: '', fecha_ingreso_beneficio: '', observacion: '' 
+        });
         setShowFamiliarForm(true);
     };
 
@@ -258,6 +263,8 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
             direccion: fam.direccion || '',
             telefono: fam.telefono || '',
             cuenta_bancaria: fam.cuenta_bancaria || '',
+            fecha_ingreso_beneficio: fmt(fam.fecha_ingreso_beneficio),
+            observacion: fam.observacion || '',
         });
         setShowFamiliarForm(true);
     };
@@ -309,7 +316,10 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
 
             setShowFamiliarForm(false);
             setEditingFamiliar(null);
-            setFamiliarForm({ cedula: '', nombres: '', apellidos: '', fecha_nacimiento: '', parentesco: '', direccion: '', telefono: '', cuenta_bancaria: '' });
+            setFamiliarForm({ 
+                cedula: '', nombres: '', apellidos: '', fecha_nacimiento: '', parentesco: '', 
+                direccion: '', telefono: '', cuenta_bancaria: '', fecha_ingreso_beneficio: '', observacion: '' 
+            });
             await loadFamiliares();
             setErrorMessage('');
 
@@ -442,7 +452,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                             <div className="row mb-3">
                                                 <div className="col-md-4">
                                                     <Form.Group className="mb-3">
-                                                        <Form.Label>Clasificación ONAPRE</Form.Label>
+                                                        <Form.Label>Clasificación ONAPRE (Opcional)</Form.Label>
                                                         <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
                                                             <option value="">Seleccione</option>
                                                             {catalogos.cargosONAPRE.map(c => (
@@ -453,7 +463,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                                 </div>
                                                 <div className="col-md-4">
                                                     <Form.Group className="mb-3">
-                                                        <Form.Label>Cargo Interno (CET)</Form.Label>
+                                                        <Form.Label>Cargo Interno (CET) (Opcional)</Form.Label>
                                                         <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}
                                                             disabled={!formData.cargo_onapre_id || cargosCETFiltrados.length === 0}>
                                                             <option value="">Seleccione</option>
@@ -468,7 +478,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                                 </div>
                                                 <div className="col-md-4">
                                                     <Form.Group className="mb-3">
-                                                        <Form.Label>Condición Laboral</Form.Label>
+                                                        <Form.Label>Condición Laboral (Opcional)</Form.Label>
                                                         <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
                                                             <option value="">Seleccione</option>
                                                             {catalogos.condicionesLaborales.map(c => (
@@ -480,9 +490,9 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                             </div>
 
                                             <div className="row mb-3">
-                                                <div className="col-md-6">
+                                                <div className="col-md-4">
                                                     <Form.Group className="mb-3">
-                                                        <Form.Label>Nivel Salarial</Form.Label>
+                                                        <Form.Label>Nivel Salarial (Opcional)</Form.Label>
                                                         <Form.Select
                                                             name="nivel_salarial_id"
                                                             value={formData.nivel_salarial_id}
@@ -496,13 +506,24 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                                         </Form.Select>
                                                     </Form.Group>
                                                 </div>
-                                                <div className="col-md-6">
+                                                <div className="col-md-4">
                                                     <Form.Group className="mb-3">
-                                                        <Form.Label>Profesión</Form.Label>
+                                                        <Form.Label>Profesión (Opcional)</Form.Label>
                                                         <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
                                                             <option value="">Seleccione</option>
                                                             {catalogos.profesiones.map(p => (
                                                                 <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
+                                                            ))}
+                                                        </Form.Select>
+                                                    </Form.Group>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <Form.Group className="mb-3">
+                                                        <Form.Label>Escala de Profesionalización (Opcional)</Form.Label>
+                                                        <Form.Select name="prima_profesional_id" value={formData.prima_profesional_id} onChange={handleChange}>
+                                                            <option value="">Seleccione</option>
+                                                            {catalogos.primasProfesionales.map(p => (
+                                                                <option key={p.prima_profesional_id} value={p.prima_profesional_id}>{p.descripcion}</option>
                                                             ))}
                                                         </Form.Select>
                                                     </Form.Group>
@@ -513,7 +534,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                             <div className="row mb-2">
                                                 <div className="col-md-4">
                                                     <Form.Group>
-                                                        <Form.Label>Dirección</Form.Label>
+                                                        <Form.Label>Dirección (Opcional)</Form.Label>
                                                         <Form.Select name="direccion_id" value={formData.direccion_id} onChange={handleChange}>
                                                             <option value="">Seleccione la Dirección</option>
                                                             {catalogos.direcciones.map(d => (
@@ -640,6 +661,15 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                                 </div>
                                                 <div className="card-body">
                                                     <div className="row mb-3">
+                                                        <div className="col-md-12">
+                                                            <Form.Group className="mb-3">
+                                                                <Form.Label>Fecha de Ingreso al Beneficio</Form.Label>
+                                                                <Form.Control type="date" name="fecha_ingreso_beneficio"
+                                                                    value={familiarForm.fecha_ingreso_beneficio} onChange={handleFamiliarChange} />
+                                                            </Form.Group>
+                                                        </div>
+                                                    </div>
+                                                    <div className="row mb-3">
                                                         <div className="col-md-4">
                                                             <Form.Group className="mb-3">
                                                                 <Form.Label>Cédula *</Form.Label>
@@ -705,6 +735,16 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                                                                 <Form.Label>Dirección</Form.Label>
                                                                 <Form.Control as="textarea" rows={2} name="direccion"
                                                                     value={familiarForm.direccion} onChange={handleFamiliarChange} />
+                                                            </Form.Group>
+                                                        </div>
+                                                    </div>
+                                                    <div className="row mb-3">
+                                                        <div className="col-md-12">
+                                                            <Form.Group className="mb-3">
+                                                                <Form.Label>Observaciones (Opcional)</Form.Label>
+                                                                <Form.Control as="textarea" rows={2} name="observacion"
+                                                                    placeholder="Ingrese alguna observación..."
+                                                                    value={familiarForm.observacion} onChange={handleFamiliarChange} />
                                                             </Form.Group>
                                                         </div>
                                                     </div>

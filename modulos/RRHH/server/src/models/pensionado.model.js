@@ -34,7 +34,7 @@ export class PensionadoModel {
       SELECT e.*,
              e.empleado_id AS pensionado_id,
              TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) AS edad,
-             p_table.id_pensionado, p_table.fecha_ingreso AS fecha_ingreso_pension, p_table.observacion,
+             p_table.id_pensionado, p_table.fecha_ingreso AS fecha_ingreso_pension, p_table.motivo_pension, p_table.observacion,
               dl.cargo_cet_id, dl.cargo_onapre_id, dl.condicion_laboral_id,
               cet.nombre AS cargo_cet_nombre,
               ona.nombre AS cargo_onapre_nombre,
@@ -86,7 +86,7 @@ export class PensionadoModel {
       SELECT e.*,
              e.empleado_id AS pensionado_id,
              TIMESTAMPDIFF(YEAR, e.fecha_nacimiento, CURDATE()) AS edad,
-             p_table.id_pensionado, p_table.fecha_ingreso AS fecha_ingreso_pension, p_table.observacion,
+             p_table.id_pensionado, p_table.fecha_ingreso AS fecha_ingreso_pension, p_table.motivo_pension, p_table.observacion,
               dl.cargo_cet_id, dl.cargo_onapre_id, dl.nivel_salarial_id,
               dl.nivel_salarial_antiguo_id, dl.condicion_laboral_id,
               dl.prima_profesional_id, dl.direccion_id, dl.division_id, dl.unidad_id,
@@ -135,11 +135,9 @@ export class PensionadoModel {
                 await connection.query('INSERT INTO datos_laborales SET ?', [contractPayload])
             }
 
-            // PASO 3: Crear datos de pensión si existen
-            if (pensionData && Object.keys(pensionData).length > 0) {
-                const pensionPayload = { ...pensionData, empleado_id: empleadoId }
-                await connection.query('INSERT INTO pensionado SET ?', [pensionPayload])
-            }
+            // PASO 3: Crear datos de pensión (Se crea la relación siempre)
+            const pensionPayload = { ...(pensionData || {}), empleado_id: empleadoId }
+            await connection.query('INSERT INTO pensionado SET ?', [pensionPayload])
 
             await connection.commit()
             return { empleado_id: empleadoId }

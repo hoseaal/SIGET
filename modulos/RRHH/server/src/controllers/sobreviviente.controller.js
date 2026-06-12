@@ -87,7 +87,8 @@ export const SobrevivienteController = {
                 direccion_id, division_id, unidad_id, prima_profesional_id,
                 // Datos del familiar
                 familiar_cedula, familiar_nombres, familiar_apellidos, familiar_fecha_nacimiento, familiar_parentesco,
-                familiar_direccion, familiar_telefono, familiar_cuenta_bancaria
+                familiar_direccion, familiar_telefono, familiar_cuenta_bancaria,
+                familiar_fecha_ingreso_beneficio
             } = req.body
 
             // Validaciones
@@ -138,7 +139,7 @@ export const SobrevivienteController = {
                 genero: genero || null,
                 direccion_habitacion: direccion_habitacion || '',
                 profesion_id: profesion_id || null,
-                rif: 'N/A', // Mantener por ahora si es requerido por el modelo o DB
+                rif: null, // Evitar error de Duplicate entry 'N/A' for key 'rif'
                 lugar_nacimiento: 'No especificado',
                 estado_civil: 'Soltero',
                 tipo_sangre: '',
@@ -176,6 +177,7 @@ export const SobrevivienteController = {
                 direccion: familiar_direccion || null,
                 telefono: familiar_telefono || null,
                 cuenta_bancaria: familiar_cuenta_bancaria || null,
+                fecha_ingreso_beneficio: familiar_fecha_ingreso_beneficio || null
             }
 
             const result = await SobrevivienteModel.createTransactional(personalData, laboralData, familiarData)
@@ -196,7 +198,10 @@ export const SobrevivienteController = {
     async addFamiliar(req, res) {
         try {
             const { id } = req.params
-            const { cedula, nombres, apellidos, fecha_nacimiento, parentesco, direccion, telefono, cuenta_bancaria } = req.body
+            const { 
+                cedula, nombres, apellidos, fecha_nacimiento, parentesco, 
+                direccion, telefono, cuenta_bancaria, fecha_ingreso_beneficio 
+            } = req.body
 
             if (!nombres || !apellidos) {
                 return res.status(400).json({
@@ -242,7 +247,8 @@ export const SobrevivienteController = {
             }
 
             const result = await SobrevivienteModel.addFamiliar(id, {
-                cedula, nombres, apellidos, fecha_nacimiento, parentesco, direccion, telefono, cuenta_bancaria
+                cedula, nombres, apellidos, fecha_nacimiento, parentesco, 
+                direccion, telefono, cuenta_bancaria, fecha_ingreso_beneficio
             })
 
             res.status(201).json({

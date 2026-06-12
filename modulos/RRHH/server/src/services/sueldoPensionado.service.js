@@ -25,4 +25,8 @@ export class SueldoPensionadoService {
 
     return await SueldoPensionadoModel.update(id, datos)
   }
+
+  static async eliminar (id) {
+    return await SueldoPensionadoModel.deleteAll()
+  }
 }

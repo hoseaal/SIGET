@@ -65,22 +65,40 @@
                     {
                         "text": "Obreros Fijos",
                         "available": true,
-                        "link": "/Personal/ObrerosFijos"
+                        "link": "/Nomina/ObrerosFijos"
                     },
                     {
                         "text": "Jubilados",
                         "available": true,
-                        "link": "/Personal/Jubilados"
+                        "link": "/Nomina/Jubilados"
                     },
                     {
                         "text": "Pensionados",
                         "available": true,
-                        "link": "/Personal/Pensionados"
+                        "link": "/Nomina/Pensionados"
                     },
                     {
                         "text": "Sobrevivientes",
                         "available": true,
-                        "link": "/Personal/Sobrevivientes"
+                        "link": "/Nomina/Sobrevivientes"
+                    }
+                ]
+            },
+            {
+                "text": "Gestión de vacaciones",
+                "icon": "bx bx-calendar",
+                "available": true,
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Funcionarios Activos",
+                        "available": true,
+                        "link": "/Personal/Vacaciones/Funcionarios"
+                    },
+                    {
+                        "text": "Obreros Fijos",
+                        "available": true,
+                        "link": "/Personal/Vacaciones/Obreros"
                     }
                 ]
             }
@@ -109,6 +127,11 @@
                         "text": "Clasificación y Cargos",
                         "available": true,
                         "link": "/Configuracion/Cargos"
+                    },
+                    {
+                        "text": "Vacaciones",
+                        "available": true,
+                        "link": "/Configuracion/Vacaciones"
                     }
                 ]
             },

@@ -35,7 +35,6 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
         telefono_emergencia_2: '',
         deportes: '',
         actividades_culturales: '',
-        profesion_id: '',
         estatus_id: 1,
         cuenta_bancaria: '',
 
@@ -49,8 +48,6 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
     });
 
     const [catalogos, setCatalogos] = useState({
-        profesiones: [],
-        estatus: [],
         cargosCET: [],       // filtrados: solo Obrero/Aseador/Mensajero/Vigilante
         cargosONAPRE: [],    // filtrados
         niveles: [],
@@ -74,9 +71,7 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
 
         const fetchCatalogos = async () => {
             try {
-                const [proRes, estRes, cetRes, onaRes, dirRes, divRes, uniRes] = await Promise.all([
-                    fetch('/api/profesiones'),
-                    fetch('/api/estatus'),
+                const [cetRes, onaRes, dirRes, divRes, uniRes] = await Promise.all([
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/direcciones'),
@@ -84,15 +79,15 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                     fetch('/api/unidades')
                 ]);
 
-                const [profesiones, estatus, cargosCETAll, cargosONAPREAll, direcciones, divisiones, unidades] = await Promise.all([
-                    proRes.json(), estRes.json(), cetRes.json(), onaRes.json(), dirRes.json(), divRes.json(), uniRes.json()
+                const [cargosCETAll, cargosONAPREAll, direcciones, divisiones, unidades] = await Promise.all([
+                    cetRes.json(), onaRes.json(), dirRes.json(), divRes.json(), uniRes.json()
                 ]);
 
                 // Filtrar solo los cargos ONAPRE válidos para obreros
                 const cargosONAPRE = cargosONAPREAll.filter(c => CARGO_REGEX.test(c.nombre));
 
                 setCatalogos(prev => ({
-                    ...prev, profesiones, estatus, cargosCET: cargosCETAll, cargosONAPRE,
+                    ...prev, cargosCET: cargosCETAll, cargosONAPRE,
                     direcciones, divisiones, unidades, niveles: []
                 }));
             } catch (error) {
@@ -148,7 +143,7 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
             fecha_ingreso: new Date().toISOString().split('T')[0],
             contacto_emergencia_1: '', telefono_emergencia_1: '',
             contacto_emergencia_2: '', telefono_emergencia_2: '',
-            deportes: '', actividades_culturales: '', profesion_id: '', estatus_id: 1,
+            deportes: '', actividades_culturales: '', estatus_id: 1,
             cuenta_bancaria: '', cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '',
             direccion_id: '', division_id: '', unidad_id: ''
         });
@@ -300,7 +295,17 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                                 <div className="col-md-4">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Tipo de Sangre</Form.Label>
-                                        <Form.Control type="text" name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange} />
+                                        <Form.Select name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </Form.Select>
                                     </Form.Group>
                                 </div>
                                 <div className="col-md-4">
@@ -408,27 +413,7 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                                         <Form.Control type="date" name="fecha_ingreso" value={formData.fecha_ingreso} onChange={handleChange} required />
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-4">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Estatus</Form.Label>
-                                        <Form.Select name="estatus_id" value={formData.estatus_id} onChange={handleChange}>
-                                            {catalogos.estatus.map(e => (
-                                                <option key={e.estatus_id} value={e.estatus_id}>{e.nombre}</option>
-                                            ))}
-                                        </Form.Select>
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-4">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Profesión</Form.Label>
-                                        <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
-                                            <option value="">Seleccione</option>
-                                            {catalogos.profesiones.map(p => (
-                                                <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
-                                            ))}
-                                        </Form.Select>
-                                    </Form.Group>
-                                </div>
+                                {/* Estatus oculto */}
                             </div>
 
                             <div className="row mb-3">

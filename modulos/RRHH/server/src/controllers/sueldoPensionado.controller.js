@@ -39,3 +39,16 @@ export const actualizarSueldo = async (req, res) => {
     res.status(400).json({ error: error.message })
   }
 }
+
+/**
+ * Elimina el sueldo configurado.
+ */
+export const eliminarSueldo = async (req, res) => {
+  try {
+    const { id } = req.params
+    const eliminado = await SueldoPensionadoService.eliminar(id)
+    res.json({ success: eliminado > 0 })
+  } catch (error) {
+    res.status(400).json({ error: error.message })
+  }
+}

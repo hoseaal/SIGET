@@ -8,6 +8,23 @@ export class FuncionarioModel {
     const where = []
     const params = []
 
+    // EXCLUSIÓN ESTRICTA: Nunca mostrar obreros en el listado de funcionarios
+    // Verifica tanto cargo CET como cargo ONAPRE — basta que uno coincida para excluir
+    where.push(`NOT EXISTS (
+      SELECT 1 FROM datos_laborales dl_ob
+      LEFT JOIN cargos_cet  cet_ob ON dl_ob.cargo_cet_id  = cet_ob.cargo_cet_id
+      LEFT JOIN cargos_onapre ona_ob ON dl_ob.cargo_onapre_id = ona_ob.cargo_onapre_id
+      WHERE dl_ob.empleado_id = t.empleado_id
+      AND (
+        cet_ob.nombre LIKE '%OBRERO%'    OR cet_ob.nombre LIKE '%ASEADOR%'   OR
+        cet_ob.nombre LIKE '%MENSAJERO%' OR cet_ob.nombre LIKE '%VIGILANTE%' OR
+        cet_ob.nombre LIKE '%CHOFER%'    OR
+        ona_ob.nombre LIKE '%OBRERO%'    OR ona_ob.nombre LIKE '%ASEADOR%'   OR
+        ona_ob.nombre LIKE '%MENSAJERO%' OR ona_ob.nombre LIKE '%VIGILANTE%' OR
+        ona_ob.nombre LIKE '%CHOFER%'
+      )
+    )`)
+
     // Filtro global de búsqueda
     if (filters.search) {
       where.push('(t.nombres LIKE ? OR t.apellidos LIKE ? OR t.cedula LIKE ?)')
@@ -17,7 +34,14 @@ export class FuncionarioModel {
 
     // Filtros específicos de la tabla personal
     if (filters.profesion_id) { where.push('t.profesion_id = ?'); params.push(filters.profesion_id) }
-    if (filters.estatus_id) { where.push('t.estatus_id = ?'); params.push(filters.estatus_id) }
+    if (filters.estatus_id) {
+      if (Number(filters.estatus_id) === 1) {
+        where.push('t.estatus_id IN (1, 8, 9)')
+      } else {
+        where.push('t.estatus_id = ?')
+        params.push(filters.estatus_id)
+      }
+    }
     if (filters.genero) { where.push('t.genero = ?'); params.push(filters.genero) }
     if (filters.dep) {
       where.push('EXISTS (SELECT 1 FROM datos_laborales contrato WHERE contrato.empleado_id = t.empleado_id AND contrato.direccion_id = ?)')
@@ -63,7 +87,11 @@ export class FuncionarioModel {
         LEFT JOIN divisiones divi ON c.division_id = divi.division_id
         LEFT JOIN unidades uni ON c.unidad_id = uni.unidad_id
         ${whereClause}
-        ORDER BY t.apellidos ASC
+        ORDER BY 
+          (c.direccion_id = (SELECT dl2.direccion_id FROM datos_laborales dl2 JOIN cargos_onapre ona2 ON dl2.cargo_onapre_id = ona2.cargo_onapre_id WHERE ona2.nombre = 'Contralor del Estado' LIMIT 1)) DESC,
+          dir.nombre ASC, 
+          (ona.nombre = 'Contralor del Estado') DESC,
+          t.apellidos ASC
       `
     } else {
       // Solo tabla personal
@@ -71,7 +99,9 @@ export class FuncionarioModel {
         SELECT *, TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) as edad 
         FROM empleados t 
         ${whereClause} 
-        ORDER BY apellidos ASC
+        ORDER BY 
+          (t.empleado_id = (SELECT dl2.empleado_id FROM datos_laborales dl2 JOIN cargos_onapre ona2 ON dl2.cargo_onapre_id = ona2.cargo_onapre_id WHERE ona2.nombre = 'Contralor del Estado' LIMIT 1)) DESC,
+          apellidos ASC
       `
     }
 

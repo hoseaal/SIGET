@@ -28,12 +28,16 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
     const nombresDirectivos = [
         'Contralor del Estado',
         'Director General',
-        'Director de Línea',
         'Jefe de División',
-        'Coordinador de Aréa',
+        'Jefe de División General',
+        'Director de Línea',
         'Coordinador de Área'
     ];
-    const esCargoDirectivo = nombresDirectivos.includes(cargoNombre);
+    const esCargoDirectivo = nombresDirectivos.some(d => {
+        const normalizedD = d.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        const normalizedCargo = cargoNombre.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        return normalizedD === normalizedCargo;
+    });
 
     const todosLosNiveles = esCargoDirectivo ? [cargoNombre] : ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 

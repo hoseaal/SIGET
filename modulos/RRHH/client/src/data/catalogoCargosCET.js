@@ -45,12 +45,11 @@ export const EQUIVALENCIAS_ONAPRE_CET = {
     "JEFE DE OFICINA"
   ],
   "Jefe de Division": [
-    "JEFE DE DIVISION GENERAL",
+    "JEFE DE DIVISION",
     "JEFE DE DIVISION",
     "Jefe de Division"
   ],
   "Jefe de División": [
-    "JEFE DE DIVISION GENERAL",
     "JEFE DE DIVISION",
     "Jefe de División",
     "Jefe de Division"
@@ -121,10 +120,28 @@ export const EQUIVALENCIAS_ONAPRE_CET = {
   ],
   "Bachiller I": [
     "Auxiliar de Oficina",
-    "Auxiliar de Servicios Generales"
+    "Auxiliar de Servicios Generales",
+    "Auxiliar",
+    "Recepcionista",
+    "Secretaria",
+    "Auxiliar de Auditoria",
+    "Vigilante"
+  ],
+  "Bachiller II": [
+    "Auxiliar",
+    "Recepcionista",
+    "Secretaria",
+    "Auxiliar de Auditoria",
+    "Vigilante"
   ],
   "Bachiller III": [
-    "Auxiliar de Servicios Generales"
+    "Auxiliar de Servicios Generales",
+    "Notificador",
+    "Secretaria",
+    "Auxiliar",
+    "Recepcionista",
+    "Auxiliar de Auditoria",
+    "Vigilante"
   ],
   "Obrero Grado (1)-MIN": [
     "Obrero",

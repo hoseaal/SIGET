@@ -2,7 +2,8 @@ import express from 'express'
 import {
   obtenerSueldoActual,
   guardarSueldo,
-  actualizarSueldo
+  actualizarSueldo,
+  eliminarSueldo
 } from '../controllers/sueldoPensionado.controller.js'
 
 const router = express.Router()
@@ -15,5 +16,8 @@ router.post('/', guardarSueldo)
 
 // PUT: Edita el sueldo existente por su ID
 router.put('/:id', actualizarSueldo)
+
+// DELETE: Elimina el sueldo existente por su ID
+router.delete('/:id', eliminarSueldo)
 
 export default router

@@ -41,6 +41,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
 
         // Tablas Maestras Personales
         profesion_id: '',
+        prima_profesional_id: '',
         estatus_id: 1, // Por defecto Activo (asumiendo ID 1)
 
         // Datos Contractuales (Opcionales pero recomendados)
@@ -56,7 +57,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
     // Estados para los Selectores (Catalogos)
     const [catalogos, setCatalogos] = useState({
         profesiones: [],
-        estatus: [],
+        primasProfesionales: [],
         cargosCET: [],
         cargosONAPRE: [],
         niveles: [],
@@ -80,9 +81,9 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
     useEffect(() => {
         const fetchCatalogos = async () => {
             try {
-                const [proRes, estRes, cetRes, onaRes, colRes, dirRes, divRes, uniRes] = await Promise.all([
+                const [proRes, primasProfRes, cetRes, onaRes, colRes, dirRes, divRes, uniRes] = await Promise.all([
                     fetch('/api/profesiones'),
-                    fetch('/api/estatus'),
+                    fetch('/api/primas-profesionalizacion'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
                     fetch('/api/condiciones-laborales'),
@@ -93,7 +94,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
 
                 setCatalogos({
                     profesiones: await proRes.json(),
-                    estatus: await estRes.json(),
+                    primasProfesionales: await primasProfRes.json(),
                     cargosCET: await cetRes.json(),
                     cargosONAPRE: await onaRes.json(),
                     condiciones: await colRes.json(),
@@ -160,7 +161,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
             fecha_nacimiento: '', lugar_nacimiento: '', genero: '', estado_civil: 'Soltero',
             tipo_sangre: '', direccion_habitacion: '', celular: '', correo_principal: '', correo_secundario: '', cuenta_bancaria: '',
             fecha_ingreso: new Date().toISOString().split('T')[0],
-            contacto_emergencia_1: '', telefono_emergencia_1: '', contacto_emergencia_2: '', telefono_emergencia_2: '', profesion_id: '', estatus_id: 1,
+            contacto_emergencia_1: '', telefono_emergencia_1: '', contacto_emergencia_2: '', telefono_emergencia_2: '', profesion_id: '', prima_profesional_id: '', estatus_id: 1,
             cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '', condicion_laboral_id: '', direccion_id: '', division_id: '', unidad_id: ''
         });
         setErrorMessage('');
@@ -329,7 +330,17 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                                 <div className="col-md-4">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Tipo de Sangre</Form.Label>
-                                        <Form.Control type="text" name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange} />
+                                        <Form.Select name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </Form.Select>
                                     </Form.Group>
                                 </div>
                                 <div className="col-md-4">
@@ -429,30 +440,31 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                             </div>
 
                             <div className="row mb-3">
-                                <div className="col-md-4">
+                                <div className="col-md-3">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Fecha de Ingreso</Form.Label>
                                         <Form.Control type="date" name="fecha_ingreso" value={formData.fecha_ingreso} onChange={handleChange} required />
                                     </Form.Group>
                                 </div>
-                                <div className="col-md-4">
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Estatus</Form.Label>
-                                        <Form.Select name="estatus_id" value={formData.estatus_id} onChange={handleChange}>
-                                            <option value="">Seleccione</option>
-                                            {catalogos.estatus.map(e => (
-                                                <option key={e.estatus_id} value={e.estatus_id}>{e.nombre}</option>
-                                            ))}
-                                        </Form.Select>
-                                    </Form.Group>
-                                </div>
-                                <div className="col-md-4">
+                                {/* Estatus oculto por defecto a Activo (1) */}
+                                <div className="col-md-3">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Profesión</Form.Label>
                                         <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
                                             <option value="">Seleccione</option>
                                             {catalogos.profesiones.map(p => (
                                                 <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </Form.Group>
+                                </div>
+                                <div className="col-md-3">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Escala de Profesionalización</Form.Label>
+                                        <Form.Select name="prima_profesional_id" value={formData.prima_profesional_id} onChange={handleChange}>
+                                            <option value="">Seleccione</option>
+                                            {catalogos.primasProfesionales.map(p => (
+                                                <option key={p.prima_profesional_id} value={p.prima_profesional_id}>{p.descripcion}</option>
                                             ))}
                                         </Form.Select>
                                     </Form.Group>

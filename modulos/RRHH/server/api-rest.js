@@ -29,11 +29,21 @@ import cargaFamiliarRouter from './src/routes/cargaFamiliar.routes.js'
 import encargoTemporalRouter from './src/routes/encargoTemporal.routes.js'
 import sobrevivienteRouter from './src/routes/sobreviviente.routes.js'
 import nominaActivosRouter from './src/routes/nominaActivos.routes.js'
+import nominaObreroRouter from './src/routes/nominaObrero.routes.js'
+import nominaJubiladosRouter from './src/routes/nominaJubilados.routes.js'
+import nominaPensionadosRouter from './src/routes/nominaPensionados.routes.js'
+import nominaSobrevivientesRouter from './src/routes/nominaSobrevivientes.routes.js'
 import porcentajesJerarquiasRouter from './src/routes/porcentajesJerarquias.routes.js'
+import retroactivoRouter from './src/routes/retroactivo.routes.js'
+import institucionRouter from './src/routes/institucion.routes.js'
 
 import historialSalarioRouter from './src/routes/historialSalario.routes.js'
-
-
+import configuracionVacacionesRouter from './src/routes/configuracionVacaciones.routes.js'
+import configuracionVacacionesObrerosRouter from './src/routes/configuracionVacacionesObreros.routes.js'
+import vacacionesRouter from './src/routes/vacaciones.routes.js'
+import dashboardRouter from './src/routes/dashboard.routes.js'
+import festivosRouter from './src/routes/festivos.routes.js'
+import { VacacionesModel } from './src/models/vacaciones.model.js'
 
 import cors from 'cors'
 import morgan from 'morgan'
@@ -46,7 +56,15 @@ app.use(morgan('dev'))
 
 // Conectar DB
 connectDB()
-  .then(() => console.log('🟢 DB Conectada'))
+  .then(async () => {
+    console.log('🟢 DB Conectada')
+    try {
+      await VacacionesModel.init()
+      console.log('🟢 Tablas de Vacaciones inicializadas')
+    } catch (err) {
+      console.error('🔴 Error al inicializar tablas de Vacaciones:', err.message)
+    }
+  })
   .catch(err => {
     console.error('🔴 Error DB:', err)
     process.exit(1)
@@ -99,7 +117,18 @@ app.use('/api/carga-familiar', cargaFamiliarRouter)
 app.use('/api/encargos-temporales', encargoTemporalRouter)
 app.use('/api/sobrevivientes', sobrevivienteRouter)
 app.use('/api/nomina-activos', nominaActivosRouter)
+app.use('/api/nomina-obreros', nominaObreroRouter)
+app.use('/api/nomina-jubilados', nominaJubiladosRouter)
+app.use('/api/nomina-pensionados', nominaPensionadosRouter)
+app.use('/api/nomina-sobrevivientes', nominaSobrevivientesRouter)
 app.use('/api/porcentajes-jerarquias', porcentajesJerarquiasRouter)
+app.use('/api/configuracion-vacaciones', configuracionVacacionesRouter)
+app.use('/api/configuracion-vacaciones-obreros', configuracionVacacionesObrerosRouter)
+app.use('/api/vacaciones', vacacionesRouter)
+app.use('/api/festivos', festivosRouter)
+app.use('/api/dashboard', dashboardRouter)
+app.use('/api/retroactivos', retroactivoRouter)
+app.use('/api/instituciones', institucionRouter)
 
 const PORT = 5002
 app.listen(PORT, () => {
