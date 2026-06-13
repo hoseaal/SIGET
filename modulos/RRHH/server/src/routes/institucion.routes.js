@@ -1,8 +1,11 @@
 import express from 'express'
-import { buscarInstituciones } from '../controllers/institucion.controller.js'
+import { getAll, create, update, remove } from '../controllers/institucion.controller.js'
 
 const router = express.Router()
 
-router.get('/', buscarInstituciones)
+router.get('/', getAll)
+router.post('/', create)
+router.put('/:id', update)
+router.delete('/:id', remove)
 
 export default router

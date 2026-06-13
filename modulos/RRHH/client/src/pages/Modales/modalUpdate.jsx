@@ -13,6 +13,7 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
 
     // MAPA UNIVERSAL DE ENDPOINTS (Sistema RRHH)
     const endpointMap = {
+        catalogo_instituciones: '/api/instituciones',
         // Estructura Organizacional
         direcciones: '/api/direcciones',
         divisiones: '/api/divisiones',

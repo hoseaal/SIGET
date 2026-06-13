@@ -357,22 +357,32 @@ export class VacacionesService {
 
     const historial = await VacacionesModel.getHistorialVacaciones(empleadoId)
     const anioActual = new Date().getFullYear()
-    let totalUsadosAnio = 0
+    let diasConsumidos = 0
+    let diasReintegrados = 0
+
+    // ID del periodo actual de vacaciones si existe
+    const vacRecord = await VacacionesModel.getVacacionesRecord(empleadoId)
+    const currentVacId = vacRecord?.id_vacaciones
 
     for (const h of historial) {
-      if (!h.fecha_inicio || !h.fecha_fin) continue
-      const anioVac = new Date(h.fecha_inicio).getFullYear()
-      if (anioVac !== anioActual) continue
-      const diasHist = h.dias_habiles != null ? Number(h.dias_habiles) : this.contarDiasHabiles(h.fecha_inicio, h.fecha_fin, festivos)
-      totalUsadosAnio += Number(diasHist || 0)
+      // Solo evaluar los tramos correspondientes al periodo actual de vacaciones
+      if (currentVacId && h.id_vacaciones !== currentVacId) continue
+
+      const diasHist = h.dias_habiles != null ? Number(h.dias_habiles) : (h.fecha_inicio && h.fecha_fin ? this.contarDiasHabiles(h.fecha_inicio, h.fecha_fin, festivos) : 0)
+
+      if (h.id_status_vacaciones === STATUS.PROGRAMADO || h.id_status_vacaciones === STATUS.DE_DISFRUTE || h.id_status_vacaciones === STATUS.FINALIZADO) {
+        diasConsumidos += diasHist
+      } else if (h.id_status_vacaciones === STATUS.REINTEGRO) {
+        diasReintegrados += diasHist
+      }
     }
 
-    const vacRecord = await VacacionesModel.getVacacionesRecord(empleadoId)
     const diasAcumulados = Number(vacRecord?.dias_acumulados || 0)
-    const totalDisponibles = Math.max(0, diasDisfruteLey + diasAcumulados - totalUsadosAnio)
+    const diasTotalesPeriodo = diasDisfruteLey + diasAcumulados
+    const saldoDisponibleReal = Math.max(0, diasTotalesPeriodo - diasConsumidos + diasReintegrados)
 
-    if (diasSolicitados > totalDisponibles) {
-      throw new Error(`Saldo insuficiente. Disponible: ${totalDisponibles}, solicitado: ${diasSolicitados}`)
+    if (diasSolicitados > saldoDisponibleReal) {
+      throw new Error(`Saldo insuficiente. Disponible: ${saldoDisponibleReal}, solicitado: ${diasSolicitados}`)
     }
 
     // Salario diario = (suma de todas las asignaciones mensuales) / 30
@@ -390,10 +400,13 @@ export class VacacionesService {
       dias_disfrute_ley: diasDisfruteLey,
       dias_pago_escala: diasPagoEscala,
       dias_acumulados: diasAcumulados,
-      dias_usados_anio: totalUsadosAnio,
-      total_disponibles: totalDisponibles,
+      dias_consumidos: diasConsumidos,
+      dias_reintegrados: diasReintegrados,
+      dias_totales_periodo: diasTotalesPeriodo,
+      saldo_disponible_real: saldoDisponibleReal,
+      total_disponibles: saldoDisponibleReal, // Legacy retrocompatibilidad
       dias_solicitados: Number(diasSolicitados || 0),
-      nuevo_acumulado: Math.max(0, totalDisponibles - Number(diasSolicitados || 0)),
+      nuevo_acumulado: Math.max(0, saldoDisponibleReal - Number(diasSolicitados || 0)),
       salario_diario: salarioDiario,
       pago_modalidad_fija: {
         nombre: 'Modalidad A (Fija)',
@@ -528,7 +541,9 @@ export class VacacionesService {
       row.dias_usados_anio = usadosAnio
       row.dias_pendientes_disfrute = Math.max(0, derechos.dias_disfrute_ley - usadosAnio)
       row.dias_pendientes = Math.max(0, derechos.dias_disfrute_ley + Number(row.dias_acumulados || 0) - usadosAnio)
-      row.estado_vacaciones = this.mapStatusKey(Number(row.id_status_vacaciones))
+      if (row.estado_vacaciones !== 'por_derecho') {
+        row.estado_vacaciones = this.mapStatusKey(Number(row.id_status_vacaciones))
+      }
       row.fecha_inicio = this.toISODate(row.fecha_inicio)
       row.fecha_fin = this.toISODate(row.fecha_fin)
       row.fecha_tope = this.toISODate(row.fecha_tope)
@@ -563,7 +578,9 @@ export class VacacionesService {
       dias_disfrute_ley: derechos.dias_disfrute_ley,
       dias_base: derechos.dias_disfrute_ley,
       dias_acumulados: derechos.dias_acumulados,
-      total_disponibles: derechos.total_disponibles,
+      dias_totales_periodo: derechos.dias_totales_periodo,
+      saldo_disponible_real: derechos.saldo_disponible_real,
+      total_disponibles: derechos.saldo_disponible_real, // legacy retrocompatibilidad
       dias_solicitados: derechos.dias_solicitados,
       ya_pagado: derechos.ya_pagado,
       nuevo_acumulado: derechos.nuevo_acumulado,
@@ -577,67 +594,87 @@ export class VacacionesService {
   }
 
   static async registrarSolicitud(data) {
-    const { empleado_id, fecha_inicio, dias_solicitados } = data
+    const { empleado_id, fecha_inicio, dias_solicitados, observaciones } = data
     if (!empleado_id || !fecha_inicio || !dias_solicitados) {
       throw new Error('Faltan datos requeridos: empleado, fecha inicio y días solicitados')
     }
 
     await this.mantenimientoDiario()
 
-    const simulacion = await this.calcularSaldo(empleado_id, Number(dias_solicitados), fecha_inicio)
-    if (simulacion.total_disponibles < Number(dias_solicitados)) {
-      throw new Error(`Saldo insuficiente. Disponible: ${simulacion.total_disponibles}, solicitado: ${dias_solicitados}`)
-    }
+    const connection = await pool.getConnection()
+    try {
+      await connection.beginTransaction()
 
-    const emp = await VacacionesModel.getDatosSalariales(empleado_id)
-    if (!emp) throw new Error('Empleado no encontrado')
+      // BLOQUEO EXCLUSIVO (Previene Condiciones de Carrera en consultas concurrentes)
+      await connection.query('SELECT empleado_id FROM empleados WHERE empleado_id = ? FOR UPDATE', [empleado_id])
 
-    const fechaIng = this.dateOnly(emp.fecha_ingreso)
-    const hoy = this.dateOnly(new Date())
-    const thisYear = new Date(hoy.getFullYear(), fechaIng.getMonth(), fechaIng.getDate())
-    thisYear.setMonth(thisYear.getMonth() + 4)
-    const fechaTope = this.toISODate(thisYear)
+      // Paso A, B, y C integrados: Calcular Saldo Dinámico
+      const simulacion = await this.calcularSaldo(empleado_id, Number(dias_solicitados), fecha_inicio)
+      
+      // Paso D: Validación Crítica
+      if (simulacion.total_disponibles < Number(dias_solicitados)) {
+        throw new Error(`Acción denegada. Los días solicitados superan el saldo disponible actual (${simulacion.total_disponibles} días).`)
+      }
 
-    let vacRecord = await VacacionesModel.getVacacionesRecord(empleado_id)
-    let idVacaciones
+      const emp = await VacacionesModel.getDatosSalariales(empleado_id)
+      if (!emp) throw new Error('Empleado no encontrado')
 
-    if (vacRecord) {
-      idVacaciones = vacRecord.id_vacaciones
-      await VacacionesModel.actualizarVacacion(idVacaciones, {
-        fecha_tope: fechaTope,
-        id_status_vacaciones: STATUS.PROGRAMADO
-      })
-    } else {
-      idVacaciones = await VacacionesModel.crearVacacion({
-        id_empleado: empleado_id,
-        id_status_vacaciones: STATUS.PROGRAMADO,
-        dias_acumulados: 0,
-        fecha_tope: fechaTope,
-        pagado: 0
-      })
-    }
+      const fechaIng = this.dateOnly(emp.fecha_ingreso)
+      const hoy = this.dateOnly(new Date())
+      const thisYear = new Date(hoy.getFullYear(), fechaIng.getMonth(), fechaIng.getDate())
+      thisYear.setMonth(thisYear.getMonth() + 4)
+      const fechaTope = this.toISODate(thisYear)
 
-    await VacacionesModel.crearFechaVacacion({
-      id_vacaciones: idVacaciones,
-      fecha_inicio: simulacion.fecha_inicio,
-      fecha_fin: simulacion.fecha_fin,
-      dias_habiles: Number(dias_solicitados),
-      observaciones: `Programación administrativa (${dias_solicitados} días hábiles). Reincorporación: ${simulacion.fecha_reincorporacion || 'por definir'}`
-    })
+      let vacRecord = await VacacionesModel.getVacacionesRecord(empleado_id)
+      let idVacaciones
 
-    return {
-      ok: true,
-      id_vacaciones: idVacaciones,
-      id_status_vacaciones: STATUS.PROGRAMADO,
-      fecha_inicio: simulacion.fecha_inicio,
-      fecha_fin: simulacion.fecha_fin,
-      fecha_reincorporacion: simulacion.fecha_reincorporacion,
-      dias_solicitados: Number(dias_solicitados),
-      pagos: {
-        modalidad_fija: simulacion.pago_modalidad_fija,
-        modalidad_escala: simulacion.pago_modalidad_escala
-      },
-      nuevo_acumulado: simulacion.nuevo_acumulado
+      const hoyStr = this.toISODate(hoy)
+      const statusAsignar = simulacion.fecha_inicio <= hoyStr ? STATUS.DE_DISFRUTE : STATUS.PROGRAMADO
+
+      if (vacRecord) {
+        idVacaciones = vacRecord.id_vacaciones
+        await connection.query(
+          `UPDATE vacaciones SET fecha_tope = ?, id_status_vacaciones = ? WHERE id_vacaciones = ?`,
+          [fechaTope, statusAsignar, idVacaciones]
+        )
+      } else {
+        const [result] = await connection.query(
+          `INSERT INTO vacaciones (id_empleado, id_status_vacaciones, dias_acumulados, fecha_tope, pagado) VALUES (?, ?, ?, ?, ?)`,
+          [empleado_id, statusAsignar, 0, fechaTope, 0]
+        )
+        idVacaciones = result.insertId
+      }
+
+      const obsFinal = observaciones ? observaciones.trim() : `[Solicitud registrada por ${dias_solicitados} días hábiles]`
+
+      await connection.query(
+        `INSERT INTO fechas_vacaciones (id_vacaciones, fecha_inicio, fecha_fin, dias_habiles, id_status_vacaciones, observaciones) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          idVacaciones, simulacion.fecha_inicio, simulacion.fecha_fin, Number(dias_solicitados), statusAsignar,
+          obsFinal
+        ]
+      )
+
+      await connection.commit()
+      return {
+        ok: true,
+        id_vacaciones: idVacaciones,
+        id_status_vacaciones: statusAsignar,
+        fecha_inicio: simulacion.fecha_inicio,
+        fecha_fin: simulacion.fecha_fin,
+        fecha_reincorporacion: simulacion.fecha_reincorporacion,
+        dias_solicitados: Number(dias_solicitados),
+        pagos: {
+          modalidad_fija: simulacion.pago_modalidad_fija,
+          modalidad_escala: simulacion.pago_modalidad_escala
+        },
+        nuevo_acumulado: simulacion.nuevo_acumulado
+      }
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
     }
   }
 
@@ -656,7 +693,7 @@ export class VacacionesService {
     await VacacionesModel.actualizarVacacion(vacRecord.id_vacaciones, { pagado: 1 })
 
     await pool.query(
-      `INSERT INTO historial_salarios (empleado_id, fecha_pago, monto_neto, monto_bruto)
+      `INSERT INTO historial_salarios_legacy (empleado_id, fecha_pago, monto_neto, monto_bruto)
        VALUES (?, CURDATE(), ?, ?)`,
       [empleadoId, montoBono, montoBono]
     )
@@ -682,15 +719,30 @@ export class VacacionesService {
     const festivos = await FestivosModel.getAll()
     const diasConsumidos = this.contarDiasHabiles(inicio, finReal, festivos)
 
-    if (vacRecord.id_fecha) {
-      await VacacionesModel.actualizarFechaVacacion(vacRecord.id_fecha, {
-        fecha_fin: finReal,
-        dias_habiles: diasConsumidos,
-        observaciones: observaciones || `Interrupción administrativa el ${finReal}`
-      })
-    }
+    const diasOriginales = vacRecord.dias_habiles != null
+      ? Number(vacRecord.dias_habiles)
+      : (vacRecord.fecha_fin ? this.contarDiasHabiles(inicio, vacRecord.fecha_fin, festivos) : diasConsumidos)
 
-    await VacacionesModel.actualizarVacacion(vacRecord.id_vacaciones, { id_status_vacaciones: STATUS.REINTEGRO })
+    const diasPendientes = Math.max(0, diasOriginales - diasConsumidos)
+
+    const finalObs = observaciones ? observaciones.trim() : `[Reintegro automático del sistema]`
+
+    // Insertar un nuevo registro de reintegro en vez de mutar la solicitud original
+    await VacacionesModel.crearFechaVacacion({
+      id_vacaciones: vacRecord.id_vacaciones,
+      fecha_inicio: finReal,
+      fecha_fin: vacRecord.fecha_fin || finReal,
+      dias_habiles: diasPendientes,
+      id_status_vacaciones: STATUS.REINTEGRO,
+      observaciones: finalObs
+    })
+
+    // Actualizamos el estatus global de la vacación a REINTEGRO, pero NO alteramos dias_acumulados
+    // ya que el nuevo endpoint suma los dias_habiles de los registros de reintegro dinámicamente.
+    await VacacionesModel.actualizarVacacion(vacRecord.id_vacaciones, {
+      id_status_vacaciones: STATUS.REINTEGRO
+    })
+    
     await VacacionesModel.updateEstatusEmpleado(empleadoId, 9)
 
     const saldoActual = await this.calcularSaldo(empleadoId, 0)
@@ -701,9 +753,9 @@ export class VacacionesService {
       id_status_vacaciones: STATUS.REINTEGRO,
       fecha_fin_real: finReal,
       dias_consumidos: diasConsumidos,
-      saldo_restante: saldoActual.total_disponibles,
-      mensaje: saldoActual.total_disponibles > 0
-        ? `Reintegro procesado. Quedan ${saldoActual.total_disponibles} días pendientes por disfrutar.`
+      saldo_restante: saldoActual.saldo_disponible_real,
+      mensaje: saldoActual.saldo_disponible_real > 0
+        ? `Reintegro procesado. Quedan ${saldoActual.saldo_disponible_real} días pendientes por disfrutar.`
         : 'Reintegro procesado. Todos los días de vacaciones fueron consumidos.'
     }
   }
@@ -735,7 +787,13 @@ export class VacacionesService {
     for (const h of historialVacaciones) {
       if (!h.fecha_inicio || !h.fecha_fin) continue
       if (new Date(h.fecha_inicio).getFullYear() !== anioActual) continue
-      diasConsumidosAnio += h.dias_habiles != null ? Number(h.dias_habiles) : this.contarDiasHabiles(h.fecha_inicio, h.fecha_fin, festivos)
+      const diasHist = h.dias_habiles != null ? Number(h.dias_habiles) : this.contarDiasHabiles(h.fecha_inicio, h.fecha_fin, festivos)
+      
+      if (Number(h.id_status_vacaciones) === STATUS.REINTEGRO) {
+        diasConsumidosAnio -= diasHist
+      } else if ([STATUS.PROGRAMADO, STATUS.DE_DISFRUTE, STATUS.FINALIZADO].includes(Number(h.id_status_vacaciones))) {
+        diasConsumidosAnio += diasHist
+      }
     }
 
     const empBase = await VacacionesModel.getEmpleadoTipoPersonal(empleadoId)
@@ -777,16 +835,39 @@ export class VacacionesService {
         dias_base_anual: diasBase,
         dias_consumidos_anio: diasConsumidosAnio,
         dias_pendientes: Math.max(0, diasBase - diasConsumidosAnio),
-        historial: historialVacaciones.map(h => ({
-          id_vacaciones: h.id_vacaciones,
-          id_status_vacaciones: h.id_status_vacaciones,
-          status_vacaciones_nombre: h.status_vacaciones_nombre,
-          fecha_inicio: h.fecha_inicio,
-          fecha_fin: h.fecha_fin,
-          dias: h.dias_habiles != null ? Number(h.dias_habiles) : this.contarDiasHabiles(h.fecha_inicio, h.fecha_fin, festivos),
-          observaciones: h.observaciones,
-          pagado: Boolean(h.pagado)
-        }))
+        historial: historialVacaciones.map(h => {
+          const idStatus = Number(h.id_status_vacaciones)
+          const diasHist = h.dias_habiles != null
+            ? Number(h.dias_habiles)
+            : this.contarDiasHabiles(h.fecha_inicio, h.fecha_fin, festivos)
+
+          const obs = h.observaciones || ''
+          const esReintegro = idStatus === STATUS.REINTEGRO ||
+            obs.includes('Reintegro') || obs.includes('Interrupción')
+
+          let diasPendientes = 0
+          let diasConsumidos = diasHist
+
+          if (esReintegro) {
+            diasPendientes = diasHist
+            diasConsumidos = 0
+            
+            const matchPend = obs.match(/Pendientes: (\d+)/)
+            if (matchPend) diasPendientes = Number(matchPend[1])
+          }
+
+          return {
+            id_vacaciones: h.id_vacaciones,
+            id_status_vacaciones: idStatus,
+            nombre_status: h.nombre_status || '',
+            fecha_inicio: h.fecha_inicio,
+            fecha_fin: h.fecha_fin,
+            dias_consumidos: diasConsumidos,
+            es_reintegro: esReintegro,
+            dias_pendientes: diasPendientes,
+            observaciones: obs
+          }
+        })
       }
     }
   }

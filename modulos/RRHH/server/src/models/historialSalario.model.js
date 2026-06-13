@@ -1,71 +1,92 @@
-/* eslint-disable camelcase */
 import pool from '../utils/database.js'
 
 export class HistorialSalarioModel {
 
-  static _buildWhere (filters) {
-    const where = ['empleado_id = ?'] // Siempre filtramos por funcionario
-    const params = [filters.empleado_id]
-
-    if (filters.fecha_inicio) {
-      where.push('fecha_pago >= ?')
-      params.push(filters.fecha_inicio)
-    }
-
-    if (filters.fecha_fin) {
-      where.push('fecha_pago <= ?')
-      params.push(filters.fecha_fin)
-    }
-
-    return {
-      whereClause: 'WHERE ' + where.join(' AND '),
-      params
-    }
+  static async ensureTable() {
+    const sql = `
+      CREATE TABLE IF NOT EXISTS historial_pagos (
+        id_historial INT AUTO_INCREMENT PRIMARY KEY,
+        empleado_id INT NOT NULL,
+        quincena_no TINYINT(1) NOT NULL COMMENT '1=Primera quincena, 2=Segunda quincena',
+        mes TINYINT(2) NOT NULL COMMENT '1-12',
+        anio SMALLINT NOT NULL,
+        total_asignaciones DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+        total_deducciones DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+        salario_neto DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+        fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_empleado_periodo (empleado_id, quincena_no, mes, anio),
+        CONSTRAINT fk_historial_pago_empleado FOREIGN KEY (empleado_id) REFERENCES empleados(empleado_id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+    `
+    await pool.query(sql)
   }
 
-  static async getFiltered ({ limit, offset, ...filters }) {
-    const { whereClause, params } = this._buildWhere(filters)
+  /**
+   * UPSERT atómico con soporte transaccional.
+   * Si se pasa `connection`, la operación se ejecuta dentro de esa transacción;
+   * si no, usa el pool directo.
+   */
+  static async upsert({ empleado_id, quincena_no, mes, anio, total_asignaciones, total_deducciones, salario_neto }, connection) {
+    const sql = `
+      INSERT INTO historial_pagos (empleado_id, quincena_no, mes, anio, total_asignaciones, total_deducciones, salario_neto)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        total_asignaciones = VALUES(total_asignaciones),
+        total_deducciones = VALUES(total_deducciones),
+        salario_neto = VALUES(salario_neto),
+        fecha_registro = CURRENT_TIMESTAMP
+    `
+    const params = [empleado_id, quincena_no, mes, anio, total_asignaciones, total_deducciones, salario_neto]
+    const connector = connection || pool
+    const [result] = await connector.query(sql, params)
+    return result
+  }
 
-    let sql = `SELECT * FROM historial_salarios ${whereClause} ORDER BY fecha_pago DESC`
-
-    if (limit !== null) {
-      sql += ' LIMIT ? OFFSET ?'
-      params.push(limit, offset)
-    }
-
-    const [rows] = await pool.query(sql, params)
+  static async findByEmpleado(empleado_id) {
+    const [rows] = await pool.query(
+      `SELECT * FROM historial_pagos WHERE empleado_id = ? ORDER BY anio DESC, mes DESC, quincena_no DESC`,
+      [empleado_id]
+    )
     return rows
   }
 
-  static async countFiltered (filters) {
-    const { whereClause, params } = this._buildWhere(filters)
-    const sql = `SELECT COUNT(*) as total FROM historial_salarios ${whereClause}`
-    const [rows] = await pool.query(sql, params)
-    return rows[0].total
+  static async findByPeriodo(mes, anio, quincena_no) {
+    const [rows] = await pool.query(
+      `SELECT hs.*, e.cedula, e.nombres, e.apellidos
+       FROM historial_pagos hs
+       JOIN empleados e ON hs.empleado_id = e.empleado_id
+       WHERE hs.mes = ? AND hs.anio = ? AND hs.quincena_no = ?
+       ORDER BY e.apellidos, e.nombres`,
+      [mes, anio, quincena_no]
+    )
+    return rows
   }
 
-  // CRUD Basico
-  static async getById (id) {
-    const [rows] = await pool.query('SELECT * FROM historial_salarios WHERE historial_salario_id = ?', [id])
+  static async getTotalByPeriodo(mes, anio, quincena_no) {
+    const [rows] = await pool.query(
+      `SELECT COUNT(*) AS total_empleados,
+              SUM(total_asignaciones) AS total_asignaciones,
+              SUM(total_deducciones) AS total_deducciones,
+              SUM(salario_neto) AS total_salario_neto
+       FROM historial_pagos
+       WHERE mes = ? AND anio = ? AND quincena_no = ?`,
+      [mes, anio, quincena_no]
+    )
+    return rows[0]
+  }
+
+  static async getById(id_historial) {
+    const [rows] = await pool.query('SELECT * FROM historial_pagos WHERE id_historial = ?', [id_historial])
     return rows[0] || null
   }
 
-  static async create ({ empleado_id, fecha_pago, monto_neto, monto_bruto }) {
-    const [result] = await pool.query(
-      'INSERT INTO historial_salarios (empleado_id, fecha_pago, monto_neto, monto_bruto) VALUES (?, ?, ?, ?)',
-      [empleado_id, fecha_pago, monto_neto, monto_bruto]
-    )
-    return { historial_salario_id: result.insertId, empleado_id, fecha_pago, monto_neto, monto_bruto }
-  }
-
-  static async update (id, data) {
-    const [result] = await pool.query('UPDATE historial_salarios SET ? WHERE historial_salario_id = ?', [data, id])
+  static async update(id_historial, data) {
+    const [result] = await pool.query('UPDATE historial_pagos SET ? WHERE id_historial = ?', [data, id_historial])
     return result.affectedRows > 0
   }
 
-  static async delete (id) {
-    const [result] = await pool.query('DELETE FROM historial_salarios WHERE historial_salario_id = ?', [id])
+  static async delete(id_historial) {
+    const [result] = await pool.query('DELETE FROM historial_pagos WHERE id_historial = ?', [id_historial])
     return result.affectedRows > 0
   }
 }
-

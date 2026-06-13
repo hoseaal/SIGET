@@ -38,6 +38,7 @@ import retroactivoRouter from './src/routes/retroactivo.routes.js'
 import institucionRouter from './src/routes/institucion.routes.js'
 
 import historialSalarioRouter from './src/routes/historialSalario.routes.js'
+import cajaAhorroRouter from './src/routes/cajaAhorro.routes.js'
 import configuracionVacacionesRouter from './src/routes/configuracionVacaciones.routes.js'
 import configuracionVacacionesObrerosRouter from './src/routes/configuracionVacacionesObreros.routes.js'
 import vacacionesRouter from './src/routes/vacaciones.routes.js'
@@ -129,6 +130,7 @@ app.use('/api/festivos', festivosRouter)
 app.use('/api/dashboard', dashboardRouter)
 app.use('/api/retroactivos', retroactivoRouter)
 app.use('/api/instituciones', institucionRouter)
+app.use('/api/caja-ahorro', cajaAhorroRouter)
 
 const PORT = 5002
 app.listen(PORT, () => {

@@ -13,7 +13,8 @@ const Navbar = () => {
   const [showUserConModal, setShowUserConModal] = useState(false);
   const [vacationAlerts, setVacationAlerts] = useState({
     proximosDerecho: [],
-    proximosRetornar: []
+    proximosRetornar: [],
+    resumen: { por_derecho_funcionarios: 0, por_derecho_obreros: 0 }
   });
 
   const navigate = useNavigate();
@@ -34,13 +35,16 @@ const Navbar = () => {
       const res = await fetch('/api/vacaciones/alertas');
       if (res.ok) {
         const data = await res.json();
+        const proximosDerecho = Array.isArray(data?.proximosDerecho)
+          ? data.proximosDerecho
+          : (Array.isArray(data?.por_derecho) ? data.por_derecho : []);
+        const proximosRetornar = Array.isArray(data?.proximosRetornar)
+          ? data.proximosRetornar
+          : (Array.isArray(data?.caducidad) ? data.caducidad : []);
         setVacationAlerts({
-          proximosDerecho: Array.isArray(data?.proximosDerecho)
-            ? data.proximosDerecho
-            : (Array.isArray(data?.por_derecho) ? data.por_derecho : []),
-          proximosRetornar: Array.isArray(data?.proximosRetornar)
-            ? data.proximosRetornar
-            : (Array.isArray(data?.caducidad) ? data.caducidad : [])
+          proximosDerecho,
+          proximosRetornar,
+          resumen: data?.resumen || { por_derecho_funcionarios: 0, por_derecho_obreros: 0 }
         });
       }
     } catch (error) {
@@ -130,11 +134,10 @@ const Navbar = () => {
           <Dropdown as={Nav.Item} className="navbar-dropdown dropdown-notifications me-3 d-flex align-items-center">
             <Dropdown.Toggle as={Nav.Link} className="dropdown-toggle hide-arrow d-flex align-items-center" style={{ position: 'relative' }}>
               <i className="bx bx-bell bx-sm"></i>
-              {((vacationAlerts.proximosDerecho?.length || 0) +
-                (vacationAlerts.proximosRetornar?.length || 0)) > 0 && (
+              {(vacationAlerts.proximosDerecho?.length > 0 ||
+                vacationAlerts.proximosRetornar?.length > 0) && (
                 <span className="badge bg-danger rounded-pill badge-notifications" style={{ position: 'absolute', top: '0', right: '-5px', fontSize: '0.65rem', padding: '0.25em 0.4em' }}>
-                  {(vacationAlerts.proximosDerecho?.length || 0) +
-                   (vacationAlerts.proximosRetornar?.length || 0)}
+                  {(vacationAlerts.proximosDerecho?.length || 0) + (vacationAlerts.proximosRetornar?.length || 0)}
                 </span>
               )}
             </Dropdown.Toggle>
@@ -149,15 +152,15 @@ const Navbar = () => {
                 </div>
               </div>
               <ul className="list-group list-group-flush">
-                {((vacationAlerts.proximosDerecho?.length || 0) +
-                  (vacationAlerts.proximosRetornar?.length || 0)) === 0 ? (
+                {(vacationAlerts.proximosDerecho?.length === 0 &&
+                  vacationAlerts.proximosRetornar?.length === 0) ? (
                   <li className="list-group-item text-center text-muted py-4" style={{ fontSize: '0.85rem' }}>
                     <i className="bx bx-bell-off fs-4 mb-2 d-block"></i>
                     No hay alertas de vacaciones.
                   </li>
                 ) : (
                   <>
-                    {/* Próximos a obtener el derecho */}
+                    {/* Próximos a obtener el derecho — lista individual */}
                     {vacationAlerts.proximosDerecho?.map((item) => {
                       const linkPath = item.tipo_empleado === 'obrero' ? '/Personal/Vacaciones/Obreros' : '/Personal/Vacaciones/Funcionarios';
                       return (
@@ -177,11 +180,12 @@ const Navbar = () => {
                             </div>
                             <div className="flex-grow-1">
                               <h6 className="mb-1" style={{ fontSize: '0.85rem' }}>Por obtener derecho</h6>
-                              <p className="mb-0 text-muted" style={{ fontSize: '0.75rem' }}>
-                                {item.nombres} {item.apellidos} ({item.tipo_empleado === 'obrero' ? 'Obrero' : 'Funcionario'}) por obtener derecho este mes.
+                              <p className="mb-1 text-muted" style={{ fontSize: '0.75rem' }}>
+                                {item.nombres} {item.apellidos} ({item.tipo_empleado === 'obrero' ? 'Obrero' : 'Funcionario'})
                               </p>
                               <small className="text-muted" style={{ fontSize: '0.7rem' }}>
-                                Derecho: {formatAlertDate(item.fecha_derecho_proximo)}
+                                <i className="bx bx-time me-1"></i>
+                                Faltan {item.dias_restantes_para_derecho ?? '?'} días para su derecho
                               </small>
                             </div>
                           </div>

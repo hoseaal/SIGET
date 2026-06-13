@@ -38,12 +38,22 @@ export class NominaActivosController {
         ? { isUnificada: true, q1: resultados[0], q2: resultados[1] }
         : resultados[0];
 
+      // Persistencia automática del histórico
+      const persistencia = {};
+      for (let i = 0; i < quincenas.length; i++) {
+        const q = quincenas[i];
+        const resultado = resultados[i];
+        const resPersist = await NominaActivosService.persistirNomina(resultado, periodo.mes, periodo.anio, q);
+        persistencia[`q${q}`] = resPersist;
+      }
+
       res.status(200).json({
         ok: true,
         periodo: { ...periodo, tipoNomina },
         auditoria: {
           calculoEnCaliente: true,
-          historicoPersistente: 'Los calculos no se guardan en base de datos; el Excel exportado es el respaldo historico.',
+          persistenciaAutomatica: true,
+          registrosPersistidos: persistencia,
           encabezadoExcel: crearEncabezadoAuditoria(periodo)
         },
         total_funcionarios: tipoNomina === 'unificada' ? resultados[0].length + resultados[1].length : datos.length,

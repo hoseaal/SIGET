@@ -47,7 +47,7 @@ export class DashboardModel {
         COALESCE(SUM(monto_neto), 0) AS total_neto,
         COALESCE(SUM(monto_bruto - monto_neto), 0) AS total_deducciones,
         COUNT(*) AS total_registros
-      FROM historial_salarios
+      FROM historial_salarios_legacy
       WHERE YEAR(fecha_pago) = ? AND MONTH(fecha_pago) = ?
     `, [anio, mes])
     return rows[0]

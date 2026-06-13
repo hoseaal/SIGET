@@ -338,6 +338,15 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                             </div>
 
                             <div className="row mb-3">
+                                <div className="col-md-12">
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Número de Cuenta Bancaria</Form.Label>
+                                        <Form.Control type="text" name="cuenta_bancaria" placeholder="Ej: 01020000000000000000" value={formData.cuenta_bancaria} onChange={handleChange} maxLength="20" />
+                                    </Form.Group>
+                                </div>
+                            </div>
+
+                            <div className="row mb-3">
                                 <div className="col-md-6">
                                     <Form.Group className="mb-3">
                                         <Form.Label>Actividades Culturales</Form.Label>

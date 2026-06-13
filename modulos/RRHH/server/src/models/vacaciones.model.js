@@ -31,6 +31,11 @@ export class VacacionesModel {
         await pool.query('ALTER TABLE fechas_vacaciones ADD COLUMN dias_habiles INT NULL AFTER fecha_fin')
         console.log('Migración: columna dias_habiles agregada a fechas_vacaciones')
       }
+      const [colsStatus] = await pool.query('SHOW COLUMNS FROM fechas_vacaciones LIKE ?', ['id_status_vacaciones'])
+      if (colsStatus.length === 0) {
+        await pool.query('ALTER TABLE fechas_vacaciones ADD COLUMN id_status_vacaciones INT NULL DEFAULT NULL AFTER dias_habiles')
+        console.log('Migración: columna id_status_vacaciones agregada a fechas_vacaciones')
+      }
     } catch (err) {
       console.warn('VacacionesModel init (migración opcional):', err.message)
     }
@@ -42,32 +47,44 @@ export class VacacionesModel {
   static async getProximosDerecho() {
     const [rows] = await pool.query(`
       SELECT t.empleado_id, t.cedula, t.nombres, t.apellidos, t.fecha_ingreso,
-             DATE_FORMAT(
-               CASE 
+             DATEDIFF(
+               CASE
                  WHEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH) >= CURDATE()
                    THEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH)
                  ELSE DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR), INTERVAL 4 MONTH)
-               END,
-               '%Y-%m-%d'
-             ) AS fecha_derecho_proximo,
+               END, CURDATE()) AS dias_restantes_para_derecho,
+             CASE
+               WHEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH) >= CURDATE()
+                 THEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH)
+               ELSE DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR), INTERVAL 4 MONTH)
+             END AS fecha_derecho_proximo,
              ${tipoEmpleadoSQL('t')}
       FROM empleados t
       ${joinLaboral('t')}
-      WHERE t.estatus_id = 1
-        AND (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) >= 1
-        AND DATEDIFF(
-              CASE 
-                WHEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH) >= CURDATE()
-                  THEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH)
-                ELSE DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR), INTERVAL 4 MONTH)
-              END,
-              CURDATE()
-            ) BETWEEN 0 AND 30
-        AND t.empleado_id NOT IN (
-           SELECT v.id_empleado FROM vacaciones v
+      WHERE t.estatus_id IN (1, 8, 9)
+        AND CASE
+          WHEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH) >= CURDATE()
+            THEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH)
+          ELSE DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR), INTERVAL 4 MONTH)
+        END >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+        AND CASE
+          WHEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH) >= CURDATE()
+            THEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH)
+          ELSE DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR), INTERVAL 4 MONTH)
+        END <= LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH))
+        AND NOT EXISTS (
+           SELECT 1 FROM vacaciones v
            INNER JOIN fechas_vacaciones fv ON v.id_vacaciones = fv.id_vacaciones
-           WHERE YEAR(fv.fecha_inicio) = YEAR(CURDATE())
+           WHERE v.id_empleado = t.empleado_id
+             AND fv.fecha_inicio IS NOT NULL
+             AND YEAR(fv.fecha_inicio) = YEAR(CURDATE())
         )
+        AND NOT EXISTS (
+           SELECT 1 FROM vacaciones v2
+           WHERE v2.id_empleado = t.empleado_id
+             AND v2.id_status_vacaciones = 5
+        )
+      ORDER BY t.apellidos ASC, t.nombres ASC
     `)
     return rows
   }
@@ -82,7 +99,7 @@ export class VacacionesModel {
       INNER JOIN vacaciones v ON t.empleado_id = v.id_empleado
       INNER JOIN fechas_vacaciones fv ON v.id_vacaciones = fv.id_vacaciones
       WHERE t.estatus_id = 8
-        AND fv.fecha_fin >= CURDATE()
+        AND CURDATE() BETWEEN DATE_SUB(fv.fecha_fin, INTERVAL 2 DAY) AND fv.fecha_fin
       ORDER BY fv.fecha_fin ASC
     `)
     return rows
@@ -133,33 +150,43 @@ export class VacacionesModel {
              END AS fecha_tope,
              CASE WHEN t.estatus_id IN (8, 9) THEN 1 ELSE v.pagado END AS pagado,
              fv.id_fecha, fv.fecha_inicio, fv.fecha_fin, fv.observaciones,
-             ${tipoEmpleadoSQL('t')},
-             
-             -- LÓGICA DE ESTATUS CORREGIDA BASADA EN LA BD
-             CASE
-                WHEN v.id_status_vacaciones = 2 THEN 'de_vacaciones'
-                WHEN v.id_status_vacaciones = 4 OR t.estatus_id = 9 THEN 'reintegro'
-                WHEN v.id_status_vacaciones = 3 THEN 'finalizadas'
-                WHEN v.id_status_vacaciones = 1 THEN 'programadas'
-                -- Si no tiene un registro activo, validamos si tiene el derecho pendiente
-                WHEN (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) >= 1 AND DATEDIFF(
-                  CASE 
-                    WHEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH) >= CURDATE()
-                      THEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH)
-                    ELSE DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR), INTERVAL 4 MONTH)
-                  END, CURDATE()) BETWEEN 0 AND 30 
+      ${tipoEmpleadoSQL('t')},
+              
+              -- LÓGICA DE ESTATUS BASADA EN LA BD
+              CASE
+                 WHEN v.id_vacaciones IS NOT NULL AND v.id_status_vacaciones = 2 THEN 'de_vacaciones'
+                 WHEN v.id_vacaciones IS NOT NULL AND (v.id_status_vacaciones = 4 OR t.estatus_id = 9) THEN 'reintegro'
+                 WHEN v.id_vacaciones IS NOT NULL AND v.id_status_vacaciones = 3 THEN 'finalizadas'
+                 WHEN v.id_vacaciones IS NOT NULL AND v.id_status_vacaciones = 1 THEN 'programadas'
+                 WHEN v.id_vacaciones IS NOT NULL AND v.id_status_vacaciones = 5 THEN 'sin_vacaciones'
+                  -- Sin registro activo de vacaciones: validamos si fecha_tope está en el mes actual o el siguiente
+                  WHEN t.estatus_id IN (1, 8, 9)
+                    AND CASE
+                      WHEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH) >= CURDATE()
+                        THEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH)
+                      ELSE DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR), INTERVAL 4 MONTH)
+                    END >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+                    AND CASE
+                      WHEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH) >= CURDATE()
+                        THEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH)
+                      ELSE DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR), INTERVAL 4 MONTH)
+                    END <= LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH))
                   THEN 'por_derecho'
-                ELSE 'sin_vacaciones'
-             END AS estado_vacaciones,
-             DATEDIFF(
-               DATE_ADD(t.fecha_ingreso,
-                 INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) + CASE
-                   WHEN DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR) >= CURDATE()
-                   THEN 0 ELSE 1 END) YEAR),
-               CURDATE()
-             ) AS dias_para_derecho
+                 ELSE 'sin_vacaciones'
+              END AS estado_vacaciones,
+               DATEDIFF(
+                 CASE
+                   WHEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH) >= CURDATE()
+                     THEN DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso) - 1) YEAR), INTERVAL 4 MONTH)
+                   ELSE DATE_ADD(DATE_ADD(t.fecha_ingreso, INTERVAL (YEAR(CURDATE()) - YEAR(t.fecha_ingreso)) YEAR), INTERVAL 4 MONTH)
+                 END, CURDATE()) AS dias_para_derecho
       FROM empleados t
       ${joinLaboral('t')}
+      LEFT JOIN (
+        SELECT empleado_id, SUM(DATEDIFF(COALESCE(fecha_fin, CURDATE()), fecha_inicio) + 1) AS dias_externos
+        FROM registros_antiguedades
+        GROUP BY empleado_id
+      ) ext ON t.empleado_id = ext.empleado_id
       LEFT JOIN vacaciones v ON t.empleado_id = v.id_empleado
       LEFT JOIN status_vacaciones sv ON v.id_status_vacaciones = sv.id_status_vacaciones
       LEFT JOIN fechas_vacaciones fv ON v.id_vacaciones = fv.id_vacaciones AND fv.id_fecha = (
@@ -213,11 +240,11 @@ export class VacacionesModel {
 
   static async getVacacionesRecord(empleadoId) {
     const [rows] = await pool.query(
-      `SELECT v.*, fv.fecha_inicio, fv.fecha_fin, fv.observaciones
+      `SELECT v.*, fv.fecha_inicio, fv.fecha_fin, fv.dias_habiles, fv.observaciones
        FROM vacaciones v
-       LEFT JOIN fechas_vacaciones fv ON v.id_vacaciones = fv.id_vacaciones
+       LEFT JOIN fechas_vacaciones fv ON v.id_vacaciones = fv.id_vacaciones AND (fv.id_status_vacaciones != 4 OR fv.id_status_vacaciones IS NULL)
        WHERE v.id_empleado = ?
-       ORDER BY fv.id_fecha DESC
+       ORDER BY fv.fecha_fin DESC, fv.id_fecha DESC
        LIMIT 1`,
       [empleadoId]
     )
@@ -226,12 +253,23 @@ export class VacacionesModel {
 
   static async getHistorialVacaciones(empleadoId) {
     const [rows] = await pool.query(`
-      SELECT v.id_vacaciones, v.dias_acumulados, v.fecha_tope, v.pagado,
-             fv.id_fecha, fv.fecha_inicio, fv.fecha_fin, fv.observaciones
+      SELECT
+        v.id_vacaciones,
+        v.dias_acumulados,
+        v.fecha_tope,
+        fv.id_fecha,
+        fv.fecha_inicio,
+        fv.fecha_fin,
+        fv.dias_habiles,
+        fv.observaciones,
+        fv.id_status_vacaciones,
+        sv.descripcion AS nombre_status
       FROM vacaciones v
       INNER JOIN fechas_vacaciones fv ON v.id_vacaciones = fv.id_vacaciones
+      INNER JOIN status_vacaciones sv
+        ON fv.id_status_vacaciones = sv.id_status_vacaciones
       WHERE v.id_empleado = ?
-      ORDER BY fv.fecha_inicio DESC
+      ORDER BY fv.fecha_inicio ASC
     `, [empleadoId])
     return rows
   }
@@ -264,9 +302,16 @@ export class VacacionesModel {
 
   static async crearFechaVacacion(data) {
     const [result] = await pool.query(
-      `INSERT INTO fechas_vacaciones (id_vacaciones, fecha_inicio, fecha_fin, observaciones)
-       VALUES (?, ?, ?, ?)`,
-      [data.id_vacaciones, data.fecha_inicio, data.fecha_fin, data.observaciones || null]
+      `INSERT INTO fechas_vacaciones (id_vacaciones, fecha_inicio, fecha_fin, dias_habiles, id_status_vacaciones, observaciones)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        data.id_vacaciones,
+        data.fecha_inicio,
+        data.fecha_fin,
+        data.dias_habiles ?? null,
+        data.id_status_vacaciones ?? null,
+        data.observaciones ?? null
+      ]
     )
     return result.insertId
   }
@@ -317,7 +362,7 @@ export class VacacionesModel {
   static async getUltimaNomina(empleadoId) {
     const [rows] = await pool.query(`
       SELECT hs.historial_salario_id, hs.fecha_pago, hs.monto_neto, hs.monto_bruto
-      FROM historial_salarios hs
+      FROM historial_salarios_legacy hs
       WHERE hs.empleado_id = ?
       ORDER BY hs.fecha_pago DESC
       LIMIT 1
@@ -358,8 +403,8 @@ export class VacacionesModel {
       ${joinLaboral('t')}
       LEFT JOIN niveles_salariales_antiguos nsa ON c.nivel_salarial_antiguo_id = nsa.nivel_salarial_antiguo_id
       LEFT JOIN primas_profesionalizacion pp ON c.prima_profesional_id = pp.prima_profesional_id
-      LEFT JOIN historial_salarios hs ON hs.historial_salario_id = (
-        SELECT MAX(hs2.historial_salario_id) FROM historial_salarios hs2 WHERE hs2.empleado_id = t.empleado_id
+      LEFT JOIN historial_salarios_legacy hs ON hs.historial_salario_id = (
+        SELECT MAX(hs2.historial_salario_id) FROM historial_salarios_legacy hs2 WHERE hs2.empleado_id = t.empleado_id
       )
       WHERE t.empleado_id = ?
     `, [empleadoId])

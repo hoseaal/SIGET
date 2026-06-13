@@ -30,6 +30,7 @@ import { Bitacora } from "../pages/configuracion/bitacora.jsx";
 import { DashboardPage } from "../pages/DashboardPage";
 
 import { Usuarios } from "../pages/configuracion/usuarios"
+import { CatalogoInstituticiones } from "../pages/configuracion/CatalogoInstituticiones.jsx"
 
 const AppRoutes = () => {
     return (
@@ -60,6 +61,12 @@ const AppRoutes = () => {
             <Route path="/Configuracion/EstructuraOrganizacional" element={
                 <ProtectedRoute>
                     <EstructuraOrganizacional />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Configuracion/Instituciones" element={
+                <ProtectedRoute>
+                    <CatalogoInstituticiones />
                 </ProtectedRoute>
             } />
 

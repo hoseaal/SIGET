@@ -34,6 +34,7 @@ export const menuPermissions = {
 
     // Configuración General
     "/Configuracion/EstructuraOrganizacional": [3, 4, 5],
+    "/Configuracion/Instituciones": [3, 4, 5],
     "/Configuracion/TablaSalarios": [3, 4, 5],
     "/Configuracion/Cargos": [3, 4, 5],
     "/Configuracion/Vacaciones": [3, 4, 5],

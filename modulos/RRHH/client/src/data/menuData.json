@@ -119,6 +119,11 @@
                         "link": "/Configuracion/EstructuraOrganizacional"
                     },
                     {
+                        "text": "Catálogo de Instituciones",
+                        "available": true,
+                        "link": "/Configuracion/Instituciones"
+                    },
+                    {
                         "text": "Tablas de Salarios",
                         "available": true,
                         "link": "/Configuracion/TablaSalarios"

@@ -1,4 +1,7 @@
 import { NominaActivosModel } from '../models/nominaActivos.model.js';
+import { HistorialSalarioModel } from '../models/historialSalario.model.js';
+import { CajaAhorroModel } from '../models/cajaAhorro.model.js';
+import pool from '../utils/database.js';
 import { differenceInDays } from 'date-fns';
 
 export class NominaActivosService {
@@ -571,5 +574,126 @@ export class NominaActivosService {
     }
 
     return Array.from(empleadosMap.values());
+  }
+
+  // ─── Persistencia automática ──────────────────────────────────────────────
+
+  /**
+   * Persiste los resultados del cálculo de nómina en las tablas de historial
+   * salarial y caja de ahorro, garantizando:
+   *
+   * 1. IDEMPOTENCIA (Opción A - Reescritura segura):
+   *    Se usa ON DUPLICATE KEY UPDATE sobre la llave única compuesta
+   *    (empleado_id, quincena_no, mes, anio). Si el usuario presiona el botón
+   *    múltiples veces, el registro se SOBREESCRIBE con los montos más recientes,
+   *    evitando filas duplicadas o sumas acumulativas erróneas.
+   *
+   * 2. AISLAMIENTO ATÓMICO:
+   *    Cada empleado se procesa dentro de una transacción independiente.
+   *    Si falla la escritura en historial_salarios, se revierte también la de
+   *    caja_ahorro, y viceversa. Nunca quedan registros huérfanos.
+   *
+   * 3. CAJA DE AHORRO CONSOLIDADA:
+   *    Se suman algebraicamente el Aporte del Empleado (deducción) y el Aporte
+   *    del Patrono (aporte institucional) para reflejar el monto total depositado
+   *    en el período.
+   *
+   * @param {Array}  nominaResult  - Arreglo devuelto por generarNomina()
+   * @param {number} mes           - Mes (1-12)
+   * @param {number} anio          - Año
+   * @param {number} quincena      - 1 o 2
+   * @returns {Promise<{ historial: number, caja_ahorro: number, errores: number }>}
+   */
+  static async persistirNomina(nominaResult, mes, anio, quincena) {
+    let historialCount = 0;
+    let cajaCount = 0;
+    let errorCount = 0;
+
+    // Resolver empleado_id desde cédula para todos los registros (en paralelo)
+    const empleadosIds = await Promise.all(
+      nominaResult.map(async (item) => {
+        const cedula = item.empleado?.cedula;
+        if (!cedula) return null;
+        try {
+          const [rows] = await pool.query(
+            'SELECT empleado_id FROM empleados WHERE cedula = ? LIMIT 1',
+            [String(cedula)]
+          );
+          return rows?.[0]?.empleado_id || null;
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Procesar cada empleado en una transacción aislada.
+    // Por cada empleado se abre una transacción que cubre ambos UPSERTs:
+    //   historial_salarios + caja_ahorro.
+    // Si algo falla, se hace ROLLBACK y ningún registro queda huérfano.
+    // ─────────────────────────────────────────────────────────────────────────
+    for (let i = 0; i < nominaResult.length; i++) {
+      const empleado_id = empleadosIds[i];
+      if (!empleado_id) continue;
+
+      const item = nominaResult[i];
+
+      // ── Regla I: Totales del período ──────────────────────────────────────
+      const total_asignaciones = item.asignaciones?.total_asignaciones || 0;
+      const total_deducciones = item.deducciones?.total_deducciones || 0;
+      const salario_neto = item.salario_neto || 0;
+
+      // ── Regla II: Caja de Ahorro consolidada ──────────────────────────────
+      // Se aísla el Aporte del Empleado (deducción) y el Aporte del Patrono
+      // (aporte institucional/patronal). Ambos se suman algebraicamente para
+      // reflejar el monto total depositado en la caja de ahorro del período.
+      const cajaEmpleado = item.deducciones?.caja_ahorro || 0;
+      const cajaPatronal = item.deducciones?.caja_ahorro_patronal || 0;
+      const montoCaja = Number((cajaEmpleado + cajaPatronal).toFixed(2));
+
+      const connection = await pool.getConnection();
+      try {
+        await connection.beginTransaction();
+
+        // UPSERT en historial_salarios (idempotente por unique key compuesta)
+        await HistorialSalarioModel.upsert({
+          empleado_id,
+          quincena_no: quincena,
+          mes,
+          anio,
+          total_asignaciones,
+          total_deducciones,
+          salario_neto
+        }, connection); // ← misma conexión transaccional
+
+        // UPSERT en caja_ahorro — solo si hay monto consolidado > 0
+        if (montoCaja > 0) {
+          await CajaAhorroModel.upsert({
+            empleado_id,
+            quincena_no: quincena,
+            mes,
+            anio,
+            monto: montoCaja
+          }, connection); // ← misma conexión transaccional
+          cajaCount++;
+        }
+
+        // Confirmar ambas escrituras atómicamente
+        await connection.commit();
+        historialCount++;
+      } catch (err) {
+        // Revertir todo — ni historial_salarios ni caja_ahorro se persisten
+        await connection.rollback();
+        errorCount++;
+        console.error(
+          `[Persistencia] Error atómico para empleado ${empleado_id} ` +
+          `(Q${quincena}/${mes}/${anio}): ${err.message}`
+        );
+      } finally {
+        connection.release();
+      }
+    }
+
+    return { historial: historialCount, caja_ahorro: cajaCount, errores: errorCount };
   }
 }
