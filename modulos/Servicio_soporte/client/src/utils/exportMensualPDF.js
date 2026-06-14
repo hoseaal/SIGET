@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-export const exportMensualPDF = async (reportData, monthLabel, year) => {
+export const exportMensualPDF = async (reportData, monthLabel, year, actividadesExtra = '') => {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
 
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -42,9 +42,22 @@ export const exportMensualPDF = async (reportData, monthLabel, year) => {
         { align: 'center' }
     );
 
-    const tableStartY = margin + 65;
+    const headerBottomY = margin + 60;
 
-    // ── 3. Preparar Filas ────────────────────────────────────────────────────
+    // ── 3. Texto introductorio ───────────────────────────────────────────────
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const introText =
+        `En cuanto a las actividades del mes de ${monthLabel} de ${year} la División de Soporte Técnico, ` +
+        `adscrita a la Dirección General de la Contraloría del Estado Táchira, desarrolló las ` +
+        `siguientes actividades como se muestra en el cuadro adjunto:`;
+    const introLines = doc.splitTextToSize(introText, contentWidth);
+    doc.text(introLines, margin, headerBottomY + 16);
+    const introBlockHeight = introLines.length * 11;
+
+    const tableStartY = headerBottomY + 16 + introBlockHeight + 8;
+
+    // ── 4. Preparar Filas ────────────────────────────────────────────────────
     const bodyRows = reportData.data.map((row, i) => [
         i + 1,
         row.nombre,
@@ -142,6 +155,56 @@ export const exportMensualPDF = async (reportData, monthLabel, year) => {
     doc.text('TOTAL DE SERVICIOS DEL MES', margin + 10, currentY + 53);
     doc.text(grandTotal.toString(), margin + contentWidth - 20, currentY + 53, { align: 'right' });
 
-    // ── 6. Guardar ───────────────────────────────────────────────────────────
+    // ── 6. Texto de transición (antes de actividades extra) ────────────────
+    let transitionY = currentY + 80; // debajo del cuadro de resumen
+
+    // ── 7. Actividades Extra ─────────────────────────────────────────────────
+    if (actividadesExtra && actividadesExtra.trim()) {
+        const extraLines = actividadesExtra
+            .split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
+
+        if (extraLines.length > 0) {
+            // Texto de transición
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            const transitionText =
+                `Adicionalmente, la División de Soporte Técnico, realizó las siguientes actividades ` +
+                `no enmarcadas dentro del Plan Operativo Anual, pero que tienen relevancia para la ` +
+                `continuidad de la Gestión de la Dirección General:`;
+            const transitionWrapped = doc.splitTextToSize(transitionText, contentWidth);
+
+            if (transitionY > pageHeight - margin - 40) {
+                doc.addPage();
+                transitionY = margin + 20;
+            }
+            doc.text(transitionWrapped, margin, transitionY);
+            let extraY = transitionY + transitionWrapped.length * 11 + 8;
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.text('ACTIVIDADES ADICIONALES:', margin, extraY);
+            extraY += 14;
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+
+            extraLines.forEach((line, idx) => {
+                if (extraY > pageHeight - margin) {
+                    doc.addPage();
+                    extraY = margin + 20;
+                }
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8.5);
+                const bulletText = `${idx + 1}. ${line}`;
+                const wrapped = doc.splitTextToSize(bulletText, contentWidth - 10);
+                doc.text(wrapped, margin + 10, extraY);
+                extraY += wrapped.length * 12;
+            });
+        }
+    }
+
+    // ── 7. Guardar ───────────────────────────────────────────────────────────
     window.open(doc.output('bloburl'), '_blank');
 };

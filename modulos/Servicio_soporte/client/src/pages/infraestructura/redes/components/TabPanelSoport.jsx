@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import helpFetch from "../../../../utils/helpFetch";
+import { ConfirmModal } from "../../../../components/ConfirmModal";
 
 const schema = z.object({
     nroBien: z.string().min(1, "Ingrese el número de bien").max(50, "Máximo 50 caracteres"),
@@ -42,6 +43,12 @@ export const TabPanelSoport = () => {
         fetchDataList();
     }, []);
 
+    useEffect(() => {
+        const handler = () => fetchDataList();
+        window.addEventListener("dataChange", handler);
+        return () => window.removeEventListener("dataChange", handler);
+    }, []);
+
     const handleShowCreate = () => {
         reset({ nroBien: "", descripcion: "" });
         setModalAction('crear');
@@ -69,12 +76,13 @@ export const TabPanelSoport = () => {
 
             await helpFetch[method](url, { nro_bien: data.nroBien, descripcion: data.descripcion });
 
-            toast.success(`Panel de Soporte ${isEdit ? 'actualizado' : 'creado'} con éxito`);
+            toast.success(`Rack de Soporte ${isEdit ? 'actualizado' : 'creado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
+            window.dispatchEvent(new Event("dataChange"));
         } catch (error) {
             console.error(error);
-            toast.error(error.message || `Error guardando Panel de Soporte`);
+            toast.error(error.message || `Error guardando Rack de Soporte`);
         }
     };
 
@@ -82,9 +90,10 @@ export const TabPanelSoport = () => {
         try {
             const success = await helpFetch.DELETE(`/panel_soport/${currentId}`);
             if (!success) throw new Error("No se pudo eliminar");
-            toast.success(`Panel de Soporte eliminado con éxito`);
+            toast.success(`Rack de Soporte eliminado con éxito`);
             setDeleteModalVisible(false);
             fetchDataList();
+            window.dispatchEvent(new Event("dataChange"));
         } catch (error) {
             toast.error(error.message || `Error al eliminar Panel`);
         }
@@ -93,7 +102,7 @@ export const TabPanelSoport = () => {
     return (
         <div className="pt-3">
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <h6 className="mb-0">Listado de Patch Panels (Paneles de Soporte)</h6>
+                <h6 className="mb-0">Listado de Patch Panels (Rack de Soporte)</h6>
                 <Button variant="primary" size="sm" onClick={handleShowCreate}>
                     <i className="bx bx-plus me-1"></i> Registrar Panel
                 </Button>
@@ -144,7 +153,7 @@ export const TabPanelSoport = () => {
 
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
-                    <Modal.Title>{modalAction === 'crear' ? `Añadir Panel de Soporte` : `Editar Panel`}</Modal.Title>
+                    <Modal.Title>{modalAction === 'crear' ? `Añadir Rack de Soporte` : `Editar Rack de Soporte`}</Modal.Title>
                 </Modal.Header>
                 <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
@@ -182,24 +191,15 @@ export const TabPanelSoport = () => {
                 </Form>
             </Modal>
 
-            <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirmar Eliminación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar el panel con bien <strong>"{deleteItemLabel}"</strong>?
-                    <br/><br/>
-                    <small className="text-danger">Asegúrese de que no tenga puertos amarrados a él, o la eliminación fallará.</small>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>
-                        Cancelar
-                    </Button>
-                    <Button variant="danger" onClick={handleDelete}>
-                        Sí, Eliminar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            <ConfirmModal
+                show={deleteModalVisible}
+                onHide={() => setDeleteModalVisible(false)}
+                onConfirm={handleDelete}
+                title="Confirmar Eliminación"
+                message={<span>¿Estás seguro de que deseas eliminar el panel con bien <strong>"{deleteItemLabel}"</strong>?<br/><br/><small className="text-danger">Asegúrese de que no tenga puertos amarrados a él, o la eliminación fallará.</small></span>}
+                confirmText="Sí, Eliminar"
+                variant="danger"
+            />
         </div>
     );
 };

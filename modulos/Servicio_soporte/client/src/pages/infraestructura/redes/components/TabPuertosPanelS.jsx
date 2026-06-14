@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import helpFetch from "../../../../utils/helpFetch";
+import { ConfirmModal } from "../../../../components/ConfirmModal";
 
 const schema = z.object({
     panelSoportId: z.string().min(1, "Seleccione un panel"),
@@ -50,6 +51,12 @@ export const TabPuertosPanelS = () => {
         fetchDataList();
     }, []);
 
+    useEffect(() => {
+        const handler = () => fetchDataList();
+        window.addEventListener("dataChange", handler);
+        return () => window.removeEventListener("dataChange", handler);
+    }, []);
+
     const handleShowCreate = () => {
         reset({ panelSoportId: "", nroPuerto: "", pRouter: "" });
         setModalAction('crear');
@@ -88,6 +95,7 @@ export const TabPuertosPanelS = () => {
             toast.success(`Puerto ${isEdit ? 'actualizado' : 'registrado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
+            window.dispatchEvent(new Event("dataChange"));
         } catch (error) {
             console.error(error);
             toast.error(error.message || `Error guardando Puerto`);
@@ -101,6 +109,7 @@ export const TabPuertosPanelS = () => {
             toast.success(`Puerto eliminado con éxito`);
             setDeleteModalVisible(false);
             fetchDataList();
+            window.dispatchEvent(new Event("dataChange"));
         } catch (error) {
             toast.error(error.message || `Error al eliminar el puerto`);
         }
@@ -225,23 +234,15 @@ export const TabPuertosPanelS = () => {
                 </Form>
             </Modal>
 
-            <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirmar Eliminación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    ¿Estás seguro de que deseas desconectar y eliminar el puerto <strong>{deleteItemLabel}</strong>?
-                    Esta acción podría dejar huérfanas rosetas de pared.
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>
-                        Cancelar
-                    </Button>
-                    <Button variant="danger" onClick={handleDelete}>
-                        Sí, Eliminar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            <ConfirmModal
+                show={deleteModalVisible}
+                onHide={() => setDeleteModalVisible(false)}
+                onConfirm={handleDelete}
+                title="Confirmar Eliminación"
+                message={<span>¿Estás seguro de que deseas desconectar y eliminar el puerto <strong>{deleteItemLabel}</strong>?<br/><br/>Esta acción podría dejar huérfanas rosetas de pared.</span>}
+                confirmText="Sí, Eliminar"
+                variant="danger"
+            />
         </div>
     );
 };

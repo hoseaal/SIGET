@@ -4,6 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
 import { ModalEquipo } from "./components/ModalEquipo";
 import { ModalDetalleEquipo } from "./components/ModalDetalleEquipo";
+import { ConfirmModal } from "../../components/ConfirmModal";
 import { PaginationComponent } from "../../components/PaginationComponent";
 
 export const EquiposPage = () => {
@@ -21,6 +22,8 @@ export const EquiposPage = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalDetalleVisible, setModalDetalleVisible] = useState(false);
     const [selectedEquipo, setSelectedEquipo] = useState(null);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
@@ -78,15 +81,22 @@ export const EquiposPage = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("¿Está seguro de eliminar este equipo y todos sus detalles?")) return;
+        setDeleteTargetId(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDeleteEquipo = async () => {
         try {
-            const res = await helpFetch.DELETE(`/equipo/${id}`);
+            const res = await helpFetch.DELETE(`/equipo/${deleteTargetId}`);
             if (res) {
                 toast.success("Equipo eliminado correctamente");
                 fetchEquipos();
             }
         } catch (error) {
             toast.error(error.message || "Error al eliminar equipo");
+        } finally {
+            setShowConfirmModal(false);
+            setDeleteTargetId(null);
         }
     };
 
@@ -276,6 +286,16 @@ export const EquiposPage = () => {
                 show={modalDetalleVisible}
                 onHide={() => setModalDetalleVisible(false)}
                 equipo={selectedEquipo}
+            />
+
+            <ConfirmModal
+                show={showConfirmModal}
+                onHide={() => setShowConfirmModal(false)}
+                onConfirm={confirmDeleteEquipo}
+                title="Eliminar Equipo"
+                message="¿Está seguro de eliminar este equipo y todos sus detalles?"
+                confirmText="Sí, Eliminar"
+                variant="danger"
             />
         </div>
     );

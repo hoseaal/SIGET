@@ -37,6 +37,12 @@
                 "link": "/Infraestructura/Red"
             },
             {
+                "text": "Control de Red",
+                "icon": "bx bx-map-alt",
+                "available": true,
+                "link": "/Infraestructura/ControlRed"
+            },
+            {
                 "text": "Inventario de Equipos",
                 "icon": "bx bx-desktop",
                 "available": true,

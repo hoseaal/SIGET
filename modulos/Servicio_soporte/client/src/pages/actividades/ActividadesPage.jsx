@@ -5,6 +5,7 @@ import helpFetch from "../../utils/helpFetch";
 import { exportActividadesToExcel } from "../../utils/exportExcel";
 import { exportActividadesToPDF } from "../../utils/exportPDF";
 import { exportMensualPDF } from "../../utils/exportMensualPDF";
+import { exportMensualToExcel } from "../../utils/exportMensualExcel";
 import { RegistroActividadModal } from "./components/RegistroActividadModal";
 import { PaginationComponent } from "../../components/PaginationComponent";
 
@@ -65,6 +66,10 @@ export const ActividadesPage = () => {
     const [viewMode, setViewMode] = useState('semanal'); // 'semanal' o 'mensual'
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+    // Estado para actividades extra (reporte mensual)
+    const [actividadesExtra, setActividadesExtra] = useState('');
+    const [showExtraPanel, setShowExtraPanel] = useState(false);
 
     // Estado para paginación
     const [currentPage, setCurrentPage] = useState(1);
@@ -248,12 +253,26 @@ export const ActividadesPage = () => {
                                 </>
                             )}
                             {viewMode === 'mensual' && (
-                                <Button variant="danger" onClick={() => {
-                                    const monthLabels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-                                    exportMensualPDF(monthlyReport, monthLabels[selectedMonth], selectedYear);
-                                }}>
-                                    <i className="bx bxs-file-pdf me-1"></i> Exportar PDF
-                                </Button>
+                                <>
+                                    <Button
+                                        variant={showExtraPanel ? 'warning' : 'outline-warning'}
+                                        onClick={() => setShowExtraPanel(p => !p)}
+                                    >
+                                        <i className="bx bx-edit me-1"></i> Actividades Extra
+                                    </Button>
+                                    <Button className="btn-export-excel" onClick={() => {
+                                        const monthLabels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                                        exportMensualToExcel(monthlyReport, monthLabels[selectedMonth], selectedYear);
+                                    }}>
+                                        <i className="bx bxs-file-export me-1"></i> Exportar Excel
+                                    </Button>
+                                    <Button variant="danger" onClick={() => {
+                                        const monthLabels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                                        exportMensualPDF(monthlyReport, monthLabels[selectedMonth], selectedYear, actividadesExtra);
+                                    }}>
+                                        <i className="bx bxs-file-pdf me-1"></i> Exportar PDF
+                                    </Button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -500,6 +519,38 @@ export const ActividadesPage = () => {
                                     </Row>
                                 </Card.Body>
                             </Card>
+
+                            {/* Panel de Actividades Extra */}
+                            {showExtraPanel && (
+                                <Card className="mt-3 border border-warning shadow-sm">
+                                    <Card.Header className="bg-warning bg-opacity-10 d-flex justify-content-between align-items-center py-2">
+                                        <span className="fw-semibold">
+                                            <i className="bx bx-edit me-2 text-warning"></i>
+                                            Actividades Extra del Mes
+                                        </span>
+                                        <small className="text-muted">Estas actividades se anexarán al PDF debajo del cuadro de resumen</small>
+                                    </Card.Header>
+                                    <Card.Body className="p-3">
+                                        <Form.Control
+                                            as="textarea"
+                                            rows={6}
+                                            placeholder="Escriba aquí las actividades extra realizadas durante el mes. Cada línea será un ítem en el PDF..."
+                                            value={actividadesExtra}
+                                            onChange={(e) => setActividadesExtra(e.target.value)}
+                                            style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '0.9rem', lineHeight: '1.6' }}
+                                        />
+                                        <div className="d-flex justify-content-between align-items-center mt-2">
+                                            <small className="text-muted">
+                                                <i className="bx bx-info-circle me-1"></i>
+                                                Cada línea se mostrará como un punto separado en el documento PDF
+                                            </small>
+                                            <Button variant="outline-secondary" size="sm" onClick={() => setActividadesExtra('')}>
+                                                <i className="bx bx-trash me-1"></i> Limpiar
+                                            </Button>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            )}
                         </>
                     )}
                 </Card.Body>

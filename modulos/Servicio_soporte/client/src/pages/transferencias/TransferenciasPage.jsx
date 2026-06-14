@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup, Modal } from "react-bootstrap";
+import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
 import { TransferenciaModal } from "./components/TransferenciaModal";
 import { TransferenciaDetalleModal } from "./components/TransferenciaDetalleModal";
+import { ConfirmModal } from "../../components/ConfirmModal";
 import { PaginationComponent } from "../../components/PaginationComponent";
 
 export const TransferenciasPage = () => {
@@ -292,24 +293,15 @@ export const TransferenciasPage = () => {
                 transferencia={selectedTransfer}
             />
 
-            <Modal show={showDeleteModal} onHide={() => { setShowDeleteModal(false); setDeleteTarget(null); }} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirmar Eliminación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    ¿Está seguro de que desea eliminar la transferencia <strong>{deleteTarget?.nro_caso}</strong>?
-                    <br /><br />
-                    <span className="text-danger"><i className="bx bx-info-circle me-1"></i> Esta acción no se puede deshacer.</span>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }}>
-                        Cancelar
-                    </Button>
-                    <Button variant="danger" onClick={handleDeleteTransferencia}>
-                        <i className="bx bx-trash me-1"></i> Eliminar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            <ConfirmModal
+                show={showDeleteModal}
+                onHide={() => { setShowDeleteModal(false); setDeleteTarget(null); }}
+                onConfirm={handleDeleteTransferencia}
+                title="Confirmar Eliminación"
+                message={<span>¿Está seguro de que desea eliminar la transferencia <strong>{deleteTarget?.nro_caso}</strong>?<br /><br /><span className="text-danger"><i className="bx bx-info-circle me-1"></i> Esta acción no se puede deshacer.</span></span>}
+                confirmText="Eliminar"
+                variant="danger"
+            />
         </div>
     );
 };

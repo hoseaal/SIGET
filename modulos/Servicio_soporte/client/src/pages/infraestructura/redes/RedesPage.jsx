@@ -28,7 +28,7 @@ export const RedesPage = () => {
                             <Nav variant="pills" className="flex-column flex-sm-row mb-4 flex-wrap">
                                 <Nav.Item>
                                     <Nav.Link eventKey="panelsoport">
-                                        <i className="bx bx-server me-1"></i> Paneles de Soporte
+                                        <i className="bx bx-server me-1"></i> Rack de Soporte
                                     </Nav.Link>
                                 </Nav.Item>
                                 <Nav.Item>
@@ -38,7 +38,7 @@ export const RedesPage = () => {
                                 </Nav.Item>
                                 <Nav.Item>
                                     <Nav.Link eventKey="panel_pared">
-                                        <i className="bx bx-layer me-1"></i> Rosetas / Pared
+                                        <i className="bx bx-layer me-1"></i> Racks de Pared
                                     </Nav.Link>
                                 </Nav.Item>
                                 <Nav.Item>

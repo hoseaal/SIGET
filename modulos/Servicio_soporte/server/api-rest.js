@@ -22,8 +22,15 @@ import status from './src/routes/status.route.js'
 import transferencia from './src/routes/transferencia.route.js'
 import mantenimiento from './src/routes/mantenimiento.route.js'
 import dashboard from './src/routes/dashboard.route.js'
+import croquis from './src/routes/croquis.route.js'
+import puntos_red_posicion from './src/routes/puntos_red_posicion.route.js'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 import cookieParser from 'cookie-parser';
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 const app = express()
 
 app.use(express.json())
@@ -63,6 +70,9 @@ app.use('/api/status', status)
 app.use('/api/transferencia', transferencia)
 app.use('/api/mantenimiento', mantenimiento)
 app.use('/api/dashboard', dashboard)
+app.use('/api/croquis', croquis)
+app.use('/api/puntos_red_posicion', puntos_red_posicion)
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')))
 
 const PORT = 5002
 app.listen(PORT, () => {

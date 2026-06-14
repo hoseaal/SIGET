@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import helpFetch from "../../../../utils/helpFetch";
+import { ConfirmModal } from "../../../../components/ConfirmModal";
 
 const schema = z.object({
     pisoId: z.string().min(1, "Seleccione un piso"),
@@ -31,6 +32,14 @@ export const TabPanelPared = () => {
 
     const selectedPanelSoport = watch("selectedPanelSoport");
 
+    const occupiedPuertoIds = new Set(dataList.map(pp => String(pp.pp_soporte_id)));
+    if (modalAction === 'editar' && currentId) {
+        const currentItem = dataList.find(pp => String(pp.id) === String(currentId));
+        if (currentItem) {
+            occupiedPuertoIds.delete(String(currentItem.pp_soporte_id));
+        }
+    }
+
     const fetchDataList = async () => {
         try {
             setLoading(true);
@@ -55,6 +64,12 @@ export const TabPanelPared = () => {
 
     useEffect(() => {
         fetchDataList();
+    }, []);
+
+    useEffect(() => {
+        const handler = () => fetchDataList();
+        window.addEventListener("dataChange", handler);
+        return () => window.removeEventListener("dataChange", handler);
     }, []);
 
     const handleShowCreate = () => {
@@ -103,9 +118,10 @@ export const TabPanelPared = () => {
             toast.success(`Panel de pared ${isEdit ? 'actualizado' : 'registrado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
+            window.dispatchEvent(new Event("dataChange"));
         } catch (error) {
             console.error(error);
-            toast.error(error.message || `Error guardando Panel de Pared`);
+            toast.error(error.message || `Error guardando Rack de Pared`);
         }
     };
 
@@ -113,9 +129,10 @@ export const TabPanelPared = () => {
         try {
             const success = await helpFetch.DELETE(`/panel_pared/${currentId}`);
             if (!success) throw new Error("No se pudo eliminar");
-            toast.success(`Panel eliminado con éxito`);
+            toast.success(`Rack de Pared eliminado con éxito`);
             setDeleteModalVisible(false);
             fetchDataList();
+            window.dispatchEvent(new Event("dataChange"));
         } catch (error) {
             toast.error(error.message || `Error al eliminar el panel`);
         }
@@ -124,7 +141,7 @@ export const TabPanelPared = () => {
     return (
         <div className="pt-3">
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <h6 className="mb-0">Listado de Cajas / Paneles de Pared (Rosetas)</h6>
+                <h6 className="mb-0">Listado de Patch Panel</h6>
                 <Button variant="primary" size="sm" onClick={handleShowCreate}>
                     <i className="bx bx-plus me-1"></i> Registrar Panel
                 </Button>
@@ -158,7 +175,7 @@ export const TabPanelPared = () => {
                                 <td>{item.nombre_piso || 'Desconocido'}</td>
                                 <td>
                                     {item.puerto_servidor
-                                        ? `Puerto ${item.puerto_servidor} (Patch Panel)`
+                                        ? ` ${item.panel_soporte_nro_bien || 'N/A'} - Puerto ${item.puerto_servidor}`
                                         : <span className="text-muted">Sin enlace</span>}
                                 </td>
                                 <td className="text-end">
@@ -179,7 +196,7 @@ export const TabPanelPared = () => {
 
             <Modal show={modalVisible} onHide={() => setModalVisible(false)} centered backdrop="static">
                 <Modal.Header closeButton>
-                    <Modal.Title>{modalAction === 'crear' ? `Crear Panel de Pared` : `Editar Panel`}</Modal.Title>
+                    <Modal.Title>{modalAction === 'crear' ? `Crear Rack de Pared` : `Editar Rack de Pared`}</Modal.Title>
                 </Modal.Header>
                 <Form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Body>
@@ -229,12 +246,18 @@ export const TabPanelPared = () => {
                                         <option value="">2. Seleccionar Puerto...</option>
                                         {puertosPanel
                                             .filter(p => String(p.panel_soport_id) === String(selectedPanelSoport))
+                                            .filter(p => !occupiedPuertoIds.has(String(p.id)))
                                             .map(pp => (
                                                 <option key={pp.id} value={pp.id}>
                                                     Pto: {pp.nro_puerto}
                                                 </option>
                                             ))}
                                     </Form.Select>
+                                    {selectedPanelSoport && puertosPanel.filter(p => String(p.panel_soport_id) === String(selectedPanelSoport)).filter(p => !occupiedPuertoIds.has(String(p.id))).length === 0 && (
+                                        <Form.Text className="text-danger">
+                                            No hay puertos libres disponibles en este rack.
+                                        </Form.Text>
+                                    )}
                                     <Form.Control.Feedback type="invalid">{errors.ppSoporteId?.message}</Form.Control.Feedback>
                                 </Col>
                             </Row>
@@ -253,23 +276,15 @@ export const TabPanelPared = () => {
                 </Form>
             </Modal>
 
-            <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirmar Eliminación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    ¿Estás seguro de que deseas destruir este Panel de Pared?
-                    Todos los puertos finales (usuarios) en esta pared quedarán huérfanos.
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>
-                        Cancelar
-                    </Button>
-                    <Button variant="danger" onClick={handleDelete}>
-                        Sí, Eliminar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            <ConfirmModal
+                show={deleteModalVisible}
+                onHide={() => setDeleteModalVisible(false)}
+                onConfirm={handleDelete}
+                title="Confirmar Eliminación"
+                message={<span>¿Estás seguro de que deseas destruir este Rack de Pared?<br /><br />Todos los puertos finales (usuarios) en esta pared quedarán huérfanos.</span>}
+                confirmText="Sí, Eliminar"
+                variant="danger"
+            />
         </div>
     );
 };

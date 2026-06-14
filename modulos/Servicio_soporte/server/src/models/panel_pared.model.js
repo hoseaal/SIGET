@@ -4,10 +4,11 @@ export class PanelParedModel {
     static async getAll() {
         // Hacemos JOIN con piso y puertos_panel_s para dar información completa
         const [rows] = await pool.query(`
-            SELECT pp.*, p.nombre as nombre_piso, pps.nro_puerto as puerto_servidor
+            SELECT pp.*, p.nombre as nombre_piso, pps.nro_puerto as puerto_servidor, ps.nro_bien as panel_soporte_nro_bien, ps.descripcion as panel_soporte_descripcion
             FROM panel_pared pp
             JOIN piso p ON pp.piso = p.id
             LEFT JOIN puertos_panel_s pps ON pp.pp_soporte_id = pps.id
+            LEFT JOIN panel_soport ps ON pps.panel_soport_id = ps.id
         `)
         return rows
     }

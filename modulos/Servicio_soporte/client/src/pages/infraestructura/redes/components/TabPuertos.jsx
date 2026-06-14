@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import helpFetch from "../../../../utils/helpFetch";
+import { ConfirmModal } from "../../../../components/ConfirmModal";
 
 const schema = z.object({
     nroPuerto: z.string().min(1, "Ingrese el número de puerto").max(20, "Máximo 20 caracteres"),
@@ -49,6 +50,12 @@ export const TabPuertos = () => {
         fetchDataList();
     }, []);
 
+    useEffect(() => {
+        const handler = () => fetchDataList();
+        window.addEventListener("dataChange", handler);
+        return () => window.removeEventListener("dataChange", handler);
+    }, []);
+
     const handleShowCreate = () => {
         reset({ nroPuerto: "", panelId: "" });
         setModalAction('crear');
@@ -85,6 +92,7 @@ export const TabPuertos = () => {
             toast.success(`Puerto ${isEdit ? 'actualizado' : 'registrado'} con éxito`);
             setModalVisible(false);
             fetchDataList();
+            window.dispatchEvent(new Event("dataChange"));
         } catch (error) {
             console.error(error);
             toast.error(error.message || `Error guardando Puerto`);
@@ -98,6 +106,7 @@ export const TabPuertos = () => {
             toast.success(`Puerto eliminado con éxito`);
             setDeleteModalVisible(false);
             fetchDataList();
+            window.dispatchEvent(new Event("dataChange"));
         } catch (error) {
             toast.error(error.message || `Error al eliminar el puerto`);
         }
@@ -175,7 +184,7 @@ export const TabPuertos = () => {
                             <Form.Control.Feedback type="invalid">{errors.nroPuerto?.message}</Form.Control.Feedback>
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Seleccionar Caja/Roseta (Panel de Pared)</Form.Label>
+                            <Form.Label>Seleccionar Caja/Roseta (Rack de Pared)</Form.Label>
                             <Form.Select
                                 {...register("panelId")}
                                 isInvalid={!!errors.panelId}
@@ -201,22 +210,15 @@ export const TabPuertos = () => {
                 </Form>
             </Modal>
 
-            <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirmar Eliminación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar la etiqueta de puerto <strong>"{deleteItemLabel}"</strong>?
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>
-                        Cancelar
-                    </Button>
-                    <Button variant="danger" onClick={handleDelete}>
-                        Sí, Eliminar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            <ConfirmModal
+                show={deleteModalVisible}
+                onHide={() => setDeleteModalVisible(false)}
+                onConfirm={handleDelete}
+                title="Confirmar Eliminación"
+                message={`¿Estás seguro de que deseas eliminar la etiqueta de puerto "${deleteItemLabel}"?`}
+                confirmText="Sí, Eliminar"
+                variant="danger"
+            />
         </div>
     );
 };

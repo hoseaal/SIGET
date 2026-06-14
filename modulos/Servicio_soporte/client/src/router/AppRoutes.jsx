@@ -5,6 +5,7 @@ import { LoginPage } from "../pages/authentication/LoginPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { ConfiguracionPage } from "../pages/configuracion/ConfiguracionPage";
 import { RedesPage } from "../pages/infraestructura/redes/RedesPage";
+import { ControlRedPage } from "../pages/infraestructura/redes/ControlRedPage";
 import { EquiposPage } from "../pages/equipos/EquiposPage";
 import { TransferenciasPage } from "../pages/transferencias/TransferenciasPage";
 import { TransferenciaTecnicoPage } from "../pages/transferencias/TransferenciaTecnicoPage";
@@ -36,6 +37,12 @@ const AppRoutes = () => {
             <Route path="/Infraestructura/Red" element={
                 <ProtectedRoute allowedRoles={menuPermissions["/Infraestructura/Red"]}>
                     <RedesPage />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Infraestructura/ControlRed" element={
+                <ProtectedRoute allowedRoles={menuPermissions["/Infraestructura/ControlRed"]}>
+                    <ControlRedPage />
                 </ProtectedRoute>
             } />
 

@@ -18,6 +18,7 @@ export const menuPermissions = {
 
     // Infraestructura
     "/Infraestructura/Red": [1, 2],
+    "/Infraestructura/ControlRed": [1, 2],
 
     // Inventario
     "/Equipos": [1, 2],

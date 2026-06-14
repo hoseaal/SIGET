@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import helpFetch from "../../../utils/helpFetch";
+import { ConfirmModal } from "../../../components/ConfirmModal";
 
 const schema = z.object({
     nombre: z.string().min(1, "Ingrese el nombre del tóner").max(100, "Máximo 100 caracteres"),
@@ -251,22 +252,15 @@ export const TabTipoToner = () => {
                 </Form>
             </Modal>
 
-            <Modal show={deleteModalVisible} onHide={() => setDeleteModalVisible(false)} centered backdrop="static">
-                <Modal.Header closeButton>
-                    <Modal.Title>Confirmar Eliminación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    ¿Estás seguro de que deseas eliminar el tipo de tóner <strong>"{deleteItemLabel}"</strong>? Esta acción no se puede deshacer.
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setDeleteModalVisible(false)}>
-                        Cancelar
-                    </Button>
-                    <Button variant="danger" onClick={handleDelete}>
-                        Sí, Eliminar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+            <ConfirmModal
+                show={deleteModalVisible}
+                onHide={() => setDeleteModalVisible(false)}
+                onConfirm={handleDelete}
+                title="Confirmar Eliminación"
+                message={`¿Estás seguro de que deseas eliminar el tipo de tóner "${deleteItemLabel}"? Esta acción no se puede deshacer.`}
+                confirmText="Sí, Eliminar"
+                variant="danger"
+            />
         </div>
     );
 };

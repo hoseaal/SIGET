@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Table, Button, Form, Row, Col, Badge, Spinner, InputGroup } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import helpFetch from "../../utils/helpFetch";
+import { ConfirmModal } from "../../components/ConfirmModal";
 import { ModalUsuario } from "./components/ModalUsuario";
 
 export const UsuariosPage = () => {
@@ -17,6 +18,8 @@ export const UsuariosPage = () => {
     // Modal state
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedUsuario, setSelectedUsuario] = useState(null);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const fetchUsuarios = async () => {
         try {
@@ -60,15 +63,22 @@ export const UsuariosPage = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.")) return;
+        setDeleteTargetId(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDeleteUsuario = async () => {
         try {
-            const res = await helpFetch.DELETE(`/user/${id}`);
+            const res = await helpFetch.DELETE(`/user/${deleteTargetId}`);
             if (res) {
                 toast.success("Usuario eliminado correctamente");
                 fetchUsuarios();
             }
         } catch (error) {
             toast.error(error.message || "Error al eliminar usuario");
+        } finally {
+            setShowConfirmModal(false);
+            setDeleteTargetId(null);
         }
     };
 
@@ -213,6 +223,16 @@ export const UsuariosPage = () => {
                 onHide={() => setModalVisible(false)}
                 onSuccess={() => { setModalVisible(false); fetchUsuarios(); }}
                 usuario={selectedUsuario}
+            />
+
+            <ConfirmModal
+                show={showConfirmModal}
+                onHide={() => setShowConfirmModal(false)}
+                onConfirm={confirmDeleteUsuario}
+                title="Eliminar Usuario"
+                message="¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer."
+                confirmText="Sí, Eliminar"
+                variant="danger"
             />
         </div>
     );
