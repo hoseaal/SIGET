@@ -1,5 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Card, Row, Col } from "react-bootstrap";
+import { CajaAhorroChart } from "./Dashboard/charts/CajaAhorroChart";
+import { NominaResumenCard } from "./Dashboard/charts/NominaResumenCard";
+import { PadresChart } from "./Dashboard/charts/PadresChart";
+import { IngresosChart } from "./Dashboard/charts/IngresosChart";
 
 function AnimatedNumber({ value, decimals = 0, prefix = '' }) {
   const [display, setDisplay] = useState(0)
@@ -143,22 +147,19 @@ export const DashboardPage = () => {
             </Col>
           </div>
 
-          <div className="row g-3">
-            <Col xs={12}>
-              <Card className="shadow-sm">
-                <Card.Body className="py-3">
-                  <h6 className="text-muted mb-3"><i className="bx bx-wallet me-1"></i>Nómina del Mes</h6>
-                  <Row className="g-2">
-                    <Col md={4}><StatItem icon="bx bx-credit-card" label="Total Ingresos (Bruto)" value={n.total_bruto} decimals={2} prefix="Bs. " /></Col>
-                    <Col md={4}><StatItem icon="bx bx-minus-circle" label="Deducciones" value={n.total_deducciones} decimals={2} prefix="Bs. " /></Col>
-                    <Col md={4}><StatItem icon="bx bx-money" label="Neto a Pagar" value={n.total_neto} decimals={2} prefix="Bs. " /></Col>
-                  </Row>
-                </Card.Body>
-              </Card>
-            </Col>
-          </div>
+
         </>
       )}
+
+      <div className="row g-3 mb-4">
+        <Col md={6}><CajaAhorroChart /></Col>
+        <Col md={6}><NominaResumenCard /></Col>
+      </div>
+
+      <div className="row g-3">
+        <Col md={6}><PadresChart /></Col>
+        <Col md={6}><IngresosChart /></Col>
+      </div>
     </>
   );
 };

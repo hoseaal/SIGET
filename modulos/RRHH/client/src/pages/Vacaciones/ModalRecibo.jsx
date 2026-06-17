@@ -3,6 +3,8 @@ import { Modal, Button, Spinner } from 'react-bootstrap'
 import { formatDate, formatCurrency } from './utils/vacacionesUtils'
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
+import logoCet from '../../assets/logo-cet.png'
+import { getBase64FromUrl } from '../../utils/imageUtils'
 
 export const ModalRecibo = ({ empleadoId, reciboData, loading, onHide }) => {
   const show = empleadoId !== null
@@ -17,6 +19,14 @@ export const ModalRecibo = ({ empleadoId, reciboData, loading, onHide }) => {
     const ws = wb.addWorksheet('Recibo Vacacional', {
       pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
     })
+
+    // ── Logo ───────────────────────────────────────────────────────────────
+    try {
+      const logoData = await getBase64FromUrl(logoCet)
+      const clean = logoData.includes('base64,') ? logoData.split('base64,')[1] : logoData
+      const imageId = wb.addImage({ base64: clean, extension: 'png' })
+      ws.addImage(imageId, { tl: { col: 1.3, row: 0.1 }, ext: { width: 55, height: 55 } })
+    } catch (e) { console.error('Error al agregar logo:', e) }
 
     // ── Anchos de columnas (A=col1 … G=col7) ──────────────────────────────
     ws.columns = [
@@ -79,13 +89,13 @@ export const ModalRecibo = ({ empleadoId, reciboData, loading, onHide }) => {
     ws.getRow(1).height = 30
     mergeFill(1, 2, 6,
       'CONTRALORÍA DEL ESTADO TÁCHIRA — DIRECCIÓN DE RECURSOS HUMANOS',
-      headerFill, bold14White, center, outerBorder)
+      null, { name: 'Arial', bold: true, size: 14, color: { argb: 'FF000000' } }, center, null)
 
     // ── Fila 2 — Subtítulo ─────────────────────────────────────────────────
     ws.getRow(2).height = 18
     mergeFill(2, 2, 6,
       'RECIBO DE BONO VACACIONAL',
-      subHeaderFill, bold11White, center, { bottom: medium })
+      null, { name: 'Arial', bold: true, size: 11, color: { argb: 'FF000000' } }, center, null)
 
     // ── Fila 3 — espacio ──────────────────────────────────────────────────
     ws.getRow(3).height = 6
@@ -114,10 +124,11 @@ export const ModalRecibo = ({ empleadoId, reciboData, loading, onHide }) => {
     // ── Fila 7: Años en Administración Pública ────────────────────────────
     ws.getRow(7).height = 28
     setCell(7, 2, 'Años en Adm. Pública:', labelFill, bold10, left, allBorder)
-    setCell(7, 3, `Contraloría: ${e.anios_antiguedad ?? ''} año(s)`, null, norm9, left, allBorder)
+    const antStr = `${e.antiguedad_anios ?? e.anios_antiguedad ?? ''} año(s), ${e.antiguedad_meses ?? ''} mes(es), ${e.antiguedad_dias ?? ''} día(s)`
+    setCell(7, 3, `Contraloría: ${e.antiguedad_anios ?? e.anios_antiguedad ?? ''} año(s)`, null, norm9, left, allBorder)
     setCell(7, 4, 'Otros Org.:', labelFill, bold10, center, allBorder)
     setCell(7, 5, 'año(s) mes(es)', null, norm9, left, allBorder)
-    setCell(7, 6, `Total: ${e.anios_antiguedad ?? ''} año(s)`, null, { ...norm9, bold: true }, left, allBorder)
+    setCell(7, 6, `Total: ${antStr}`, null, { ...norm9, bold: true }, left, allBorder)
 
     // ── Fila 8: Días Hábiles ──────────────────────────────────────────────
     ws.getRow(8).height = 18
@@ -143,7 +154,7 @@ export const ModalRecibo = ({ empleadoId, reciboData, loading, onHide }) => {
 
     const dataRows = [
       ['Cédula de Identidad:', e.cedula || '-', 'Nombres y Apellidos:', `${e.nombres || ''} ${e.apellidos || ''}`],
-      ['Fecha de Ingreso:', formatDate(e.fecha_ingreso), 'Antigüedad:', `${e.anios_antiguedad ?? '-'} años`],
+      ['Fecha de Ingreso:', formatDate(e.fecha_ingreso), 'Antigüedad:', `${e.antiguedad_anios ?? e.anios_antiguedad ?? '-'} a, ${e.antiguedad_meses ?? '-'} m, ${e.antiguedad_dias ?? '-'} d`],
       ['Cuenta Bancaria:', e.nro_cuenta_bancaria || '-', 'Cargo ONAPRE:', e.cargo_onapre || '-'],
     ]
 
@@ -162,7 +173,7 @@ export const ModalRecibo = ({ empleadoId, reciboData, loading, onHide }) => {
 
     // ── Título CÁLCULO DE BONO VACACIONAL ─────────────────────────────────
     ws.getRow(r).height = 20
-    mergeFill(r, 2, 6, 'CÁLCULO DE BONO VACACIONAL', subHeaderFill, bold11White, center, outerBorder)
+    mergeFill(r, 2, 6, 'CÁLCULO DE BONO VACACIONAL', null, { name: 'Arial', bold: true, size: 11, color: { argb: 'FF000000' } }, center, null)
     r++
 
     // ── Cabecera tabla conceptos ───────────────────────────────────────────
@@ -309,7 +320,7 @@ export const ModalRecibo = ({ empleadoId, reciboData, loading, onHide }) => {
                   <tr><td className="fw-semibold bg-light">Nombres</td><td>{reciboData.empleado.nombres} {reciboData.empleado.apellidos}</td></tr>
                   <tr><td className="fw-semibold bg-light">Cargo CET</td><td>{reciboData.empleado.cargo_cet || '-'}</td></tr>
                   <tr><td className="fw-semibold bg-light">F. Ingreso</td><td>{formatDate(reciboData.empleado.fecha_ingreso)}</td></tr>
-                  <tr><td className="fw-semibold bg-light">Antigüedad</td><td>{reciboData.empleado.anios_antiguedad} años</td></tr>
+                  <tr><td className="fw-semibold bg-light">Antigüedad</td><td>{reciboData.empleado.antiguedad_anios ?? reciboData.empleado.anios_antiguedad ?? '-'} años, {reciboData.empleado.antiguedad_meses ?? '-'} meses, {reciboData.empleado.antiguedad_dias ?? '-'} días</td></tr>
                   <tr><td className="fw-semibold bg-light">Cuenta Bancaria</td><td>{reciboData.empleado.nro_cuenta_bancaria || '-'}</td></tr>
                 </tbody>
               </table>
@@ -346,4 +357,3 @@ export const ModalRecibo = ({ empleadoId, reciboData, loading, onHide }) => {
   )
 }
 
-export default ModalRecibo

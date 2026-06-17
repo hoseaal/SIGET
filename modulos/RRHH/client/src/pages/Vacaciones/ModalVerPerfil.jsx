@@ -50,6 +50,7 @@ export const ModalVerPerfil = ({ empleadoId, perfilData, loading, onHide }) => {
                       <tr><td className="fw-semibold bg-light">Cargo ONAPRE</td><td>{perfilData.datos_laborales.cargo_onapre || '-'}</td></tr>
                       <tr><td className="fw-semibold bg-light">Salario Base</td><td>{formatCurrency(perfilData.datos_laborales.salario_base)}</td></tr>
                       <tr><td className="fw-semibold bg-light">Fecha Ingreso</td><td>{formatDate(perfilData.datos_personales.fecha_ingreso)}</td></tr>
+                      <tr><td className="fw-semibold bg-light">Antigüedad</td><td>{perfilData.antiguedad?.anios ?? '-'} años, {perfilData.antiguedad?.meses ?? '-'} meses, {perfilData.antiguedad?.dias ?? '-'} días</td></tr>
                     </tbody>
                   </table>
                 </div>

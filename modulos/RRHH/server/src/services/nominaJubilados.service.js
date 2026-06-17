@@ -1,7 +1,9 @@
 /* eslint-disable camelcase */
 import { NominaJubiladosModel } from '../models/nominaJubilados.model.js'
+import { NominaPersistenceService } from './nominaPersistence.service.js'
 
 export class NominaJubiladosService {
+  static tipoPersonal = 'Jubilado'
   static async generarNomina(mes, anio, quincena) {
     const [jubilados, escalasAntiguedad] = await Promise.all([
       NominaJubiladosModel.getJubiladosData(),
@@ -82,5 +84,29 @@ export class NominaJubiladosService {
 
   static round(num) {
     return Math.round((num + Number.EPSILON) * 100) / 100
+  }
+
+  static normalizarRegistro(item) {
+    return {
+      empleado_id: item.empleado_id,
+      total_asignaciones: item.total_asignaciones,
+      total_deducciones: item.total_deducciones,
+      salario_neto: item.sueldo_neto,
+      monto_caja: Number((item.caja_ahorro_empleado || 0) + (item.caja_ahorro_patrono || 0)),
+      aporte_empleado: item.caja_ahorro_empleado || 0,
+      aporte_patrono: item.caja_ahorro_patrono || 0
+    }
+  }
+
+  static async persistirNomina(nominaResult, mes, anio, quincena) {
+    const registros = nominaResult.map(item => this.normalizarRegistro(item))
+
+    return NominaPersistenceService.persistir({
+      registros,
+      mes,
+      anio,
+      quincena_no: quincena,
+      tipo_personal: 'Jubilado'
+    })
   }
 }

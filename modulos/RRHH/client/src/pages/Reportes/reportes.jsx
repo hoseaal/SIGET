@@ -1,91 +1,88 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
-import ModalActaVerificacion from '../Modales/modalActaVerificacion'; // Asegúrate de que esta ruta sea correcta
-import { Container, Row, Col, Card, Button } from 'react-bootstrap'; // Importa los componentes de React-Bootstrap
-import ModalGenerarEtiquetas from '../Modales/modalGenerarEtiquetas';
+import { useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card } from 'react-bootstrap';
+
+const reportes = [
+  {
+    id: 1,
+    titulo: 'Caja de Ahorro',
+    descripcion: 'Reporte comparativo de aportes empleado vs patrono, con filtros por período y tipo de personal.',
+    icono: 'bx bx-wallet-alt',
+    ruta: '/Reportes/CajaAhorro',
+    color: 'primary',
+  },
+    {
+        id: 2,
+        titulo: 'Reporte de Pagos',
+        descripcion: 'Total de asignaciones, deducciones y neto a pagar por empleado con resúmenes globales del período.',
+        icono: 'bx bx-money',
+        ruta: '/Reportes/Pagos',
+        color: 'success',
+    },
+    {
+        id: 3,
+        titulo: 'Primas y Bonificaciones',
+        descripcion: 'Primas por empleado: transporte, hogares, hijos, alimentación, reconocimiento, jerarquía y profesionalización.',
+        icono: 'bx bx-gift',
+        ruta: '/Reportes/Primas',
+        color: 'warning',
+    },
+    {
+        id: 4,
+        titulo: 'Ingresos de Personal',
+        descripcion: 'Tendencia histórica de contrataciones e ingresos con detalle del personal incorporado.',
+        icono: 'bx bx-user-plus',
+        ruta: '/Reportes/Ingresos',
+        color: 'danger',
+    },
+  {
+    id: 5,
+    titulo: 'Resumen de Nómina',
+    descripcion: 'Resumen consolidado de nómina con totales por concepto y tipo de empleado.',
+    icono: 'bx bx-file',
+    ruta: '/Reportes/ResumenNomina',
+    color: 'info',
+  },
+  {
+    id: 6,
+    titulo: 'Empleados Padres',
+    descripcion: 'Empleados con hijos, segmentados por rango de edad. Ideal para planes del Día del Padre/Madre.',
+    icono: 'bx bx-heart',
+    ruta: '/Reportes/Padres',
+    color: 'danger',
+  },
+];
 
 export const Reportes = () => {
-    const [showVeriModal, setShowVeriModal] = useState(false);
-    const [showEtiquetasModal, setShowEtiquetasModal] = useState(false);
+  const navigate = useNavigate();
 
-    const handleOpenEtiquetasModal = () => setShowEtiquetasModal(true);
+  return (
+    <div className="container-xxl flex-grow-1 container-p-y">
+      <h4 className="fw-bold py-3 mb-4">
+        <span className="text-muted fw-light">Reportes /</span> Módulo de Reportes
+      </h4>
 
-    const handleCloseEtiquetasModal = () => setShowEtiquetasModal(false);
-
-    const handleOpenModal = () => setShowVeriModal(true);
-
-    const handleCloseModal = () => {
-        console.log("Cerrando modal...", showVeriModal);
-        setShowVeriModal(false);
-    };
-
-
-
-    return (
-        <Container fluid className="py-3"> {/* Contenedor fluido para ocupar todo el ancho */}
-            <Row className="mb-4">
-                <Col>
-                    <h4 className="py-3 mb-0"><span className="text-muted fw-light">Gestion de Archivos/ </span> Reportes</h4>
-                </Col>
-            </Row>
-            <Card className="shadow-sm"> {/* Tarjeta principal con sombra */}
-                <Card.Header as="h5" className="bg-light text-dark">
-                    Generación de Reportes
-                </Card.Header>
-                <Card.Body>
-
-                    <Row className="g-4"> {/* Fila para organizar las tarjetas de reportes con espaciado */}
-                        <Col md={6} lg={4}> {/* Columnas responsivas: 2 en mediano, 3 en grande */}
-                            <Card className="h-100 border-primary"> {/* Tarjeta para Acta de Verificación, destacada */}
-                                <Card.Body className="d-flex flex-column justify-content-between">
-                                    <Card.Title className="text-primary">Acta de Verificación</Card.Title>
-                                    <Card.Text>
-                                        Genera un acta detallada para la verificación de inventario de Cada Departamento
-                                    </Card.Text>
-                                    <Button
-                                        variant="primary"
-                                        size="lg"
-                                        onClick={handleOpenModal}
-                                        className="w-100 mt-auto" // Botón al final de la tarjeta
-                                    >
-                                        <i className="bx bxs-file-pdf me-2"></i> Generar Acta de Verificación
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                        <Col md={6} lg={4}>
-                            <Card className="h-100"> {/* Tarjeta para Etiquetas */}
-                                <Card.Body className="d-flex flex-column justify-content-between">
-                                    <Card.Title>Etiquetas de Inventario</Card.Title>
-                                    <Card.Text>
-                                        Imprime etiquetas de inventario para identificar los bienes muebles de forma rápida y eficiente.
-                                    </Card.Text>
-                                    <Button
-                                        variant="secondary"
-                                        size="lg"
-                                        // Aquí puedes añadir la función onClick para generar etiquetas
-                                        onClick={handleOpenEtiquetasModal}
-                                        className="w-100 mt-auto"
-                                    >
-                                        <i className="bx bxs-purchase-tag-alt me-2"></i> Generar Etiquetas
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-
-                    </Row>
-                </Card.Body>
+      <Row className="g-4">
+        {reportes.map((r) => (
+          <Col key={r.id} md={6} lg={3}>
+            <Card
+              className={`h-100 border-${r.color} shadow-sm reporte-card`}
+              style={{ cursor: 'pointer' }}
+              onClick={() => navigate(r.ruta)}
+              onMouseEnter={(e) => e.currentTarget.classList.add('shadow')}
+              onMouseLeave={(e) => e.currentTarget.classList.remove('shadow')}
+            >
+              <Card.Body className="d-flex flex-column text-center py-4">
+                <div className={`display-4 text-${r.color} mb-3`}>
+                  <i className={r.icono}></i>
+                </div>
+                <Card.Title className={`text-${r.color}`}>{r.titulo}</Card.Title>
+                <Card.Text className="text-muted small">{r.descripcion}</Card.Text>
+              </Card.Body>
             </Card>
-
-            <ModalActaVerificacion
-                show={showVeriModal}
-                handleClose={handleCloseModal}
-            />
-
-            <ModalGenerarEtiquetas
-                show={showEtiquetasModal}
-                handleClose={handleCloseEtiquetasModal}
-            />
-        </Container>
-    );
+          </Col>
+        ))}
+      </Row>
+    </div>
+  );
 };

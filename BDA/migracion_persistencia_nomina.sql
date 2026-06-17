@@ -1,3 +1,11 @@
+-- ─── LIMPIEZA DE LÓGICA ANTERIOR ──────────────────────────────────────
+-- Se eliminan los triggers de UPDATE porque la nueva estrategia usa
+-- INSERT directo (rechazando duplicados por unique key), no UPSERT.
+-- Los triggers de INSERT se conservan para validación de integridad.
+DROP TRIGGER IF EXISTS `before_update_historial_pagos`;
+DROP TRIGGER IF EXISTS `before_update_caja_ahorro`;
+
+-- ─── VALIDACIONES AL INSERTAR ─────────────────────────────────────────
 DELIMITER $$
 CREATE TRIGGER `before_insert_historial_pagos`
 BEFORE INSERT ON `historial_pagos`

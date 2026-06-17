@@ -10,6 +10,13 @@ import { Pensionados } from "../pages/empleados/Pensionados/Pensionados.jsx";
 import { Sobrevivientes } from "../pages/empleados/Sobrevivientes/Sobrevivientes.jsx";
 
 import { Reportes } from "../pages/Reportes/Reportes"
+import { ReporteCajaAhorro } from "../pages/Reportes/ReporteCajaAhorro"
+import { ReportePagos } from "../pages/Reportes/ReportePagos"
+import { ReporteIngresos } from "../pages/Reportes/ReporteIngresos"
+import { ReportePrimas } from "../pages/Reportes/ReportePrimas"
+import { ReporteResumenNomina } from "../pages/Reportes/ReporteResumenNomina"
+import { ReportePadres } from "../pages/Reportes/ReportePadres"
+import { ReportePlaceholder } from "../pages/Reportes/ReportePlaceholder"
 import { ObrerosFijos } from "../pages/empleados/ObrerosFijos/ObrerosFijos.jsx";
 import { NominaActivos } from "../pages/nomina/NominaActivos.jsx";
 import { NominaObreros } from "../pages/nomina/NominaObreros.jsx";
@@ -170,6 +177,42 @@ const AppRoutes = () => {
             <Route path="/Reportes" element={
                 <ProtectedRoute>
                     <Reportes />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/CajaAhorro" element={
+                <ProtectedRoute>
+                    <ReporteCajaAhorro />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/Pagos" element={
+                <ProtectedRoute>
+                    <ReportePagos />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/Primas" element={
+                <ProtectedRoute>
+                    <ReportePrimas />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/Ingresos" element={
+                <ProtectedRoute>
+                    <ReporteIngresos />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/ResumenNomina" element={
+                <ProtectedRoute>
+                    <ReporteResumenNomina />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/Padres" element={
+                <ProtectedRoute>
+                    <ReportePadres />
                 </ProtectedRoute>
             } />
 

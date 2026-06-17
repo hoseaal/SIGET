@@ -1,17 +1,25 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { downloadExcel, downloadExcelZip, generateExcelResumenMensual } from '../../utils/exportExcel.js';
 import { getBase64FromUrl } from '../../utils/imageUtils.js';
 import logoCet from '../../assets/logo-cet.png';
+import { useAuth } from '../../hooks/useAuth.js';
+
+const TIPO_PERSONAL = 'Funcionario';
+const ALLOWED_ROLES = [5, 6, 7]
 
 export const NominaActivos = () => {
+    const { rol_id } = useAuth()
     const [periodoNomina, setPeriodoNomina] = useState(null);
     const [tipoNomina, setTipoNomina] = useState('1');
     const [nominaData, setNominaData] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loadingCalcular, setLoadingCalcular] = useState(false);
+    const [loadingCerrar, setLoadingCerrar] = useState(false);
+    const [cierreExitoso, setCierreExitoso] = useState(false);
     const [periodoLoading, setPeriodoLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [cierreStatus, setCierreStatus] = useState({ q1: false, q2: false, unificada: false })
 
     const meses = [
         { id: 1, name: 'Enero' }, { id: 2, name: 'Febrero' }, { id: 3, name: 'Marzo' },
@@ -30,7 +38,7 @@ export const NominaActivos = () => {
         const loadPeriodoObjetivo = async () => {
             setPeriodoLoading(true);
             try {
-                const res = await fetch('/api/nomina-activos/periodo-objetivo', {
+                const res = await fetch('/api/nomina/periodo-objetivo', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -52,59 +60,90 @@ export const NominaActivos = () => {
         loadPeriodoObjetivo();
     }, []);
 
-    const processNomina = async () => {
-        setLoading(true);
+    const verificarCierre = useCallback(async (mes, anio) => {
+        if (!mes || !anio) return
+        try {
+            const [resQ1, resQ2] = await Promise.all([
+                fetch(`/api/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=1&tipo_personal=${TIPO_PERSONAL}`),
+                fetch(`/api/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=2&tipo_personal=${TIPO_PERSONAL}`)
+            ])
+            const dataQ1 = await resQ1.json()
+            const dataQ2 = await resQ2.json()
+            const q1Closed = dataQ1.ok ? dataQ1.data.isClosed : false
+            const q2Closed = dataQ2.ok ? dataQ2.data.isClosed : false
+            setCierreStatus({
+                q1: q1Closed,
+                q2: q2Closed,
+                unificada: q1Closed || q2Closed
+            })
+        } catch (error) {
+            console.error('Error al verificar cierre:', error)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (periodoNomina?.mes && periodoNomina?.anio) {
+            verificarCierre(periodoNomina.mes, periodoNomina.anio)
+        }
+    }, [periodoNomina, verificarCierre])
+
+    const isProcessingRef = useRef(false);
+
+    const handleCalcular = async () => {
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+        setLoadingCalcular(true);
         setNominaData([]);
         try {
-            if (quincena === 'unificada') {
-                const url1 = new URL('/api/nomina-activos/procesar', window.location.origin);
-                url1.searchParams.append('mes', mes);
-                url1.searchParams.append('anio', anio);
-                url1.searchParams.append('quincena', 1);
-
-                const url2 = new URL('/api/nomina-activos/procesar', window.location.origin);
-                url2.searchParams.append('mes', mes);
-                url2.searchParams.append('anio', anio);
-                url2.searchParams.append('quincena', 2);
-
-                const [res1, res2] = await Promise.all([
-                    fetch(url1, { method: 'GET', headers: { 'Content-Type': 'application/json' } }),
-                    fetch(url2, { method: 'GET', headers: { 'Content-Type': 'application/json' } })
-                ]);
-
-                const data1 = await res1.json();
-                const data2 = await res2.json();
-
-                if (data1.ok && data2.ok) {
-                    setNominaData({ isUnificada: true, q1: data1.datos, q2: data2.datos });
-                    toast.success('Nómina unificada procesada correctamente.');
-                } else {
-                    toast.error('Error procesando la nómina unificada.');
-                }
+            const res = await fetch('/api/nomina/calcular-en-caliente', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo_personal: TIPO_PERSONAL, quincena: tipoNomina })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                setNominaData(data.datos);
+                toast.success('Nómina calculada correctamente (en caliente).');
             } else {
-                const url = new URL('/api/nomina-activos/procesar', window.location.origin);
-                url.searchParams.append('mes', mes);
-                url.searchParams.append('anio', anio);
-                url.searchParams.append('quincena', quincena);
-
-                const res = await fetch(url, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const data = await res.json();
-
-                if (data.ok) {
-                    setNominaData(data.datos);
-                    toast.success('Nómina procesada correctamente.');
-                } else {
-                    toast.error(data.message || 'Error procesando la nómina.');
-                }
+                toast.error(data.message || 'Error al calcular la nómina.');
             }
         } catch (error) {
             console.error(error);
-            toast.error('Error de servidor al procesar nómina.');
+            toast.error('Error de servidor al calcular nómina.');
         } finally {
-            setLoading(false);
+            setLoadingCalcular(false);
+            isProcessingRef.current = false;
+        }
+    };
+
+    const handleCerrar = async () => {
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+        setLoadingCerrar(true);
+        const quincenaKey = tipoNomina === 'unificada' ? 'unificada' : `q${tipoNomina}`
+        setCierreStatus(prev => ({ ...prev, [quincenaKey]: true }))
+        try {
+            const res = await fetch('/api/nomina/guardar-cierre', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo_personal: TIPO_PERSONAL, quincena: tipoNomina, mes, anio })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                setCierreExitoso(true);
+                await verificarCierre(mes, anio)
+                toast.success('Nómina cerrada y guardada correctamente.');
+            } else {
+                setCierreStatus(prev => ({ ...prev, [quincenaKey]: false }))
+                toast.error(data.message || 'Error al cerrar la nómina.');
+            }
+        } catch (error) {
+            setCierreStatus(prev => ({ ...prev, [quincenaKey]: false }))
+            console.error(error);
+            toast.error('Error de servidor al cerrar nómina.');
+        } finally {
+            setLoadingCerrar(false);
+            isProcessingRef.current = false;
         }
     };
 
@@ -340,24 +379,39 @@ export const NominaActivos = () => {
                         </div>
                         <div className="col-md-3">
                             <label className="form-label">Tipo de Nómina</label>
-                            <select className="form-select" value={quincena} onChange={e => setQuincena(e.target.value)}>
+                            <select className="form-select" value={quincena} onChange={e => { setQuincena(e.target.value); setCierreExitoso(false); if (mes && anio) verificarCierre(mes, anio); }}>
                                 <option value={1}>Primera Quincena (1)</option>
                                 <option value={2}>Segunda Quincena (2)</option>
                                 <option value="unificada">Nómina Unificada (Mensual)</option>
                             </select>
                         </div>
-                        <div className="col-md-3 d-flex align-items-end">
+                        <div className="col-md-3 d-flex align-items-end gap-2">
                             <button
-                                className="btn btn-primary w-100"
-                                onClick={processNomina}
-                                disabled={loading || periodoLoading || !periodoNomina}
+                                className="btn btn-primary flex-fill"
+                                onClick={handleCalcular}
+                                disabled={loadingCalcular || periodoLoading || !periodoNomina}
                             >
-                                {loading ? (
-                                    <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Procesando...</>
+                                {loadingCalcular ? (
+                                    <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Calculando...</>
                                 ) : (
-                                    <><i className="bx bx-calculator me-1"></i> Calcular Nómina</>
+                                    <><i className="bx bx-calculator me-1"></i> Calcular Nómina (En Caliente)</>
                                 )}
                             </button>
+                            {ALLOWED_ROLES.includes(rol_id) ? (
+                                <button
+                                    className="btn btn-success flex-fill"
+                                    onClick={handleCerrar}
+                                    disabled={loadingCerrar || cierreStatus[quincena === 'unificada' ? 'unificada' : `q${quincena}`] || loadingCalcular}
+                                >
+                                    {loadingCerrar ? (
+                                        <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Cerrando...</>
+                                    ) : cierreStatus[quincena === 'unificada' ? 'unificada' : `q${quincena}`] ? (
+                                        <><i className="bx bx-check-shield me-1"></i> Período Ya Cerrado en BD</>
+                                    ) : (
+                                        <><i className="bx bx-save me-1"></i> Cerrar y Guardar Nómina</>
+                                    )}
+                                </button>
+                            ) : null}
                         </div>
                     </div>
                 </div>

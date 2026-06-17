@@ -327,6 +327,31 @@ export class VacacionesModel {
     return result.affectedRows > 0
   }
 
+  static async getDatosAntiguedadTotal(empleadoId) {
+    const [rows] = await pool.query(`
+      SELECT t.fecha_ingreso,
+             ra.antiguedad_id, ra.fecha_inicio AS ext_fecha_inicio, ra.fecha_fin AS ext_fecha_fin
+      FROM empleados t
+      LEFT JOIN registros_antiguedades ra ON t.empleado_id = ra.empleado_id
+      WHERE t.empleado_id = ?
+    `, [empleadoId])
+
+    if (!rows.length) return null
+
+    const registrosExternos = rows
+      .filter(r => r.antiguedad_id !== null)
+      .map(r => ({
+        antiguedad_id: r.antiguedad_id,
+        fecha_inicio: r.ext_fecha_inicio,
+        fecha_fin: r.ext_fecha_fin
+      }))
+
+    return {
+      fecha_ingreso: rows[0].fecha_ingreso,
+      registros_externos: registrosExternos
+    }
+  }
+
   static async getAntiguedadEmpleado(empleadoId, fechaRef = null) {
     const refParam = fechaRef || null
     const [rows] = await pool.query(`
@@ -351,7 +376,7 @@ export class VacacionesModel {
       ${joinLaboral('t')}
       WHERE t.empleado_id = ?
     `, [empleadoId])
-    
+
     if (!rows[0]) return null
     return {
       tipo_personal: rows[0].tipo_empleado === 'obrero' ? 'OBRERO' : 'FUNCIONARIO',
@@ -362,7 +387,7 @@ export class VacacionesModel {
   static async getUltimaNomina(empleadoId) {
     const [rows] = await pool.query(`
       SELECT hs.historial_salario_id, hs.fecha_pago, hs.monto_neto, hs.monto_bruto
-      FROM historial_salarios_legacy hs
+      FROM historial_salarios hs
       WHERE hs.empleado_id = ?
       ORDER BY hs.fecha_pago DESC
       LIMIT 1
@@ -398,13 +423,13 @@ export class VacacionesModel {
              ona.nombre AS cargo_onapre_nombre,
              COALESCE(ns.salario_base, 0) AS salario_base,
              COALESCE(pp.porcentaje_actual, 0) AS porcentaje_profesionalizacion,
-             hs.monto_bruto, hs.monto_neto, hs.fecha_pago
+             hs.monto_neto, hs.fecha
       FROM empleados t
       ${joinLaboral('t')}
       LEFT JOIN niveles_salariales_antiguos nsa ON c.nivel_salarial_antiguo_id = nsa.nivel_salarial_antiguo_id
       LEFT JOIN primas_profesionalizacion pp ON c.prima_profesional_id = pp.prima_profesional_id
-      LEFT JOIN historial_salarios_legacy hs ON hs.historial_salario_id = (
-        SELECT MAX(hs2.historial_salario_id) FROM historial_salarios_legacy hs2 WHERE hs2.empleado_id = t.empleado_id
+      LEFT JOIN historial_salarios hs ON hs.id_historial = (
+        SELECT MAX(hs2.id_historial) FROM historial_salarios hs2 WHERE hs2.empleado_id = t.empleado_id
       )
       WHERE t.empleado_id = ?
     `, [empleadoId])

@@ -1,7 +1,9 @@
 /* eslint-disable camelcase */
 import { NominaSobrevivientesModel } from '../models/nominaSobrevivientes.model.js'
+import { NominaPersistenceService } from './nominaPersistence.service.js'
 
 export class NominaSobrevivientesService {
+  static tipoPersonal = 'Sobreviviente'
   static async generarNomina(mes, anio, quincena) {
     const sobrevivientes = await NominaSobrevivientesModel.getSobrevivientesData()
 
@@ -28,6 +30,7 @@ export class NominaSobrevivientesService {
 
       return {
         id_sobreviviente: sob.id_sobreviviente,
+        empleado_id: sob.empleado_id,
         familiar_cedula: sob.familiar_cedula,
         familiar_nombre_completo: `${sob.familiar_nombres} ${sob.familiar_apellidos}`,
         empleado_cedula: sob.empleado_cedula,
@@ -48,5 +51,26 @@ export class NominaSobrevivientesService {
 
   static round(num) {
     return Math.round((num + Number.EPSILON) * 100) / 100
+  }
+
+  static normalizarRegistro(item) {
+    return {
+      empleado_id: item.empleado_id,
+      total_asignaciones: item.total_asignaciones,
+      total_deducciones: item.total_deducciones,
+      salario_neto: item.neto_a_cobrar
+    }
+  }
+
+  static async persistirNomina(nominaResult, mes, anio, quincena) {
+    const registros = nominaResult.map(item => this.normalizarRegistro(item))
+
+    return NominaPersistenceService.persistir({
+      registros,
+      mes,
+      anio,
+      quincena_no: quincena,
+      tipo_personal: 'Sobreviviente'
+    })
   }
 }

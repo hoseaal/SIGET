@@ -15,6 +15,16 @@ export class CajaAhorroService {
     return await CajaAhorroModel.getTotalByPeriodo(mes, anio, quincena_no);
   }
 
+  static async obtenerReporte({ mes, anio, quincena_no, tipo_personal }) {
+    if (!mes || !anio) throw new Error('Mes y año son requeridos');
+    return await CajaAhorroModel.getReporte({
+      mes: Number(mes),
+      anio: Number(anio),
+      quincena_no: quincena_no ? Number(quincena_no) : null,
+      tipo_personal: tipo_personal || null,
+    });
+  }
+
   static async eliminar(id_caja) {
     const eliminado = await CajaAhorroModel.delete(id_caja);
     if (!eliminado) throw new Error('Registro de caja de ahorro no encontrado');

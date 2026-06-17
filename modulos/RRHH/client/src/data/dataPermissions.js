@@ -43,6 +43,14 @@ export const menuPermissions = {
     "/Configuracion/NuevoUsuario": [5],
     "/Configuracion/Usuarios": [5],
     "/Configuracion/Bitacora": [4, 5],
+
+    // Reportes
+    "/Reportes/CajaAhorro": [1, 2, 3, 4, 5],
+    "/Reportes/Pagos": [1, 2, 3, 4, 5],
+    "/Reportes/Primas": [1, 2, 3, 4, 5],
+    "/Reportes/Ingresos": [1, 2, 3, 4, 5],
+    "/Reportes/ResumenNomina": [1, 2, 3, 4, 5],
+    "/Reportes/Padres": [1, 2, 3, 4, 5],
 };
 
 // src/data/permissions.js

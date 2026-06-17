@@ -180,7 +180,7 @@ export const ModalRegistroVacaciones = ({ show, onHide, tipoEmpleado, onSuccess,
                     <p className="mb-0"><strong>Dependencia:</strong> {selectedEmp.dependencia_nombre || '-'}</p>
                   </div>
                   <div className="col-md-6">
-                    <p className="mb-1"><strong>Antigüedad:</strong> {simulacion?.anios_antiguedad ?? '-'} años</p>
+                    <p className="mb-1"><strong>Antigüedad:</strong> {simulacion?.antiguedad_anios ?? '-'} años, {simulacion?.antiguedad_meses ?? '-'} meses, {simulacion?.antiguedad_dias ?? '-'} días</p>
                     <p className="mb-1"><strong>Clasificación:</strong> {simulacion?.tipo_empleado === 'obrero' ? 'Obrero' : 'Funcionario'}</p>
                     <p className="mb-0"><strong>Días por ley:</strong> {simulacion?.dias_disfrute_ley ?? '-'} días</p>
                   </div>
@@ -260,7 +260,8 @@ export const ModalRegistroVacaciones = ({ show, onHide, tipoEmpleado, onSuccess,
                   <div className="row text-center mb-3">
                     <div className="col-4 border-end">
                       <div className="text-muted mb-1" style={{ fontSize: '0.85rem' }}>Antigüedad</div>
-                      <h5 className="mb-0 text-primary">{simulacion.anios_antiguedad} <small>años</small></h5>
+                      <h5 className="mb-0 text-primary">{simulacion.antiguedad_anios ?? simulacion.anios_antiguedad ?? '-'} <small>años</small></h5>
+                      <small className="text-muted">{simulacion.antiguedad_meses ?? '-'}m {simulacion.antiguedad_dias ?? '-'}d</small>
                     </div>
                     <div className="col-4 border-end">
                       <div className="text-muted mb-1" style={{ fontSize: '0.85rem' }}>Días Base</div>
@@ -333,7 +334,7 @@ export const ModalRegistroVacaciones = ({ show, onHide, tipoEmpleado, onSuccess,
                 <div className="col-md-6">
                   <p className="mb-1"><strong>Empleado:</strong> {simulacion.nombres} {simulacion.apellidos}</p>
                   <p className="mb-1"><strong>Reincorporación:</strong> {formatDate(simulacion.fecha_reincorporacion)}</p>
-                  <p className="mb-0"><strong>Antigüedad:</strong> {simulacion.anios_antiguedad} años</p>
+                  <p className="mb-0"><strong>Antigüedad:</strong> {simulacion.antiguedad_anios ?? simulacion.anios_antiguedad ?? '-'} años, {simulacion.antiguedad_meses ?? '-'} meses, {simulacion.antiguedad_dias ?? '-'} días</p>
                 </div>
                 <div className="col-md-6">
                   <p className="mb-1"><strong>Salario diario:</strong> {formatCurrency(simulacion.salario_diario)}</p>

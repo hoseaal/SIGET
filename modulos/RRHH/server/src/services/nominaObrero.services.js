@@ -1,7 +1,9 @@
 import { NominaObrerosModel } from '../models/nominaObreros.model.js';
+import { NominaPersistenceService } from './nominaPersistence.service.js';
 import { differenceInDays } from 'date-fns';
 
 export class NominaObreroService {
+  static tipoPersonal = 'Obrero Fijo'
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -229,4 +231,28 @@ export class NominaObreroService {
 
         return nominaResult;
     }
+
+  static normalizarRegistro(item) {
+    return {
+      cedula: item.empleado?.cedula,
+      total_asignaciones: item.asignaciones?.total_asignaciones,
+      total_deducciones: item.deducciones?.total_deducciones,
+      salario_neto: item.salario_neto,
+      monto_caja: Number((item.deducciones?.caja_ahorro || 0) + (item.deducciones?.caja_ahorro_patronal || 0)),
+      aporte_empleado: item.deducciones?.caja_ahorro || 0,
+      aporte_patrono: item.deducciones?.caja_ahorro_patronal || 0
+    }
+  }
+
+  static async persistirNomina(nominaResult, mes, anio, quincena) {
+    const registros = nominaResult.map(item => this.normalizarRegistro(item))
+
+    return NominaPersistenceService.persistir({
+      registros,
+      mes,
+      anio,
+      quincena_no: quincena,
+      tipo_personal: 'Obrero Fijo'
+    })
+  }
 }

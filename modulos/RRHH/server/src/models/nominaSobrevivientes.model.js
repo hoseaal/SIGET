@@ -9,6 +9,7 @@ export class NominaSobrevivientesModel {
     const sql = `
       SELECT 
         s.id_sobreviviente,
+        s.empleado_id,
         nf.cedula AS familiar_cedula,
         nf.nombres AS familiar_nombres,
         nf.apellidos AS familiar_apellidos,

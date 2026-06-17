@@ -41,6 +41,21 @@ export class CajaAhorroController {
     }
   }
 
+  static async reporteCajaAhorro(req, res) {
+    try {
+      const { mes, anio, quincena_no, tipo_personal } = req.query;
+      if (!mes || !anio) {
+        return res.status(400).json({ ok: false, error: 'mes y anio son requeridos' });
+      }
+      const resultado = await CajaAhorroService.obtenerReporte({
+        mes, anio, quincena_no, tipo_personal
+      });
+      res.json({ ok: true, ...resultado });
+    } catch (error) {
+      res.status(400).json({ ok: false, error: error.message });
+    }
+  }
+
   static async eliminar(req, res) {
     try {
       const { id_caja } = req.params;

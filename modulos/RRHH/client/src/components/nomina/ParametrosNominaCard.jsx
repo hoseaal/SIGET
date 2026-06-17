@@ -1,16 +1,27 @@
 import React from 'react'
 import { MESES_NOMINA } from '../../hooks/usePeriodoNomina.js'
 
+const ALLOWED_ROLES = [5, 6, 7]
+
 export function ParametrosNominaCard({
   mes,
   anio,
   tipoNomina,
   onTipoNominaChange,
-  onProcesar,
-  loading,
+  onCalcular,
+  onCerrar,
+  loadingCalcular,
+  loadingCerrar,
   periodoLoading,
-  periodoDisponible
+  periodoDisponible,
+  cierreExitoso,
+  userRolId,
+  cierreStatus
 }) {
+  const puedeCerrar = ALLOWED_ROLES.includes(userRolId)
+  const quincenaKey = tipoNomina === 'unificada' ? 'unificada' : `q${tipoNomina}`
+  const yaCerrado = cierreStatus?.[quincenaKey] ?? cierreExitoso
+
   return (
     <div className="card mb-4">
       <div className="card-header border-bottom">
@@ -35,23 +46,38 @@ export function ParametrosNominaCard({
           <div className="col-md-3">
             <label className="form-label">Tipo de Nómina</label>
             <select className="form-select" value={tipoNomina} onChange={event => onTipoNominaChange(event.target.value)}>
-              <option value={1}>Primera Quincena (1)</option>
-              <option value={2}>Segunda Quincena (2)</option>
+              <option value="1">Primera Quincena (1)</option>
+              <option value="2">Segunda Quincena (2)</option>
               <option value="unificada">Nómina Unificada (Mensual)</option>
             </select>
           </div>
-          <div className="col-md-3 d-flex align-items-end">
+          <div className="col-md-3 d-flex align-items-end gap-2">
             <button
-              className="btn btn-primary w-100"
-              onClick={onProcesar}
-              disabled={loading || periodoLoading || !periodoDisponible}
+              className="btn btn-primary flex-fill"
+              onClick={onCalcular}
+              disabled={loadingCalcular || periodoLoading || !periodoDisponible}
             >
-              {loading ? (
-                <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Procesando...</>
+              {loadingCalcular ? (
+                <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Calculando...</>
               ) : (
-                <><i className="bx bx-calculator me-1"></i> Calcular Nómina</>
+                <><i className="bx bx-calculator me-1"></i> Calcular Nómina (En Caliente)</>
               )}
             </button>
+            {puedeCerrar ? (
+              <button
+                className="btn btn-success flex-fill"
+                onClick={onCerrar}
+                disabled={loadingCerrar || yaCerrado || loadingCalcular}
+              >
+                {loadingCerrar ? (
+                  <><span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Cerrando...</>
+                ) : yaCerrado ? (
+                  <><i className="bx bx-lock me-1"></i> Período Ya Cerrado en BD</>
+                ) : (
+                  <><i className="bx bx-save me-1"></i> Cerrar y Guardar Nómina</>
+                )}
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

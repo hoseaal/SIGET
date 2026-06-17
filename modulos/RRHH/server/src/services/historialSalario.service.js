@@ -23,16 +23,23 @@ export class HistorialSalarioService {
     if (!datos.mes || datos.mes < 1 || datos.mes > 12) throw new Error('mes debe estar entre 1 y 12')
     if (!datos.anio) throw new Error('anio requerido')
 
-    const result = await HistorialSalarioModel.upsert({
-      empleado_id: datos.empleado_id,
-      quincena_no: Number(datos.quincena_no),
-      mes: Number(datos.mes),
-      anio: Number(datos.anio),
-      total_asignaciones: Number(datos.total_asignaciones) || 0,
-      total_deducciones: Number(datos.total_deducciones) || 0,
-      salario_neto: Number(datos.salario_neto) || 0
-    })
-    return result
+    try {
+      const result = await HistorialSalarioModel.insert({
+        empleado_id: datos.empleado_id,
+        quincena_no: Number(datos.quincena_no),
+        mes: Number(datos.mes),
+        anio: Number(datos.anio),
+        total_asignaciones: Number(datos.total_asignaciones) || 0,
+        total_deducciones: Number(datos.total_deducciones) || 0,
+        salario_neto: Number(datos.salario_neto) || 0
+      })
+      return result
+    } catch (err) {
+      if (err.code === 'ER_DUP_ENTRY') {
+        throw new Error(`Ya existe un registro en historial_pagos para el empleado ${datos.empleado_id} en el período Q${datos.quincena_no}/${datos.mes}/${datos.anio}. Use actualizar para modificar.`)
+      }
+      throw err
+    }
   }
 
   static async actualizar(id, datos) {

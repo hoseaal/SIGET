@@ -2,7 +2,7 @@
 import { NominaJubiladosService } from '../services/nominaJubilados.service.js'
 import {
   obtenerPeriodoNominaPayload,
-  procesarNominaEnCaliente,
+  procesarNominaYPersistir,
   responderErrorNomina
 } from '../utils/nominaResponse.js'
 
@@ -18,7 +18,7 @@ export class NominaJubiladosController {
 
   static async procesar(req, res) {
     try {
-      const payload = await procesarNominaEnCaliente(req, NominaJubiladosService, 'total_jubilados')
+      const payload = await procesarNominaYPersistir(req, NominaJubiladosService, 'total_jubilados')
       return res.status(200).json(payload)
     } catch (error) {
       console.error('Error en NominaJubiladosController:', error)

@@ -41,15 +41,31 @@ export class DashboardModel {
   }
 
   static async obtenerTotalesNominaMes(anio, mes) {
-    const [rows] = await pool.query(`
-      SELECT
-        COALESCE(SUM(monto_bruto), 0) AS total_bruto,
-        COALESCE(SUM(monto_neto), 0) AS total_neto,
-        COALESCE(SUM(monto_bruto - monto_neto), 0) AS total_deducciones,
-        COUNT(*) AS total_registros
-      FROM historial_salarios_legacy
-      WHERE YEAR(fecha_pago) = ? AND MONTH(fecha_pago) = ?
-    `, [anio, mes])
-    return rows[0]
+    try {
+      const [rows] = await pool.query(`
+        SELECT
+          COALESCE(SUM(total_asignaciones), 0) AS total_bruto,
+          COALESCE(SUM(salario_neto), 0) AS total_neto,
+          COALESCE(SUM(total_asignaciones - salario_neto), 0) AS total_deducciones,
+          COUNT(*) AS total_registros
+        FROM historial_pagos
+        WHERE mes = ? AND anio = ?
+      `, [mes, anio])
+      if (rows[0].total_registros > 0) return rows[0]
+
+      // fallback a tabla legacy
+      const [legacy] = await pool.query(`
+        SELECT
+          COALESCE(SUM(monto_bruto), 0) AS total_bruto,
+          COALESCE(SUM(monto_neto), 0) AS total_neto,
+          COALESCE(SUM(monto_bruto - monto_neto), 0) AS total_deducciones,
+          COUNT(*) AS total_registros
+        FROM historial_salarios_legacy
+        WHERE YEAR(fecha_pago) = ? AND MONTH(fecha_pago) = ?
+      `, [anio, mes])
+      return legacy[0]
+    } catch {
+      return { total_bruto: 0, total_neto: 0, total_deducciones: 0, total_registros: 0 }
+    }
   }
 }

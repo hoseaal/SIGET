@@ -49,6 +49,67 @@ export class VacacionesService {
     return `${yyyy}-${mm}-${dd}`
   }
 
+  /* ─── STEP 1: Cálculo de Antigüedad Total (en caliente) ── */
+
+  /**
+   * Calcula la antigüedad total desglosada en años, meses y días
+   * sumando la antigüedad interna (desde fecha_ingreso) y todas
+   * las antigüedades externas (registros_antiguedades).
+   *
+   * Regla de carry-over: 30 días = 1 mes, 12 meses = 1 año.
+   *
+   * @param {string}   fechaIngreso       Fecha ISO 'YYYY-MM-DD' de ingreso del empleado.
+   * @param {Array}    registrosExternos  Array de { fecha_inicio, fecha_fin }.
+   * @param {string|null} fechaRef        Fecha de referencia ISO (opcional, por defecto hoy).
+   * @returns {{ anios_total: number, meses_total: number, dias_total: number, total_dias: number }}
+   */
+  static calcularAntiguedadTotal(fechaIngreso, registrosExternos = [], fechaRef = null) {
+    const ref = this.dateOnly(fechaRef || new Date())
+    const ingreso = this.dateOnly(fechaIngreso)
+    if (!ingreso) throw new Error('Fecha de ingreso inválida')
+
+    let totalDias = 0
+
+    // Antigüedad interna: días desde fecha_ingreso hasta fechaRef (inclusive)
+    const diffInterna = Math.floor((ref - ingreso) / (1000 * 60 * 60 * 24)) + 1
+    totalDias += diffInterna
+
+    // Antigüedad externa: suma de días de cada registro (inclusive)
+    for (const reg of registrosExternos) {
+      const inicio = this.dateOnly(reg.fecha_inicio)
+      const fin = this.dateOnly(reg.fecha_fin || fechaRef || new Date())
+      if (inicio && fin && fin >= inicio) {
+        const diff = Math.floor((fin - inicio) / (1000 * 60 * 60 * 24)) + 1
+        totalDias += diff
+      }
+    }
+
+    // Carry-over: 30 días → 1 mes, 12 meses → 1 año
+    const aniosTotal = Math.floor(totalDias / 360)
+    const mesesTotal = Math.floor((totalDias % 360) / 30)
+    const diasTotal = totalDias % 30
+
+    return {
+      anios_total: aniosTotal,
+      meses_total: mesesTotal,
+      dias_total: diasTotal,
+      total_dias: totalDias
+    }
+  }
+
+  /**
+   * Obtiene los datos del empleado desde la BD y ejecuta el cálculo completo.
+   *
+   * @param {number}      empleadoId
+   * @param {string|null} fechaRef   Fecha de referencia ISO (opcional).
+   * @returns {Promise<{ anios_total: number, meses_total: number, dias_total: number, total_dias: number }>}
+   */
+  static async calcularAntiguedadTotalEmpleado(empleadoId, fechaRef = null) {
+    const data = await VacacionesModel.getDatosAntiguedadTotal(empleadoId)
+    if (!data) throw new Error('Empleado no encontrado')
+    return this.calcularAntiguedadTotal(data.fecha_ingreso, data.registros_externos, fechaRef)
+  }
+
   static isFestivo(fecha, festivos = []) {
     return festivos.some(f => {
       const base = this.dateOnly(f.fecha)
@@ -193,6 +254,179 @@ export class VacacionesService {
       dias_base: diasBase,
       dias_adicionales: diasAdicionales,
       total_dias_disfrute: diasBase + diasAdicionales
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+   *  STEP 2 — Matriz de Días Base (Evaluación de Fracciones)
+   *
+   *  Asigna días base según escalones de antigüedad total
+   *  (anios_total, meses_total, dias_total).
+   *
+   *  Regla: el salto al siguiente escalón requiere un excedente
+   *  mínimo de 1 mes (Meses_Total >= 1). Si solo hay días
+   *  excedentes (Meses_Total == 0, Dias_Total > 0), permanece
+   *  en el escalón anterior.
+   * ─────────────────────────────────────────────────────────*/
+
+  /**
+   * Determina los días base según la matriz de escalones.
+   *
+   * Escalón 1 (21): anios < 5  |  anios == 5 && meses == 0
+   * Escalón 2 (24): anios == 5 && meses >= 1  |  6-9  |  anios == 10 && meses == 0
+   * Escalón 3 (27): anios == 10 && meses >= 1  |  11-14  |  anios == 15 && meses == 0
+   * Escalón 4 (31): anios == 15 && meses >= 1  |  anios > 15
+   *
+   * @param {number} anios_total
+   * @param {number} meses_total
+   * @param {number} dias_total
+   * @returns {number} Días base correspondientes (21 | 24 | 27 | 31)
+   */
+  static calcularDiasBaseMatriz(anios_total, meses_total, dias_total) {
+    // ─── Escalón 4 (TOPE: 31 días base) ──────────────────────────────
+    // Si el funcionario tiene más de 15 años cumplidos, automáticamente
+    // alcanza el tope. Si tiene exactamente 15 años pero al menos 1 mes
+    // adicional (Meses_Total >= 1), también sube al escalón 4 porque
+    // el excedente mensual es suficiente para el salto. Si solo tuviera
+    // días sueltos (Meses_Total == 0), NO subiría (cae en escalón 3).
+    if (anios_total > 15) return 31
+    if (anios_total === 15 && meses_total >= 1) return 31
+
+    // ─── Escalón 3 (27 días base) ────────────────────────────────────
+    // Con 15 años exactos y 0 meses (solo días excedentes), permanece
+    // en escalón 3 porque el salto al 4 requiere Meses_Total >= 1.
+    if (anios_total === 15 && meses_total === 0) return 27
+
+    // Entre 11 y 14 años inclusive: escalón 3 automático.
+    if (anios_total >= 11 && anios_total <= 14) return 27
+
+    // Con 10 años exactos pero al menos 1 mes de excedente, sube al
+    // escalón 3. Si solo fueran días (Meses_Total == 0), se queda en
+    // el escalón 2 (siguiente condición).
+    if (anios_total === 10 && meses_total >= 1) return 27
+
+    // ─── Escalón 2 (24 días base) ────────────────────────────────────
+    // 10 años exactos con 0 meses: subió a 10 años pero el excedente
+    // son solo días, por lo tanto no alcanza el escalón 3.
+    if (anios_total === 10 && meses_total === 0) return 24
+
+    // Entre 6 y 9 años inclusive: escalón 2 automático.
+    if (anios_total >= 6 && anios_total <= 9) return 24
+
+    // 5 años con al menos 1 mes de excedente: sube al escalón 2.
+    // Si solo fueran días (Meses_Total == 0), se queda en escalón 1.
+    if (anios_total === 5 && meses_total >= 1) return 24
+
+    // ─── Escalón 1 (21 días base - default) ─────────────────────────
+    // Menos de 5 años, o exactamente 5 años con Meses_Total == 0
+    // (excedente solo en días, insuficiente para el salto).
+    return 21
+  }
+
+  /* ─────────────────────────────────────────────────────────
+   *  STEP 3 — Días Adicionales y Tope Máximo
+   *
+   *  Dias_Adicionales = Anios_Total - 1, tope 15.
+   *  Dias_Totales_Disfrute = Dias_Base + Dias_Adicionales.
+   *  Techo absoluto: 46 días (31 base + 15 adicionales).
+   * ─────────────────────────────────────────────────────────*/
+
+  /**
+   * Calcula días adicionales, total de disfrute y aplica tope máximo.
+   *
+   * @param {number} anios_total
+   * @param {number} meses_total
+   * @param {number} dias_total
+   * @returns {{ dias_base: number, dias_adicionales: number, total_dias_disfrute: number }}
+   */
+  static calcularDiasDisfruteTotal(anios_total, meses_total, dias_total) {
+    // Paso 1: Determinar el escalón de días base según la matriz
+    // de fracciones (STEP 2). Evalúa anios_total y meses_total
+    // para asignar 21, 24, 27 o 31 días base.
+    const diasBase = this.calcularDiasBaseMatriz(anios_total, meses_total, dias_total)
+
+    // Paso 2: Calcular días adicionales por antigüedad.
+    // Fórmula: Anios_Total - 1 (se empieza a contar desde el 2do año).
+    // Se usa Math.max(..., 0) para evitar negativos en empleados
+    // con menos de 1 año (Anios_Total = 0 → 0 - 1 = -1 → se lleva a 0).
+    // Tope máximo de 15 días adicionales (se alcanza a los 16 años:
+    // 16 - 1 = 15; a partir de allí no incrementa más).
+    const diasAdicionales = Math.min(Math.max(anios_total - 1, 0), 15)
+
+    // Paso 3: Sumar base + adicionales y aplicar techo absoluto
+    // de 46 días (31 base + 15 adicionales = 46). Bajo ninguna
+    // circunstancia se puede exceder este límite.
+    const total = Math.min(diasBase + diasAdicionales, 46)
+
+    return {
+      dias_base: diasBase,
+      dias_adicionales: diasAdicionales,
+      total_dias_disfrute: total
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+   *  STEP 4 — Proyección Completa de Vacaciones
+   *
+   *  Orquesta STEP 1 → 2 → 3 → 4 en una sola llamada.
+   *  1. Calcula antigüedad total (años, meses, días).
+   *  2. Evalúa matriz de días base según fracciones.
+   *  3. Suma días adicionales con tope.
+   *  4. Proyecta en calendario hábil (sin sábados, domingos ni festivos).
+   * ─────────────────────────────────────────────────────────*/
+
+  /**
+   * Cálculo completo y proyección de vacaciones para un funcionario.
+   * Integra los 4 pasos del algoritmo en una única operación.
+   *
+   * @param {number} empleadoId
+   * @param {string} fechaInicio  Fecha ISO 'YYYY-MM-DD' de inicio deseado.
+   * @returns {Promise<Object>}
+   */
+  static async proyectarVacaciones(empleadoId, fechaInicio) {
+    if (!empleadoId) throw new Error('empleado_id es requerido')
+    if (!fechaInicio) throw new Error('fecha_inicio es requerida')
+
+    // ── STEP 1: Antigüedad Total ──────────────────────────────
+    // Calcula en caliente la antigüedad acumulada del funcionario,
+    // sumando antigüedad interna (fecha_ingreso → hoy/fechaRef) y
+    // todas las antigüedades externas (registros_antiguedades).
+    // Aplica carry-over: 30 días → 1 mes, 12 meses → 1 año.
+    const ant = await this.calcularAntiguedadTotalEmpleado(empleadoId, fechaInicio)
+
+    // ── STEP 2 + 3: Días Base + Adicionales + Tope ────────────
+    // Evalúa la matriz de escalones (STEP 2) usando anios_total
+    // y meses_total para determinar los días base. Luego calcula
+    // los días adicionales = max(anios_total - 1, 0) con tope 15,
+    // y aplica el techo absoluto de 46 días (STEP 3).
+    const { dias_base, dias_adicionales, total_dias_disfrute } =
+      this.calcularDiasDisfruteTotal(ant.anios_total, ant.meses_total, ant.dias_total)
+
+    // ── STEP 4: Proyección en Calendario Hábil ────────────────
+    // Obtiene los días feriados registrados en el sistema.
+    const festivos = await FestivosModel.getAll()
+
+    // Proyecta los total_dias_disfrute en el calendario a partir
+    // de fechaInicio, omitiendo sábados, domingos y feriados.
+    // Retorna fecha_fin (último día de vacaciones) y
+    // fecha_reincorporacion (primer día hábil posterior).
+    const { fecha_fin, fecha_reincorporacion } =
+      this.proyectarFechasCalendario(fechaInicio, total_dias_disfrute, festivos)
+
+    return {
+      empleado_id: empleadoId,
+      antiguedad: {
+        anios_total: ant.anios_total,
+        meses_total: ant.meses_total,
+        dias_total: ant.dias_total,
+        total_dias: ant.total_dias
+      },
+      dias_base,
+      dias_adicionales,
+      total_dias_disfrute,
+      fecha_inicio: fechaInicio,
+      fecha_fin,
+      fecha_reincorporacion
     }
   }
 
@@ -538,6 +772,12 @@ export class VacacionesService {
         usadosAnio += h.dias_habiles != null ? Number(h.dias_habiles) : this.contarDiasHabiles(h.fecha_inicio, h.fecha_fin, festivos)
       }
 
+      // Antigüedad desglosada (años, meses, días)
+      const ant = await this.calcularAntiguedadTotalEmpleado(row.empleado_id)
+
+      row.antiguedad_anios = ant.anios_total
+      row.antiguedad_meses = ant.meses_total
+      row.antiguedad_dias = ant.dias_total
       row.dias_usados_anio = usadosAnio
       row.dias_pendientes_disfrute = Math.max(0, derechos.dias_disfrute_ley - usadosAnio)
       row.dias_pendientes = Math.max(0, derechos.dias_disfrute_ley + Number(row.dias_acumulados || 0) - usadosAnio)
@@ -566,6 +806,8 @@ export class VacacionesService {
       ? await this.calcularFechasDisfrute(fechaInicio, diasSolicitados)
       : { fecha_inicio: this.toISODate(fechaInicio), fecha_fin: null, fecha_reincorporacion: null }
 
+    const ant = await this.calcularAntiguedadTotalEmpleado(empleadoId)
+
     return {
       empleado_id: empleadoId,
       cedula: derechos.empleado.cedula || '',
@@ -575,6 +817,9 @@ export class VacacionesService {
       dependencia: derechos.empleado.direccion_nombre || derechos.empleado.division_nombre || derechos.empleado.unidad_nombre || '',
       tipo_empleado: derechos.tipo_empleado,
       anios_antiguedad: derechos.anios_antiguedad,
+      antiguedad_anios: ant.anios_total,
+      antiguedad_meses: ant.meses_total,
+      antiguedad_dias: ant.dias_total,
       dias_disfrute_ley: derechos.dias_disfrute_ley,
       dias_base: derechos.dias_disfrute_ley,
       dias_acumulados: derechos.dias_acumulados,
@@ -799,9 +1044,15 @@ export class VacacionesService {
     const empBase = await VacacionesModel.getEmpleadoTipoPersonal(empleadoId)
     const tipoEmp = this.normalizarTipo(empBase?.tipo_personal || 'FUNCIONARIO')
     const aniosAntiguedad = await VacacionesModel.getAntiguedadEmpleado(empleadoId)
+    const ant = await this.calcularAntiguedadTotalEmpleado(empleadoId)
     const { total_dias_disfrute: diasBase } = await this.calcularDiasDisfrute(aniosAntiguedad, tipoEmp)
 
     return {
+      antiguedad: {
+        anios: ant.anios_total,
+        meses: ant.meses_total,
+        dias: ant.dias_total
+      },
       datos_personales: {
         empleado_id: perfil.empleado_id,
         cedula: perfil.cedula,
@@ -878,6 +1129,12 @@ export class VacacionesService {
 
     const salarioBase = Number(emp.salario_base || 0)
     const aniosAntiguedad = await VacacionesModel.getAntiguedadEmpleado(empleadoId)
+    let ant
+    try {
+      ant = await this.calcularAntiguedadTotalEmpleado(empleadoId)
+    } catch {
+      ant = { anios_total: aniosAntiguedad, meses_total: 0, dias_total: 0 }
+    }
     const pctProf = Number(emp.porcentaje_profesionalizacion || 0) / 100
     const pctAntiguedad = Math.min(aniosAntiguedad * 0.02, 0.3)
 
@@ -913,7 +1170,10 @@ export class VacacionesService {
         cargo_onapre: emp.cargo_onapre_nombre,
         salario_base: salarioBase,
         porcentaje_profesionalizacion: Number(emp.porcentaje_profesionalizacion),
-        anios_antiguedad: aniosAntiguedad
+        anios_antiguedad: aniosAntiguedad,
+        antiguedad_anios: ant.anios_total,
+        antiguedad_meses: ant.meses_total,
+        antiguedad_dias: ant.dias_total
       },
       lineas_recibo: {
         sueldo_basico: sueldoBasico,
@@ -934,9 +1194,8 @@ export class VacacionesService {
         dias_bono_vacacional: diasBonoVacacional,
         bono_vacacional: bonoVacacional
       },
-      ultima_nomina: emp.fecha_pago ? {
-        fecha_pago: emp.fecha_pago,
-        monto_bruto: Number(emp.monto_bruto || 0),
+      ultima_nomina: emp.fecha ? {
+        fecha_pago: emp.fecha,
         monto_neto: Number(emp.monto_neto || 0)
       } : null
     }

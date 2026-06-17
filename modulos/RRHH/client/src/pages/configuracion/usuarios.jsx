@@ -28,40 +28,40 @@ export const Usuarios = () => {
     };
     const [refreshKey, setRefreshKey] = useState(0);
 
-     const [editingItem, setEditingItem] = useState(null);
+    const [editingItem, setEditingItem] = useState(null);
     const [deleteItem, setDeleteItem] = useState(null);
-    
 
-        const handleSuccess = () => {
-            setRefreshKey(prev => prev + 1); // Fuerza recarga
-        };
+
+    const handleSuccess = () => {
+        setRefreshKey(prev => prev + 1); // Fuerza recarga
+    };
 
     // Cargar columnas y datos de Marca
     useEffect(() => {
         const loadCatData = async () => {
-          try {
-            const { columns, primaryKey } = await getTableMetadata('usuarios');
-             const filteredColumns = columns.filter(col => col.name !== 'password_hash'); 
+            try {
+                const { columns, primaryKey } = await getTableMetadata('usuarios');
+                const filteredColumns = columns.filter(col => col.name !== 'password_hash');
 
-            setColumns(filteredColumns.map(col => ({
-                originalName: col.name,
-                displayName: columnAliasUser[col.name] || null,
-                isPrimaryKey: col.name === primaryKey
-            })));
-            setIdColumn(primaryKey);
+                setColumns(filteredColumns.map(col => ({
+                    originalName: col.name,
+                    displayName: columnAliasUser[col.name] || null,
+                    isPrimaryKey: col.name === primaryKey
+                })));
+                setIdColumn(primaryKey);
 
-            const res = await fetch('/api/user', { credentials: 'include' });
-            const data = await res.json();
-            setData(data);
-          } catch (error) {
-            console.error('Error cargando categorías:', error);
-          }
+                const res = await fetch('/api/user', { credentials: 'include' });
+                const data = await res.json();
+                setData(data);
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+            }
         };
         loadCatData();
     }, [refreshKey]);
-    
 
-   return (
+
+    return (
         <div>
             <h4 className="py-3 mb-4"><span className="text-muted fw-light">Configuración General /</span> Modelos y User</h4>
             <div className="card">
@@ -76,83 +76,83 @@ export const Usuarios = () => {
                     onSuccess={handleSuccess}
                 />
                 <div className="table-responsive text-nowrap">
-                <table className="table table-striped">
-                  <thead>
-                    <tr>
-                    {columns.map((col, index) => (
-                                <th key={index}>{col.displayName}</th>
-                            ))}
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="table-border-bottom-0">
-                  {data.map((item, index) => (
-                            <tr key={index}>
-                                {/* Acceder a los datos usando originalName */}
-                                {columns.map((col) => (
-                                    <td key={`${index}-${col.originalName}`}>
-                                        {item[col.originalName.toLowerCase()] ?? null}
-                                    </td>
+                    <table className="table table-striped">
+                        <thead>
+                            <tr>
+                                {columns.map((col, index) => (
+                                    <th key={index}>{col.displayName}</th>
                                 ))}
-                        <td>
-                          <Dropdown>
-                            <Dropdown.Toggle variant="secondary" id="dropdown-basic" className="nav-dropdown-dark-example">
-                                <i className="bx bx-dots-vertical-rounded"></i>
-                            </Dropdown.Toggle>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="table-border-bottom-0">
+                            {data.map((item, index) => (
+                                <tr key={index}>
+                                    {/* Acceder a los datos usando originalName */}
+                                    {columns.map((col) => (
+                                        <td key={`${index}-${col.originalName}`}>
+                                            {item[col.originalName.toLowerCase()] ?? null}
+                                        </td>
+                                    ))}
+                                    <td>
+                                        <Dropdown>
+                                            <Dropdown.Toggle variant="secondary" id="dropdown-basic" className="nav-dropdown-dark-example">
+                                                <i className="bx bx-dots-vertical-rounded"></i>
+                                            </Dropdown.Toggle>
 
-                            <Dropdown.Menu>
-                                <Dropdown.Item href="#"  onClick={() => {
-                                    setEditingItem(item); // Guarda el item que se va a editar
-                                    setShowUserUpModal(true); // Abre el modal
-                                }}>
-                                    <i className="bx bx-edit-alt me-1"></i> Edit
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#"  onClick={() => {
-                                    setEditingItem(item); // Guarda el item que se va a editar
-                                    setShowUserConModal(true); // Abre el modal
-                                }}>
-                                    <i className="bx bx-edit-alt me-1"></i> Cambiar Contraseña
-                                </Dropdown.Item>
-                                <Dropdown.Item href="#" onClick={() => {
-                                    setDeleteItem(item.usuario_id)
-                                    setShowUserDelModal(true); // Abre el modal
-                                }}>
-                                    <i className="bx bx-trash me-1"></i> Delete
-                                </Dropdown.Item>
-                            </Dropdown.Menu>
-                                
-                          </Dropdown>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <ModalUpdate 
-                    show={showUserUpModal}
-                    handleClose={() => setShowUserUpModal(false)}
-                    columns={columns}
-                    tableName='usuarios'
-                    rowData={editingItem} 
-                    onSuccess={handleSuccess}
-                    idColumn={idColumn}
-                />
-                <ModalDelete 
-                    show={showUserDelModal}
-                    handleClose={() => setShowUserDelModal(false)}
-                    tableName="usuarios"
-                    rowId={deleteItem} 
-                    idColumn={idColumn} 
-                    onSuccess={handleSuccess} 
-                />
-                <ModalContraseña
-                    show={showUserConModal}
-                    handleClose={() => setShowUserConModal(false)}
-                    rowData={editingItem} 
-                    onSuccess={handleSuccess}
-                    idColumn={idColumn}
-                />
-                </table>
+                                            <Dropdown.Menu>
+                                                <Dropdown.Item href="#" onClick={() => {
+                                                    setEditingItem(item); // Guarda el item que se va a editar
+                                                    setShowUserUpModal(true); // Abre el modal
+                                                }}>
+                                                    <i className="bx bx-edit-alt me-1"></i> Edit
+                                                </Dropdown.Item>
+                                                <Dropdown.Item href="#" onClick={() => {
+                                                    setEditingItem(item); // Guarda el item que se va a editar
+                                                    setShowUserConModal(true); // Abre el modal
+                                                }}>
+                                                    <i className="bx bx-edit-alt me-1"></i> Cambiar Contraseña
+                                                </Dropdown.Item>
+                                                <Dropdown.Item href="#" onClick={() => {
+                                                    setDeleteItem(item.usuario_id)
+                                                    setShowUserDelModal(true); // Abre el modal
+                                                }}>
+                                                    <i className="bx bx-trash me-1"></i> Delete
+                                                </Dropdown.Item>
+                                            </Dropdown.Menu>
+
+                                        </Dropdown>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        <ModalUpdate
+                            show={showUserUpModal}
+                            handleClose={() => setShowUserUpModal(false)}
+                            columns={columns}
+                            tableName='usuarios'
+                            rowData={editingItem}
+                            onSuccess={handleSuccess}
+                            idColumn={idColumn}
+                        />
+                        <ModalDelete
+                            show={showUserDelModal}
+                            handleClose={() => setShowUserDelModal(false)}
+                            tableName="usuarios"
+                            rowId={deleteItem}
+                            idColumn={idColumn}
+                            onSuccess={handleSuccess}
+                        />
+                        <ModalContraseña
+                            show={showUserConModal}
+                            handleClose={() => setShowUserConModal(false)}
+                            rowData={editingItem}
+                            onSuccess={handleSuccess}
+                            idColumn={idColumn}
+                        />
+                    </table>
                 </div>
-            </div>     
+            </div>
         </div>
     )
 }

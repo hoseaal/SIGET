@@ -5,6 +5,9 @@ import { ModalRegistroVacaciones } from './ModalRegistroVacaciones'
 import { ModalVerPerfil } from './ModalVerPerfil'
 import { ModalReintegro } from './ModalReintegro'
 import { ModalRecibo } from './ModalRecibo'
+import { exportVacacionesExcel, countBusinessDays } from '../../utils/exportVacacionesExcel'
+import logoCet from '../../assets/logo-cet.png'
+import { getBase64FromUrl } from '../../utils/imageUtils'
 
 export const VacacionesGestion = ({ tipoEmpleado }) => {
   const [consolidado, setConsolidado] = useState([])
@@ -34,6 +37,13 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
   const [reciboEmpleadoId, setReciboEmpleadoId] = useState(null)
   const [reciboData, setReciboData] = useState(null)
   const [reciboLoading, setReciboLoading] = useState(false)
+
+  // Export
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  const now = new Date()
+  const [exportMonth, setExportMonth] = useState(now.getMonth())
+  const [exportYear, setExportYear] = useState(now.getFullYear())
+  const [exportLoading, setExportLoading] = useState(false)
 
   const flash = (setter, msg, ms = 4000) => { setter(msg); setTimeout(() => setter(''), ms) }
 
@@ -74,7 +84,14 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
       : consolidado.filter(row => Number(row.id_status_vacaciones) === Number(activeTab))
 
   const groupedItems = buildGroups(filteredList)
-  const COL_COUNT = 13
+  const COL_COUNT = 14
+
+  const formatAntiguedad = (row) => {
+    const a = Number(row.antiguedad_anios) || 0
+    const m = Number(row.antiguedad_meses) || 0
+    const d = Number(row.antiguedad_dias) || 0
+    return `${a}a ${m}m ${d}d`
+  }
 
   /* ─── Handlers de Acciones ─── */
 
@@ -172,6 +189,163 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
       setReciboData(await res.json())
     } catch (err) { flash(setError, err.message) }
     finally { setReciboLoading(false) }
+  }
+
+  const REINTEGRO_COLUMNS = [
+    { header: 'Nombres y Apellidos', key: 'nombreCompleto', width: 35, align: 'left', type: 'string', bold: true },
+    { header: 'Cédula de Identidad', key: 'cedula', width: 16, align: 'center', type: 'string' },
+    { header: 'Cargo', key: 'cargo', width: 30, align: 'left', type: 'string' },
+    { header: 'Fecha de Ingreso', key: 'fechaIngreso', width: 15, align: 'center', type: 'string' },
+    { header: 'Años de Servicio', key: 'aniosServicio', width: 14, align: 'center', type: 'string' },
+    { header: 'Salario Mensual', key: 'salarioMensual', width: 17, align: 'right', type: 'currency' },
+    { header: 'Salario Diario', key: 'salarioDiario', width: 15, align: 'right', type: 'currency' },
+    { header: 'Observaciones', key: 'observaciones', width: 40, align: 'left', type: 'string' },
+  ]
+
+  /* ─── Export Excel ─── */
+
+  const handleExportExcel = async () => {
+    const enDisfrute = consolidado.filter(row => Number(row.id_status_vacaciones) === STATUS.DE_DISFRUTE)
+    if (enDisfrute.length === 0) {
+      return flash(setError, 'No hay empleados en estado "En Disfrute" para exportar.')
+    }
+
+    const filtered = enDisfrute.filter(row => {
+      if (!row.fecha_inicio) return false
+      const d = new Date(row.fecha_inicio)
+      return d.getMonth() === exportMonth && d.getFullYear() === exportYear
+    })
+    if (filtered.length === 0) {
+      return flash(setError, `No hay empleados en disfrute para ${MESES[exportMonth]} ${exportYear}.`)
+    }
+
+    setExportLoading(true)
+    try {
+      const enriched = await Promise.all(
+        filtered.map(async (row) => {
+          try {
+            const res = await fetch(`${API}/recibo/${row.empleado_id}`)
+            if (!res.ok) return null
+            const recibo = await res.json()
+            const lineas = recibo.lineas_recibo || {}
+            const totalDias = countBusinessDays(row.fecha_inicio, row.fecha_fin)
+            return {
+              nombreCompleto: `${row.apellidos}, ${row.nombres}`,
+              cedula: row.cedula,
+              cargo: row.cargo_cet_nombre || row.cargo_onapre_nombre || '-',
+              fechaIngreso: formatDate(row.fecha_ingreso),
+              aniosServicio: `${row.antiguedad_anios || 0}a ${row.antiguedad_meses || 0}m ${row.antiguedad_dias || 0}d`,
+              salarioMensual: Number(lineas.total_sueldo_mensual || 0),
+              salarioDiario: Number(lineas.sueldo_diario || 0),
+              totalDias,
+              periodoDisfrute: `${totalDias} días`,
+              fechaDesde: formatDate(row.fecha_inicio),
+              fechaHasta: formatDate(row.fecha_fin),
+              montoPagar: Number(lineas.bono_vacacional || 0),
+              firma: '',
+            }
+          } catch { return null }
+        })
+      )
+
+      const valid = enriched.filter(Boolean)
+      if (valid.length === 0) {
+        return flash(setError, 'No se pudieron obtener los datos salariales.')
+      }
+
+      let logoBase64 = null
+      try {
+        const dataUrl = await getBase64FromUrl(logoCet)
+        logoBase64 = dataUrl.includes('base64,') ? dataUrl.split('base64,')[1] : dataUrl
+      } catch (e) { console.warn('No se pudo cargar el logo:', e) }
+
+      await exportVacacionesExcel({
+        data: valid,
+        mes: MESES[exportMonth],
+        anio: exportYear,
+        periodo: `${MESES[exportMonth]} ${exportYear}`,
+        logoBase64,
+      })
+      flash(setSuccess, 'Archivo exportado correctamente.')
+    } catch (err) {
+      flash(setError, `Error al exportar: ${err.message}`)
+    } finally {
+      setExportLoading(false)
+    }
+  }
+
+  const handleExportByTab = () => {
+    if (activeTab === STATUS.DE_DISFRUTE) return handleExportExcel()
+    if (activeTab === STATUS.REINTEGRO) return handleExportReintegro()
+    flash(setError, 'Seleccione la pestaña "De Disfrute" o "Reintegro" para exportar.')
+  }
+
+  const handleExportReintegro = async () => {
+    const reintegro = consolidado.filter(row => Number(row.id_status_vacaciones) === STATUS.REINTEGRO)
+    if (reintegro.length === 0) {
+      return flash(setError, 'No hay empleados en estado "Reintegro" para exportar.')
+    }
+
+    const filtered = reintegro.filter(row => {
+      if (!row.fecha_inicio) return false
+      const d = new Date(row.fecha_inicio)
+      return d.getMonth() === exportMonth && d.getFullYear() === exportYear
+    })
+    if (filtered.length === 0) {
+      return flash(setError, `No hay empleados en reintegro para ${MESES[exportMonth]} ${exportYear}.`)
+    }
+
+    setExportLoading(true)
+    try {
+      const enriched = await Promise.all(
+        filtered.map(async (row) => {
+          try {
+            const res = await fetch(`${API}/recibo/${row.empleado_id}`)
+            if (!res.ok) return null
+            const recibo = await res.json()
+            const lineas = recibo.lineas_recibo || {}
+            return {
+              nombreCompleto: `${row.apellidos}, ${row.nombres}`,
+              cedula: row.cedula,
+              cargo: row.cargo_cet_nombre || row.cargo_onapre_nombre || '-',
+              fechaIngreso: formatDate(row.fecha_ingreso),
+              aniosServicio: `${row.antiguedad_anios || 0}a ${row.antiguedad_meses || 0}m ${row.antiguedad_dias || 0}d`,
+              salarioMensual: Number(lineas.total_sueldo_mensual || 0),
+              salarioDiario: Number(lineas.sueldo_diario || 0),
+              observaciones: row.observaciones || '-',
+            }
+          } catch { return null }
+        })
+      )
+
+      const valid = enriched.filter(Boolean)
+      if (valid.length === 0) {
+        return flash(setError, 'No se pudieron obtener los datos salariales.')
+      }
+
+      let logoBase64 = null
+      try {
+        const dataUrl = await getBase64FromUrl(logoCet)
+        logoBase64 = dataUrl.includes('base64,') ? dataUrl.split('base64,')[1] : dataUrl
+      } catch (e) { console.warn('No se pudo cargar el logo:', e) }
+
+      await exportVacacionesExcel({
+        data: valid,
+        mes: MESES[exportMonth],
+        anio: exportYear,
+        periodo: `${MESES[exportMonth]} ${exportYear}`,
+        logoBase64,
+        columns: REINTEGRO_COLUMNS,
+        title: 'REGISTRO DE REINTEGRO DE VACACIONES',
+        sheetName: 'Reintegro Vacaciones',
+        filename: `Registro_Reintegro_Vacaciones_${MESES[exportMonth]}_${exportYear}.xlsx`,
+      })
+      flash(setSuccess, 'Archivo de reintegro exportado correctamente.')
+    } catch (err) {
+      flash(setError, `Error al exportar: ${err.message}`)
+    } finally {
+      setExportLoading(false)
+    }
   }
 
   /* ─── Renders ─── */
@@ -304,6 +478,44 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
               </button>
             ))}
           </div>
+          <hr className="my-2" />
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            <small className="text-muted fw-semibold me-1">
+              <i className="bx bx-export me-1"></i>Exportar:
+            </small>
+            <select
+              className="form-select form-select-sm"
+              style={{ width: 'auto' }}
+              value={exportMonth}
+              onChange={e => setExportMonth(Number(e.target.value))}
+            >
+              {MESES.map((m, i) => (
+                <option key={i} value={i}>{m}</option>
+              ))}
+            </select>
+            <select
+              className="form-select form-select-sm"
+              style={{ width: 'auto' }}
+              value={exportYear}
+              onChange={e => setExportYear(Number(e.target.value))}
+            >
+              {Array.from({ length: 5 }, (_, i) => now.getFullYear() - 2 + i).map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <button
+              className={`btn btn-sm ${activeTab === STATUS.REINTEGRO ? 'btn-warning' : 'btn-success'}`}
+              onClick={handleExportByTab}
+              disabled={exportLoading || (activeTab !== STATUS.DE_DISFRUTE && activeTab !== STATUS.REINTEGRO)}
+              title={`Exportar empleados en ${activeTab === STATUS.REINTEGRO ? 'reintegro' : 'disfrute'}`}
+            >
+              {exportLoading ? (
+                <><Spinner animation="border" size="sm" className="me-1" />Exportando...</>
+              ) : (
+                <><i className={`bx ${activeTab === STATUS.REINTEGRO ? 'bx-redo' : 'bx-spreadsheet'} me-1`}></i>Descargar</>
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="table-responsive">
@@ -315,6 +527,7 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
                 <th>Apellidos y Nombres</th>
                 <th>Cargo CET</th>
                 <th className="text-center">F. Ingreso</th>
+                <th className="text-center">Antigüedad</th>
                 <th className="text-center">Fecha Tope</th>
                 <th className="text-center">Salida</th>
                 <th className="text-center">Reintegro a Laborar</th>
@@ -354,6 +567,7 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
                     <td>{row.apellidos}, {row.nombres}</td>
                     <td>{row.cargo_cet_nombre || '-'}</td>
                     <td className="text-center">{formatDate(row.fecha_ingreso)}</td>
+                    <td className="text-center" style={{ whiteSpace: 'nowrap' }}>{formatAntiguedad(row)}</td>
                     {renderFechaTopeCell(row.fecha_tope)}
                     <td className="text-center">{formatDate(row.fecha_inicio)}</td>
                     <td className="text-center">

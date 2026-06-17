@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { downloadExcel, downloadExcelZip } from '../../utils/exportExcel.js';
@@ -6,67 +6,149 @@ import { getBase64FromUrl } from '../../utils/imageUtils.js';
 import logoCet from '../../assets/logo-cet.png';
 import { ParametrosNominaCard } from '../../components/nomina/ParametrosNominaCard.jsx';
 import { MESES_NOMINA, usePeriodoNomina } from '../../hooks/usePeriodoNomina.js';
+import { useAuth } from '../../hooks/useAuth.js';
+
+const TIPO_PERSONAL = 'Jubilado';
 
 export const NominaJubilados = () => {
+    const { rol_id } = useAuth()
     const [quincena, setQuincena] = useState('1');
     const [nominaData, setNominaData] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loadingCalcular, setLoadingCalcular] = useState(false);
+    const [loadingCerrar, setLoadingCerrar] = useState(false);
+    const [cierreExitoso, setCierreExitoso] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [cierreStatus, setCierreStatus] = useState({ q1: false, q2: false, unificada: false })
     const meses = MESES_NOMINA;
     const { periodoNomina, setPeriodoNomina, periodoLoading, mes, anio } = usePeriodoNomina(
-        '/api/nomina-jubilados',
+        '/api/nomina',
         () => toast.error('Error al obtener el periodo de nomina desde el servidor.')
     );
 
-    const processNomina = async () => {
-        setLoading(true);
+    const isProcessingRef = useRef(false);
+
+    const verificarCierre = useCallback(async (mes, anio) => {
+        if (!mes || !anio) return
+        try {
+            const [resQ1, resQ2] = await Promise.all([
+                fetch(`/api/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=1&tipo_personal=${TIPO_PERSONAL}`),
+                fetch(`/api/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=2&tipo_personal=${TIPO_PERSONAL}`)
+            ])
+            const dataQ1 = await resQ1.json()
+            const dataQ2 = await resQ2.json()
+            const q1Closed = dataQ1.ok ? dataQ1.data.isClosed : false
+            const q2Closed = dataQ2.ok ? dataQ2.data.isClosed : false
+            setCierreStatus({
+                q1: q1Closed,
+                q2: q2Closed,
+                unificada: q1Closed || q2Closed
+            })
+        } catch (error) {
+            console.error('Error al verificar cierre:', error)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (mes && anio) {
+            verificarCierre(mes, anio)
+        }
+    }, [mes, anio, verificarCierre])
+
+    const handleTipoNominaChange = (value) => {
+        setQuincena(value);
+        setCierreExitoso(false);
+        if (mes && anio) verificarCierre(mes, anio)
+    };
+
+    const handleCalcular = async () => {
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+        setLoadingCalcular(true);
         setNominaData([]);
+        setCierreExitoso(false);
         try {
             if (quincena === 'unificada') {
-                const url1 = new URL('/api/nomina-jubilados/procesar', window.location.origin);
-                url1.searchParams.append('tipoNomina', 1);
-
-                const url2 = new URL('/api/nomina-jubilados/procesar', window.location.origin);
-                url2.searchParams.append('tipoNomina', 2);
+                const body = { tipo_personal: TIPO_PERSONAL };
 
                 const [res1, res2] = await Promise.all([
-                    fetch(url1, { method: 'GET', headers: { 'Content-Type': 'application/json' } }),
-                    fetch(url2, { method: 'GET', headers: { 'Content-Type': 'application/json' } })
+                    fetch('/api/nomina/calcular-en-caliente', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...body, quincena: 1 })
+                    }),
+                    fetch('/api/nomina/calcular-en-caliente', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...body, quincena: 2 })
+                    })
                 ]);
 
                 const data1 = await res1.json();
                 const data2 = await res2.json();
 
+                if (!data1.ok) {
+                    toast.error(data1.message || 'Error procesando la primera quincena.');
+                }
+                if (!data2.ok) {
+                    toast.error(data2.message || 'Error procesando la segunda quincena.');
+                }
                 if (data1.ok && data2.ok) {
-                    setPeriodoNomina(data1.periodo);
                     setNominaData({ isUnificada: true, q1: data1.datos, q2: data2.datos });
-                    toast.success('Nómina unificada procesada correctamente.');
-                } else {
-                    toast.error('Error procesando la nómina unificada.');
+                    toast.success('Nómina unificada calculada correctamente.');
                 }
             } else {
-                const url = new URL('/api/nomina-jubilados/procesar', window.location.origin);
-                url.searchParams.append('tipoNomina', quincena);
+                const res = await fetch('/api/nomina/calcular-en-caliente', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo_personal: TIPO_PERSONAL, quincena: quincena === 'unificada' ? 'unificada' : Number(quincena) })
+            });
+            const data = await res.json();
 
-                const res = await fetch(url, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const data = await res.json();
-
-                if (data.ok) {
-                    setPeriodoNomina(data.periodo);
-                    setNominaData(data.datos);
-                    toast.success('Nómina de jubilados procesada correctamente.');
+            if (data.ok) {
+                setNominaData(data.datos);
+                toast.success('Nómina de jubilados calculada correctamente.');
                 } else {
-                    toast.error(data.message || 'Error procesando la nómina.');
+                    toast.error(data.message || 'Error calculando la nómina.');
                 }
             }
         } catch (error) {
             console.error(error);
-            toast.error('Error de servidor al procesar nómina.');
+            toast.error('Error de servidor al calcular nómina.');
         } finally {
-            setLoading(false);
+            setLoadingCalcular(false);
+            isProcessingRef.current = false;
+        }
+    };
+
+    const handleCerrar = async () => {
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
+        setLoadingCerrar(true);
+        const quincenaKey = quincena === 'unificada' ? 'unificada' : `q${quincena}`
+        setCierreStatus(prev => ({ ...prev, [quincenaKey]: true }))
+        try {
+            const res = await fetch('/api/nomina/guardar-cierre', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo_personal: TIPO_PERSONAL, quincena, mes, anio })
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                setCierreExitoso(true);
+                await verificarCierre(mes, anio)
+                toast.success('Nómina guardada y cerrada correctamente.');
+            } else {
+                setCierreStatus(prev => ({ ...prev, [quincenaKey]: false }))
+                toast.error(data.message || 'Error al guardar la nómina.');
+            }
+        } catch (error) {
+            setCierreStatus(prev => ({ ...prev, [quincenaKey]: false }))
+            console.error(error);
+            toast.error('Error de servidor al guardar nómina.');
+        } finally {
+            setLoadingCerrar(false);
+            isProcessingRef.current = false;
         }
     };
 
@@ -150,11 +232,16 @@ export const NominaJubilados = () => {
                 mes={mes}
                 anio={anio}
                 tipoNomina={quincena}
-                onTipoNominaChange={setQuincena}
-                onProcesar={processNomina}
-                loading={loading}
+                onTipoNominaChange={handleTipoNominaChange}
+                onCalcular={handleCalcular}
+                onCerrar={handleCerrar}
+                loadingCalcular={loadingCalcular}
+                loadingCerrar={loadingCerrar}
                 periodoLoading={periodoLoading}
                 periodoDisponible={Boolean(periodoNomina)}
+                cierreExitoso={cierreExitoso}
+                userRolId={rol_id}
+                cierreStatus={cierreStatus}
             />
 
             {/* Buscador dinámico */}
