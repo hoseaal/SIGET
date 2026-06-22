@@ -371,12 +371,12 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                 {maestros.puertosPared
                                                     .filter(p => String(p.panel_id) === String(selectedPanel))
                                                     .map(p => (
-                                                        <option key={p.id} value={p.id} disabled={!!p.equipo_asignado} style={p.equipo_asignado ? { color: 'red' } : {}}>
-                                                            Puerto: {p.nro_puerto}{p.equipo_asignado ? ` (Ocupado: ${p.equipo_asignado})` : ''}
+                                                        <option key={p.id} value={p.id} disabled={!!p.equipo_asignado && String(p.id) !== String(equipo?.pp_pared)} style={p.equipo_asignado && String(p.id) !== String(equipo?.pp_pared) ? { color: 'red' } : {}}>
+                                                            Puerto: {p.nro_puerto}{p.equipo_asignado && String(p.id) !== String(equipo?.pp_pared) ? ` (Ocupado: ${p.equipo_asignado})` : ''}
                                                         </option>
                                                     ))}
                                             </Form.Select>
-                                            {selectedPanel && maestros.puertosPared.filter(p => String(p.panel_id) === String(selectedPanel)).filter(p => !p.equipo_asignado).length === 0 && (
+                                            {selectedPanel && maestros.puertosPared.filter(p => String(p.panel_id) === String(selectedPanel)).filter(p => !p.equipo_asignado || String(p.id) === String(equipo?.pp_pared)).length === 0 && (
                                                 <Form.Text className="text-danger">
                                                     No hay puertos libres disponibles en esta roseta.
                                                 </Form.Text>
