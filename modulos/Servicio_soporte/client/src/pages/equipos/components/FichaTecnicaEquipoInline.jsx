@@ -44,23 +44,23 @@ export const FichaTecnicaEquipoInline = ({ equipo }) => {
                     <h6 className="text-muted text-uppercase small fw-bold mb-3">Conectividad de Red</h6>
                     <ListGroup variant="flush" className="small">
                         <ListGroup.Item className="px-0 d-flex justify-content-between">
-                            <span className="text-muted">Piso:</span>
+                            <span className="text-muted">Rack:</span>
                             <span>{equipo.piso}</span>
                         </ListGroup.Item>
                         <ListGroup.Item className="px-0 d-flex justify-content-between">
-                            <span className="text-muted">Puerto de Pared:</span>
+                            <span className="text-muted">Puerto:</span>
                             <Badge bg="label-info" className="text-info">{equipo.puerto_en_panel}</Badge>
                         </ListGroup.Item>
                         <ListGroup.Item className="px-0 d-flex justify-content-between">
-                            <span className="text-muted">Patch Panel Soporte:</span>
-                            <span>Bien: {equipo.nro_bien_panel_soporte}</span>
+                            <span className="text-muted">Switch Soporte:</span>
+                            <span>{equipo.nro_bien_panel_soporte}</span>
                         </ListGroup.Item>
                         <ListGroup.Item className="px-0 d-flex justify-content-between">
-                            <span className="text-muted">Puerto en Soporte:</span>
+                            <span className="text-muted">Puerto del Switch:</span>
                             <span>{equipo.puerto_soporte}</span>
                         </ListGroup.Item>
                         <ListGroup.Item className="px-0 d-flex justify-content-between">
-                            <span className="text-muted">Puerto Switch/Router:</span>
+                            <span className="text-muted">Puerto del Router:</span>
                             <span className="text-primary fw-bold">{equipo.puerto_router}</span>
                         </ListGroup.Item>
                         {equipo.ip && (

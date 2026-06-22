@@ -2,12 +2,14 @@ import pool from '../utils/database.js'
 
 export class PuertosModel {
     static async getAll() {
-        // Hacemos JOIN con panel_pared y piso para dar un contexto completo en la tabla
         const [rows] = await pool.query(`
-            SELECT p.*, pp.is_patch_panel1, pi.nombre as nombre_piso
+            SELECT p.*, pp.is_patch_panel1, pi.nombre as nombre_piso,
+                e.nro_bien as equipo_asignado, te.nombre as tipo_equipo_nombre
             FROM puertos p
             JOIN panel_pared pp ON p.panel_id = pp.id
             JOIN piso pi ON pp.piso = pi.id
+            LEFT JOIN equipos e ON e.pp_pared = p.id
+            LEFT JOIN tipo_equipo te ON te.id = e.tipo_equipo
         `)
         return rows
     }

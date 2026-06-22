@@ -394,8 +394,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                     .filter(p => String(p.panel_id) === String(selectedPanel))
                                                     .filter(p => !occupiedPuertoIds.has(String(p.id)))
                                                     .map(p => (
-                                                        <option key={p.id} value={p.id}>
-                                                            Puerto: {p.nro_puerto}
+                                                         <option key={p.id} value={p.id} disabled={!!p.equipo_asignado} style={p.equipo_asignado ? { color: 'red' } : {}}>
+                                                            Puerto: {p.nro_puerto}{p.equipo_asignado ? ` (Ocupado: ${p.equipo_asignado})` : ''}
                                                         </option>
                                                     ))}
                                             </Form.Select>

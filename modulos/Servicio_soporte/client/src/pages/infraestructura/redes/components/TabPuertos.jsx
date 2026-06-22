@@ -127,19 +127,20 @@ export const TabPuertos = () => {
                         <th>Nro. Etiqueta / Puerto</th>
                         <th>Caja / Roseta a la que pertenece</th>
                         <th>Piso Ubicación</th>
+                        <th>Equipo Asignado</th>
                         <th className="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {loading ? (
                         <tr>
-                            <td colSpan="5" className="text-center py-4">
+                            <td colSpan="6" className="text-center py-4">
                                 <Spinner animation="border" variant="primary" size="sm" />
                             </td>
                         </tr>
                     ) : dataList.length === 0 ? (
                         <tr>
-                            <td colSpan="5" className="text-center py-4 text-muted">
+                            <td colSpan="6" className="text-center py-4 text-muted">
                                 No hay puertos finales registrados
                             </td>
                         </tr>
@@ -150,6 +151,15 @@ export const TabPuertos = () => {
                                 <td><strong>{item.nro_puerto}</strong></td>
                                 <td>Panel #{item.panel_id} {item.es_panel_principal ? '(Principal)' : ''}</td>
                                 <td>{item.nombre_piso || 'N/A'}</td>
+                                <td>
+                                    {item.equipo_asignado ? (
+                                        <span className="text-danger fw-semibold">
+                                            {item.equipo_asignado} {item.tipo_equipo_nombre ? `(${item.tipo_equipo_nombre})` : ''}
+                                        </span>
+                                    ) : (
+                                        <span className="text-success">Disponible</span>
+                                    )}
+                                </td>
                                 <td className="text-end">
                                     <div className="d-flex justify-content-end gap-2">
                                         <Button variant="warning" size="sm" onClick={() => handleShowEdit(item)}>
