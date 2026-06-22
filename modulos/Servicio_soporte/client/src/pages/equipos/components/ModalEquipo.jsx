@@ -49,7 +49,6 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
     });
 
     const [selectedPanel, setSelectedPanel] = useState("");
-    const [occupiedPuertoIds, setOccupiedPuertoIds] = useState(new Set());
 
     // 4. Componentes (Para PC)
     const [componentes, setComponentes] = useState([]);
@@ -90,7 +89,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
             const load = async () => {
                 setLoadingMaestros(true);
                 try {
-                    const [deps, tiposEq, ports, walls, brands, mods, toners, compTypes, equipos] = await Promise.all([
+                    const [deps, tiposEq, ports, walls, brands, mods, toners, compTypes] = await Promise.all([
                         helpFetch.GET("/departamento"),
                         helpFetch.GET("/tipo_equipo"),
                         helpFetch.GET("/puertos"),
@@ -98,8 +97,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                         helpFetch.GET("/marca"),
                         helpFetch.GET("/modelo"),
                         helpFetch.GET("/tipo_toner"),
-                        helpFetch.GET("/tipo_componente"),
-                        helpFetch.GET("/equipo")
+                        helpFetch.GET("/tipo_componente")
                     ]);
                     setMaestros({
                         departamentos: deps,
@@ -111,12 +109,6 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                         tiposToner: toners,
                         tiposComponente: compTypes
                     });
-
-                    const occupied = new Set(equipos.map(eq => String(eq.pp_pared)).filter(Boolean));
-                    if (equipo?.pp_pared) {
-                        occupied.delete(String(equipo.pp_pared));
-                    }
-                    setOccupiedPuertoIds(occupied);
 
                     if (equipo) {
                         setValue("nro_bien", equipo.nro_bien || "");
@@ -159,21 +151,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             setValue("toner_id", String(equipo.toner_id || ""));
                         }
                     } else {
-                        reset({
-                            nro_bien: "",
-                            tipo_equipo: "",
-                            direc_id: "",
-                            marca_id: "",
-                            modelo_id: "",
-                            pp_pared: "",
-                            ip: "",
-                            nombre_equipo: "",
-                            sistema_operativo: "",
-                            version_office: "",
-                            elaborado_por: "",
-                            observaciones: "",
-                            toner_id: "",
-                        });
+                        reset();
                         setSelectedPanel("");
                         setComponentes([]);
                     }
@@ -186,7 +164,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
             };
             load();
         }
-    }, [show, equipo]);
+    }, [show, equipo?.id]);
 
     const handleAddComponent = () => {
         if (!nuevoComp.tipo_id || !nuevoComp.serial) {
@@ -313,14 +291,14 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                     <Col md={3}>
                                         <Form.Group>
                                             <Form.Label>Marca</Form.Label>
-                                        <Form.Select
-                                            {...register("marca_id", {
-                                                onChange: (e) => {
-                                                    setValue("modelo_id", "");
-                                                }
-                                            })}
-                                            isInvalid={!!errors.marca_id}
-                                        >
+                                            <Form.Select
+                                                {...register("marca_id", {
+                                                    onChange: (e) => {
+                                                        setValue("modelo_id", "");
+                                                    }
+                                                })}
+                                                isInvalid={!!errors.marca_id}
+                                            >
                                                 <option value="">Seleccione...</option>
                                                 {maestros.marcas.map(m => (
                                                     <option key={m.id} value={m.id}>{m.nombre}</option>
@@ -392,14 +370,13 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                                                 </option>
                                                 {maestros.puertosPared
                                                     .filter(p => String(p.panel_id) === String(selectedPanel))
-                                                    .filter(p => !occupiedPuertoIds.has(String(p.id)))
                                                     .map(p => (
-                                                         <option key={p.id} value={p.id} disabled={!!p.equipo_asignado} style={p.equipo_asignado ? { color: 'red' } : {}}>
+                                                        <option key={p.id} value={p.id} disabled={!!p.equipo_asignado} style={p.equipo_asignado ? { color: 'red' } : {}}>
                                                             Puerto: {p.nro_puerto}{p.equipo_asignado ? ` (Ocupado: ${p.equipo_asignado})` : ''}
                                                         </option>
                                                     ))}
                                             </Form.Select>
-                                            {selectedPanel && maestros.puertosPared.filter(p => String(p.panel_id) === String(selectedPanel)).filter(p => !occupiedPuertoIds.has(String(p.id))).length === 0 && (
+                                            {selectedPanel && maestros.puertosPared.filter(p => String(p.panel_id) === String(selectedPanel)).filter(p => !p.equipo_asignado).length === 0 && (
                                                 <Form.Text className="text-danger">
                                                     No hay puertos libres disponibles en esta roseta.
                                                 </Form.Text>
@@ -611,7 +588,7 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                             )}
 
                             {/* Otros tipos (Escaner, etc) podrían añadirse aquí */}
-                            {(!watchedTipoEquipo || (String(watchedTipoEquipo) !== "1" && String(watchedTipoEquipo) !== "2")) && watchedTipoEquipo && (
+                            {watchedTipoEquipo && String(watchedTipoEquipo) !== "1" && String(watchedTipoEquipo) !== "2" && (
                                 <div className="alert alert-info py-2">
                                     Este tipo de equipo no requiere detalles adicionales por ahora.
                                 </div>
