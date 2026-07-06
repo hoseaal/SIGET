@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { getTableMetadata } from '../../data/fetchData';
-import ModalInsert from '../Modales/modalInsert';
+import ModalRegistrarUsuario from './ModalRegistrarUsuario';
 import ModalUpdate from '../Modales/modalUpdate';
 import ModalDelete from '../Modales/modalDelete';
 import ModalContraseña from '../Modales/modalContraseña'
@@ -67,12 +67,13 @@ export const Usuarios = () => {
             <div className="card">
                 <div className="card-header d-flex justify-content-between align-items-center">
                     <h5 className="mb-0">Usuarios</h5>
+                    <button className="btn btn-primary" onClick={() => setShowUserModal(true)}>
+                        <i className="bx bx-plus me-1"></i> Registrar Usuario
+                    </button>
                 </div>
-                <ModalInsert
+                <ModalRegistrarUsuario
                     show={showUserModal}
                     handleClose={() => setShowUserModal(false)}
-                    columns={columns}
-                    tableName="usuarios"
                     onSuccess={handleSuccess}
                 />
                 <div className="table-responsive text-nowrap">

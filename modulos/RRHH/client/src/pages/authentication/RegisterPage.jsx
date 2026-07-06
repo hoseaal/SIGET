@@ -16,7 +16,8 @@ export const RegisterPage = () => {
         nombre: '',
         ape: '',
         rol_id: '',
-        modulo_id: ''
+        modulo_id: '',
+        empleado_id: ''
     });
 
     const tipo = [
@@ -56,6 +57,23 @@ export const RegisterPage = () => {
                     "mod": "Modulo de Bienes Muebles"
                 }
             ];
+
+    const [empleados, setEmpleados] = useState([]);
+
+    useEffect(() => {
+        const fetchEmpleados = async () => {
+            try {
+                const res = await fetch('/api/funcionarios', { credentials: 'include' });
+                if (res.ok) {
+                    const data = await res.json();
+                    setEmpleados(data.data || data); // Dependiendo de si está paginado o no
+                }
+            } catch (err) {
+                console.error("Error al obtener empleados", err);
+            }
+        };
+        fetchEmpleados();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -200,6 +218,35 @@ export const RegisterPage = () => {
                                         </div>
                                     </div>
                                 </div>
+                                
+                                {String(formData.rol_id) === "1" && (
+                                    <div className="row mb-3">
+                                        <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">Empleado Vinculado</label>
+                                        <div className="col-sm-10">
+                                            <div className="input-group input-group-merge">
+                                                <span id="basic-icon-default-fullname2" className="input-group-text"
+                                                ><i className="bx bx-user-pin"></i
+                                                ></span>
+                                                <Form.Group >
+                                                    <Form.Select 
+                                                    className="form-control"
+                                                        name='empleado_id'
+                                                        value={formData.empleado_id}
+                                                        onChange={handleChange}
+                                                    >
+                                                        <option value="">Seleccione el empleado</option>
+                                                        {empleados.map((item) => (
+                                                        <option key={item.empleado_id} value={item.empleado_id}>
+                                                            {item.nombres} {item.apellidos} - V-{item.cedula}
+                                                        </option>
+                                                    ))}
+                                                    </Form.Select>
+                                                </Form.Group>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="row mb-3">
                                     <label className="col-sm-2 col-form-label" htmlFor="basic-icon-default-fullname">Modulo al que tiene Acceso</label>
                                     <div className="col-sm-10">

@@ -11,26 +11,37 @@
  * 4: Jefe de Area
  * 5: Administrador
  */
+
+export const ROLES = {
+  VISUALIZADOR: 1,
+  TEMPORAL: 2,
+  TRABAJADOR: 3,
+  JEFE_AREA: 4,
+  ADMINISTRADOR: 5,
+};
 export const menuPermissions = {
-    // Dashboard disponible para todos
-    "/Dashboard": [1, 2, 3, 4, 5],
+    // Dashboard disponible para todos excepto visualizador
+    "/Dashboard": [2, 3, 4, 5],
+    
+    // Ruta exclusiva Visualizador
+    "/visualizador": [1],
 
     // Formularios BM
-    "/Personal/FuncionariosActivos": [1, 2, 3, 4, 5],
-    "/Personal/ObrerosFijos": [1, 2, 3, 4, 5],
-    "/Personal/Jubilados": [1, 2, 3, 4, 5],
-    "/Personal/Pensionados": [1, 2, 3, 4, 5],
+    "/Personal/FuncionariosActivos": [2, 3, 4, 5],
+    "/Personal/ObrerosFijos": [2, 3, 4, 5],
+    "/Personal/Jubilados": [2, 3, 4, 5],
+    "/Personal/Pensionados": [2, 3, 4, 5],
 
-    "/Personal/Sobrevivientes": [1, 2, 3, 4, 5],
-    "/Personal/Vacaciones/Funcionarios": [1, 2, 3, 4, 5],
-    "/Personal/Vacaciones/Obreros": [1, 2, 3, 4, 5],
+    "/Personal/Sobrevivientes": [2, 3, 4, 5],
+    "/Personal/Vacaciones/Funcionarios": [2, 3, 4, 5],
+    "/Personal/Vacaciones/Obreros": [2, 3, 4, 5],
 
     // Nomina
-    "/Nomina/FuncionariosActivos": [1, 2, 3, 4, 5],
-    "/Nomina/ObrerosFijos": [1, 2, 3, 4, 5],
-    "/Nomina/Jubilados": [1, 2, 3, 4, 5],
-    "/Nomina/Pensionados": [1, 2, 3, 4, 5],
-    "/Nomina/Sobrevivientes": [1, 2, 3, 4, 5],
+    "/Nomina/FuncionariosActivos": [2, 3, 4, 5],
+    "/Nomina/ObrerosFijos": [2, 3, 4, 5],
+    "/Nomina/Jubilados": [2, 3, 4, 5],
+    "/Nomina/Pensionados": [2, 3, 4, 5],
+    "/Nomina/Sobrevivientes": [2, 3, 4, 5],
 
     // Configuración General
     "/Configuracion/EstructuraOrganizacional": [3, 4, 5],
@@ -45,12 +56,12 @@ export const menuPermissions = {
     "/Configuracion/Bitacora": [4, 5],
 
     // Reportes
-    "/Reportes/CajaAhorro": [1, 2, 3, 4, 5],
-    "/Reportes/Pagos": [1, 2, 3, 4, 5],
-    "/Reportes/Primas": [1, 2, 3, 4, 5],
-    "/Reportes/Ingresos": [1, 2, 3, 4, 5],
-    "/Reportes/ResumenNomina": [1, 2, 3, 4, 5],
-    "/Reportes/Padres": [1, 2, 3, 4, 5],
+    "/Reportes/CajaAhorro": [2, 3, 4, 5],
+    "/Reportes/Pagos": [2, 3, 4, 5],
+    "/Reportes/Primas": [2, 3, 4, 5],
+    "/Reportes/Ingresos": [2, 3, 4, 5],
+    "/Reportes/ResumenNomina": [2, 3, 4, 5],
+    "/Reportes/Padres": [2, 3, 4, 5],
 };
 
 // src/data/permissions.js

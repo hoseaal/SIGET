@@ -22,7 +22,9 @@ export class AuthService {
         usuario_id: user.usuario_id,
         nombres: user.nombres,
         apellidos: user.apellidos,
-        rol_id: user.rol_id
+        rol_id: user.rol_id,
+        nombre_rol: user.nombre_rol, // Se añade el nombre del rol
+        empleado_id: user.empleado_id // Se añade el id del empleado
       },
       process.env.SECRET_KEY,
       { expiresIn: '6h' }
@@ -34,7 +36,9 @@ export class AuthService {
         usuario_id: user.usuario_id,
         nombres: user.nombres,
         apellidos: user.apellidos,
-        rol_id: user.rol_id
+        rol_id: user.rol_id,
+        nombre_rol: user.nombre_rol, // Se añade el nombre del rol
+        empleado_id: user.empleado_id // Se añade el id del empleado
       }
     }
   }

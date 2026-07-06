@@ -120,19 +120,41 @@ export async function exportVacacionesExcel({ data, mes, anio, periodo, fechaEmi
   // ─── Data rows ───────────────────────────────────────────────────────
   data.forEach((row, idx) => {
     const excelRow = ws.getRow(8 + idx)
-    excelRow.height = 18
+    excelRow.height = row.isGroupHeader ? (row.level === 'spacer' ? 8 : 20) : 18
 
-    cols.forEach((col, i) => {
-      const cell = excelRow.getCell(i + 1)
-      const val = row[col.key] ?? ''
-      cell.value = val
-      cell.font = col.bold ? { ...dataFont, bold: true } : (col.italic ? { ...dataFont, italic: true, color: { argb: 'FF595959' } } : dataFont)
-      cell.alignment = col.align === 'left' ? left : col.align === 'right' ? right : center
-      cell.border = THIN_ALL
-      if (col.type === 'currency' && typeof val === 'number') {
-        cell.numFmt = currencyFmt
+    if (row.isGroupHeader) {
+      // Fila espaciadora (línea en blanco entre Contralor y el resto)
+      if (row.level === 'spacer') {
+        excelRow.height = 8
+        return
       }
-    })
+
+      ws.mergeCells(8 + idx, 1, 8 + idx, totalCols)
+      const cell = excelRow.getCell(1)
+      cell.value = row.groupTitle
+      cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF000000' } }
+      
+      let bgColor = 'FFE7E6E6' // Gris claro para División/Unidad
+      if (row.level === 'direccion') bgColor = 'FF9BC2E6' // Azul claro para Dirección
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } }
+      cell.alignment = { horizontal: 'left', vertical: 'middle' }
+      
+      for (let i = 1; i <= totalCols; i++) {
+        excelRow.getCell(i).border = THIN_ALL
+      }
+    } else {
+      cols.forEach((col, i) => {
+        const cell = excelRow.getCell(i + 1)
+        const val = row[col.key] ?? ''
+        cell.value = val
+        cell.font = col.bold ? { ...dataFont, bold: true } : (col.italic ? { ...dataFont, italic: true, color: { argb: 'FF595959' } } : dataFont)
+        cell.alignment = col.align === 'left' ? left : col.align === 'right' ? right : center
+        cell.border = THIN_ALL
+        if (col.type === 'currency' && typeof val === 'number') {
+          cell.numFmt = currencyFmt
+        }
+      })
+    }
   })
 
   // ─── Auto-width ──────────────────────────────────────────────────────
@@ -143,7 +165,7 @@ export async function exportVacacionesExcel({ data, mes, anio, periodo, fechaEmi
     }
     const maxLen = Math.max(
       col.header.length,
-      ...data.map(r => String(r[col.key] ?? '').length)
+      ...data.filter(r => !r.isGroupHeader).map(r => String(r[col.key] ?? '').length)
     )
     ws.getColumn(i + 1).width = Math.min(Math.max(maxLen + 2, 10), col.width)
   })

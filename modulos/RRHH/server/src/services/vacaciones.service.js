@@ -179,6 +179,7 @@ export class VacacionesService {
     const primaReconocimiento = 0
     const primaComplementoAlimentacion = 0
     const primaHijos = 0
+    const primaMejoramientoEconomico = 0
     const difSueldoBasico = 0
     const difAntiguedad = 0
     const difProfesionalizacion = 0
@@ -187,7 +188,7 @@ export class VacacionesService {
     return Number((
       sueldoBasico + primaAntiguedad + primaProfesionalizacion + primaJerarquia +
       primaTransporte + primaReconocimiento + primaHogares + primaComplementoAlimentacion +
-      primaHijos + difSueldoBasico + difAntiguedad + difProfesionalizacion + difJerarquia
+      primaHijos + primaMejoramientoEconomico + difSueldoBasico + difAntiguedad + difProfesionalizacion + difJerarquia
     ).toFixed(2))
   }
 
@@ -272,10 +273,16 @@ export class VacacionesService {
   /**
    * Determina los días base según la matriz de escalones.
    *
-   * Escalón 1 (21): anios < 5  |  anios == 5 && meses == 0
-   * Escalón 2 (24): anios == 5 && meses >= 1  |  6-9  |  anios == 10 && meses == 0
-   * Escalón 3 (27): anios == 10 && meses >= 1  |  11-14  |  anios == 15 && meses == 0
-   * Escalón 4 (31): anios == 15 && meses >= 1  |  anios > 15
+   * ESCALONES (Regla de Fracciones Estrictas):
+   *   CUALQUIER fracción (meses > 0 O días > 0) más allá del año
+   *   exacto es suficiente para saltar al escalón superior.
+   *
+   * Escalón 1 (21): anios < 5 | anios == 5 && meses == 0 && dias == 0
+   * Escalón 2 (24): anios == 5 && (meses > 0 || dias > 0) | 6-9
+   *                 | anios == 10 && meses == 0 && dias == 0
+   * Escalón 3 (27): anios == 10 && (meses > 0 || dias > 0) | 11-14
+   *                 | anios == 15 && meses == 0 && dias == 0
+   * Escalón 4 (31): anios == 15 && (meses > 0 || dias > 0) | anios > 15
    *
    * @param {number} anios_total
    * @param {number} meses_total
@@ -284,42 +291,32 @@ export class VacacionesService {
    */
   static calcularDiasBaseMatriz(anios_total, meses_total, dias_total) {
     // ─── Escalón 4 (TOPE: 31 días base) ──────────────────────────────
-    // Si el funcionario tiene más de 15 años cumplidos, automáticamente
-    // alcanza el tope. Si tiene exactamente 15 años pero al menos 1 mes
-    // adicional (Meses_Total >= 1), también sube al escalón 4 porque
-    // el excedente mensual es suficiente para el salto. Si solo tuviera
-    // días sueltos (Meses_Total == 0), NO subiría (cae en escalón 3).
+    // Más de 15 años → tope automático.
+    // 15 años exactos CON fracción (meses > 0 o días > 0) → sube al 4.
     if (anios_total > 15) return 31
-    if (anios_total === 15 && meses_total >= 1) return 31
+    if (anios_total === 15 && (meses_total > 0 || dias_total > 0)) return 31
 
     // ─── Escalón 3 (27 días base) ────────────────────────────────────
-    // Con 15 años exactos y 0 meses (solo días excedentes), permanece
-    // en escalón 3 porque el salto al 4 requiere Meses_Total >= 1.
-    if (anios_total === 15 && meses_total === 0) return 27
+    // 15 años exactos SIN fracción → escalón 3.
+    if (anios_total === 15 && meses_total === 0 && dias_total === 0) return 27
 
-    // Entre 11 y 14 años inclusive: escalón 3 automático.
+    // 11 a 14 años → automático escalón 3.
     if (anios_total >= 11 && anios_total <= 14) return 27
 
-    // Con 10 años exactos pero al menos 1 mes de excedente, sube al
-    // escalón 3. Si solo fueran días (Meses_Total == 0), se queda en
-    // el escalón 2 (siguiente condición).
-    if (anios_total === 10 && meses_total >= 1) return 27
+    // 10 años exactos CON fracción → sube al 3.
+    if (anios_total === 10 && (meses_total > 0 || dias_total > 0)) return 27
 
     // ─── Escalón 2 (24 días base) ────────────────────────────────────
-    // 10 años exactos con 0 meses: subió a 10 años pero el excedente
-    // son solo días, por lo tanto no alcanza el escalón 3.
-    if (anios_total === 10 && meses_total === 0) return 24
+    // 10 años exactos SIN fracción → escalón 2.
+    if (anios_total === 10 && meses_total === 0 && dias_total === 0) return 24
 
-    // Entre 6 y 9 años inclusive: escalón 2 automático.
+    // 6 a 9 años → automático escalón 2.
     if (anios_total >= 6 && anios_total <= 9) return 24
 
-    // 5 años con al menos 1 mes de excedente: sube al escalón 2.
-    // Si solo fueran días (Meses_Total == 0), se queda en escalón 1.
-    if (anios_total === 5 && meses_total >= 1) return 24
+    // 5 años exactos CON fracción → sube al 2.
+    if (anios_total === 5 && (meses_total > 0 || dias_total > 0)) return 24
 
     // ─── Escalón 1 (21 días base - default) ─────────────────────────
-    // Menos de 5 años, o exactamente 5 años con Meses_Total == 0
-    // (excedente solo en días, insuficiente para el salto).
     return 21
   }
 
@@ -388,17 +385,9 @@ export class VacacionesService {
     if (!fechaInicio) throw new Error('fecha_inicio es requerida')
 
     // ── STEP 1: Antigüedad Total ──────────────────────────────
-    // Calcula en caliente la antigüedad acumulada del funcionario,
-    // sumando antigüedad interna (fecha_ingreso → hoy/fechaRef) y
-    // todas las antigüedades externas (registros_antiguedades).
-    // Aplica carry-over: 30 días → 1 mes, 12 meses → 1 año.
     const ant = await this.calcularAntiguedadTotalEmpleado(empleadoId, fechaInicio)
 
     // ── STEP 2 + 3: Días Base + Adicionales + Tope ────────────
-    // Evalúa la matriz de escalones (STEP 2) usando anios_total
-    // y meses_total para determinar los días base. Luego calcula
-    // los días adicionales = max(anios_total - 1, 0) con tope 15,
-    // y aplica el techo absoluto de 46 días (STEP 3).
     const { dias_base, dias_adicionales, total_dias_disfrute } =
       this.calcularDiasDisfruteTotal(ant.anios_total, ant.meses_total, ant.dias_total)
 
@@ -539,23 +528,39 @@ export class VacacionesService {
     if (!empBase) throw new Error('Empleado no encontrado')
     const tipo = this.normalizarTipo(empBase.tipo_personal)
 
-    // ── Paso 2: Antigüedad (Módulo 1) ──────────────────────────────
-    // Pasa la fecha_inicio_vacaciones como tope de cálculo.
-    const aniosAntiguedad = await VacacionesModel.getAntiguedadEmpleado(empleadoId, fechaInicio)
+    // ── Paso 2: Antigüedad Detallada (Módulo 1) ─────────────────────
+    // Calcula antigüedad desglosada en años, meses y días con carry-over
+    // (30 días → 1 mes, 12 meses → 1 año), usando la función centralizada.
+    const ant = await this.calcularAntiguedadTotalEmpleado(empleadoId, fechaInicio)
 
-    // ── Paso 3: Días de disfrute (Módulo 2) ────────────────────────
-    const { dias_base, dias_adicionales, total_dias_disfrute } =
-      await this.calcularDiasDisfrute(aniosAntiguedad, tipo)
+    // ── Paso 3: Días de disfrute con Matriz de Escalones (Módulo 2) ─
+    // Usa calcularDiasDisfruteTotal que evalúa la matriz de escalones
+    // (STEP 2) y los adicionales (STEP 3) con manejo de fracciones.
+    let dias_base, dias_adicionales, total_dias_disfrute
+
+    if (tipo === 'funcionario') {
+      const calc = this.calcularDiasDisfruteTotal(ant.anios_total, ant.meses_total, ant.dias_total)
+      dias_base = calc.dias_base
+      dias_adicionales = calc.dias_adicionales
+      total_dias_disfrute = calc.total_dias_disfrute
+    } else {
+      // Obreros: tabla fija por año (no aplica matriz ni adicionales)
+      const calc = await this.calcularDiasDisfrute(ant.anios_total, tipo)
+      dias_base = calc.dias_base
+      dias_adicionales = 0
+      total_dias_disfrute = calc.total_dias_disfrute
+    }
 
     // ── Paso 4: Proyección de fechas (Módulo 3) ─────────────────────
-    // Obtiene el calendario de festivos una sola vez.
     const festivos = await FestivosModel.getAll()
     const { fecha_fin, fecha_reincorporacion } =
       this.proyectarFechasCalendario(fechaInicio, total_dias_disfrute, festivos)
 
     return {
-      tipo_personal:          empBase.tipo_personal,   // 'FUNCIONARIO' | 'OBRERO'
-      antiguedad_anios:       aniosAntiguedad,
+      tipo_personal:          empBase.tipo_personal,
+      antiguedad_anios:       ant.anios_total,
+      antiguedad_meses:       ant.meses_total,
+      antiguedad_dias:        ant.dias_total,
       dias_base,
       dias_adicionales,
       total_dias_disfrute,
@@ -569,16 +574,27 @@ export class VacacionesService {
     const emp = await VacacionesModel.getDatosSalariales(empleadoId)
     if (!emp) throw new Error('Empleado no encontrado')
 
-    // Usa el Módulo 1 con la fecha de referencia correcta
-    const aniosAntiguedad = await VacacionesModel.getAntiguedadEmpleado(empleadoId, fechaRef)
+    // Obtener antigüedad detallada
+    const ant = await this.calcularAntiguedadTotalEmpleado(empleadoId, fechaRef)
+    const aniosAntiguedad = ant.anios_total
 
     // Lee tipo_personal desde la BD (Módulo 2)
     const empBase  = await VacacionesModel.getEmpleadoTipoPersonal(empleadoId)
     const tipoEmp  = this.normalizarTipo(empBase?.tipo_personal || 'FUNCIONARIO')
 
-    // Módulo 2: días de disfrute con la bifurcación correcta
-    const { dias_base, dias_adicionales, total_dias_disfrute } =
-      await this.calcularDiasDisfrute(aniosAntiguedad, tipoEmp)
+    // Calcular días de disfrute según el tipo de empleado
+    let dias_base, dias_adicionales, total_dias_disfrute
+    if (tipoEmp === 'funcionario') {
+      const calc = this.calcularDiasDisfruteTotal(ant.anios_total, ant.meses_total, ant.dias_total)
+      dias_base = calc.dias_base
+      dias_adicionales = calc.dias_adicionales
+      total_dias_disfrute = calc.total_dias_disfrute
+    } else {
+      const calc = await this.calcularDiasDisfrute(aniosAntiguedad, tipoEmp)
+      dias_base = calc.dias_base
+      dias_adicionales = calc.dias_adicionales
+      total_dias_disfrute = calc.total_dias_disfrute
+    }
 
     const festivos = await FestivosModel.getAll()
     const config   = await VacacionesModel.getConfiguracionVacaciones(
@@ -615,9 +631,24 @@ export class VacacionesService {
     const diasTotalesPeriodo = diasDisfruteLey + diasAcumulados
     const saldoDisponibleReal = Math.max(0, diasTotalesPeriodo - diasConsumidos + diasReintegrados)
 
-    if (diasSolicitados > saldoDisponibleReal) {
-      throw new Error(`Saldo insuficiente. Disponible: ${saldoDisponibleReal}, solicitado: ${diasSolicitados}`)
-    }
+    // La validación de saldo se realiza en registrarSolicitud, no aquí,
+    // para que calcular-saldo siempre pueda retornar el saldo real al frontend.
+
+    // ── APLICAR ALGORITMO DE SACRIFICIO ─────────────────────────
+    // consume primero acumulados; después toca el período actual.
+    const {
+      acumuladosConsumidosHistorial,
+      acumuladosConsumidosSolicitud,
+      periodoConsumidosSolicitud,
+      nuevoAcumulado
+    } = this._aplicarSacrificio(
+      diasAcumulados,        // saldo arrastrado de periodos previos
+      diasDisfruteLey,       // días base del período actual
+      diasConsumidos,        // días ya consumidos en el historial
+      diasReintegrados,      // días devueltos por reintegro
+      diasSolicitados        // días de la nueva solicitud
+    )
+    // nuevoAcumulado será 0 si la solicitud agotó todos los acumulados
 
     // Salario diario = (suma de todas las asignaciones mensuales) / 30
     const totalSueldoMensual = this.calcularSalarioMensual(emp, aniosAntiguedad)
@@ -638,9 +669,13 @@ export class VacacionesService {
       dias_reintegrados: diasReintegrados,
       dias_totales_periodo: diasTotalesPeriodo,
       saldo_disponible_real: saldoDisponibleReal,
-      total_disponibles: saldoDisponibleReal, // Legacy retrocompatibilidad
+      total_disponibles: saldoDisponibleReal,
       dias_solicitados: Number(diasSolicitados || 0),
-      nuevo_acumulado: Math.max(0, saldoDisponibleReal - Number(diasSolicitados || 0)),
+      // ── SACRIFICIO: desglose de consumo por bucket ──────────
+      dias_acumulados_consumidos_historial: acumuladosConsumidosHistorial,
+      dias_acumulados_consumidos_solicitud: acumuladosConsumidosSolicitud,
+      dias_periodo_consumidos_solicitud: periodoConsumidosSolicitud,
+      nuevo_acumulado: nuevoAcumulado,
       salario_diario: salarioDiario,
       pago_modalidad_fija: {
         nombre: 'Modalidad A (Fija)',
@@ -668,12 +703,89 @@ export class VacacionesService {
     return this.proyectarFechasCalendario(inicio, Number(diasSolicitados), festivos)
   }
 
+  /* ─── Algoritmo de Sacrificio ──────────────────────────── */
+
+  /**
+   * APLICA LA PRIORIDAD DE CONSUMO ("SACRIFICIO") SOBRE LOS DÍAS DISPONIBLES.
+   *
+   * REGLA DE NEGOCIO:
+   *   Los días acumulados de períodos anteriores se consumen SIEMPRE PRIMERO.
+   *   Sólo cuando se agotan se empieza a descontar del período actual.
+   *
+   * ── ARGUMENTOS ─────────────────────────────────────────────────────────
+   * @param {number}  diasAcumulados     Saldo de días arrastrados de periodos previos (vacaciones.dias_acumulados).
+   * @param {number}  diasDisfruteLey    Días base del período actual (disfrute_ley).
+   * @param {number}  diasConsumidos     Total de días ya consumidos en el historial del período actual.
+   * @param {number}  diasReintegrados   Total de días reintegrados (devueltos) en el período actual.
+   * @param {number}  diasSolicitados    Días que se solicitan en esta nueva petición.
+   * @returns {{ acumuladosConsumidosHistorial: number,
+   *             acumuladosConsumidosSolicitud: number,
+   *             periodoConsumidosSolicitud: number,
+   *             nuevoAcumulado: number }}
+   *
+   * ── ALGORITMO ──────────────────────────────────────────────────────────
+   *
+   *   FASE 1 — CÓMPUTO HISTÓRICO:
+   *     Se calcula cuántos días del historial (solicitudes previas dentro del
+   *     mismo período) excedieron los días de disfrute base. Ese excedente
+   *     se considera consumido del bucket de acumulados.
+   *
+   *     excesoConsumoSobreLey = MAX(0, consumidos - reintegrados - disfrute_ley)
+   *     acumuladosConsumidosHistorial = MIN(acumulados, exceso)
+   *     acumuladosRestantes = acumulados - acumuladosConsumidosHistorial
+   *
+   *   FASE 2 — SOLICITUD ACTUAL:
+   *     a) Si dias_solicitados <= acumulados_restantes:
+   *          → Todo se descuenta de acumulados.
+   *          → nuevo_acumulado = acumulados_restantes - solicitados (puede quedar > 0)
+   *          → periodo_afectado = 0
+   *
+   *     b) Si dias_solicitados > acumulados_restantes:
+   *          → Se consumen TODOS los acumulados restantes (nuevo_acumulado = 0)
+   *          → El excedente se descuenta del período actual.
+   *          → excedente = solicitados - acumulados_restantes
+   *          → periodo_afectado = excedente
+   *
+   *   FASE 3 — PERSISTENCIA:
+   *     nuevo_acumulado se persiste en vacaciones.dias_acumulados.
+   *     Si se consumió todo, nuevo_acumulado = 0.
+   *     Esto evita duplicidad de saldos en ciclos futuros.
+   */
+  static _aplicarSacrificio(diasAcumulados, diasDisfruteLey, diasConsumidos, diasReintegrados, diasSolicitados) {
+
+    // ── FASE 1: Cómputo del consumo histórico sobre acumulados ──────────
+    // El excedente del historial (consumido - reintegrado - ley) se cobra
+    // de los acumulados primero.
+    const excesoConsumoSobreLey = Math.max(0, diasConsumidos - diasReintegrados - diasDisfruteLey)
+    const acumuladosConsumidosHistorial = Math.min(diasAcumulados, excesoConsumoSobreLey)
+    const acumuladosRestantesPreSolicitud = diasAcumulados - acumuladosConsumidosHistorial
+
+    // ── FASE 2: Sacrificio de la solicitud actual ──────────────────────
+    // Se descuentan los días solicitados de los acumulados restantes.
+    // Sólo el excedente (si lo hay) toca el período actual.
+    const acumuladosConsumidosSolicitud = Math.min(acumuladosRestantesPreSolicitud, diasSolicitados)
+    const periodoConsumidosSolicitud = diasSolicitados - acumuladosConsumidosSolicitud
+
+    // ── FASE 3: Nuevo saldo de acumulados ──────────────────────────────
+    // Si los solicitados superaron los acumulados → nuevo_acumulado = 0.
+    // Si no → nuevo_acumulado = lo que sobre.
+    const nuevoAcumulado = Math.max(0, acumuladosRestantesPreSolicitud - acumuladosConsumidosSolicitud)
+
+    return {
+      acumuladosConsumidosHistorial,
+      acumuladosConsumidosSolicitud,
+      periodoConsumidosSolicitud,
+      nuevoAcumulado   // ← Puede ser 0 si se agotaron todos los acumulados
+    }
+  }
+
   /* ─── Alertas + Mantenimiento Diario ───────────────────── */
 
   static async mantenimientoDiario(force = false) {
     const hoy = this.toISODate(new Date())
     if (!force && this.ultimaEjecucionMantenimiento === hoy) return { skipped: true, date: hoy }
 
+    // ── 1. PROGRAMADO → DE_DISFRUTE ──────────────────────────
     await pool.query(`
       UPDATE vacaciones v
       INNER JOIN fechas_vacaciones fv ON fv.id_fecha = (
@@ -685,16 +797,65 @@ export class VacacionesService {
         AND (fv.fecha_fin IS NULL OR fv.fecha_fin >= CURDATE())
     `, [STATUS.DE_DISFRUTE, STATUS.PROGRAMADO])
 
+    // ── 2. PROGRAMADO / DE_DISFRUTE → FINALIZADO ─────────────
+    // Marca como finalizadas las vacaciones cuya fecha_fin ya pasó
+    // y actualiza fecha_proximo_derecho del empleado = fecha_tope + 1 año.
     await pool.query(`
       UPDATE vacaciones v
       INNER JOIN fechas_vacaciones fv ON fv.id_fecha = (
         SELECT MAX(fv2.id_fecha) FROM fechas_vacaciones fv2 WHERE fv2.id_vacaciones = v.id_vacaciones
       )
-      SET v.id_status_vacaciones = ?
+      INNER JOIN empleados e ON v.id_empleado = e.empleado_id
+      SET v.id_status_vacaciones = ?,
+          e.fecha_proximo_derecho = COALESCE(DATE_ADD(v.fecha_tope, INTERVAL 1 YEAR), e.fecha_proximo_derecho)
       WHERE v.id_status_vacaciones IN (?, ?)
         AND fv.fecha_fin < CURDATE()
     `, [STATUS.FINALIZADO, STATUS.PROGRAMADO, STATUS.DE_DISFRUTE])
 
+    // ── 3. REACTIVACIÓN DE ALERTAS TRAS EL DISFRUTE ─────────
+    // Por cada vacación recién finalizada, calcula el remanente de días
+    // usando la lógica de sacrificio centralizada y lo persiste en
+    // dias_acumulados. Esto asegura que el próximo ciclo parta con el
+    // saldo correcto y las alertas se reactiven (el funcionario vuelve
+    // a ser candidato para nuevo derecho en el período siguiente).
+    //
+    // Estrategia: se consultan los IDs de las vacaciones cuyo estatus
+    // cambió hoy a FINALIZADO y se procesan individualmente con la
+    // misma función calcularDerechosYLiquidacion que usa el resto del
+    // sistema, garantizando consistencia.
+    try {
+      const [finalizadosHoy] = await pool.query(`
+        SELECT v.id_vacaciones, v.id_empleado
+        FROM vacaciones v
+        INNER JOIN fechas_vacaciones fv ON fv.id_fecha = (
+          SELECT MAX(fv2.id_fecha) FROM fechas_vacaciones fv2 WHERE fv2.id_vacaciones = v.id_vacaciones
+        )
+        WHERE v.id_status_vacaciones = ?
+          AND fv.fecha_fin < CURDATE()
+          AND fv.fecha_fin >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
+      `, [STATUS.FINALIZADO])
+
+      for (const f of finalizadosHoy) {
+        try {
+          const derechos = await this.calcularDerechosYLiquidacion(f.id_empleado, 0)
+          // Persiste el balance final de acumulados post-sacrificio.
+          // Si el empleado consumió más días del período actual de los
+          // que había disponibles (excedente), esos días se descontaron
+          // de los acumulados. Si se agotaron todos, nuevo_acumulado = 0.
+          // Esto evita arrastrar saldos fantasma al siguiente ciclo.
+          await pool.query(
+            'UPDATE vacaciones SET dias_acumulados = ? WHERE id_vacaciones = ?',
+            [derechos.nuevo_acumulado, f.id_vacaciones]
+          )
+        } catch (errInner) {
+          console.warn(`[MANTENIMIENTO] Error actualizando acumulados para empleado ${f.id_empleado}: ${errInner.message}`)
+        }
+      }
+    } catch (err) {
+      console.warn('[MANTENIMIENTO] Error en reactivación de alertas:', err.message)
+    }
+
+    // ── 4. Estatus empleado: DE_DISFRUTE → estatus 8 ────────
     await pool.query(`
       UPDATE empleados e
       INNER JOIN vacaciones v ON v.id_empleado = e.empleado_id
@@ -703,6 +864,7 @@ export class VacacionesService {
         AND e.estatus_id <> 8
     `, [STATUS.DE_DISFRUTE])
 
+    // ── 5. FINALIZADO / REINTEGRO / EN_ESPERA → estatus 1 ──
     await pool.query(`
       UPDATE empleados e
       INNER JOIN vacaciones v ON v.id_empleado = e.empleado_id
@@ -781,6 +943,10 @@ export class VacacionesService {
       row.dias_usados_anio = usadosAnio
       row.dias_pendientes_disfrute = Math.max(0, derechos.dias_disfrute_ley - usadosAnio)
       row.dias_pendientes = Math.max(0, derechos.dias_disfrute_ley + Number(row.dias_acumulados || 0) - usadosAnio)
+      row.dias_acumulados_consumidos_historial = derechos.dias_acumulados_consumidos_historial
+      row.dias_acumulados_consumidos_solicitud = derechos.dias_acumulados_consumidos_solicitud
+      row.dias_periodo_consumidos_solicitud = derechos.dias_periodo_consumidos_solicitud
+      row.nuevo_acumulado = derechos.nuevo_acumulado
       if (row.estado_vacaciones !== 'por_derecho') {
         row.estado_vacaciones = this.mapStatusKey(Number(row.id_status_vacaciones))
       }
@@ -802,9 +968,15 @@ export class VacacionesService {
   static async calcularSaldo(empleadoId, diasSolicitados = 0, fechaInicio = null) {
     await this.mantenimientoDiario()
     const derechos = await this.calcularDerechosYLiquidacion(empleadoId, Number(diasSolicitados) || 0)
-    const fechas = (fechaInicio && Number(diasSolicitados) > 0)
-      ? await this.calcularFechasDisfrute(fechaInicio, diasSolicitados)
-      : { fecha_inicio: this.toISODate(fechaInicio), fecha_fin: null, fecha_reincorporacion: null }
+    let fechas = { fecha_inicio: this.toISODate(fechaInicio), fecha_fin: null, fecha_reincorporacion: null, fecha_finalizacion_real: null }
+    if (fechaInicio && Number(diasSolicitados) > 0) {
+      fechas = await this.calcularFechasDisfrute(fechaInicio, diasSolicitados)
+      const proyeccionTotal = await this.calcularFechasDisfrute(fechaInicio, derechos.dias_totales_periodo)
+      fechas.fecha_finalizacion_real = proyeccionTotal.fecha_fin
+    } else if (fechaInicio) {
+      const proyeccionTotal = await this.calcularFechasDisfrute(fechaInicio, derechos.dias_totales_periodo)
+      fechas.fecha_finalizacion_real = proyeccionTotal.fecha_fin
+    }
 
     const ant = await this.calcularAntiguedadTotalEmpleado(empleadoId)
 
@@ -823,9 +995,12 @@ export class VacacionesService {
       dias_disfrute_ley: derechos.dias_disfrute_ley,
       dias_base: derechos.dias_disfrute_ley,
       dias_acumulados: derechos.dias_acumulados,
+      dias_acumulados_consumidos_historial: derechos.dias_acumulados_consumidos_historial,
+      dias_acumulados_consumidos_solicitud: derechos.dias_acumulados_consumidos_solicitud,
+      dias_periodo_consumidos_solicitud: derechos.dias_periodo_consumidos_solicitud,
       dias_totales_periodo: derechos.dias_totales_periodo,
       saldo_disponible_real: derechos.saldo_disponible_real,
-      total_disponibles: derechos.saldo_disponible_real, // legacy retrocompatibilidad
+      total_disponibles: derechos.saldo_disponible_real,
       dias_solicitados: derechos.dias_solicitados,
       ya_pagado: derechos.ya_pagado,
       nuevo_acumulado: derechos.nuevo_acumulado,
@@ -834,7 +1009,8 @@ export class VacacionesService {
       pago_modalidad_escala: derechos.pago_modalidad_escala,
       fecha_inicio: fechas.fecha_inicio,
       fecha_fin: fechas.fecha_fin,
-      fecha_reincorporacion: fechas.fecha_reincorporacion
+      fecha_reincorporacion: fechas.fecha_reincorporacion,
+      fecha_finalizacion_real: fechas.fecha_finalizacion_real
     }
   }
 
@@ -878,25 +1054,93 @@ export class VacacionesService {
 
       if (vacRecord) {
         idVacaciones = vacRecord.id_vacaciones
+        // PERSISTE EL NUEVO BALANCE POST-SACRIFICIO:
+        //   - fecha_tope          = aniversario + 4 meses (inicio del nuevo período)
+        //   - id_status_vacaciones = PROGRAMADO o DE_DISFRUTE
+        //   - dias_acumulados     = nuevo_acumulado calculado por _aplicarSacrificio()
+        //     → Si la solicitud agotó todos los acumulados, aquí se guarda 0
+        //     → Garantiza que no haya duplicidad de saldos en ciclos futuros
         await connection.query(
-          `UPDATE vacaciones SET fecha_tope = ?, id_status_vacaciones = ? WHERE id_vacaciones = ?`,
-          [fechaTope, statusAsignar, idVacaciones]
+          `UPDATE vacaciones SET fecha_tope = ?, id_status_vacaciones = ?, dias_acumulados = ? WHERE id_vacaciones = ?`,
+          [fechaTope, statusAsignar, simulacion.nuevo_acumulado, idVacaciones]
         )
       } else {
+        // Primer registro de vacaciones para este empleado:
+        //   - dias_acumulados = nuevo_acumulado (0 si solicitó más de lo acumulado)
         const [result] = await connection.query(
           `INSERT INTO vacaciones (id_empleado, id_status_vacaciones, dias_acumulados, fecha_tope, pagado) VALUES (?, ?, ?, ?, ?)`,
-          [empleado_id, statusAsignar, 0, fechaTope, 0]
+          [empleado_id, statusAsignar, simulacion.nuevo_acumulado, fechaTope, 0]
         )
         idVacaciones = result.insertId
       }
 
-      const obsFinal = observaciones ? observaciones.trim() : `[Solicitud registrada por ${dias_solicitados} días hábiles]`
+      let obsFinal = observaciones ? observaciones.trim() : ''
+      if (!obsFinal) {
+        let base = simulacion.dias_base || 0
+        let adicionales = simulacion.dias_adicionales || 0
+        
+        if (simulacion.tipo_empleado === 'funcionario') {
+          const calc = this.calcularDiasDisfruteTotal(
+            simulacion.antiguedad_anios, 
+            simulacion.antiguedad_meses, 
+            simulacion.antiguedad_dias
+          )
+          base = calc.dias_base
+          adicionales = calc.dias_adicionales
+        }
+
+        const acumulados = simulacion.dias_acumulados || 0
+        const totalDias = simulacion.dias_totales_periodo || 0
+
+        // Helper para convertir numeros menores a 100 a letras
+        const numeroALetras = (num) => {
+          const unidades = ['cero', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte', 'veintiún', 'veintidós', 'veintitrés', 'veinticuatro', 'veinticinco', 'veintiséis', 'veintisiete', 'veintiocho', 'veintinueve']
+          const decenas = ['', '', '', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa']
+          if (num < 30) return unidades[num] || num.toString()
+          const d = Math.floor(num / 10)
+          const u = num % 10
+          if (u === 0) return decenas[d]
+          return decenas[d] + ' y ' + unidades[u]
+        }
+
+        // Calcular periodo
+        const dIngreso = emp.fecha_ingreso ? new Date(emp.fecha_ingreso) : new Date()
+        const hoyDate = new Date()
+        let pAnio = hoyDate.getFullYear()
+        const mIngreso = dIngreso.getMonth()
+        const mActual = hoyDate.getMonth()
+        const mCumple = (mIngreso + 4) % 12
+        if (mActual < mCumple) pAnio = hoyDate.getFullYear() - 1
+
+        const baseStr = base.toString().padStart(2, '0')
+        const adicStr = adicionales.toString().padStart(2, '0')
+        const periodoStr = `${pAnio}-${pAnio + 1}`
+
+        obsFinal = `${baseStr}+${adicStr} dias habiles del periodo vacacional ${periodoStr}`
+        if (acumulados > 0) {
+          const letrasAcu = numeroALetras(acumulados)
+          const numAcu = acumulados.toString().padStart(2, '0')
+          obsFinal += `, adicionalmente ${letrasAcu} (${numAcu}) dias habiles de periodos vacacionales`
+        }
+        const letrasTot = numeroALetras(totalDias)
+        const numTot = totalDias.toString().padStart(2, '0')
+        obsFinal += `, para un total de ${letrasTot}(${numTot}) dias habiles`
+      }
 
       await connection.query(
-        `INSERT INTO fechas_vacaciones (id_vacaciones, fecha_inicio, fecha_fin, dias_habiles, id_status_vacaciones, observaciones) VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO fechas_vacaciones
+           (id_vacaciones, fecha_inicio, fecha_fin, dias_habiles, id_status_vacaciones, observaciones,
+            fecha_finalizacion_real, fecha_reintegro_laboral)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          idVacaciones, simulacion.fecha_inicio, simulacion.fecha_fin, Number(dias_solicitados), statusAsignar,
-          obsFinal
+          idVacaciones,
+          simulacion.fecha_inicio,
+          simulacion.fecha_fin,
+          Number(dias_solicitados),
+          statusAsignar,
+          obsFinal,
+          simulacion.fecha_finalizacion_real, // ✔ Proyección de días totales (inmutable)
+          simulacion.fecha_reincorporacion    // ✔ Primer día hábil tras la fracción actual
         ]
       )
 
@@ -990,6 +1234,9 @@ export class VacacionesService {
     
     await VacacionesModel.updateEstatusEmpleado(empleadoId, 9)
 
+    // Reinicia el ciclo de alertas: fecha_proximo_derecho = fecha_tope + 1 año
+    await VacacionesModel.updateFechaProximoDerecho(empleadoId, vacRecord.fecha_tope)
+
     const saldoActual = await this.calcularSaldo(empleadoId, 0)
 
     return {
@@ -1010,6 +1257,10 @@ export class VacacionesService {
     if (!vacRecord) throw new Error('No existe registro de vacaciones para el empleado')
     await VacacionesModel.actualizarVacacion(vacRecord.id_vacaciones, { id_status_vacaciones: STATUS.EN_ESPERA })
     await VacacionesModel.updateEstatusEmpleado(empleadoId, 1)
+
+    // Reinicia el ciclo de alertas: fecha_proximo_derecho = fecha_tope + 1 año
+    await VacacionesModel.updateFechaProximoDerecho(empleadoId, vacRecord.fecha_tope)
+
     return {
       ok: true,
       empleado_id: empleadoId,
@@ -1130,8 +1381,26 @@ export class VacacionesService {
     const salarioBase = Number(emp.salario_base || 0)
     const aniosAntiguedad = await VacacionesModel.getAntiguedadEmpleado(empleadoId)
     let ant
+    let antExternal = { anios_total: 0, meses_total: 0, dias_total: 0 }
     try {
       ant = await this.calcularAntiguedadTotalEmpleado(empleadoId)
+      // Calcular antigüedad SOLO de registros externos (otras instituciones)
+      const datosAnt = await VacacionesModel.getDatosAntiguedadTotal(empleadoId)
+      if (datosAnt && datosAnt.registros_externos && datosAnt.registros_externos.length > 0) {
+        let totalDiasExt = 0
+        for (const reg of datosAnt.registros_externos) {
+          const inicio = this.dateOnly(reg.fecha_inicio)
+          const fin = this.dateOnly(reg.fecha_fin || new Date())
+          if (inicio && fin && fin >= inicio) {
+            totalDiasExt += Math.floor((fin - inicio) / (1000 * 60 * 60 * 24)) + 1
+          }
+        }
+        antExternal = {
+          anios_total: Math.floor(totalDiasExt / 360),
+          meses_total: Math.floor((totalDiasExt % 360) / 30),
+          dias_total: totalDiasExt % 30
+        }
+      }
     } catch {
       ant = { anios_total: aniosAntiguedad, meses_total: 0, dias_total: 0 }
     }
@@ -1148,6 +1417,7 @@ export class VacacionesService {
     const primaHogares = 120
     const primaComplementoAlimentacion = 0
     const primaHijos = 0
+    const primaMejoramientoEconomico = 0
     const difSueldoBasico = 0
     const difAntiguedad = 0
     const difProfesionalizacion = 0
@@ -1159,6 +1429,67 @@ export class VacacionesService {
     const diasBonoVacacional = 220
     const bonoVacacional = Number((sueldoDiario * diasBonoVacacional).toFixed(2))
 
+    // Firmantes dinamicos desde la BD
+    const firmantesRows = await VacacionesModel.getFirmantes()
+
+    // ── Datos de la solicitud vacacional ──────────────────────────────
+    const vacRecord = await VacacionesModel.getVacacionesRecord(empleadoId)
+    const historial = await VacacionesModel.getHistorialVacaciones(empleadoId)
+
+    // Tomamos la última entrada que NO sea reintegro (status 4)
+    const ultimaFecha = historial
+      .filter(h => h.id_status_vacaciones !== 4)
+      .pop()
+
+    // ── Fecha de finalización REAL y fecha de reintegro laboral ──────────
+    // Preferir los valores ya persistidos en BD (fecha_finalizacion_real /
+    // fecha_reintegro_laboral). Para registros legacy (columnas aún NULL)
+    // se proyecta en tiempo real con el mismo algoritmo de días hábiles.
+    let fechaFinReal = ultimaFecha?.fecha_finalizacion_real || null
+    let fechaReincorporacionReal = ultimaFecha?.fecha_reintegro_laboral || null
+
+    if (!fechaFinReal && ultimaFecha?.fecha_inicio && derechos?.dias_totales_periodo) {
+      // Registro legacy: proyectar en vivo usando el total de días del periodo
+      try {
+        const festivos = await FestivosModel.getAll()
+        const proyeccion = this.proyectarFechasCalendario(
+          ultimaFecha.fecha_inicio,
+          Number(derechos.dias_totales_periodo),
+          festivos
+        )
+        fechaFinReal = proyeccion.fecha_fin
+        fechaReincorporacionReal = proyeccion.fecha_reincorporacion
+      } catch {
+        fechaFinReal = ultimaFecha?.fecha_fin || null
+        fechaReincorporacionReal = ultimaFecha?.fecha_fin
+          ? this.calcularFechaRetorno(ultimaFecha.fecha_fin)
+          : null
+      }
+    } else if (!fechaReincorporacionReal && fechaFinReal) {
+      fechaReincorporacionReal = this.calcularFechaRetorno(fechaFinReal)
+    }
+
+    // ── Derechos y saldos ─────────────────────────────────────────────
+    let derechos = null
+    try {
+      derechos = await this.calcularDerechosYLiquidacion(empleadoId, 0)
+    } catch {
+      derechos = null
+    }
+
+    // ── Cálculo del período anual ─────────────────────────────────────
+    const fechaIngreso = this.dateOnly(emp.fecha_ingreso)
+    const hoy = new Date()
+    let periodoAnio = hoy.getFullYear()
+    if (fechaIngreso) {
+      const mesIngreso = fechaIngreso.getMonth()
+      const mesActual = hoy.getMonth()
+      const mesCumple = (mesIngreso + 4) % 12
+      if (mesActual < mesCumple) {
+        periodoAnio = hoy.getFullYear() - 1
+      }
+    }
+
     return {
       empleado: {
         cedula: emp.cedula,
@@ -1168,12 +1499,18 @@ export class VacacionesService {
         nro_cuenta_bancaria: emp.nro_cuenta_bancaria,
         cargo_cet: emp.cargo_cet_nombre,
         cargo_onapre: emp.cargo_onapre_nombre,
+        direccion_nombre: emp.direccion_nombre,
+        division_nombre: emp.division_nombre,
+        unidad_nombre: emp.unidad_nombre,
         salario_base: salarioBase,
         porcentaje_profesionalizacion: Number(emp.porcentaje_profesionalizacion),
         anios_antiguedad: aniosAntiguedad,
         antiguedad_anios: ant.anios_total,
         antiguedad_meses: ant.meses_total,
-        antiguedad_dias: ant.dias_total
+        antiguedad_dias: ant.dias_total,
+        otros_anios: antExternal.anios_total,
+        otros_meses: antExternal.meses_total,
+        otros_dias: antExternal.dias_total
       },
       lineas_recibo: {
         sueldo_basico: sueldoBasico,
@@ -1185,6 +1522,7 @@ export class VacacionesService {
         prima_hogares: primaHogares,
         prima_complemento_alimentacion: primaComplementoAlimentacion,
         prima_hijos: primaHijos,
+        prima_mejoramiento_economico: primaMejoramientoEconomico,
         diferencia_sueldo_basico: difSueldoBasico,
         diferencia_antiguedad: difAntiguedad,
         diferencia_profesionalizacion: difProfesionalizacion,
@@ -1194,11 +1532,30 @@ export class VacacionesService {
         dias_bono_vacacional: diasBonoVacacional,
         bono_vacacional: bonoVacacional
       },
+      vacacion: {
+        fecha_inicio: ultimaFecha?.fecha_inicio || null,
+        fecha_fin: ultimaFecha?.fecha_fin || null,          // fecha en BD (puede ser de fracción/reintegro)
+        fecha_fin_real: fechaFinReal,                       // último día real de disfrute (proyección pura)
+        fecha_reincorporacion: fechaReincorporacionReal,    // primer día hábil posterior a fecha_fin_real
+        fecha_reintegro: ultimaFecha?.fecha_fin || null,    // alias explícito de lo que está en BD
+        dias_habiles: ultimaFecha?.dias_habiles || 0,
+        saldo_anterior: derechos?.dias_acumulados || 0,
+        dias_totales_periodo: derechos?.dias_totales_periodo || 0,
+        saldo_restante: derechos?.saldo_disponible_real || 0,
+        periodo: `${periodoAnio}-${periodoAnio + 1}`,
+        fecha_solicitud: this.toISODate(new Date()),
+        observaciones: ultimaFecha?.observaciones || ''
+      },
+      firmantes: firmantesRows,
       ultima_nomina: emp.fecha ? {
         fecha_pago: emp.fecha,
         monto_neto: Number(emp.monto_neto || 0)
       } : null
     }
+  }
+
+  static async actualizarFirmante(cargo_clave, nombre) {
+    return VacacionesModel.updateFirmante(cargo_clave, nombre)
   }
 
 
@@ -1288,6 +1645,8 @@ export class VacacionesService {
         fecha_tope: fechaTope,
         id_status_vacaciones: STATUS.EN_ESPERA
       })
+      // Reinicia el ciclo de alertas con la nueva fecha tope
+      await VacacionesModel.updateFechaProximoDerecho(empleadoId, fechaTope)
     } else {
       await VacacionesModel.crearVacacion({
         id_empleado: empleadoId,

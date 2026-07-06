@@ -36,6 +36,7 @@ import nominaSobrevivientesRouter from './src/routes/nominaSobrevivientes.routes
 import porcentajesJerarquiasRouter from './src/routes/porcentajesJerarquias.routes.js'
 import retroactivoRouter from './src/routes/retroactivo.routes.js'
 import institucionRouter from './src/routes/institucion.routes.js'
+import empleadoRouter from './src/routes/empleado.routes.js'
 
 import historialSalarioRouter from './src/routes/historialSalario.routes.js'
 import cajaAhorroRouter from './src/routes/cajaAhorro.routes.js'
@@ -48,8 +49,11 @@ import configuracionVacacionesRouter from './src/routes/configuracionVacaciones.
 import configuracionVacacionesObrerosRouter from './src/routes/configuracionVacacionesObreros.routes.js'
 import vacacionesRouter from './src/routes/vacaciones.routes.js'
 import dashboardRouter from './src/routes/dashboard.routes.js'
+
 import festivosRouter from './src/routes/festivos.routes.js'
 import nominaRouter from './src/routes/nomina.routes.js'
+import constanciaRouter from './src/routes/constancia.routes.js'
+import miPerfilRouter from './src/routes/miPerfil.routes.js'
 import { VacacionesModel } from './src/models/vacaciones.model.js'
 import { CajaAhorroModel } from './src/models/cajaAhorro.model.js'
 import { HistorialSalarioModel } from './src/models/historialSalario.model.js'
@@ -143,12 +147,16 @@ app.use('/api/festivos', festivosRouter)
 app.use('/api/dashboard', dashboardRouter)
 app.use('/api/retroactivos', retroactivoRouter)
 app.use('/api/instituciones', institucionRouter)
+app.use('/api/empleados', empleadoRouter)
 app.use('/api/caja-ahorro', cajaAhorroRouter)
 app.use('/api/reporte-pagos', reportePagosRouter)
 app.use('/api/reporte-ingresos', reporteIngresosRouter)
 app.use('/api/reporte-primas', reportePrimasRouter)
 app.use('/api/resumen-nomina', reporteResumenNominaRouter)
 app.use('/api/reporte-padres', reportePadresRouter)
+app.use('/api/constancias', constanciaRouter)
+app.use('/api/mi-perfil', miPerfilRouter)
+
 
 const PORT = 5002
 app.listen(PORT, () => {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 27-05-2026 a las 15:51:12
+-- Tiempo de generación: 21-06-2026 a las 00:14:20
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -20,6 +20,98 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `dbsigetrrhh-1`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `caja_ahorro`
+--
+
+CREATE TABLE `caja_ahorro` (
+  `id_caja` int(11) NOT NULL,
+  `empleado_id` int(11) NOT NULL,
+  `tipo_personal` varchar(30) NOT NULL DEFAULT 'Funcionario' COMMENT 'Funcionario|Obrero Fijo|Jubilado|Pensionado|Sobreviviente',
+  `quincena_no` tinyint(1) NOT NULL COMMENT '1 = Primera quincena, 2 = Segunda quincena',
+  `mes` tinyint(2) NOT NULL COMMENT '1-12',
+  `anio` smallint(6) NOT NULL,
+  `monto` decimal(14,2) NOT NULL DEFAULT 0.00 COMMENT 'Aporte Empleado + Aporte Patrono',
+  `aporte_empleado` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `aporte_patrono` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `caja_ahorro`
+--
+
+INSERT INTO `caja_ahorro` (`id_caja`, `empleado_id`, `tipo_personal`, `quincena_no`, `mes`, `anio`, `monto`, `aporte_empleado`, `aporte_patrono`, `fecha_registro`) VALUES
+(43, 49, 'Funcionario', 1, 7, 2026, 40.90, 20.45, 20.45, '2026-06-14 22:20:56'),
+(44, 46, 'Funcionario', 1, 7, 2026, 37.60, 18.80, 18.80, '2026-06-14 22:20:56'),
+(45, 67, 'Funcionario', 1, 7, 2026, 37.60, 18.80, 18.80, '2026-06-14 22:20:56'),
+(46, 45, 'Funcionario', 1, 7, 2026, 24.80, 12.40, 12.40, '2026-06-14 22:20:56'),
+(47, 51, 'Funcionario', 1, 7, 2026, 13.00, 6.50, 6.50, '2026-06-14 22:20:56'),
+(48, 49, 'Funcionario', 2, 7, 2026, 40.90, 20.45, 20.45, '2026-06-14 22:20:59'),
+(49, 46, 'Funcionario', 2, 7, 2026, 37.60, 18.80, 18.80, '2026-06-14 22:20:59'),
+(50, 67, 'Funcionario', 2, 7, 2026, 37.60, 18.80, 18.80, '2026-06-14 22:20:59'),
+(51, 45, 'Funcionario', 2, 7, 2026, 24.80, 12.40, 12.40, '2026-06-14 22:20:59'),
+(52, 51, 'Funcionario', 2, 7, 2026, 13.00, 6.50, 6.50, '2026-06-14 22:20:59'),
+(53, 54, 'Obrero Fijo', 1, 7, 2026, 16.10, 8.05, 8.05, '2026-06-14 22:21:21'),
+(54, 55, 'Obrero Fijo', 1, 7, 2026, 16.10, 8.05, 8.05, '2026-06-14 22:21:21'),
+(55, 66, 'Obrero Fijo', 1, 7, 2026, 16.10, 8.05, 8.05, '2026-06-14 22:21:21'),
+(56, 54, 'Obrero Fijo', 2, 7, 2026, 16.10, 8.05, 8.05, '2026-06-14 22:21:25'),
+(57, 55, 'Obrero Fijo', 2, 7, 2026, 16.10, 8.05, 8.05, '2026-06-14 22:21:25'),
+(58, 66, 'Obrero Fijo', 2, 7, 2026, 16.10, 8.05, 8.05, '2026-06-14 22:21:25'),
+(59, 56, 'Jubilado', 1, 7, 2026, 28.20, 14.10, 14.10, '2026-06-14 22:21:30'),
+(60, 57, 'Jubilado', 1, 7, 2026, 10.40, 5.20, 5.20, '2026-06-14 22:21:30'),
+(61, 56, 'Jubilado', 2, 7, 2026, 28.20, 14.10, 14.10, '2026-06-14 22:21:38'),
+(62, 57, 'Jubilado', 2, 7, 2026, 10.40, 5.20, 5.20, '2026-06-14 22:21:38'),
+(84, 58, 'Pensionado', 1, 7, 2026, 6.50, 6.50, 6.50, '2026-06-16 14:19:46'),
+(85, 59, 'Pensionado', 1, 7, 2026, 6.50, 6.50, 6.50, '2026-06-16 14:19:46'),
+(86, 58, 'Pensionado', 2, 7, 2026, 6.50, 6.50, 6.50, '2026-06-16 14:19:52'),
+(87, 59, 'Pensionado', 2, 7, 2026, 6.50, 6.50, 6.50, '2026-06-16 14:19:52');
+
+--
+-- Disparadores `caja_ahorro`
+--
+DELIMITER $$
+CREATE TRIGGER `before_insert_caja_ahorro` BEFORE INSERT ON `caja_ahorro` FOR EACH ROW BEGIN
+  DECLARE msg VARCHAR(255);
+  IF NEW.quincena_no NOT IN (1, 2) THEN
+    SET msg = CONCAT('Valor inválido para quincena_no: ', NEW.quincena_no, '. Debe ser 1 o 2.');
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.mes < 1 OR NEW.mes > 12 THEN
+    SET msg = CONCAT('Valor inválido para mes: ', NEW.mes, '. Debe estar entre 1 y 12.');
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.anio < 2000 OR NEW.anio > 2100 THEN
+    SET msg = CONCAT('Valor inválido para anio: ', NEW.anio, '. Debe estar entre 2000 y 2100.');
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.monto < 0 THEN
+    SET msg = CONCAT('El monto de caja de ahorro no puede ser negativo: ', NEW.monto);
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `before_update_caja_ahorro` BEFORE UPDATE ON `caja_ahorro` FOR EACH ROW BEGIN
+  DECLARE msg VARCHAR(255);
+  IF NEW.empleado_id != OLD.empleado_id OR
+     NEW.quincena_no != OLD.quincena_no OR
+     NEW.mes != OLD.mes OR
+     NEW.anio != OLD.anio THEN
+    SET msg = 'No está permitido modificar empleado_id, quincena_no, mes o anio de un registro existente.';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.monto < 0 THEN
+    SET msg = CONCAT('El monto de caja de ahorro no puede ser negativo: ', NEW.monto);
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -246,6 +338,7 @@ INSERT INTO `catalogo_instituciones` (`id_institucion`, `nombre`, `siglas`) VALU
 (57, 'Fundación Misión Hábitat', 'FMH'),
 (92, 'Gobernación del Estado Amazonas', 'GEAMAZONAS'),
 (93, 'Gobernación del Estado Anzoátegui', 'GEANZOATEGUI'),
+(194, 'Gobernación del Estado APure', 'GEA'),
 (94, 'Gobernación del Estado Apure', 'GEAPURE'),
 (95, 'Gobernación del Estado Aragua', 'GEARAGUA'),
 (96, 'Gobernación del Estado Barinas', 'GEBARINAS'),
@@ -398,10 +491,21 @@ INSERT INTO `configuracion_antiguedad` (`antiguedad_id`, `anios_cumplidos`, `por
 
 CREATE TABLE `configuracion_vacaciones` (
   `id_configuracion` int(11) NOT NULL,
-  `anio` year(4) DEFAULT NULL,
-  `dias` int(11) DEFAULT NULL,
+  `rango_minimo` int(11) DEFAULT NULL,
+  `rango_maximo` int(11) DEFAULT NULL,
+  `dias_disfrute` int(11) NOT NULL,
   `pago` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `configuracion_vacaciones`
+--
+
+INSERT INTO `configuracion_vacaciones` (`id_configuracion`, `rango_minimo`, `rango_maximo`, `dias_disfrute`, `pago`) VALUES
+(8, 0, 5, 21, '220'),
+(9, 5, 10, 24, '220'),
+(10, 10, 15, 27, '220'),
+(11, 15, 100, 31, '220');
 
 -- --------------------------------------------------------
 
@@ -411,10 +515,32 @@ CREATE TABLE `configuracion_vacaciones` (
 
 CREATE TABLE `configuracion_vacaciones_obreros` (
   `id_configuracion` int(11) NOT NULL,
-  `anio` year(4) DEFAULT NULL,
-  `dias` int(11) DEFAULT NULL,
+  `anio` int(11) DEFAULT NULL,
+  `dias_disfrute` int(11) NOT NULL,
   `pago` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `configuracion_vacaciones_obreros`
+--
+
+INSERT INTO `configuracion_vacaciones_obreros` (`id_configuracion`, `anio`, `dias_disfrute`, `pago`) VALUES
+(1, 1, 15, '15'),
+(2, 2, 16, '16'),
+(3, 3, 17, '17'),
+(4, 4, 18, '18'),
+(5, 5, 19, '19'),
+(6, 6, 20, '20'),
+(7, 7, 21, '21'),
+(8, 8, 22, '22'),
+(9, 9, 23, '23'),
+(10, 10, 24, '24'),
+(11, 11, 25, '25'),
+(12, 12, 26, '26'),
+(13, 13, 27, '27'),
+(14, 14, 28, '28'),
+(15, 15, 29, '29'),
+(16, 16, 30, '30');
 
 -- --------------------------------------------------------
 
@@ -441,23 +567,53 @@ CREATE TABLE `datos_laborales` (
 
 INSERT INTO `datos_laborales` (`empleado_id`, `cargo_cet_id`, `cargo_onapre_id`, `nivel_salarial_id`, `nivel_salarial_antiguo_id`, `condicion_laboral_id`, `prima_profesional_id`, `direccion_id`, `division_id`, `unidad_id`) VALUES
 (45, 48, 26, 103, 110, 1, 4, 3, 4, 18),
-(46, 43, 25, 159, 166, 1, 4, 11, NULL, NULL),
-(49, 40, 21, 99, 106, 1, 4, 1, NULL, NULL),
+(46, 80, 23, 158, 165, 1, 4, 11, NULL, NULL),
+(49, 40, 21, 99, 106, 1, 4, 17, NULL, NULL),
 (50, 69, 34, 131, 138, 1, 3, 1, NULL, NULL),
 (51, 48, 26, 137, 144, 1, 4, 3, 4, 5),
 (54, 76, 46, 163, 170, 1, NULL, 10, NULL, 17),
-(55, 76, 46, 163, 170, 1, NULL, 10, NULL, 17),
+(55, 76, 46, 163, 109, 1, NULL, 10, NULL, 17),
 (56, 80, 23, 158, 165, 1, 4, NULL, NULL, NULL),
 (57, 73, 40, 137, 109, 1, 4, NULL, NULL, NULL),
 (58, 85, 40, 137, 144, NULL, NULL, NULL, NULL, NULL),
 (59, 44, 24, 101, 108, NULL, 4, NULL, NULL, NULL),
 (61, 60, 26, 102, 109, 1, NULL, 2, 8, NULL),
 (65, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(66, 76, 46, 163, 170, 1, NULL, 14, NULL, 17);
+(66, 76, 46, 163, 170, 1, NULL, 14, NULL, 17),
+(67, 41, 22, 100, 107, 1, 1, 10, NULL, NULL),
+(68, 51, 26, 102, 109, 1, 4, 2, 9, NULL);
 
 --
 -- Disparadores `datos_laborales`
 --
+DELIMITER $$
+CREATE TRIGGER `after_insert_datos_laborales_bitacora` AFTER INSERT ON `datos_laborales` FOR EACH ROW BEGIN
+  DECLARE v_salario DECIMAL(10,2);
+  DECLARE v_cargo_nombre VARCHAR(150);
+
+  -- Obtener el salario base desde niveles_salariales
+  SELECT COALESCE(ns.salario_base, 0)
+    INTO v_salario
+    FROM niveles_salariales ns
+   WHERE ns.nivel_salarial_id = NEW.nivel_salarial_id;
+
+  -- Obtener el nombre del cargo CET
+  SELECT COALESCE(cet.nombre, 'No especificado')
+    INTO v_cargo_nombre
+    FROM cargos_cet cet
+   WHERE cet.cargo_cet_id = NEW.cargo_cet_id;
+
+  -- Insertar registro en la bitácora salarial
+  INSERT INTO historial_salarios (empleado_id, fecha, monto_neto, observaciones)
+  VALUES (
+    NEW.empleado_id,
+    CURDATE(),
+    v_salario,
+    CONCAT('Salario inicial asignado por ingreso a la institución. Cargo: ', v_cargo_nombre, '.')
+  );
+END
+$$
+DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `after_insert_datos_laborales_cargo` AFTER INSERT ON `datos_laborales` FOR EACH ROW BEGIN
     DECLARE dept_name VARCHAR(150);
@@ -485,6 +641,64 @@ CREATE TRIGGER `after_insert_datos_laborales_cargo` AFTER INSERT ON `datos_labor
         'Asignación de cargo',
         dept_name
     );
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `after_update_datos_laborales_bitacora` AFTER UPDATE ON `datos_laborales` FOR EACH ROW BEGIN
+  DECLARE v_salario_nuevo DECIMAL(10,2);
+  DECLARE v_cargo_anterior VARCHAR(150);
+  DECLARE v_cargo_nuevo VARCHAR(150);
+  DECLARE v_observacion TEXT;
+
+  -- ──────────────────────────────────────────────────────────────────────────
+  -- Evaluación de activación:
+  -- Solo proceder si el nivel salarial (salario) cambió realmente.
+  -- COALESCE maneja posibles valores NULL en los IDs.
+  -- ──────────────────────────────────────────────────────────────────────────
+  IF COALESCE(OLD.nivel_salarial_id, 0) <> COALESCE(NEW.nivel_salarial_id, 0) THEN
+
+    -- Obtener el nuevo salario base
+    SELECT COALESCE(ns.salario_base, 0)
+      INTO v_salario_nuevo
+      FROM niveles_salariales ns
+     WHERE ns.nivel_salarial_id = NEW.nivel_salarial_id;
+
+    -- ────────────────────────────────────────────────────────────────────────
+    -- Evaluación del motivo:
+    -- ¿Cambió también el cargo?
+    -- ────────────────────────────────────────────────────────────────────────
+    IF COALESCE(OLD.cargo_cet_id, 0) <> COALESCE(NEW.cargo_cet_id, 0) THEN
+      -- Escenario A: Cambio de cargo
+      SELECT COALESCE(cet.nombre, 'No especificado')
+        INTO v_cargo_anterior
+        FROM cargos_cet cet
+       WHERE cet.cargo_cet_id = OLD.cargo_cet_id;
+
+      SELECT COALESCE(cet.nombre, 'No especificado')
+        INTO v_cargo_nuevo
+        FROM cargos_cet cet
+       WHERE cet.cargo_cet_id = NEW.cargo_cet_id;
+
+      SET v_observacion = CONCAT(
+        'Ajuste salarial por Cambio de Cargo. ',
+        'Cargo anterior: ', v_cargo_anterior,
+        '. Cargo nuevo: ', v_cargo_nuevo, '.'
+      );
+    ELSE
+      -- Escenario B: Ajuste regular sin cambio de cargo
+      SET v_observacion = 'Ajuste salarial regular (Sin cambio de cargo).';
+    END IF;
+
+    -- Insertar registro en la bitácora (una nueva fila, inmutable)
+    INSERT INTO historial_salarios (empleado_id, fecha, monto_neto, observaciones)
+    VALUES (
+      NEW.empleado_id,
+      CURDATE(),
+      v_salario_nuevo,
+      v_observacion
+    );
+  END IF;
 END
 $$
 DELIMITER ;
@@ -726,6 +940,43 @@ INSERT INTO `deducciones` (`deduccion_id`, `nombre`, `porcentaje`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `dias_festivos`
+--
+
+CREATE TABLE `dias_festivos` (
+  `id_festivo` int(11) NOT NULL,
+  `fecha` date NOT NULL,
+  `descripcion` varchar(255) NOT NULL,
+  `recurrente` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `dias_festivos`
+--
+
+INSERT INTO `dias_festivos` (`id_festivo`, `fecha`, `descripcion`, `recurrente`) VALUES
+(1, '2026-01-01', 'Año nuevo', 1),
+(2, '2026-01-20', 'Día del Patrono de la ciudad San Sebástian', 1),
+(3, '2026-02-16', 'Carnavales', 1),
+(4, '2026-02-17', 'Carnavales', 1),
+(5, '2026-04-01', 'Semana Santa', 1),
+(6, '2026-04-02', 'Semana Santa', 1),
+(7, '2026-04-03', 'Semana Santa', 1),
+(8, '2026-05-01', 'Día del trabajador ', 1),
+(9, '2026-06-24', 'Día de la Batalla de Carabobo', 1),
+(10, '2026-07-24', 'Natalicio De Simón Bolívar', 1),
+(11, '2026-08-06', 'Día del Santo Cristo de la Grita', 1),
+(12, '2026-09-04', 'Día del funcionario público', 1),
+(13, '2026-10-12', 'Día de la Resitencia Indígena', 1),
+(14, '2026-12-17', 'Conmemoración de la muerte del Libertador', 1),
+(15, '2026-12-24', 'Navidad', 1),
+(16, '2026-12-25', 'Navidad', 1),
+(17, '2026-12-31', 'Fin de año', 1),
+(18, '2026-11-11', 'eeeerr', 1);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `direcciones`
 --
 
@@ -753,7 +1004,8 @@ INSERT INTO `direcciones` (`direccion_id`, `nombre`) VALUES
 (13, 'Dirección de Consultoría Jurídica '),
 (14, 'Dirección de Servicios Generales, Seguridad y Transporte'),
 (15, 'Oficina de Atención AL Público Y Participación Ciudadana '),
-(16, 'Unidad de Auditoria Interna');
+(16, 'Unidad de Auditoria Interna'),
+(17, 'Contralor del Estado');
 
 -- --------------------------------------------------------
 
@@ -831,20 +1083,22 @@ CREATE TABLE `empleados` (
 --
 
 INSERT INTO `empleados` (`empleado_id`, `cedula`, `nombres`, `apellidos`, `rif`, `fecha_nacimiento`, `lugar_nacimiento`, `genero`, `estado_civil`, `tipo_sangre`, `deportes`, `actividades_culturales`, `direccion_habitacion`, `telefono_fijo`, `celular`, `correo_principal`, `correo_secundario`, `fecha_ingreso`, `estudios_actuales`, `fecha_culminacion_estudios`, `contacto_emergencia_1`, `telefono_emergencia_1`, `contacto_emergencia_2`, `telefono_emergencia_2`, `profesion_id`, `estatus_id`, `nro_cuenta_bancaria`, `cuenta_bancaria`) VALUES
-(45, 'V14502107', 'Luis Mariano', 'Mantione Contreras', 'V16778235', '1998-08-09', 'por ahi', 'M', 'Casado', 'A+', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'cpasic', '04161373897', '098765', 'salamanca101@gmail.com', 'salamanca102@gmail.com', '2022-10-17', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 1, 1, '', '12345678901234567890'),
-(46, 'V15947515', 'Jenifer Carolina', 'Restrepo Arellano', 'V15947515-1', '1999-09-09', 'por ahi', 'F', 'Viudo', 'A+', 'kl.hk,jvh', 'ajedrez', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2021-09-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 2, 1, '', '09999999999999999999'),
-(49, 'V18845038', 'Luis Alejandro', 'Aguilar Montilva', 'V18845038-1', '1999-08-09', 'pojijpi', 'M', 'Soltero', 'A+', 'j bj', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2023-02-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 2, 1, '', '12345678901234567890'),
+(45, 'V14502107', 'Luis Mariano', 'Mantione Contreras', 'V16778235', '1998-08-09', 'por ahi', 'M', 'Casado', 'A+', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'cpasic', '04161373897', '098765', 'salamanca101@gmail.com', 'salamanca102@gmail.com', '2022-10-17', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 1, 9, '', '12345678901234567890'),
+(46, 'V15947515', 'Jenifer Carolina', 'Restrepo Arellano', 'V15947515-1', '1999-09-09', 'por ahi', 'F', 'Viudo', 'A+', 'kl.hk,jvh', 'ajedrez', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2021-09-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 2, 8, '', '09999999999999999999'),
+(49, 'V18845038', 'Luis Alejandro', 'Aguilar Montilva', 'V18845038-1', '1999-08-09', 'pojijpi', 'M', 'Soltero', 'A+', 'j bj', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2023-02-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 2, 4, '', '12345678901234567890'),
 (50, 'V16408021', 'Nilsy Lisbeth', 'Arias Niño', 'V16408021-1', '1999-08-08', 'fefeew', 'F', 'Soltero', 'A+', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2022-07-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 11, 7, '', '09999999999999999999'),
-(51, 'V30111366', 'Jose Alberto', 'Omaña Sanchez', 'V30111366-1', '2004-02-02', 'seboruco city', 'M', 'Soltero', 'A+', 'baila', 'baila', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2025-07-02', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', 1, 1, '', '12345678901234567890'),
-(54, 'V10175817', 'Elizabeth', 'Lizarazo', 'V10175817-1', '1999-09-09', 'uhSOINXS', 'F', 'Soltero', 'B-', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '098765', 'lewis@gmail.com', 'angelavillamizar900@gmail.com', '2004-03-23', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 1, '', ''),
-(55, 'V9217928', 'Ediz', 'Marquez de Jimenez', 'V9217928-9', '1944-09-08', 'etrl´_.,mhn', 'F', 'Casado', 'A-', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'salamanca1@gmail.com', '2012-05-16', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', NULL, 1, '', ''),
+(51, 'V30111366', 'Jose Alberto', 'Omaña Sanchez', 'V30111366-1', '2004-02-02', 'seboruco city', 'M', 'Soltero', 'A+', 'baila', 'baila', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2025-07-02', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', 1, 8, '', '12345678901234567890'),
+(54, 'V10175817', 'Elizabeth', 'Lizarazo', 'V10175817-1', '1999-09-09', 'uhSOINXS', 'F', 'Soltero', 'B-', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '098765', 'lewis@gmail.com', 'angelavillamizar900@gmail.com', '2004-03-23', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 8, '', ''),
+(55, 'V9217928', 'Ediz', 'Marquez de Jimenez', 'V9217928-9', '1944-09-08', 'etrl´_.,mhn', 'F', 'Casado', 'A-', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'salamanca1@gmail.com', '2012-05-16', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', NULL, 1, '', '09999999999999999999'),
 (56, 'V9336657', 'Blanca Gladys', 'Ramirez Mendoza', 'V9336657-9', '1999-09-09', '', 'F', 'Soltero', 'O+', '', '', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2021-10-03', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 2, 3, '', '09999999999999999999'),
 (57, 'V5683136', 'Gloria Zulay', 'Velasco de Jaimes', 'V5683136-1', '1952-02-09', '', 'F', 'Casado', 'O+', '', '', 'Municipio Libertador, Calle 2, Casa n3', '0412345986', '0412345986', 'angelavillamizar900@gmail.com', 'SONIARGUELLO10Y@GMAIL.COM', '1983-05-02', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345982', NULL, 3, '', '12345678901234567890'),
 (58, 'V1584405', 'Roger Alberto', 'Castellanos', 'V1584405-1', '1967-09-09', '', 'M', 'Soltero', 'AB-', '', '', 'cpasic', '04161373897', '0412345986', 'SONIARGUELLO11Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2007-05-15', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 4, '', '12345678901234567890'),
 (59, 'V9225056', 'Carolina', 'Parcesepe Martinez', 'V9225056', '1976-09-09', '', 'F', 'Soltero', 'O+', '', '', 'cpasic', '04161373897', '0412345986', 'salamanca@gmail.com', 'salamanca1@gmail.com', '2007-11-10', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 6, 4, '', '09999999999999999999'),
 (61, 'V5665819', 'Doly Ysolina', 'Quiroz', 'N/A', '1979-09-09', 'No especificado', 'F', 'Soltero', NULL, NULL, NULL, 'axdgcfhnñm.,mnhgx', NULL, '', '', NULL, '0000-00-00', NULL, NULL, NULL, NULL, NULL, NULL, 1, 7, '', NULL),
 (65, 'V31053492', 'Marlene ', 'Pedraza de Armas', NULL, '1978-08-09', 'No especificado', 'F', 'Soltero', NULL, NULL, NULL, 'iwdjwqijcfioqefiojfe', NULL, '', '', NULL, '0000-00-00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7, '', NULL),
-(66, 'V9226358', 'Rosa Elena', 'Useche de Osorio', 'V9226358-1', '1999-09-09', 'fgvbencoieqvo', 'F', 'Casado', 'O+', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '09876521111', 'lewis@gmail.com', 'angelavillamizar900@gmail.com', '2003-02-16', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 1, '', '');
+(66, 'V9226358', 'Rosa Elena', 'Useche de Osorio', 'V9226358-1', '1999-09-09', 'fgvbencoieqvo', 'F', 'Casado', 'O+', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '09876521111', 'lewis@gmail.com', 'angelavillamizar900@gmail.com', '2003-02-16', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 8, '', ''),
+(67, 'V90609124627', 'Empleado', 'Prueba Notificacion', 'V90609124627-1', '1994-01-15', NULL, 'M', 'Soltero', NULL, NULL, NULL, 'Direccion de prueba para notificaciones', NULL, '04140000000', 'prueba.0609124627@example.com', NULL, '2022-03-09', NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, '', '00000000000000000000'),
+(68, '29908320', 'ANGELA MARINA ', 'VILLAMIZAR', '29908320-1', '2003-02-08', 'wqdqwedwqd', 'F', 'Soltero', 'A+', 'adefef', 'bauolsa', 'WDWDDWQDWDQDW', '04161373897', '0412345986', 'angelavillamizar101@gmail.com', 'angelavillamizar101@gmail.com', '2024-06-18', NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, '', '2134567890\'¿');
 
 -- --------------------------------------------------------
 
@@ -911,8 +1165,166 @@ CREATE TABLE `fechas_vacaciones` (
   `id_fecha` int(11) NOT NULL,
   `fecha_inicio` date DEFAULT NULL,
   `fecha_fin` date DEFAULT NULL,
-  `observaciones` text DEFAULT NULL
+  `dias_habiles` int(11) DEFAULT NULL,
+  `observaciones` text DEFAULT NULL,
+  `id_status_vacaciones` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `fechas_vacaciones`
+--
+
+INSERT INTO `fechas_vacaciones` (`id_vacaciones`, `id_fecha`, `fecha_inicio`, `fecha_fin`, `dias_habiles`, `observaciones`, `id_status_vacaciones`) VALUES
+(36, 48, '2026-06-18', '2026-07-06', 12, 'ffvgrvt', 2),
+(36, 49, '2026-06-18', '2026-07-06', 11, 'fefqffqwwf', 4),
+(36, 50, '2026-06-18', '2026-07-06', 12, 'ef', 2),
+(36, 51, '2026-06-18', '2026-07-06', 11, 'HVFUYFUY', 4);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `firmantes_recibo`
+--
+
+CREATE TABLE `firmantes_recibo` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `cargo_clave` varchar(60) NOT NULL COMMENT 'Clave interna fija, ej: analista_personal',
+  `cargo_nombre` varchar(120) NOT NULL COMMENT 'Etiqueta que aparece en el recibo',
+  `nombre` varchar(200) NOT NULL DEFAULT '' COMMENT 'Nombre del ocupante actual',
+  `orden` tinyint(3) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Posición en la fila de firmas',
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `firmantes_recibo`
+--
+
+INSERT INTO `firmantes_recibo` (`id`, `cargo_clave`, `cargo_nombre`, `nombre`, `orden`, `activo`, `updated_at`) VALUES
+(1, 'analista_personal', 'Analista de Personal', '', 1, 1, '2026-06-18 11:40:16'),
+(2, 'jefe_remuneraciones', 'Jefe de Remuneraciones', '', 2, 1, '2026-06-18 11:40:16'),
+(3, 'jefe_division', 'Jefe de División', '', 3, 1, '2026-06-18 11:40:16'),
+(4, 'director_rrhh', 'Directora de Recursos Humanos', '', 4, 1, '2026-06-18 11:40:16');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `historial_pagos`
+--
+
+CREATE TABLE `historial_pagos` (
+  `id_historial` int(11) NOT NULL,
+  `empleado_id` int(11) NOT NULL,
+  `tipo_personal` varchar(30) NOT NULL DEFAULT 'Funcionario' COMMENT 'Funcionario|Obrero Fijo|Jubilado|Pensionado|Sobreviviente',
+  `quincena_no` tinyint(1) NOT NULL COMMENT '1 = Primera quincena, 2 = Segunda quincena',
+  `mes` tinyint(2) NOT NULL COMMENT '1-12',
+  `anio` smallint(6) NOT NULL,
+  `total_asignaciones` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `total_deducciones` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `salario_neto` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `historial_pagos`
+--
+
+INSERT INTO `historial_pagos` (`id_historial`, `empleado_id`, `tipo_personal`, `quincena_no`, `mes`, `anio`, `total_asignaciones`, `total_deducciones`, `salario_neto`, `fecha_registro`) VALUES
+(104, 61, 'Sobreviviente', 1, 7, 2026, 65.00, 0.00, 65.00, '2026-06-14 22:12:02'),
+(105, 65, 'Sobreviviente', 1, 7, 2026, 65.00, 0.00, 65.00, '2026-06-14 22:12:02'),
+(106, 50, 'Sobreviviente', 1, 7, 2026, 65.00, 0.00, 65.00, '2026-06-14 22:12:02'),
+(107, 61, 'Sobreviviente', 2, 7, 2026, 65.00, 0.00, 65.00, '2026-06-14 22:12:09'),
+(108, 65, 'Sobreviviente', 2, 7, 2026, 65.00, 0.00, 65.00, '2026-06-14 22:12:09'),
+(109, 50, 'Sobreviviente', 2, 7, 2026, 65.00, 0.00, 65.00, '2026-06-14 22:12:09'),
+(110, 49, 'Funcionario', 1, 7, 2026, 333.56, 43.73, 289.83, '2026-06-14 22:20:56'),
+(111, 46, 'Funcionario', 1, 7, 2026, 301.34, 40.25, 261.09, '2026-06-14 22:20:56'),
+(112, 67, 'Funcionario', 1, 7, 2026, 311.74, 40.79, 270.95, '2026-06-14 22:20:56'),
+(113, 45, 'Funcionario', 1, 7, 2026, 207.66, 27.06, 180.60, '2026-06-14 22:20:56'),
+(114, 51, 'Funcionario', 1, 7, 2026, 125.97, 14.96, 111.01, '2026-06-14 22:20:56'),
+(115, 49, 'Funcionario', 2, 7, 2026, 333.56, 43.73, 289.83, '2026-06-14 22:20:59'),
+(116, 46, 'Funcionario', 2, 7, 2026, 301.34, 40.25, 261.09, '2026-06-14 22:20:59'),
+(117, 67, 'Funcionario', 2, 7, 2026, 311.74, 40.79, 270.95, '2026-06-14 22:20:59'),
+(118, 45, 'Funcionario', 2, 7, 2026, 207.66, 27.06, 180.60, '2026-06-14 22:20:59'),
+(119, 51, 'Funcionario', 2, 7, 2026, 125.97, 14.96, 111.01, '2026-06-14 22:20:59'),
+(120, 54, 'Obrero Fijo', 1, 7, 2026, 151.06, 18.97, 132.09, '2026-06-14 22:21:21'),
+(121, 55, 'Obrero Fijo', 1, 7, 2026, 139.38, 18.05, 121.33, '2026-06-14 22:21:21'),
+(122, 66, 'Obrero Fijo', 1, 7, 2026, 151.42, 18.99, 132.43, '2026-06-14 22:21:21'),
+(123, 54, 'Obrero Fijo', 2, 7, 2026, 151.06, 18.97, 132.09, '2026-06-14 22:21:25'),
+(124, 55, 'Obrero Fijo', 2, 7, 2026, 139.38, 18.05, 121.33, '2026-06-14 22:21:25'),
+(125, 66, 'Obrero Fijo', 2, 7, 2026, 151.42, 18.99, 132.43, '2026-06-14 22:21:25'),
+(126, 56, 'Jubilado', 1, 7, 2026, 218.55, 14.10, 204.45, '2026-06-14 22:21:30'),
+(127, 57, 'Jubilado', 1, 7, 2026, 80.60, 5.20, 75.40, '2026-06-14 22:21:30'),
+(128, 56, 'Jubilado', 2, 7, 2026, 218.55, 14.10, 204.45, '2026-06-14 22:21:38'),
+(129, 57, 'Jubilado', 2, 7, 2026, 80.60, 5.20, 75.40, '2026-06-14 22:21:38'),
+(151, 58, 'Pensionado', 1, 7, 2026, 65.00, 6.50, 58.50, '2026-06-16 14:19:46'),
+(152, 59, 'Pensionado', 1, 7, 2026, 65.00, 6.50, 58.50, '2026-06-16 14:19:46'),
+(153, 58, 'Pensionado', 2, 7, 2026, 65.00, 6.50, 58.50, '2026-06-16 14:19:52'),
+(154, 59, 'Pensionado', 2, 7, 2026, 65.00, 6.50, 58.50, '2026-06-16 14:19:52');
+
+--
+-- Disparadores `historial_pagos`
+--
+DELIMITER $$
+CREATE TRIGGER `before_insert_historial_pagos` BEFORE INSERT ON `historial_pagos` FOR EACH ROW BEGIN
+  DECLARE msg VARCHAR(255);
+  IF NEW.quincena_no NOT IN (1, 2) THEN
+    SET msg = CONCAT('Valor inválido para quincena_no: ', NEW.quincena_no, '. Debe ser 1 o 2.');
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.mes < 1 OR NEW.mes > 12 THEN
+    SET msg = CONCAT('Valor inválido para mes: ', NEW.mes, '. Debe estar entre 1 y 12.');
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.anio < 2000 OR NEW.anio > 2100 THEN
+    SET msg = CONCAT('Valor inválido para anio: ', NEW.anio, '. Debe estar entre 2000 y 2100.');
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.salario_neto < 0 THEN
+    SET msg = CONCAT('El salario neto no puede ser negativo: ', NEW.salario_neto);
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `before_insert_historial_salarios` BEFORE INSERT ON `historial_pagos` FOR EACH ROW BEGIN
+  DECLARE msg VARCHAR(255);
+  IF NEW.quincena_no NOT IN (1, 2) THEN
+    SET msg = CONCAT('Valor inválido para quincena_no: ', NEW.quincena_no, '. Debe ser 1 o 2.');
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.mes < 1 OR NEW.mes > 12 THEN
+    SET msg = CONCAT('Valor inválido para mes: ', NEW.mes, '. Debe estar entre 1 y 12.');
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.anio < 2000 OR NEW.anio > 2100 THEN
+    SET msg = CONCAT('Valor inválido para anio: ', NEW.anio, '. Debe estar entre 2000 y 2100.');
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.salario_neto < 0 THEN
+    SET msg = CONCAT('El salario neto no puede ser negativo: ', NEW.salario_neto);
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `before_update_historial_salarios` BEFORE UPDATE ON `historial_pagos` FOR EACH ROW BEGIN
+  DECLARE msg VARCHAR(255);
+  IF NEW.empleado_id != OLD.empleado_id OR
+     NEW.quincena_no != OLD.quincena_no OR
+     NEW.mes != OLD.mes OR
+     NEW.anio != OLD.anio THEN
+    SET msg = 'No está permitido modificar empleado_id, quincena_no, mes o anio de un registro existente.';
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+  IF NEW.salario_neto < 0 THEN
+    SET msg = CONCAT('El salario neto no puede ser negativo: ', NEW.salario_neto);
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = msg;
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -921,12 +1333,20 @@ CREATE TABLE `fechas_vacaciones` (
 --
 
 CREATE TABLE `historial_salarios` (
-  `historial_salario_id` int(11) NOT NULL,
-  `empleado_id` int(11) NOT NULL,
-  `fecha_pago` date NOT NULL,
-  `monto_neto` decimal(10,2) NOT NULL,
-  `monto_bruto` decimal(10,2) NOT NULL
+  `id_historial` int(11) NOT NULL,
+  `empleado_id` int(11) DEFAULT NULL,
+  `fecha` date NOT NULL,
+  `monto_neto` decimal(10,2) DEFAULT NULL,
+  `observaciones` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `historial_salarios`
+--
+
+INSERT INTO `historial_salarios` (`id_historial`, `empleado_id`, `fecha`, `monto_neto`, `observaciones`) VALUES
+(1, 46, '2026-06-13', 376.00, 'Ajuste salarial por Cambio de Cargo. Cargo anterior: Jefe de Division General. Cargo nuevo: Director de Línea.'),
+(2, 68, '2026-06-18', 246.00, 'Salario inicial asignado por ingreso a la institución. Cargo: Analista de Personal.');
 
 -- --------------------------------------------------------
 
@@ -1272,7 +1692,9 @@ INSERT INTO `nucleo_familiar` (`familiar_id`, `nombres`, `apellidos`, `fecha_nac
 (13, 'Marco Aurelio', 'Mora Baez', '1999-09-09', 1, 'hijo', NULL, 'Municipio Libertador, Calle 2, Casa n3', NULL, '00000000000000000000', '0412345986', '19800178'),
 (14, 'Jose Willian', 'Armas Zambrano', '1999-02-09', 1, 'hijo', NULL, 'Municipio Libertador, Calle 2, Casa n3', NULL, '12345678901234567899', '0412345986', '120987654'),
 (15, 'Luis', 'Avendaño', '2019-08-09', 1, 'hijo', NULL, NULL, NULL, '', NULL, NULL),
-(17, 'Lewis', 'Perez Roa', '2003-06-30', 1, 'conyuge', NULL, 'Municipio Libertador, Calle 2, Casa n3', NULL, '12345678901234567899', '04161373897', '19807345');
+(17, 'Lewis', 'Perez Roa', '2003-06-30', 1, 'conyuge', NULL, 'Municipio Libertador, Calle 2, Casa n3', NULL, '12345678901234567899', '04161373897', '19807345'),
+(18, 'Alberto Jesus', 'Bolaños', '2003-09-01', 0, 'hijo', NULL, NULL, NULL, '', NULL, NULL),
+(19, 'Alber', 'Bolaños', '2012-09-01', 1, 'hijo', NULL, NULL, NULL, '', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1294,7 +1716,8 @@ CREATE TABLE `pensionado` (
 
 INSERT INTO `pensionado` (`id_pensionado`, `fecha_ingreso`, `observacion`, `empleado_id`, `motivo_pension`) VALUES
 (5, '2007-05-15', NULL, 58, 'se cayo'),
-(6, '2005-01-01', NULL, 59, 'Exceso de chamba');
+(6, '2005-01-01', NULL, 59, 'Exceso de chamba'),
+(7, '2026-06-18', '', 49, NULL);
 
 -- --------------------------------------------------------
 
@@ -1452,9 +1875,9 @@ INSERT INTO `registros_antiguedades` (`antiguedad_id`, `empleado_id`, `fecha_ini
 (14, 66, '2002-01-07', '2002-02-28', NULL, NULL),
 (15, 66, '2002-03-01', '2002-03-31', NULL, NULL),
 (16, 66, '2002-04-01', '2002-12-31', NULL, NULL),
-(17, 49, '2019-09-09', '2020-09-02', NULL, NULL),
 (22, 46, '2020-08-09', '2021-09-09', 24, NULL),
-(23, 46, '2019-08-09', '2019-09-09', 132, NULL);
+(23, 46, '2019-08-09', '2019-09-09', 132, NULL),
+(29, 49, '1999-09-09', '2008-03-02', 53, NULL);
 
 -- --------------------------------------------------------
 
@@ -1493,7 +1916,10 @@ INSERT INTO `relacion_cargos` (`relacion_cargo_id`, `empleado_id`, `cargo_cet_id
 (17, 66, 76, '2026-05-13', NULL, 'Asignación de cargo', 'Unidad de Mantenimiento y Limpieza'),
 (18, 46, 41, '2026-05-22', '2026-05-08', 'Cambio de cargo', 'Dirección de Planificación, Organización y Métodos'),
 (19, 46, 43, '2026-05-25', '2026-05-22', 'Cambio de cargo', 'Dirección de Planificación, Organización y Métodos'),
-(20, 51, 48, '2026-05-26', '2026-05-12', 'Cambio de cargo', 'Unidad de Archivo');
+(20, 51, 48, '2026-05-26', '2026-05-12', 'Cambio de cargo', 'Unidad de Archivo'),
+(21, 67, 41, '2026-06-09', NULL, 'Asignación de cargo', 'Dirección de Servicios Generales, Seguridad y Transporte '),
+(22, 46, 80, '2026-06-13', '2026-05-25', 'Cambio de cargo', 'Dirección de Planificación, Organización y Métodos'),
+(23, 68, 51, '2026-06-18', NULL, 'Asignación de cargo', 'División de Remuneraciones');
 
 -- --------------------------------------------------------
 
@@ -1539,7 +1965,8 @@ CREATE TABLE `retroactivos` (
 
 INSERT INTO `retroactivos` (`retroactivo_id`, `empleado_id`, `cargo_cet_id`, `cargo_onapre_anterior_id`, `nivel_salarial_anterior_id`, `cargo_onapre_id`, `nivel_salarial_id`, `nivel_salarial_antiguo_id`, `direccion_id`, `division_id`, `unidad_id`, `dias_diferencia`, `delta_sueldo`, `delta_antiguedad`, `delta_profesionalizacion`, `delta_jerarquia`, `monto_retroactivo`, `estado`, `periodo_pago_mes`, `periodo_pago_anio`, `periodo_pago_quincena`, `fecha_pago`, `fecha_inicio`, `fecha_corte`, `fecha_fin`, `estatus`, `observacion`, `created_at`, `updated_at`) VALUES
 (7, 46, 80, NULL, NULL, 23, 158, NULL, 11, NULL, NULL, 5, 6.50, 0.32, 1.63, 1.06, 3.17, 'PAGADO', 6, 2026, '2', '2026-05-26 09:08:44', '2026-05-26', '2026-05-30', NULL, NULL, 'kjhnddddddddddd\n', '2026-05-26 13:08:24', '2026-05-26 13:08:44'),
-(8, 51, 48, 40, 137, 26, 137, NULL, 3, 4, 5, 4, 0.00, 0.00, 0.00, 0.00, 0.00, 'PENDIENTE', NULL, NULL, NULL, NULL, '2026-05-26', '2026-05-30', NULL, NULL, 'Creado automáticamente por cambio de cargo/nivel', '2026-05-26 13:29:25', '2026-05-26 13:29:25');
+(8, 51, 48, 40, 137, 26, 137, NULL, 3, 4, 5, 4, 0.00, 0.00, 0.00, 0.00, 0.00, 'PENDIENTE', NULL, NULL, NULL, NULL, '2026-05-26', '2026-05-30', NULL, NULL, 'Creado automáticamente por cambio de cargo/nivel', '2026-05-26 13:29:25', '2026-05-26 13:29:25'),
+(9, 46, 80, 25, 159, 23, 158, NULL, 11, NULL, NULL, 17, 0.00, 0.00, 0.00, 0.00, 0.00, 'PENDIENTE', NULL, NULL, NULL, NULL, '2026-06-13', '2026-06-30', NULL, NULL, 'Creado automáticamente por cambio de cargo/nivel', '2026-06-13 22:34:27', '2026-06-13 22:34:27');
 
 -- --------------------------------------------------------
 
@@ -1561,7 +1988,9 @@ INSERT INTO `roles_sistema` (`rol_id`, `nombre_rol`) VALUES
 (2, 'Temporal'),
 (3, 'Trabajador'),
 (4, 'Jefe de Área'),
-(5, 'Administrador');
+(5, 'Administrador'),
+(6, 'Director General'),
+(7, 'Director de Linea');
 
 -- --------------------------------------------------------
 
@@ -1587,7 +2016,9 @@ INSERT INTO `sobreviviente` (`id_sobreviviente`, `empleado_id`, `familiar_id`, `
 (14, 61, 13, '2009-08-18', 1, NULL),
 (15, 65, 14, '2025-08-15', 1, NULL),
 (16, 49, 15, NULL, 0, NULL),
-(18, 50, 17, '2026-05-19', 1, 'Bajo resolucion 334\n');
+(18, 50, 17, '2026-05-19', 1, 'Bajo resolucion 334\n'),
+(19, 46, 18, NULL, 0, NULL),
+(20, 46, 19, NULL, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -1599,6 +2030,17 @@ CREATE TABLE `status_vacaciones` (
   `id_status_vacaciones` int(11) NOT NULL,
   `descripcion` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `status_vacaciones`
+--
+
+INSERT INTO `status_vacaciones` (`id_status_vacaciones`, `descripcion`) VALUES
+(1, 'Programado'),
+(2, 'De Disfrute'),
+(3, 'Finalizado'),
+(4, 'Reintegro'),
+(5, 'En espera');
 
 -- --------------------------------------------------------
 
@@ -1695,7 +2137,9 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`usuario_id`, `username`, `password_hash`, `nombres`, `apellidos`, `rol_id`, `modulo_id`, `cedula_referencia`) VALUES
-(1, 'amvar', '$2b$12$SnnQFedf42t8Wzcer.c7qORVul2OuZDmN2kVdxjtM17Es1T0EzD8m', 'Angela', 'Villamizar', 5, 1, '29907321');
+(1, 'amvar', '$2b$12$SnnQFedf42t8Wzcer.c7qORVul2OuZDmN2kVdxjtM17Es1T0EzD8m', 'Angela', 'Villamizar', 5, 1, '29907321'),
+(2, 'vis_1', '$2b$12$zljSb9vyTBCj7FC4F.L6iumxpRzFE26MV631rZ8RvkNAW6ci8hmSW', 'Maria', 'Lopez', 1, 2, '29907321'),
+(3, 'vis?2', '$2b$12$WsxKSIqMrLwqLEhdKc9gTO6eN5B/PkN9BtguhqtDZKM66CuJab6Vy', 'Maria', 'Lopez', 1, 1, '299073213');
 
 -- --------------------------------------------------------
 
@@ -1706,14 +2150,30 @@ INSERT INTO `usuarios` (`usuario_id`, `username`, `password_hash`, `nombres`, `a
 CREATE TABLE `vacaciones` (
   `id_empleado` int(11) DEFAULT NULL,
   `id_vacaciones` int(11) NOT NULL,
+  `id_status_vacaciones` int(11) DEFAULT NULL,
   `dias_acumulados` int(11) DEFAULT NULL,
   `fecha_tope` date DEFAULT NULL,
+  `pagado` tinyint(1) NOT NULL DEFAULT 0,
   `antiguedad_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Volcado de datos para la tabla `vacaciones`
+--
+
+INSERT INTO `vacaciones` (`id_empleado`, `id_vacaciones`, `id_status_vacaciones`, `dias_acumulados`, `fecha_tope`, `pagado`, `antiguedad_id`) VALUES
+(67, 36, 4, 0, '2026-07-09', 0, NULL);
+
+--
 -- Índices para tablas volcadas
 --
+
+--
+-- Indices de la tabla `caja_ahorro`
+--
+ALTER TABLE `caja_ahorro`
+  ADD PRIMARY KEY (`id_caja`),
+  ADD UNIQUE KEY `uk_caja_empleado_periodo` (`empleado_id`,`quincena_no`,`mes`,`anio`);
 
 --
 -- Indices de la tabla `cargos_cet`
@@ -1780,6 +2240,12 @@ ALTER TABLE `deducciones`
   ADD PRIMARY KEY (`deduccion_id`);
 
 --
+-- Indices de la tabla `dias_festivos`
+--
+ALTER TABLE `dias_festivos`
+  ADD PRIMARY KEY (`id_festivo`);
+
+--
 -- Indices de la tabla `direcciones`
 --
 ALTER TABLE `direcciones`
@@ -1826,14 +2292,29 @@ ALTER TABLE `estatus_funcionarios`
 -- Indices de la tabla `fechas_vacaciones`
 --
 ALTER TABLE `fechas_vacaciones`
-  ADD PRIMARY KEY (`id_fecha`);
+  ADD PRIMARY KEY (`id_fecha`),
+  ADD KEY `fk_fechas_vacaciones_status` (`id_status_vacaciones`);
+
+--
+-- Indices de la tabla `firmantes_recibo`
+--
+ALTER TABLE `firmantes_recibo`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `cargo_clave` (`cargo_clave`);
+
+--
+-- Indices de la tabla `historial_pagos`
+--
+ALTER TABLE `historial_pagos`
+  ADD PRIMARY KEY (`id_historial`),
+  ADD UNIQUE KEY `uk_empleado_periodo` (`empleado_id`,`quincena_no`,`mes`,`anio`);
 
 --
 -- Indices de la tabla `historial_salarios`
 --
 ALTER TABLE `historial_salarios`
-  ADD PRIMARY KEY (`historial_salario_id`),
-  ADD KEY `fk_hist_empleado` (`empleado_id`);
+  ADD PRIMARY KEY (`id_historial`),
+  ADD KEY `empleado_id` (`empleado_id`);
 
 --
 -- Indices de la tabla `jubilados`
@@ -1990,11 +2471,18 @@ ALTER TABLE `usuarios`
 --
 ALTER TABLE `vacaciones`
   ADD PRIMARY KEY (`id_vacaciones`),
-  ADD KEY `antiguedad_id` (`antiguedad_id`);
+  ADD KEY `antiguedad_id` (`antiguedad_id`),
+  ADD KEY `fk_vacaciones_status` (`id_status_vacaciones`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
 --
+
+--
+-- AUTO_INCREMENT de la tabla `caja_ahorro`
+--
+ALTER TABLE `caja_ahorro`
+  MODIFY `id_caja` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
 
 --
 -- AUTO_INCREMENT de la tabla `cargos_cet`
@@ -2012,7 +2500,7 @@ ALTER TABLE `cargos_onapre`
 -- AUTO_INCREMENT de la tabla `catalogo_instituciones`
 --
 ALTER TABLE `catalogo_instituciones`
-  MODIFY `id_institucion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=194;
+  MODIFY `id_institucion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=195;
 
 --
 -- AUTO_INCREMENT de la tabla `condiciones_laborales`
@@ -2030,13 +2518,13 @@ ALTER TABLE `configuracion_antiguedad`
 -- AUTO_INCREMENT de la tabla `configuracion_vacaciones`
 --
 ALTER TABLE `configuracion_vacaciones`
-  MODIFY `id_configuracion` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_configuracion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `configuracion_vacaciones_obreros`
 --
 ALTER TABLE `configuracion_vacaciones_obreros`
-  MODIFY `id_configuracion` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_configuracion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de la tabla `deducciones`
@@ -2045,10 +2533,16 @@ ALTER TABLE `deducciones`
   MODIFY `deduccion_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT de la tabla `dias_festivos`
+--
+ALTER TABLE `dias_festivos`
+  MODIFY `id_festivo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
 -- AUTO_INCREMENT de la tabla `direcciones`
 --
 ALTER TABLE `direcciones`
-  MODIFY `direccion_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la Dirección', AUTO_INCREMENT=17;
+  MODIFY `direccion_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identificador único de la Dirección', AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de la tabla `divisiones`
@@ -2060,13 +2554,13 @@ ALTER TABLE `divisiones`
 -- AUTO_INCREMENT de la tabla `empleados`
 --
 ALTER TABLE `empleados`
-  MODIFY `empleado_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `empleado_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT de la tabla `encargos_temporales`
 --
 ALTER TABLE `encargos_temporales`
-  MODIFY `encargo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `encargo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de la tabla `estatus_funcionarios`
@@ -2078,13 +2572,25 @@ ALTER TABLE `estatus_funcionarios`
 -- AUTO_INCREMENT de la tabla `fechas_vacaciones`
 --
 ALTER TABLE `fechas_vacaciones`
-  MODIFY `id_fecha` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_fecha` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+
+--
+-- AUTO_INCREMENT de la tabla `firmantes_recibo`
+--
+ALTER TABLE `firmantes_recibo`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `historial_pagos`
+--
+ALTER TABLE `historial_pagos`
+  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_salarios`
 --
 ALTER TABLE `historial_salarios`
-  MODIFY `historial_salario_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `jubilados`
@@ -2114,13 +2620,13 @@ ALTER TABLE `niveles_salariales_antiguos`
 -- AUTO_INCREMENT de la tabla `nucleo_familiar`
 --
 ALTER TABLE `nucleo_familiar`
-  MODIFY `familiar_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `familiar_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT de la tabla `pensionado`
 --
 ALTER TABLE `pensionado`
-  MODIFY `id_pensionado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_pensionado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `permisos_remunerados`
@@ -2156,37 +2662,37 @@ ALTER TABLE `profesiones`
 -- AUTO_INCREMENT de la tabla `registros_antiguedades`
 --
 ALTER TABLE `registros_antiguedades`
-  MODIFY `antiguedad_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `antiguedad_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT de la tabla `relacion_cargos`
 --
 ALTER TABLE `relacion_cargos`
-  MODIFY `relacion_cargo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `relacion_cargo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de la tabla `retroactivos`
 --
 ALTER TABLE `retroactivos`
-  MODIFY `retroactivo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `retroactivo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `roles_sistema`
 --
 ALTER TABLE `roles_sistema`
-  MODIFY `rol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `rol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `sobreviviente`
 --
 ALTER TABLE `sobreviviente`
-  MODIFY `id_sobreviviente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id_sobreviviente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT de la tabla `status_vacaciones`
 --
 ALTER TABLE `status_vacaciones`
-  MODIFY `id_status_vacaciones` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_status_vacaciones` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `sueldos_pensionados`
@@ -2210,17 +2716,23 @@ ALTER TABLE `unidades`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `usuario_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `usuario_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `vacaciones`
 --
 ALTER TABLE `vacaciones`
-  MODIFY `id_vacaciones` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_vacaciones` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `caja_ahorro`
+--
+ALTER TABLE `caja_ahorro`
+  ADD CONSTRAINT `fk_caja_empleado` FOREIGN KEY (`empleado_id`) REFERENCES `empleados` (`empleado_id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `datos_laborales`
@@ -2263,10 +2775,22 @@ ALTER TABLE `encargos_temporales`
   ADD CONSTRAINT `fk_encargo_uni` FOREIGN KEY (`unidad_id`) REFERENCES `unidades` (`unidad_id`);
 
 --
+-- Filtros para la tabla `fechas_vacaciones`
+--
+ALTER TABLE `fechas_vacaciones`
+  ADD CONSTRAINT `fk_fechas_vacaciones_status` FOREIGN KEY (`id_status_vacaciones`) REFERENCES `status_vacaciones` (`id_status_vacaciones`) ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `historial_pagos`
+--
+ALTER TABLE `historial_pagos`
+  ADD CONSTRAINT `fk_historial_empleado` FOREIGN KEY (`empleado_id`) REFERENCES `empleados` (`empleado_id`) ON DELETE CASCADE;
+
+--
 -- Filtros para la tabla `historial_salarios`
 --
 ALTER TABLE `historial_salarios`
-  ADD CONSTRAINT `fk_hist_empleado` FOREIGN KEY (`empleado_id`) REFERENCES `empleados` (`empleado_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `historial_salarios_ibfk_1` FOREIGN KEY (`empleado_id`) REFERENCES `empleados` (`empleado_id`);
 
 --
 -- Filtros para la tabla `jubilados`
@@ -2349,30 +2873,10 @@ ALTER TABLE `usuarios`
 -- Filtros para la tabla `vacaciones`
 --
 ALTER TABLE `vacaciones`
+  ADD CONSTRAINT `fk_vacaciones_status` FOREIGN KEY (`id_status_vacaciones`) REFERENCES `status_vacaciones` (`id_status_vacaciones`) ON UPDATE CASCADE,
   ADD CONSTRAINT `vacaciones_ibfk_1` FOREIGN KEY (`antiguedad_id`) REFERENCES `configuracion_antiguedad` (`antiguedad_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
--- Estructura de tabla para la tabla configuracion_vacaciones (Funcionarios)
-CREATE TABLE configuracion_vacaciones (
-  id_configuracion int(11) NOT NULL AUTO_INCREMENT,
-  nio_antiguedad int(11) NOT NULL,
-  dias_disfrute int(11) NOT NULL,
-  pago decimal(10,2) NOT NULL DEFAULT 220.00,
-  PRIMARY KEY (id_configuracion),
-  UNIQUE KEY nio_antiguedad_unique (nio_antiguedad)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Estructura de tabla para la tabla configuracion_vacaciones_obreros
-CREATE TABLE configuracion_vacaciones_obreros (
-  id_configuracion int(11) NOT NULL AUTO_INCREMENT,
-  nio int(11) NOT NULL,
-  dias_disfrute int(11) NOT NULL,
-  pago decimal(10,2) NOT NULL,
-  PRIMARY KEY (id_configuracion),
-  UNIQUE KEY nio_unique (nio)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-

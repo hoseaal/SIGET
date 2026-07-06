@@ -38,6 +38,8 @@ import { DashboardPage } from "../pages/DashboardPage";
 
 import { Usuarios } from "../pages/configuracion/usuarios"
 import { CatalogoInstituticiones } from "../pages/configuracion/CatalogoInstituticiones.jsx"
+import { DashboardVisualizador } from "../pages/Visualizador/DashboardVisualizador.jsx"
+
 
 const AppRoutes = () => {
     return (
@@ -228,8 +230,14 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/Configuracion/NuevoUsuario" element={<RegisterPage />} />
 
+
+
+            <Route path="/visualizador" element={
+                <ProtectedRoute>
+                    <DashboardVisualizador />
+                </ProtectedRoute>
+            } />
 
             <Route path="/Login" element={<LoginPage />} />
 

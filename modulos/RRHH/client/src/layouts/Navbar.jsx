@@ -4,8 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { Dropdown, Nav, Navbar as BSNavbar, Image, Toast, ToastContainer } from 'react-bootstrap';
 import { BsMenuApp, BsPerson, BsGear, BsCreditCard, BsPower } from 'react-icons/bs';
 import ModalContraseña from '../pages/Modales/modalContraseña'
+import { useAuth, clearAuthCache } from '../hooks/useAuth';
 
 const Navbar = () => {
+  const { user: authUser } = useAuth(); // Para leer el rol sin fetch extra
+  const isVisualizador = authUser?.nombre_rol === 'Visualizador';
+
   const [userData, setUserData] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -99,6 +103,8 @@ const Navbar = () => {
       if (!res.ok) throw new Error('Error al cerrar sesión');
 
       const data = await res.json();
+      // Limpiar la caché de autenticación para que el próximo login sea limpio
+      clearAuthCache();
       showNotification(data.message || 'Sesión cerrada correctamente.', 'success');
       setTimeout(() => {
         navigate('/Login', { replace: true });
@@ -130,7 +136,8 @@ const Navbar = () => {
       <div className="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
         {getGreetingMessage(userData?.nombres + ' ' + userData?.apellidos)}
         <Nav className="flex-row align-items-center ms-auto">
-          {/* Notifications Dropdown */}
+          {/* Notifications Dropdown — solo visible para roles administrativos */}
+          {!isVisualizador && (
           <Dropdown as={Nav.Item} className="navbar-dropdown dropdown-notifications me-3 d-flex align-items-center">
             <Dropdown.Toggle as={Nav.Link} className="dropdown-toggle hide-arrow d-flex align-items-center" style={{ position: 'relative' }}>
               <i className="bx bx-bell bx-sm"></i>
@@ -232,6 +239,7 @@ const Navbar = () => {
               </div>
             </Dropdown.Menu>
           </Dropdown>
+          )} {/* /!isVisualizador notification bell */}
 
           {/* User Profile Dropdown */}
           <Dropdown as={Nav.Item} className="navbar-dropdown dropdown-user">

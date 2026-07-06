@@ -11,6 +11,14 @@
  * 4: Jefe de Area
  * 5: Administrador
  */
+
+export const ROLES = {
+  VISUALIZADOR: 1,
+  TEMPORAL: 2,
+  TRABAJADOR: 3,
+  JEFE_AREA: 4,
+  ADMINISTRADOR: 5,
+};
 export const menuPermissions = {
     // Dashboard disponible para todos
     "/Dashboard": [1, 2, 3, 4, 5],

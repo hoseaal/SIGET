@@ -287,15 +287,19 @@ export const ModalRegistroVacaciones = ({ show, onHide, tipoEmpleado, onSuccess,
                       <strong className="text-success" style={{ fontSize: '1.1rem' }}>{Math.max(0, simulacion.saldo_disponible_real - simulacion.dias_solicitados)}</strong>
                     </div>
                   </div>
-                  <Alert variant="primary" className="py-2 px-3 mb-0 d-flex justify-content-between align-items-center">
-                    <div>
+                  <Alert variant="primary" className="py-2 px-3 mb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div style={{ minWidth: '100%' }} className="border-bottom border-primary pb-2 mb-2">
                       <strong>Total de Días de Disfrute: </strong>
                       {simulacion.dias_disfrute_ley} hábiles &middot;
                       <span className="ms-2"><strong>Base:</strong> {simulacion.dias_base} <strong>Adicionales:</strong> {simulacion.dias_adicionales || 0}</span>
                     </div>
-                    <div className="text-end">
-                      <strong>Reincorporación:</strong><br />
-                      <span style={{ fontSize: '1.05rem' }}>{formatDate(simulacion.fecha_reincorporacion)}</span>
+                    <div className="flex-grow-1 text-success fw-bold">
+                      <i className="bx bx-calendar-check me-1"></i>
+                      <span className="text-dark">Fin Real Disfrute:</span> {formatDate(simulacion.fecha_finalizacion_real)}
+                    </div>
+                    <div className="flex-grow-1 text-primary fw-bold text-end">
+                      <i className="bx bx-log-in me-1"></i>
+                      <span className="text-dark">Reintegro Laboral:</span> {formatDate(simulacion.fecha_reincorporacion)}
                     </div>
                   </Alert>
                   <small className="text-muted d-block mt-2 text-center" style={{ fontSize: '0.75rem' }}>
@@ -333,8 +337,9 @@ export const ModalRegistroVacaciones = ({ show, onHide, tipoEmpleado, onSuccess,
               <div className="row">
                 <div className="col-md-6">
                   <p className="mb-1"><strong>Empleado:</strong> {simulacion.nombres} {simulacion.apellidos}</p>
-                  <p className="mb-1"><strong>Reincorporación:</strong> {formatDate(simulacion.fecha_reincorporacion)}</p>
-                  <p className="mb-0"><strong>Antigüedad:</strong> {simulacion.antiguedad_anios ?? simulacion.anios_antiguedad ?? '-'} años, {simulacion.antiguedad_meses ?? '-'} meses, {simulacion.antiguedad_dias ?? '-'} días</p>
+                  <p className="mb-1 text-success"><strong>Fin Real Disfrute:</strong> {formatDate(simulacion.fecha_finalizacion_real)}</p>
+                  <p className="mb-1 text-primary"><strong>Reintegro Laboral:</strong> {formatDate(simulacion.fecha_reincorporacion)}</p>
+                  <p className="mb-0 mt-2"><strong>Antigüedad:</strong> {simulacion.antiguedad_anios ?? simulacion.anios_antiguedad ?? '-'} años, {simulacion.antiguedad_meses ?? '-'} meses, {simulacion.antiguedad_dias ?? '-'} días</p>
                 </div>
                 <div className="col-md-6">
                   <p className="mb-1"><strong>Salario diario:</strong> {formatCurrency(simulacion.salario_diario)}</p>

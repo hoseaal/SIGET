@@ -6,6 +6,7 @@ import { ModalVerPerfil } from './ModalVerPerfil'
 import { ModalReintegro } from './ModalReintegro'
 import { ModalRecibo } from './ModalRecibo'
 import { exportVacacionesExcel, countBusinessDays } from '../../utils/exportVacacionesExcel'
+import { aplicarNormaContralor } from '../../utils/exportExcel'
 import logoCet from '../../assets/logo-cet.png'
 import { getBase64FromUrl } from '../../utils/imageUtils'
 
@@ -228,19 +229,24 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
             if (!res.ok) return null
             const recibo = await res.json()
             const lineas = recibo.lineas_recibo || {}
-            const totalDias = countBusinessDays(row.fecha_inicio, row.fecha_fin)
+            // Para el Art. 203 se proyectan los días totales de ley, no solo la fracción
+            const totalDias = recibo.vacacion?.dias_totales_periodo || countBusinessDays(row.fecha_inicio, row.fecha_fin)
             return {
               nombreCompleto: `${row.apellidos}, ${row.nombres}`,
               cedula: row.cedula,
               cargo: row.cargo_cet_nombre || row.cargo_onapre_nombre || '-',
+              direccion: recibo.empleado?.direccion_nombre || '',
+              division: recibo.empleado?.division_nombre || '',
+              unidad: recibo.empleado?.unidad_nombre || '',
+              dependencia: [recibo.empleado?.direccion_nombre, recibo.empleado?.division_nombre, recibo.empleado?.unidad_nombre].filter(Boolean).join(' / ') || '-',
               fechaIngreso: formatDate(row.fecha_ingreso),
               aniosServicio: `${row.antiguedad_anios || 0}a ${row.antiguedad_meses || 0}m ${row.antiguedad_dias || 0}d`,
               salarioMensual: Number(lineas.total_sueldo_mensual || 0),
               salarioDiario: Number(lineas.sueldo_diario || 0),
               totalDias,
-              periodoDisfrute: `${totalDias} días`,
+              periodoDisfrute: `${totalDias} días hábiles`,
               fechaDesde: formatDate(row.fecha_inicio),
-              fechaHasta: formatDate(row.fecha_fin),
+              fechaHasta: formatDate(recibo.vacacion?.fecha_fin_real || row.fecha_fin),
               montoPagar: Number(lineas.bono_vacacional || 0),
               firma: '',
             }
@@ -248,10 +254,56 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
         })
       )
 
-      const valid = enriched.filter(Boolean)
+      let valid = enriched.filter(Boolean)
       if (valid.length === 0) {
         return flash(setError, 'No se pudieron obtener los datos salariales.')
       }
+
+      // Ordenar como nómina: Dirección -> División -> Unidad -> Nombre
+      valid.sort((a, b) => {
+        const dir = a.direccion.localeCompare(b.direccion)
+        if (dir !== 0) return dir
+        const div = a.division.localeCompare(b.division)
+        if (div !== 0) return div
+        const uni = a.unidad.localeCompare(b.unidad)
+        if (uni !== 0) return uni
+        return a.nombreCompleto.localeCompare(b.nombreCompleto)
+      })
+
+      // Norma institucional: Contralor de primero, luego estructura organizacional
+      const validConNorma = aplicarNormaContralor(valid, {
+        cargoKey: 'cargo',
+        dirKey: 'direccion',
+        divKey: 'division',
+        uniKey: 'unidad',
+        apellidoKey: 'nombreCompleto',
+        spacerValue: { __spacer: true }
+      })
+
+      // Inyectar filas de encabezado de grupo (tipo nómina)
+      const withGroups = []
+      let lastDir = null, lastDiv = null
+      validConNorma.forEach(row => {
+        if (row.__spacer) {
+          withGroups.push({ isGroupHeader: true, level: 'spacer', groupTitle: '' })
+          lastDir = null; lastDiv = null
+          return
+        }
+        if (!row.isGroupHeader) {
+          if (row.direccion !== lastDir) {
+            withGroups.push({ isGroupHeader: true, level: 'direccion', groupTitle: row.direccion || 'SIN DIRECCIÓN' })
+            lastDir = row.direccion
+            lastDiv = null
+          }
+          const subKey = `${row.division}|${row.unidad}`
+          if (subKey !== lastDiv) {
+            const subtitle = [row.division, row.unidad].filter(Boolean).join(' — ')
+            if (subtitle) withGroups.push({ isGroupHeader: true, level: 'division', groupTitle: subtitle })
+            lastDiv = subKey
+          }
+        }
+        withGroups.push(row)
+      })
 
       let logoBase64 = null
       try {
@@ -260,7 +312,7 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
       } catch (e) { console.warn('No se pudo cargar el logo:', e) }
 
       await exportVacacionesExcel({
-        data: valid,
+        data: withGroups,
         mes: MESES[exportMonth],
         anio: exportYear,
         periodo: `${MESES[exportMonth]} ${exportYear}`,
@@ -308,6 +360,10 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
               nombreCompleto: `${row.apellidos}, ${row.nombres}`,
               cedula: row.cedula,
               cargo: row.cargo_cet_nombre || row.cargo_onapre_nombre || '-',
+              direccion: recibo.empleado?.direccion_nombre || '',
+              division: recibo.empleado?.division_nombre || '',
+              unidad: recibo.empleado?.unidad_nombre || '',
+              dependencia: [recibo.empleado?.direccion_nombre, recibo.empleado?.division_nombre, recibo.empleado?.unidad_nombre].filter(Boolean).join(' / ') || '-',
               fechaIngreso: formatDate(row.fecha_ingreso),
               aniosServicio: `${row.antiguedad_anios || 0}a ${row.antiguedad_meses || 0}m ${row.antiguedad_dias || 0}d`,
               salarioMensual: Number(lineas.total_sueldo_mensual || 0),
@@ -318,10 +374,56 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
         })
       )
 
-      const valid = enriched.filter(Boolean)
+      let valid = enriched.filter(Boolean)
       if (valid.length === 0) {
         return flash(setError, 'No se pudieron obtener los datos salariales.')
       }
+
+      // Ordenar como nómina: Dirección -> División -> Unidad -> Nombre
+      valid.sort((a, b) => {
+        const dir = a.direccion.localeCompare(b.direccion)
+        if (dir !== 0) return dir
+        const div = a.division.localeCompare(b.division)
+        if (div !== 0) return div
+        const uni = a.unidad.localeCompare(b.unidad)
+        if (uni !== 0) return uni
+        return a.nombreCompleto.localeCompare(b.nombreCompleto)
+      })
+
+      // Norma institucional: Contralor de primero, luego estructura organizacional
+      const validConNormaR = aplicarNormaContralor(valid, {
+        cargoKey: 'cargo',
+        dirKey: 'direccion',
+        divKey: 'division',
+        uniKey: 'unidad',
+        apellidoKey: 'nombreCompleto',
+        spacerValue: { __spacer: true }
+      })
+
+      // Inyectar filas de encabezado de grupo (tipo nómina)
+      const withGroupsR = []
+      let lastDirR = null, lastDivR = null
+      validConNormaR.forEach(row => {
+        if (row.__spacer) {
+          withGroupsR.push({ isGroupHeader: true, level: 'spacer', groupTitle: '' })
+          lastDirR = null; lastDivR = null
+          return
+        }
+        if (!row.isGroupHeader) {
+          if (row.direccion !== lastDirR) {
+            withGroupsR.push({ isGroupHeader: true, level: 'direccion', groupTitle: row.direccion || 'SIN DIRECCIÓN' })
+            lastDirR = row.direccion
+            lastDivR = null
+          }
+          const subKey = `${row.division}|${row.unidad}`
+          if (subKey !== lastDivR) {
+            const subtitle = [row.division, row.unidad].filter(Boolean).join(' — ')
+            if (subtitle) withGroupsR.push({ isGroupHeader: true, level: 'division', groupTitle: subtitle })
+            lastDivR = subKey
+          }
+        }
+        withGroupsR.push(row)
+      })
 
       let logoBase64 = null
       try {
@@ -330,7 +432,7 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
       } catch (e) { console.warn('No se pudo cargar el logo:', e) }
 
       await exportVacacionesExcel({
-        data: valid,
+        data: withGroupsR,
         mes: MESES[exportMonth],
         anio: exportYear,
         periodo: `${MESES[exportMonth]} ${exportYear}`,

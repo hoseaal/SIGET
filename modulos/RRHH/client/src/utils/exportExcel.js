@@ -3,6 +3,49 @@ import { saveAs } from 'file-saver';
 import { excelStyles } from '../data/excelStyles';
 
 const CET_BLUE = '003366';
+
+/**
+ * Norma institucional: El Contralor del Estado encabeza la nómina,
+ * seguido de una línea en blanco y luego el resto ordenado por
+ * Dirección → División → Unidad → Apellidos.
+ *
+ * @param {Array} rows - Filas de datos con claves de objeto.
+ * @param {Object} opts - { dirKey, divKey, uniKey, cargoKey, apellidoKey }
+ * @returns {Array} Arreglo reordenado con una fila «spacer» entre el Contralor y el resto.
+ */
+export function aplicarNormaContralor(rows, opts = {}) {
+  const {
+    cargoKey = 'Cargo CET',
+    dirKey = 'Dirección',
+    divKey = 'División',
+    uniKey = 'Unidad',
+    apellidoKey = 'Apellidos',
+    spacerValue = { __spacer: true }
+  } = opts
+
+  const esContralor = (row) => {
+    const cargo = String(row[cargoKey] || '').toUpperCase()
+    return cargo.includes('CONTRALOR') && (cargo.includes('ESTADO') || cargo.includes('GENERAL'))
+  }
+
+  const contralores = rows.filter(esContralor)
+  const resto = rows
+    .filter(r => !esContralor(r))
+    .sort((a, b) => {
+      const d = String(a[dirKey] || '').localeCompare(String(b[dirKey] || ''))
+      if (d !== 0) return d
+      const v = String(a[divKey] || '').localeCompare(String(b[divKey] || ''))
+      if (v !== 0) return v
+      const u = String(a[uniKey] || '').localeCompare(String(b[uniKey] || ''))
+      if (u !== 0) return u
+      return String(a[apellidoKey] || '').localeCompare(String(b[apellidoKey] || ''))
+    })
+
+  return contralores.length > 0
+    ? [...contralores, spacerValue, ...resto]
+    : resto
+}
+
 const THIN_BORDER = {
   top: { style: 'thin' }, left: { style: 'thin' },
   bottom: { style: 'thin' }, right: { style: 'thin' },
@@ -136,7 +179,23 @@ export const generateExcelBuffer = async (data, sheetName = 'Nómina', logoBase6
 
   let lastDir = null, lastDiv = null, lastUni = null;
 
-  data.forEach((item) => {
+  // Norma institucional: Contralor del Estado de primero + línea en blanco
+  const dataOrdenada = aplicarNormaContralor(data, {
+    cargoKey: 'Cargo CET',
+    dirKey: 'Dirección',
+    divKey: 'División',
+    uniKey: 'Unidad',
+    apellidoKey: 'Apellidos'
+  })
+
+  dataOrdenada.forEach((item) => {
+    // Fila espaciadora (entre Contralor y el resto)
+    if (item.__spacer) {
+      worksheet.addRow({})
+      lastDir = null; lastDiv = null; lastUni = null
+      return
+    }
+
     if (item['Dirección'] && item['Dirección'] !== lastDir) {
       const row = worksheet.addRow({});
       row.getCell(1).value = item['Dirección'].toString().toUpperCase();

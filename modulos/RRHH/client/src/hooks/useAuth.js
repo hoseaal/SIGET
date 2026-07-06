@@ -3,6 +3,12 @@ import { useState, useEffect } from 'react'
 let cachedUser = null
 let cachedPromise = null
 
+// Exportar para invocarla en el logout y limpiar el usuario anterior
+export function clearAuthCache() {
+  cachedUser = null
+  cachedPromise = null
+}
+
 export function useAuth() {
   const [user, setUser] = useState(cachedUser)
   const [loading, setLoading] = useState(!cachedUser)

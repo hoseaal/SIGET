@@ -3,6 +3,12 @@
         "header": "",
         "items": [
             {
+                "text": "Mi Portal",
+                "icon": "bx bx-user-badge",
+                "available": true,
+                "link": "/visualizador"
+            },
+            {
                 "text": "Dashboard",
                 "icon": "bx bx-home",
                 "available": true,
@@ -189,11 +195,6 @@
                 "available": true,
                 "link": "",
                 "submenu": [
-                    {
-                        "text": "Registrar Nuevo Usuario",
-                        "available": true,
-                        "link": "/Configuracion/NuevoUsuario"
-                    },
                     {
                         "text": "Usuarios",
                         "available": true,

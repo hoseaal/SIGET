@@ -85,9 +85,16 @@ export const ModalVerPerfil = ({ empleadoId, perfilData, loading, onHide }) => {
                           <tr>
                             <th>Estatus</th>
                             <th>Fecha Inicio</th>
-                            <th>Fecha Fin / Reintegro</th>
-                            <th className="text-center">Días Consumidos</th>
-                            <th className="text-center">Días Pendientes</th>
+                            {/* Días hábiles originales de la solicitud */}
+                            <th className="text-center">Días Hábiles</th>
+                            {/* ✔ Fecha real de finalización del descanso físico (proyección pura, inmutable) */}
+                            <th className="text-center text-success">
+                              <i className="bx bx-calendar-check me-1"></i>Fin Real
+                            </th>
+                            {/* ✔ Primer día hábil posterior: cuándo regresa a laborar */}
+                            <th className="text-center text-primary">
+                              <i className="bx bx-log-in me-1"></i>Reintegro
+                            </th>
                             <th>Observaciones</th>
                           </tr>
                         </thead>
@@ -98,15 +105,21 @@ export const ModalVerPerfil = ({ empleadoId, perfilData, loading, onHide }) => {
                                 <span className="badge bg-secondary">{h.nombre_status || 'Sin estatus'}</span>
                               </td>
                               <td>{formatDate(h.fecha_inicio)}</td>
-                              <td>{formatDate(h.fecha_fin)}</td>
-                              <td className="text-center">{h.dias_consumidos}</td>
-                              <td className="text-center">
-                                {h.es_reintegro && h.dias_pendientes > 0 ? (
-                                  <span className="text-warning fw-bold">{h.dias_pendientes}</span>
-                                ) : (
-                                  <span className="text-muted">0</span>
-                                )}
+
+                              {/* Días hábiles de esta solicitud/registro */}
+                              <td className="text-center fw-bold">{h.dias_habiles ?? '-'}</td>
+
+                              {/* ✔ Fecha de Finalización Real: consume el campo persistido en BD.
+                                   Fallback a fecha_fin para registros legacy. */}
+                              <td className="text-center fw-bold text-success">
+                                {formatDate(h.fecha_finalizacion_real || h.fecha_fin) || '-'}
                               </td>
+
+                              {/* ✔ Fecha de Reintegro Laboral: primer día hábil post-fin-real */}
+                              <td className="text-center fw-bold text-primary">
+                                {formatDate(h.fecha_reintegro_laboral) || '-'}
+                              </td>
+
                               <td style={{ fontSize: '0.8rem' }}>
                                 {h.observaciones || 'Sin observaciones'}
                               </td>
