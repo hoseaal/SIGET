@@ -16,8 +16,8 @@ export class PrimaService {
     if (!datos.nombre) throw new Error('El nombre de la prima es requerido')
     
     // Verificamos que no sea undefined o null (0 es un valor válido)
-    if (datos.porcentaje === undefined || datos.porcentaje === null) {
-      throw new Error('El porcentaje de la prima es requerido')
+    if (datos.asignacion === undefined || datos.asignacion === null) {
+      throw new Error('La asignación de la prima es requerida')
     }
 
     return await PrimaModel.create(datos)
@@ -27,8 +27,8 @@ export class PrimaService {
     const existe = await PrimaModel.getById(id)
     if (!existe) throw new Error('Prima no existe')
     
-    if (!datos.nombre || datos.porcentaje === undefined) {
-      throw new Error('Nombre y Porcentaje son requeridos para actualizar')
+    if (!datos.nombre || datos.asignacion === undefined) {
+      throw new Error('Nombre y Asignación son requeridos para actualizar')
     }
 
     return await PrimaModel.update(id, datos)

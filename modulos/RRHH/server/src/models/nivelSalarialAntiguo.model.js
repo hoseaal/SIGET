@@ -13,14 +13,22 @@ export class NivelSalarialAntiguoModel {
   }
 
   static async create ({ nombre, salario_antiguo, cargo_onapre_id }) {
-    const [result] = await pool.query(
+    // Solo insertamos en niveles_salariales_antiguos. El trigger after_insert_nivel_antiguo
+    // se encargará de crear el registro espejo en niveles_salariales.
+    const [resultAntiguo] = await pool.query(
       'INSERT INTO niveles_salariales_antiguos (nombre, salario_antiguo, cargo_onapre_id) VALUES (?, ?, ?)',
       [nombre, salario_antiguo, cargo_onapre_id]
     )
-    return { nivel_salarial_antiguo_id: result.insertId, nombre, salario_antiguo, cargo_onapre_id }
+
+    return {
+      nivel_salarial_antiguo_id: resultAntiguo.insertId,
+      nombre, salario_antiguo, cargo_onapre_id
+    }
   }
 
   static async update (id, { nombre, salario_antiguo, cargo_onapre_id }) {
+    // Solo actualizamos niveles_salariales_antiguos. Los triggers se encargarán
+    // de sincronizar el nombre y cargo_onapre_id en la tabla actual si cambian.
     const [result] = await pool.query(
       'UPDATE niveles_salariales_antiguos SET nombre = ?, salario_antiguo = ?, cargo_onapre_id = ? WHERE nivel_salarial_antiguo_id = ?',
       [nombre, salario_antiguo, cargo_onapre_id, id]

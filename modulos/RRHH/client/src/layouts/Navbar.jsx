@@ -4,8 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Dropdown, Nav, Navbar as BSNavbar, Image, Toast, ToastContainer } from 'react-bootstrap';
 import { BsMenuApp, BsPerson, BsGear, BsCreditCard, BsPower } from 'react-icons/bs';
 import ModalContraseña from '../pages/Modales/modalContraseña'
+import { useAuth, clearAuthCache } from '../hooks/useAuth';
+import { useNotifications } from '../hooks/NotificationContext';
 
 const Navbar = () => {
+  const { user: authUser } = useAuth();
+  const isVisualizador = authUser?.nombre_rol === 'Visualizador';
+  const { vacationAlerts, refreshNotifications } = useNotifications();
+
   const [userData, setUserData] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -14,9 +20,20 @@ const Navbar = () => {
 
   const navigate = useNavigate();
 
-  const handleSuccess = () => {
-            setRefreshKey(prev => prev + 1); // Fuerza recarga
-        };
+  const handleSuccess = () => { };
+
+  const formatAlertDate = (value) => {
+    if (!value) return 'N/A';
+    const normalized = typeof value === 'string' && value.includes('T') ? value : `${value}T00:00:00`;
+    const parsed = new Date(normalized);
+    return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleDateString();
+  };
+
+  useEffect(() => {
+    refreshNotifications();
+    const interval = setInterval(refreshNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -59,6 +76,8 @@ const Navbar = () => {
       if (!res.ok) throw new Error('Error al cerrar sesión');
 
       const data = await res.json();
+      // Limpiar la caché de autenticación para que el próximo login sea limpio
+      clearAuthCache();
       showNotification(data.message || 'Sesión cerrada correctamente.', 'success');
       setTimeout(() => {
         navigate('/Login', { replace: true });
@@ -90,6 +109,112 @@ const Navbar = () => {
       <div className="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
         {getGreetingMessage(userData?.nombres + ' ' + userData?.apellidos)}
         <Nav className="flex-row align-items-center ms-auto">
+          {/* Notifications Dropdown — solo visible para roles administrativos */}
+          {!isVisualizador && (
+          <Dropdown as={Nav.Item} className="navbar-dropdown dropdown-notifications me-3 d-flex align-items-center">
+            <Dropdown.Toggle as={Nav.Link} className="dropdown-toggle hide-arrow d-flex align-items-center" style={{ position: 'relative' }}>
+              <i className="bx bx-bell bx-sm"></i>
+              {(vacationAlerts.proximosDerecho?.length > 0 ||
+                vacationAlerts.proximosRetornar?.length > 0) && (
+                <span className="badge bg-danger rounded-pill badge-notifications" style={{ position: 'absolute', top: '0', right: '-5px', fontSize: '0.65rem', padding: '0.25em 0.4em' }}>
+                  {(vacationAlerts.proximosDerecho?.length || 0) + (vacationAlerts.proximosRetornar?.length || 0)}
+                </span>
+              )}
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu className="dropdown-menu-end py-0" style={{ width: '320px', maxHeight: '400px', overflowY: 'auto' }}>
+              <div className="dropdown-menu-header border-bottom">
+                <div className="dropdown-header d-flex align-items-center py-3">
+                  <h6 className="text-body mb-0 me-auto">Notificaciones</h6>
+                  <a href="#" className="text-muted" title="Refrescar">
+                    <i className="bx fs-4 bx-refresh" onClick={refreshNotifications}></i>
+                  </a>
+                </div>
+              </div>
+              <ul className="list-group list-group-flush">
+                {(vacationAlerts.proximosDerecho?.length === 0 &&
+                  vacationAlerts.proximosRetornar?.length === 0) ? (
+                  <li className="list-group-item text-center text-muted py-4" style={{ fontSize: '0.85rem' }}>
+                    <i className="bx bx-bell-off fs-4 mb-2 d-block"></i>
+                    No hay alertas de vacaciones.
+                  </li>
+                ) : (
+                  <>
+                    {/* Próximos a obtener el derecho — lista individual */}
+                    {vacationAlerts.proximosDerecho?.map((item) => {
+                      const linkPath = item.tipo_empleado === 'obrero' ? '/Personal/Vacaciones/Obreros' : '/Personal/Vacaciones/Funcionarios';
+                      return (
+                        <li 
+                          key={`derecho-${item.empleado_id}`} 
+                          className="list-group-item list-group-item-action dropdown-notifications-item"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => navigate(linkPath)}
+                        >
+                          <div className="d-flex">
+                            <div className="flex-shrink-0 me-3">
+                              <div className="avatar">
+                                <span className="avatar-initial rounded-circle bg-label-success text-success" style={{ backgroundColor: '#e8fadf', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <i className="bx bx-calendar"></i>
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex-grow-1">
+                              <h6 className="mb-1" style={{ fontSize: '0.85rem' }}>Por obtener derecho</h6>
+                              <p className="mb-1 text-muted" style={{ fontSize: '0.75rem' }}>
+                                {item.nombres} {item.apellidos} ({item.tipo_empleado === 'obrero' ? 'Obrero' : 'Funcionario'})
+                              </p>
+                              <small className="text-muted" style={{ fontSize: '0.7rem' }}>
+                                <i className="bx bx-time me-1"></i>
+                                Faltan {item.dias_restantes_para_derecho ?? '?'} días para su derecho
+                              </small>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+
+                    {/* Próximos a retornar */}
+                    {vacationAlerts.proximosRetornar?.map((item) => {
+                      const linkPath = item.tipo_empleado === 'obrero' ? '/Personal/Vacaciones/Obreros' : '/Personal/Vacaciones/Funcionarios';
+                      return (
+                        <li 
+                          key={`retorno-${item.empleado_id}`} 
+                          className="list-group-item list-group-item-action dropdown-notifications-item"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => navigate(linkPath)}
+                        >
+                          <div className="d-flex">
+                            <div className="flex-shrink-0 me-3">
+                              <div className="avatar">
+                                <span className="avatar-initial rounded-circle bg-label-warning text-warning" style={{ backgroundColor: '#fff3e0', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <i className="bx bx-time-five"></i>
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex-grow-1">
+                              <h6 className="mb-1" style={{ fontSize: '0.85rem' }}>Vacaciones por terminar</h6>
+                              <p className="mb-0 text-muted" style={{ fontSize: '0.75rem' }}>
+                                {item.nombres} {item.apellidos} ({item.tipo_empleado === 'obrero' ? 'Obrero' : 'Funcionario'}) próximo a retornar.
+                              </p>
+                              <small className="text-muted" style={{ fontSize: '0.7rem' }}>
+                                Retorno: {formatAlertDate(item.fecha_retorno || item.fecha_fin)}
+                              </small>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </>
+                )}
+              </ul>
+              <div className="dropdown-menu-footer border-top p-3">
+                <button className="btn btn-primary text-uppercase w-100" style={{ fontSize: '0.8rem' }}>Ver todas las notificaciones</button>
+              </div>
+            </Dropdown.Menu>
+          </Dropdown>
+          )} {/* /!isVisualizador notification bell */}
+
+          {/* User Profile Dropdown */}
           <Dropdown as={Nav.Item} className="navbar-dropdown dropdown-user">
             <Dropdown.Toggle as={Nav.Link} className="dropdown-toggle hide-arrow">
               <div className="avatar avatar-online">

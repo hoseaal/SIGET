@@ -10,7 +10,7 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
     console.log('Tabla en ModalInsertNivelSalarial:', tableName);
     const isAntiguo = tableName === 'niveles_salariales_antiguos';
     const endpoint = isAntiguo ? '/api/niveles-salariales-antiguos' : '/api/niveles-salariales';
-    const fieldNom = isAntiguo ? 'nombre' : 'niv_nom';
+    const fieldNom = 'nombre';
     const fieldSal = isAntiguo ? 'salario_antiguo' : 'salario_base';
 
     // Usamos nombres genéricos en el estado para facilitar el manejo de los inputs
@@ -18,13 +18,34 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
     const [enviando, setEnviando] = useState(false);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
-    const todosLosNiveles = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+    // ==========================================
+    // OBTENER NOMBRE DEL CARGO SELECCIONADO
+    // Para mostrar niveles como "Profesional I", "Profesional II", etc.
+    // ==========================================
+    const selectedCargo = dataOna.find(ona => String(ona.cargo_onapre_id) === String(formData.cargo_onapre_id));
+    const cargoNombre = selectedCargo ? selectedCargo.nombre : '';
+
+    const nombresDirectivos = [
+        'Contralor del Estado',
+        'Director General',
+        'Jefe de División',
+        'Jefe de División General',
+        'Director de Línea',
+        'Coordinador de Área'
+    ];
+    const esCargoDirectivo = nombresDirectivos.some(d => {
+        const normalizedD = d.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        const normalizedCargo = cargoNombre.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        return normalizedD === normalizedCargo;
+    });
+
+    const todosLosNiveles = esCargoDirectivo ? [cargoNombre] : ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
     // Calculamos qué niveles están ocupados para el cargo seleccionado
-    const nivelesOcupados = formData.cargo_onapre_id && matrizNiveles[formData.cargo_onapre_id] 
-        ? Object.keys(matrizNiveles[formData.cargo_onapre_id]) 
+    const nivelesOcupados = formData.cargo_onapre_id && matrizNiveles[formData.cargo_onapre_id]
+        ? Object.keys(matrizNiveles[formData.cargo_onapre_id])
         : [];
-    
+
     // Filtramos los niveles que aún están disponibles
     const nivelesDisponibles = todosLosNiveles.filter(lvl => !nivelesOcupados.includes(lvl));
     const estaLleno = formData.cargo_onapre_id !== '' && nivelesDisponibles.length === 0;
@@ -106,22 +127,26 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
 
                     {estaLleno ? (
                         <Alert type="warning">
-                            Este cargo ONAPRE ya tiene los VII niveles salariales registrados. No se pueden agregar más.
+                            {esCargoDirectivo
+                                ? "Este cargo directivo ya tiene su nivel salarial registrado."
+                                : "Este cargo ONAPRE ya tiene los VII niveles salariales registrados. No se pueden agregar más."}
                         </Alert>
                     ) : (
                         <>
                             <Form.Group className="mb-3">
                                 <Form.Label>Nivel Salarial</Form.Label>
-                                <Form.Select 
-                                    name="nom" 
-                                    value={formData.nom} 
-                                    onChange={handleChange} 
-                                    required 
+                                <Form.Select
+                                    name="nom"
+                                    value={formData.nom}
+                                    onChange={handleChange}
+                                    required
                                     disabled={!formData.cargo_onapre_id}
                                 >
                                     <option value="">Seleccione el nivel...</option>
                                     {nivelesDisponibles.map((lvl) => (
-                                        <option key={lvl} value={lvl}>Nivel {lvl}</option>
+                                        <option key={lvl} value={lvl}>
+                                            {esCargoDirectivo ? `${lvl}` : (cargoNombre ? `${cargoNombre} ${lvl}` : `Nivel ${lvl}`)}
+                                        </option>
                                     ))}
                                 </Form.Select>
                             </Form.Group>

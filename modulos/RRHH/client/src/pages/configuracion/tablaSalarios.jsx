@@ -5,6 +5,7 @@ import ModalInsert from '../Modales/modalInsert';
 import ModalUpdate from '../Modales/modalUpdate';
 import ModalDelete from '../Modales/modalDelete';
 import { ModalInsertNivelSalarial } from '../Modales/modalInsertNivelSalarial';
+import { ModalInsertJerarquia } from '../Modales/ModalInsertJerarquia';
 
 export const TablaSalarios = () => {
     const [refreshKey, setRefreshKey] = useState(0);
@@ -22,14 +23,14 @@ export const TablaSalarios = () => {
     const [dataNiv, setDataNiv] = useState([]);
     const [columnsNiv, setColumnsNiv] = useState([]);
     const [idColumnNiv, setIdColumnNiv] = useState(null);
-    
+
     // Estados para los modales de Nivel Salarial
     const [showNivModal, setShowNivModal] = useState(false); // Para insertar (Nuevo Custom)
     const [showNivUpModal, setShowNivUpModal] = useState(false); // Para actualizar
 
     const columnAliasNiv = {
         'nivel_salarial_id': 'Código',
-        'niv_nom': 'Nivel',
+        'nombre': 'Nivel',
         'salario_base': 'Salario (Bs)',
         'cargo_onapre_id': 'Cargo ONAPRE'
     };
@@ -40,7 +41,7 @@ export const TablaSalarios = () => {
     const [dataNivAnt, setDataNivAnt] = useState([]);
     const [columnsNivAnt, setColumnsNivAnt] = useState([]);
     const [idColumnNivAnt, setIdColumnNivAnt] = useState(null);
-    
+
     // Estados para los modales de Nivel Salarial
     const [showNivAntModal, setShowNivAntModal] = useState(false); // Para insertar (Nuevo Custom)
     const [showNivAntUpModal, setShowNivAntUpModal] = useState(false); // Para actualizar
@@ -64,8 +65,8 @@ export const TablaSalarios = () => {
 
     const columnAliasPri = {
         'prima_id': 'Código',
-        'nombre': 'Nombre de la Prima',
-        'porcentaje': 'Porcentaje (%)',
+        'nombre': 'Concepto',
+        'asignacion': 'Asignación',
         'pri_val': 'Valor Fijo (Bs)'
     };
 
@@ -75,7 +76,9 @@ export const TablaSalarios = () => {
     const [columnsPrf, setColumnsPrf] = useState([]);
     const [idColumnPrf, setIdColumnPrf] = useState(null);
     const [dataPrf, setDataPrf] = useState([]);
+    const [dataJer, setDataJer] = useState([]);
     const [showPrfModal, setShowPrfModal] = useState(false);
+    const [showJerModal, setShowJerModal] = useState(false);
     const [showPrfUpModal, setShowPrfUpModal] = useState(false);
     const [showPrfDelModal, setShowPrfDelModal] = useState(false);
 
@@ -99,8 +102,8 @@ export const TablaSalarios = () => {
     const columnAliasAnt = {
         'antiguedad_id': 'Código',
         'anios_cumplidos': 'Años de Servicio',
-        'ant_act': 'Porcentaje Actual (%)',
-        'ant_ant': 'Porcentaje Anterior (%)'
+        'porcentaje_actual': 'Porcentaje Actual (%)',
+        'porcentaje_anterior': 'Porcentaje Anterior (%)'
     };
 
     // ==========================================
@@ -117,6 +120,36 @@ export const TablaSalarios = () => {
         'deduccion_id': 'Código',
         'nombre': 'Deducción (Ej: IVSS)',
         'porcentaje': 'Porcentaje (%)'
+    };
+
+    // ==========================================
+    // ESTADOS: PENSIONADOS (sueldos_pensionados)
+    // ==========================================
+    const [columnsPen, setColumnsPen] = useState([]);
+    const [idColumnPen, setIdColumnPen] = useState(null);
+    const [dataPen, setDataPen] = useState([]);
+    const [showPenModal, setShowPenModal] = useState(false);
+    const [showPenUpModal, setShowPenUpModal] = useState(false);
+    const [showPenDelModal, setShowPenDelModal] = useState(false);
+
+    const columnAliasPen = {
+        'sueldo_pensionado_id': 'Código',
+        'salario_base': 'Salario Base (Bs)'
+    };
+
+    // ==========================================
+    // ESTADOS: SOBREVIVIENTES (sueldo_sobreviente)
+    // ==========================================
+    const [columnsSob, setColumnsSob] = useState([]);
+    const [idColumnSob, setIdColumnSob] = useState(null);
+    const [dataSob, setDataSob] = useState([]);
+    const [showSobModal, setShowSobModal] = useState(false);
+    const [showSobUpModal, setShowSobUpModal] = useState(false);
+    const [showSobDelModal, setShowSobDelModal] = useState(false);
+
+    const columnAliasSob = {
+        'id_sueldo': 'Código',
+        'sueldo_base': 'Salario Base (Bs)'
     };
 
     // ==========================================
@@ -190,6 +223,16 @@ export const TablaSalarios = () => {
     }, [refreshKey]);
 
     useEffect(() => {
+        const loadJerData = async () => {
+            try {
+                const res = await fetch('/api/porcentajes-jerarquias', { credentials: 'include' });
+                setDataJer(await res.json());
+            } catch (error) { console.error('Error cargando Jerarquías:', error); }
+        };
+        loadJerData();
+    }, [refreshKey]);
+
+    useEffect(() => {
         const loadAntData = async () => {
             try {
                 const { columns, primaryKey } = await getTableMetadata('configuracion_antiguedad');
@@ -215,19 +258,84 @@ export const TablaSalarios = () => {
         loadDeData();
     }, [refreshKey]);
 
+    useEffect(() => {
+        const loadPenData = async () => {
+            try {
+                const { columns, primaryKey } = await getTableMetadata('sueldos_pensionados');
+                setColumnsPen(columns.map(col => ({ originalName: col.name, displayName: columnAliasPen[col.name] || col.name, isPrimaryKey: col.name === primaryKey })));
+                setIdColumnPen(primaryKey);
+                const res = await fetch('/api/sueldo-pensionado', { credentials: 'include' });
+                const result = await res.json();
+                // Si el API retorna un objeto, lo envolvemos en un array para la tabla
+                setDataPen(result && result.sueldo_pensionado_id ? [result] : []);
+            } catch (error) { console.error('Error cargando Sueldos Pensionados:', error); }
+        };
+        loadPenData();
+    }, [refreshKey]);
+
+    useEffect(() => {
+        const loadSobData = async () => {
+            try {
+                const { columns, primaryKey } = await getTableMetadata('sueldo_sobreviente');
+                setColumnsSob(columns.map(col => ({ originalName: col.name, displayName: columnAliasSob[col.name] || col.name, isPrimaryKey: col.name === primaryKey })));
+                setIdColumnSob(primaryKey);
+                const res = await fetch('/api/sueldo-sobreviviente', { credentials: 'include' });
+                const result = await res.json();
+                setDataSob(result && result.id_sueldo ? [result] : []);
+            } catch (error) { console.error('Error cargando Sueldos Sobrevivientes:', error); }
+        };
+        loadSobData();
+    }, [refreshKey]);
+
     // ==========================================
     // LÓGICA DE PROCESAMIENTO MATRIZ DINÁMICA
     // ==========================================
-    
-    const ordenRomanos = { 'I':1, 'II':2, 'III':3, 'IV':4, 'V':5, 'VI':6, 'VII':7, 'VIII':8, 'IX':9, 'X':10 };
-    const nivelesDinamicos = [...new Set(dataNiv.map(n => n.niv_nom))]
+
+    const nombresDirectivos = [
+        'Contralor del Estado',
+        'Director General',
+        'Jefe de División',
+        'Jefe de División General',
+        'Director de Línea',
+        'Coordinador de Área'
+    ];
+
+    const isDirectivo = (nombre) => {
+
+        if (!nombre) return false;
+        const normalized = nombre.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        return nombresDirectivos.some(d => {
+            const normalizedD = d.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            return normalized === normalizedD;
+        });
+    };
+
+    const isEspecial = (nombre) => {
+        if (!nombre) return false;
+        const n = nombre.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        // Usamos includes para mayor robustez en cargos que pueden tener variaciones, 
+        // pero que deben caer en la tabla de sueldo fijo.
+        return n.includes("JEFE DE DIVISION GENERAL") || 
+               n.includes("DIRECTOR DE LINEA") || 
+               n.includes("COORDINADOR DE AREA");
+    };
+
+    const directivosOna = dataOna.filter(ona => isDirectivo(ona.nombre));
+    const operativosOna = dataOna.filter(ona => !isDirectivo(ona.nombre));
+
+    const operativosEscalaOna = operativosOna.filter(ona => !isEspecial(ona.nombre));
+    const operativosEspecialOna = operativosOna.filter(ona => isEspecial(ona.nombre));
+
+    const ordenRomanos = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10 };
+    const nivelesDinamicos = [...new Set(dataNiv.map(n => n.nombre))]
+        .filter(nombre => !isDirectivo(nombre) && !isEspecial(nombre))
         .sort((a, b) => (ordenRomanos[a] || 99) - (ordenRomanos[b] || 99));
 
     const niveles = nivelesDinamicos.length > 0 ? nivelesDinamicos : ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
     const matrizNiveles = dataNiv.reduce((acc, curr) => {
         if (!acc[curr.cargo_onapre_id]) acc[curr.cargo_onapre_id] = {};
-        acc[curr.cargo_onapre_id][curr.niv_nom] = curr;
+        acc[curr.cargo_onapre_id][curr.nombre] = curr;
         return acc;
     }, {});
 
@@ -236,8 +344,9 @@ export const TablaSalarios = () => {
     // ==========================================
     // LÓGICA DE PROCESAMIENTO MATRIZ DINÁMICA ANTIGUA
     // ==========================================
-    
+
     const nivelesAntDinamicos = [...new Set(dataNivAnt?.map(n => n.nombre))]
+        .filter(nombre => !isDirectivo(nombre) && !isEspecial(nombre))
         .sort((a, b) => (ordenRomanos[a] || 99) - (ordenRomanos[b] || 99));
 
     const nivelesAnt = nivelesAntDinamicos.length > 0 ? nivelesAntDinamicos : ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
@@ -249,6 +358,31 @@ export const TablaSalarios = () => {
     }, {});
 
     const columnasNivelAntEditables = columnsNivAnt.filter(col => col.originalName === 'salario_antiguo');
+
+    // ==========================================
+    // LÓGICA DE PROCESAMIENTO PROFESIONALIZACIÓN Y JERARQUÍAS
+    // ==========================================
+
+    const cargosJerarquia = [
+        'JEFE DE DIVISION',
+        'JEFE DE DIVISION GENERAL',
+        'DIRECTOR GENERAL',
+        'CONTRALOR DEL ESTADO',
+        'DIRECTOR DE LINEA',
+        'COORDINADOR DE AREA'
+    ];
+
+    const isJerarquia = (descripcion) => {
+        if (!descripcion) return false;
+        const normalized = descripcion.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        return cargosJerarquia.some(cargo => {
+            const normalizedCargo = cargo.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            return normalized === normalizedCargo;
+        });
+    };
+
+    const dataPrfProfesional = dataPrf.filter(item => !isJerarquia(item.descripcion));
+    // Ya no filtramos jerarquías de Profesionalización, usamos dataJer directamente
 
     return (
         <div>
@@ -269,6 +403,44 @@ export const TablaSalarios = () => {
                 </div>
 
                 <div className="table-responsive text-nowrap p-3">
+                    <h6 className="mt-2 text-primary fw-bold">Cargos con Sueldo Fijo</h6>
+                    <table className="table table-bordered table-hover mb-4">
+                        <thead className="table-light text-center">
+                            <tr>
+                                <th className="align-middle bg-primary text-white">GRUPOS O CLASES DE CARGOS</th>
+                                <th className="bg-secondary text-white">SUELDO MENSUAL</th>
+                            </tr>
+                        </thead>
+                        <tbody className="table-border-bottom-0">
+                            {[...directivosOna, ...operativosEspecialOna].map((ona) => {
+                                const nivelesCargo = matrizNiveles[ona.cargo_onapre_id] || {};
+                                const nivelData = nivelesCargo[ona.nombre];
+                                return (
+                                    <tr key={ona.cargo_onapre_id}>
+                                        <td className="fw-bold text-center align-middle">{ona.nombre}</td>
+                                        <td className="text-center align-middle">
+                                            {nivelData ? (
+                                                <button
+                                                    className="btn btn-sm btn-link text-decoration-none text-dark fw-semibold"
+                                                    title={`Editar Sueldo (${ona.nombre})`}
+                                                    onClick={() => {
+                                                        setEditingItem(nivelData);
+                                                        setShowNivUpModal(true);
+                                                    }}
+                                                >
+                                                    {Number(nivelData.salario_base).toFixed(2)}
+                                                </button>
+                                            ) : (
+                                                <span className="text-muted">---</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+
+                    <h6 className="mt-4 text-primary fw-bold">Personal Operativo (Tabulador I-VII)</h6>
                     <table className="table table-bordered table-hover">
                         <thead className="table-light text-center">
                             <tr>
@@ -280,7 +452,7 @@ export const TablaSalarios = () => {
                             </tr>
                         </thead>
                         <tbody className="table-border-bottom-0">
-                            {dataOna.map((ona) => {
+                            {operativosEscalaOna.map((ona) => {
                                 const nivelesCargo = matrizNiveles[ona.cargo_onapre_id] || {};
                                 return (
                                     <tr key={ona.cargo_onapre_id}>
@@ -290,7 +462,7 @@ export const TablaSalarios = () => {
                                             return (
                                                 <td key={lvl} className="text-center align-middle">
                                                     {nivelData ? (
-                                                        <button 
+                                                        <button
                                                             className="btn btn-sm btn-link text-decoration-none text-dark fw-semibold"
                                                             title={`Editar Nivel ${lvl} (${ona.nombre})`}
                                                             onClick={() => {
@@ -314,23 +486,23 @@ export const TablaSalarios = () => {
                 </div>
 
                 {/* MODAL CUSTOM PARA INSERTAR (Maneja las reglas de I-VII y Cupos llenos) */}
-                <ModalInsertNivelSalarial 
-                    show={showNivModal} 
+                <ModalInsertNivelSalarial
+                    show={showNivModal}
                     handleClose={() => setShowNivModal(false)}
                     dataOna={dataOna}
                     matrizNiveles={matrizNiveles}
-                    onSuccess={handleSuccess} 
+                    onSuccess={handleSuccess}
                 />
 
                 {/* MODAL UPDATE GENÉRICO (Solo expone 'salario_base') */}
-                <ModalUpdate 
-                    show={showNivUpModal} 
-                    handleClose={() => setShowNivUpModal(false)} 
+                <ModalUpdate
+                    show={showNivUpModal}
+                    handleClose={() => setShowNivUpModal(false)}
                     columns={columnasNivelEditables}
-                    tableName='niveles_salariales' 
-                    rowData={editingItem} 
-                    onSuccess={handleSuccess} 
-                    idColumn={idColumnNiv} 
+                    tableName='niveles_salariales'
+                    rowData={editingItem}
+                    onSuccess={handleSuccess}
+                    idColumn={idColumnNiv}
                 />
             </div>
 
@@ -351,6 +523,44 @@ export const TablaSalarios = () => {
                 </div>
 
                 <div className="table-responsive text-nowrap p-3">
+                    <h6 className="mt-2 text-primary fw-bold">Cargos con Sueldo Fijo</h6>
+                    <table className="table table-bordered table-hover mb-4">
+                        <thead className="table-light text-center">
+                            <tr>
+                                <th className="align-middle bg-primary text-white">GRUPOS O CLASES DE CARGOS</th>
+                                <th className="bg-secondary text-white">SUELDO MENSUAL</th>
+                            </tr>
+                        </thead>
+                        <tbody className="table-border-bottom-0">
+                            {[...directivosOna, ...operativosEspecialOna].map((ona) => {
+                                const nivelesCargo = matrizNivelesAnt[ona.cargo_onapre_id] || {};
+                                const nivelData = nivelesCargo[ona.nombre];
+                                return (
+                                    <tr key={ona.cargo_onapre_id}>
+                                        <td className="fw-bold text-center align-middle">{ona.nombre}</td>
+                                        <td className="text-center align-middle">
+                                            {nivelData ? (
+                                                <button
+                                                    className="btn btn-sm btn-link text-decoration-none text-dark fw-semibold"
+                                                    title={`Editar Sueldo (${ona.nombre})`}
+                                                    onClick={() => {
+                                                        setEditingItem(nivelData);
+                                                        setShowNivAntUpModal(true);
+                                                    }}
+                                                >
+                                                    {Number(nivelData.salario_antiguo).toFixed(2)}
+                                                </button>
+                                            ) : (
+                                                <span className="text-muted">---</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+
+                    <h6 className="mt-4 text-primary fw-bold">Personal Operativo (Tabulador I-VII)</h6>
                     <table className="table table-bordered table-hover">
                         <thead className="table-light text-center">
                             <tr>
@@ -362,7 +572,7 @@ export const TablaSalarios = () => {
                             </tr>
                         </thead>
                         <tbody className="table-border-bottom-0">
-                            {dataOna.map((ona) => {
+                            {operativosEscalaOna.map((ona) => {
                                 const nivelesCargo = matrizNivelesAnt[ona.cargo_onapre_id] || {};
                                 return (
                                     <tr key={ona.cargo_onapre_id}>
@@ -372,7 +582,7 @@ export const TablaSalarios = () => {
                                             return (
                                                 <td key={lvl} className="text-center align-middle">
                                                     {nivelData ? (
-                                                        <button 
+                                                        <button
                                                             className="btn btn-sm btn-link text-decoration-none text-dark fw-semibold"
                                                             title={`Editar Nivel ${lvl} (${ona.nombre})`}
                                                             onClick={() => {
@@ -396,24 +606,24 @@ export const TablaSalarios = () => {
                 </div>
 
                 {/* MODAL CUSTOM PARA INSERTAR (Maneja las reglas de I-VII y Cupos llenos) */}
-                <ModalInsertNivelSalarial 
-                    show={showNivAntModal} 
+                <ModalInsertNivelSalarial
+                    show={showNivAntModal}
                     handleClose={() => setShowNivAntModal(false)}
                     dataOna={dataOna}
                     matrizNiveles={matrizNivelesAnt}
                     tableName="niveles_salariales_antiguos"
-                    onSuccess={handleSuccess} 
+                    onSuccess={handleSuccess}
                 />
 
                 {/* MODAL UPDATE GENÉRICO (Solo expone 'salario_base') */}
-                <ModalUpdate 
-                    show={showNivAntUpModal} 
-                    handleClose={() => setShowNivAntUpModal(false)} 
+                <ModalUpdate
+                    show={showNivAntUpModal}
+                    handleClose={() => setShowNivAntUpModal(false)}
                     columns={columnasNivelAntEditables}
-                    tableName='niveles_salariales_antiguos' 
-                    rowData={editingItem} 
-                    onSuccess={handleSuccess} 
-                    idColumn={idColumnNivAnt} 
+                    tableName='niveles_salariales_antiguos'
+                    rowData={editingItem}
+                    onSuccess={handleSuccess}
+                    idColumn={idColumnNivAnt}
                 />
             </div>
 
@@ -476,7 +686,7 @@ export const TablaSalarios = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {dataPrf.map((item, index) => (
+                            {dataPrfProfesional.map((item, index) => (
                                 <tr key={`prf-${index}`}>
                                     {columnsPrf.map((col) => <td key={`${index}-${col.originalName}`}>{item[col.originalName.toLowerCase()] ?? 'N/A'}</td>)}
                                     <td>
@@ -495,6 +705,62 @@ export const TablaSalarios = () => {
                 </div>
                 <ModalUpdate show={showPrfUpModal} handleClose={() => setShowPrfUpModal(false)} columns={columnsPrf} tableName='primas_profesionalizacion' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnPrf} />
                 <ModalDelete show={showPrfDelModal} handleClose={() => setShowPrfDelModal(false)} tableName="primas_profesionalizacion" rowId={deleteItem} idColumn={idColumnPrf} onSuccess={handleSuccess} />
+            </div>
+
+            {/* ========================================== */}
+            {/* 4. JERARQUÍAS (primas_profesionalizacion - filtrado) */}
+            {/* ========================================== */}
+            <div className="card mb-4">
+                <div className="card-header d-flex justify-content-between align-items-center">
+                    <h5 className="mb-0">Jerarquias</h5>
+                    <button type="button" className="btn btn-primary" onClick={() => setShowJerModal(true)}>Agregar Jerarquía</button>
+                </div>
+                <div className="table-responsive text-nowrap">
+                    <table className="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Cargo de Jerarquía</th>
+                                <th>Porcentaje (%)</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {dataJer.map((item, index) => (
+                                <tr key={`jer-${index}`}>
+                                    <td>{item.jerarquia_id}</td>
+                                    <td>{item.cargo}</td>
+                                    <td>{item.porcentaje}%</td>
+                                    <td>
+                                        <Dropdown>
+                                            <Dropdown.Toggle variant="secondary" className="nav-dropdown-dark-example btn-sm"><i className="bx bx-dots-vertical-rounded"></i></Dropdown.Toggle>
+                                            <Dropdown.Menu>
+                                                <Dropdown.Item onClick={() => {
+                                                    // Adaptar item para ModalUpdate genérico si es necesario
+                                                    setEditingItem(item);
+                                                    // Nota: ModalUpdate podría necesitar configuración extra para esta tabla nueva
+                                                    // Pero por ahora cumplimos con el requerimiento de visualización
+                                                }}><i className="bx bx-edit-alt me-1"></i> Editar</Dropdown.Item>
+                                                <Dropdown.Item onClick={() => {
+                                                    setDeleteItem(item.jerarquia_id);
+                                                    // setShowPrfDelModal(true) funcionará si le pasamos el tableName correcto
+                                                }}><i className="bx bx-trash me-1"></i> Eliminar</Dropdown.Item>
+                                            </Dropdown.Menu>
+                                        </Dropdown>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* MODAL ESPECÍFICO PARA JERARQUÍAS (Evita errores de escritura) */}
+                <ModalInsertJerarquia
+                    show={showJerModal}
+                    handleClose={() => setShowJerModal(false)}
+                    onSuccess={handleSuccess}
+                    cargosJerarquia={cargosJerarquia}
+                />
             </div>
 
             {/* ========================================== */}
@@ -573,6 +839,100 @@ export const TablaSalarios = () => {
                 </div>
                 <ModalUpdate show={showDeUpModal} handleClose={() => setShowDeUpModal(false)} columns={columnsDe} tableName='deducciones' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnDe} />
                 <ModalDelete show={showDeDelModal} handleClose={() => setShowDeDelModal(false)} tableName="deducciones" rowId={deleteItem} idColumn={idColumnDe} onSuccess={handleSuccess} />
+            </div>
+
+            {/* ========================================== */}
+            {/* 6. SALARIO PENSIONADOS (sueldos_pensionados) */}
+            {/* ========================================== */}
+            <div className="card mb-4">
+                <div className="card-header d-flex justify-content-between align-items-center">
+                    <h5 className="mb-0">Salario de Pensionados</h5>
+                    <button type="button" className="btn btn-primary" onClick={() => setShowPenModal(true)} disabled={dataPen.length > 0}>
+                        {dataPen.length > 0 ? 'Salario Configurado' : 'Agregar Salario'}
+                    </button>
+                </div>
+                <ModalInsert show={showPenModal} handleClose={() => setShowPenModal(false)} columns={columnsPen} tableName="sueldos_pensionados" onSuccess={handleSuccess} />
+                <div className="table-responsive text-nowrap">
+                    <table className="table table-striped">
+                        <thead>
+                            <tr>
+                                {columnsPen.map((col, idx) => <th key={idx}>{col.displayName}</th>)}
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {dataPen.length > 0 ? (
+                                dataPen.map((item, index) => (
+                                    <tr key={`pen-${index}`}>
+                                        {columnsPen.map((col) => <td key={`${index}-${col.originalName}`}>{item[col.originalName.toLowerCase()] ?? 'N/A'}</td>)}
+                                        <td>
+                                            <Dropdown>
+                                                <Dropdown.Toggle variant="secondary" className="nav-dropdown-dark-example btn-sm"><i className="bx bx-dots-vertical-rounded"></i></Dropdown.Toggle>
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item onClick={() => { setEditingItem(item); setShowPenUpModal(true); }}><i className="bx bx-edit-alt me-1"></i> Editar</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => { setDeleteItem(item.sueldo_pensionado_id); setShowPenDelModal(true); }}><i className="bx bx-trash me-1"></i> Eliminar</Dropdown.Item>
+                                                </Dropdown.Menu>
+                                            </Dropdown>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={columnsPen.length + 1} className="text-center">No se ha configurado el sueldo de los pensionados</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <ModalUpdate show={showPenUpModal} handleClose={() => setShowPenUpModal(false)} columns={columnsPen} tableName='sueldos_pensionados' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnPen} />
+                <ModalDelete show={showPenDelModal} handleClose={() => setShowPenDelModal(false)} tableName="sueldos_pensionados" rowId={deleteItem} idColumn={idColumnPen} onSuccess={handleSuccess} />
+            </div>
+
+            {/* ========================================== */}
+            {/* 7. SALARIO SOBREVIVIENTES (sueldo_sobreviente) */}
+            {/* ========================================== */}
+            <div className="card mb-4">
+                <div className="card-header d-flex justify-content-between align-items-center">
+                    <h5 className="mb-0">Salario de Sobrevivientes</h5>
+                    <button type="button" className="btn btn-primary" onClick={() => setShowSobModal(true)} disabled={dataSob.length > 0}>
+                        {dataSob.length > 0 ? 'Salario Configurado' : 'Agregar Salario'}
+                    </button>
+                </div>
+                <ModalInsert show={showSobModal} handleClose={() => setShowSobModal(false)} columns={columnsSob} tableName="sueldo_sobreviente" onSuccess={handleSuccess} />
+                <div className="table-responsive text-nowrap">
+                    <table className="table table-striped">
+                        <thead>
+                            <tr>
+                                {columnsSob.map((col, idx) => <th key={idx}>{col.displayName}</th>)}
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {dataSob.length > 0 ? (
+                                dataSob.map((item, index) => (
+                                    <tr key={`sob-${index}`}>
+                                        {columnsSob.map((col) => <td key={`${index}-${col.originalName}`}>{item[col.originalName.toLowerCase()] ?? 'N/A'}</td>)}
+                                        <td>
+                                            <Dropdown>
+                                                <Dropdown.Toggle variant="secondary" className="nav-dropdown-dark-example btn-sm"><i className="bx bx-dots-vertical-rounded"></i></Dropdown.Toggle>
+                                                <Dropdown.Menu>
+                                                    <Dropdown.Item onClick={() => { setEditingItem(item); setShowSobUpModal(true); }}><i className="bx bx-edit-alt me-1"></i> Editar</Dropdown.Item>
+                                                    <Dropdown.Item onClick={() => { setDeleteItem(item.id_sueldo); setShowSobDelModal(true); }}><i className="bx bx-trash me-1"></i> Eliminar</Dropdown.Item>
+                                                </Dropdown.Menu>
+                                            </Dropdown>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={columnsSob.length + 1} className="text-center">No se ha configurado el sueldo de los sobrevivientes</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <ModalUpdate show={showSobUpModal} handleClose={() => setShowSobUpModal(false)} columns={columnsSob} tableName='sueldo_sobreviente' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnSob} />
+                <ModalDelete show={showSobDelModal} handleClose={() => setShowSobDelModal(false)} tableName="sueldo_sobreviente" rowId={deleteItem} idColumn={idColumnSob} onSuccess={handleSuccess} />
             </div>
         </div>
     );

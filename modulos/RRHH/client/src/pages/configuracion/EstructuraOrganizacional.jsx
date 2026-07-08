@@ -58,6 +58,7 @@ export const EstructuraOrganizacional = () => {
     const columnAliasUni = {
         'unidad_id': 'Código',
         'nombre': 'Unidad',
+        'direccion_id': 'Dirección',
         'division_id': 'División'
     };
 
@@ -147,22 +148,22 @@ export const EstructuraOrganizacional = () => {
     return (
         <div>
             <h4 className="py-3 mb-4"><span className="text-muted fw-light">Configuración Organizacional /</span> Estructura Organizacional</h4>
-            
+
             {/* ========================================== */}
             {/* 1. DIRECCIONES */}
             {/* ========================================== */}
             <div className="card">
                 <div className="card-header d-flex justify-content-between align-items-center">
                     <h5 className="mb-0">Direcciones</h5>
-                    <button 
-                        type="button" 
+                    <button
+                        type="button"
                         className="btn btn-primary"
                         onClick={() => setShowDirModal(true)}
                     >
                         Agregar Dirección
                     </button>
                 </div>
-                
+
                 <ModalInsert
                     show={showDirModal}
                     handleClose={() => setShowDirModal(false)}
@@ -215,22 +216,22 @@ export const EstructuraOrganizacional = () => {
                         </tbody>
                     </table>
                 </div>
-                <ModalUpdate 
+                <ModalUpdate
                     show={showDirUpModal}
                     handleClose={() => setShowDirUpModal(false)}
                     columns={columnsDir}
                     tableName='direcciones'
-                    rowData={editingItem} 
+                    rowData={editingItem}
                     onSuccess={handleSuccess}
                     idColumn={idColumnDir}
                 />
-                <ModalDelete 
+                <ModalDelete
                     show={showDirDelModal}
                     handleClose={() => setShowDirDelModal(false)}
                     tableName="direcciones"
-                    rowId={deleteItem} 
-                    idColumn={idColumnDir} 
-                    onSuccess={handleSuccess} 
+                    rowId={deleteItem}
+                    idColumn={idColumnDir}
+                    onSuccess={handleSuccess}
                 />
             </div>
 
@@ -240,10 +241,10 @@ export const EstructuraOrganizacional = () => {
             {/* 2. DIVISIONES (Agrupadas por Dirección) */}
             {/* ========================================== */}
             <div className="card">
-               <div className="card-header d-flex justify-content-between align-items-center">
+                <div className="card-header d-flex justify-content-between align-items-center">
                     <h5 className="mb-0">Divisiones</h5>
-                    <button 
-                        type="button" 
+                    <button
+                        type="button"
                         className="btn btn-primary"
                         onClick={() => setShowDivModal(true)}
                     >
@@ -255,7 +256,7 @@ export const EstructuraOrganizacional = () => {
                     show={showDivModal}
                     handleClose={() => setShowDivModal(false)}
                     columns={columnsDiv}
-                    foreign={'direcciones'} // Referencia a la tabla Direcciones
+                    foreign='direcciones'
                     idColumn={idColumnDiv}
                     tableName="divisiones"
                     onSuccess={handleSuccess}
@@ -289,7 +290,7 @@ export const EstructuraOrganizacional = () => {
                                             <strong className="text-primary">Dirección {dirId}: {DireccionesMap[dirId] || `Dirección ${dirId}`}</strong>
                                         </td>
                                     </tr>
-                                    
+
                                     {/* Filas de la División */}
                                     {divisiones.map((item, index) => (
                                         <tr key={`div-${dirId}-${index}`}>
@@ -329,23 +330,23 @@ export const EstructuraOrganizacional = () => {
                     </table>
                 </div>
 
-                <ModalUpdate 
+                <ModalUpdate
                     show={showDivUpModal}
                     handleClose={() => setShowDivUpModal(false)}
                     columns={columnsDiv}
                     tableName='divisiones'
-                    rowData={editingItem} 
+                    rowData={editingItem}
                     foreign='direcciones'
                     onSuccess={handleSuccess}
                     idColumn={idColumnDiv}
                 />
-                <ModalDelete 
+                <ModalDelete
                     show={showDivDelModal}
                     handleClose={() => setShowDivDelModal(false)}
                     tableName="divisiones"
-                    rowId={deleteItem} 
-                    idColumn={idColumnDiv} 
-                    onSuccess={handleSuccess} 
+                    rowId={deleteItem}
+                    idColumn={idColumnDiv}
+                    onSuccess={handleSuccess}
                 />
             </div>
 
@@ -355,10 +356,10 @@ export const EstructuraOrganizacional = () => {
             {/* 3. UNIDADES (Agrupadas por División) */}
             {/* ========================================== */}
             <div className="card">
-               <div className="card-header d-flex justify-content-between align-items-center">
+                <div className="card-header d-flex justify-content-between align-items-center">
                     <h5 className="mb-0">Unidades</h5>
-                    <button 
-                        type="button" 
+                    <button
+                        type="button"
                         className="btn btn-primary"
                         onClick={() => setShowUniModal(true)}
                     >
@@ -370,7 +371,7 @@ export const EstructuraOrganizacional = () => {
                     show={showUniModal}
                     handleClose={() => setShowUniModal(false)}
                     columns={columnsUni}
-                    foreign={'divisiones'} // Referencia a la tabla Divisiones
+                    foreign={['direcciones', 'divisiones']} 
                     idColumn={idColumnUni}
                     tableName="unidades"
                     onSuccess={handleSuccess}
@@ -404,7 +405,7 @@ export const EstructuraOrganizacional = () => {
                                             <strong className="text-primary">División {divId}: {DivisionesMap[divId] || `División ${divId}`}</strong>
                                         </td>
                                     </tr>
-                                    
+
                                     {/* Filas de la Unidad */}
                                     {unidades.map((item, index) => (
                                         <tr key={`uni-${divId}-${index}`}>
@@ -444,23 +445,23 @@ export const EstructuraOrganizacional = () => {
                     </table>
                 </div>
 
-                <ModalUpdate 
+                <ModalUpdate
                     show={showUniUpModal}
                     handleClose={() => setShowUniUpModal(false)}
                     columns={columnsUni}
                     tableName='unidades'
-                    rowData={editingItem} 
-                    foreign='divisiones'
+                    rowData={editingItem}
+                    foreign={['direcciones', 'divisiones']}
                     onSuccess={handleSuccess}
                     idColumn={idColumnUni}
                 />
-                <ModalDelete 
+                <ModalDelete
                     show={showUniDelModal}
                     handleClose={() => setShowUniDelModal(false)}
                     tableName="unidades"
-                    rowId={deleteItem} 
-                    idColumn={idColumnUni} 
-                    onSuccess={handleSuccess} 
+                    rowId={deleteItem}
+                    idColumn={idColumnUni}
+                    onSuccess={handleSuccess}
                 />
             </div>
         </div>

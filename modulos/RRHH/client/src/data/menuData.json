@@ -3,6 +3,12 @@
         "header": "",
         "items": [
             {
+                "text": "Mi Portal",
+                "icon": "bx bx-user-badge",
+                "available": true,
+                "link": "/visualizador"
+            },
+            {
                 "text": "Dashboard",
                 "icon": "bx bx-home",
                 "available": true,
@@ -16,7 +22,7 @@
             {
                 "text": "Personal",
                 "icon": "bx bx-group",
-                "available": true,  
+                "available": true,
                 "link": "",
                 "submenu": [
                     {
@@ -25,9 +31,123 @@
                         "link": "/Personal/FuncionariosActivos"
                     },
                     {
-                        "text": "Registrar Nuevo Funcionario",
+                        "text": "Obreros Fijos",
                         "available": true,
-                        "link": "/Personal/RegistrarFuncionario"
+                        "link": "/Personal/ObrerosFijos"
+                    },
+                    {
+                        "text": "Jubilados",
+                        "available": true,
+                        "link": "/Personal/Jubilados"
+                    },
+                    {
+                        "text": "Pensionados",
+                        "available": true,
+                        "link": "/Personal/Pensionados"
+                    },
+                    {
+                        "text": "Sobrevivientes",
+                        "available": true,
+                        "link": "/Personal/Sobrevivientes"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "header": "Gestion de Remuneraciones",
+        "items": [
+            {
+                "text": "Nómina",
+                "icon": "bx bx-money",
+                "available": true,
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Funcionarios Activos",
+                        "available": true,
+                        "link": "/Nomina/FuncionariosActivos"
+                    },
+                    {
+                        "text": "Obreros Fijos",
+                        "available": true,
+                        "link": "/Nomina/ObrerosFijos"
+                    },
+                    {
+                        "text": "Jubilados",
+                        "available": true,
+                        "link": "/Nomina/Jubilados"
+                    },
+                    {
+                        "text": "Pensionados",
+                        "available": true,
+                        "link": "/Nomina/Pensionados"
+                    },
+                    {
+                        "text": "Sobrevivientes",
+                        "available": true,
+                        "link": "/Nomina/Sobrevivientes"
+                    }
+                ]
+            },
+            {
+                "text": "Gestión de vacaciones",
+                "icon": "bx bx-calendar",
+                "available": true,
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Funcionarios Activos",
+                        "available": true,
+                        "link": "/Personal/Vacaciones/Funcionarios"
+                    },
+                    {
+                        "text": "Obreros Fijos",
+                        "available": true,
+                        "link": "/Personal/Vacaciones/Obreros"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "header": "Reportes",
+        "items": [
+            {
+                "text": "Módulo de Reportes",
+                "icon": "bx bx-file",
+                "available": true,
+                "link": "",
+                "submenu": [
+                    {
+                        "text": "Caja de Ahorro",
+                        "available": true,
+                        "link": "/Reportes/CajaAhorro"
+                    },
+                    {
+                        "text": "Reporte de Pagos",
+                        "available": true,
+                        "link": "/Reportes/Pagos"
+                    },
+                    {
+                        "text": "Primas y Bonificaciones",
+                        "available": true,
+                        "link": "/Reportes/Primas"
+                    },
+                    {
+                        "text": "Ingresos de Personal",
+                        "available": true,
+                        "link": "/Reportes/Ingresos"
+                    },
+                    {
+                        "text": "Resumen de Nómina",
+                        "available": true,
+                        "link": "/Reportes/ResumenNomina"
+                    },
+                    {
+                        "text": "Empleados Padres",
+                        "available": true,
+                        "link": "/Reportes/Padres"
                     }
                 ]
             }
@@ -39,13 +159,18 @@
             {
                 "text": "Configuración General",
                 "icon": "bx bx-cog",
-                "available": true,  
+                "available": true,
                 "link": "",
                 "submenu": [
                     {
                         "text": "Estructura Organizacional",
                         "available": true,
                         "link": "/Configuracion/EstructuraOrganizacional"
+                    },
+                    {
+                        "text": "Catálogo de Instituciones",
+                        "available": true,
+                        "link": "/Configuracion/Instituciones"
                     },
                     {
                         "text": "Tablas de Salarios",
@@ -56,20 +181,20 @@
                         "text": "Clasificación y Cargos",
                         "available": true,
                         "link": "/Configuracion/Cargos"
+                    },
+                    {
+                        "text": "Vacaciones",
+                        "available": true,
+                        "link": "/Configuracion/Vacaciones"
                     }
                 ]
             },
             {
                 "text": "Usuarios",
                 "icon": "bx bx-user-plus",
-                "available": true,  
+                "available": true,
                 "link": "",
                 "submenu": [
-                    {
-                        "text": "Registrar Nuevo Usuario",
-                        "available": true,
-                        "link": "/Configuracion/NuevoUsuario"
-                    },
                     {
                         "text": "Usuarios",
                         "available": true,

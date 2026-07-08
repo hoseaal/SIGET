@@ -32,7 +32,7 @@ export const obtenerPrima = async (req, res) => {
  * Registra una nueva prima en el sistema.
  * @param {object} req.body - Datos de la prima.
  * @param {string} req.body.nombre - Nombre de la prima (Ej: "Prima por Hijos").
- * @param {number} req.body.porcentaje - Porcentaje asignado (Ej: 12.50).
+ * @param {number} req.body.asignacion - Asignación (Ej: 12.50).
  * @returns {Promise<object>} La prima creada.
  */
 export const crearPrima = async (req, res) => {
@@ -49,7 +49,7 @@ export const crearPrima = async (req, res) => {
  * @param {number} req.params.id - ID de la prima a modificar.
  * @param {object} req.body - Datos nuevos.
  * @param {string} req.body.nombre - Nuevo nombre.
- * @param {number} req.body.porcentaje - Nuevo porcentaje.
+ * @param {number} req.body.asignacion - Nueva asignación.
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarPrima = async (req, res) => {

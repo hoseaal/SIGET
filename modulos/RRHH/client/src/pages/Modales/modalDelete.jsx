@@ -18,9 +18,14 @@ function ModalDelete({
 
 
 const endpointMap = {
+        catalogo_instituciones: '/api/instituciones',
         direcciones: '/api/direcciones',
         divisiones: '/api/divisiones',
         unidades: '/api/unidades',
+        sueldos_pensionados: '/api/sueldo-pensionado',
+        sueldo_sobreviente: '/api/sueldo-sobreviviente',
+        configuracion_vacaciones: '/api/configuracion-vacaciones',
+        configuracion_vacaciones_obreros: '/api/configuracion-vacaciones-obreros'
     };
 
     const [userType, setUserType] = useState(null);

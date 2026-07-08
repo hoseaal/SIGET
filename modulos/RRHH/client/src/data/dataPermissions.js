@@ -11,23 +11,57 @@
  * 4: Jefe de Area
  * 5: Administrador
  */
+
+export const ROLES = {
+  VISUALIZADOR: 1,
+  TEMPORAL: 2,
+  TRABAJADOR: 3,
+  JEFE_AREA: 4,
+  ADMINISTRADOR: 5,
+};
 export const menuPermissions = {
-    // Dashboard disponible para todos
-    "/Dashboard": [1, 2, 3, 4, 5],
+    // Dashboard disponible para todos excepto visualizador
+    "/Dashboard": [2, 3, 4, 5],
+    
+    // Ruta exclusiva Visualizador
+    "/visualizador": [1],
 
     // Formularios BM
-    "/Personal/FuncionariosActivos": [1, 2, 3, 4, 5],
-    "/Personal/RegistrarFuncionario": [2, 3, 4, 5],
+    "/Personal/FuncionariosActivos": [2, 3, 4, 5],
+    "/Personal/ObrerosFijos": [2, 3, 4, 5],
+    "/Personal/Jubilados": [2, 3, 4, 5],
+    "/Personal/Pensionados": [2, 3, 4, 5],
+
+    "/Personal/Sobrevivientes": [2, 3, 4, 5],
+    "/Personal/Vacaciones/Funcionarios": [2, 3, 4, 5],
+    "/Personal/Vacaciones/Obreros": [2, 3, 4, 5],
+
+    // Nomina
+    "/Nomina/FuncionariosActivos": [2, 3, 4, 5],
+    "/Nomina/ObrerosFijos": [2, 3, 4, 5],
+    "/Nomina/Jubilados": [2, 3, 4, 5],
+    "/Nomina/Pensionados": [2, 3, 4, 5],
+    "/Nomina/Sobrevivientes": [2, 3, 4, 5],
 
     // Configuración General
     "/Configuracion/EstructuraOrganizacional": [3, 4, 5],
+    "/Configuracion/Instituciones": [3, 4, 5],
     "/Configuracion/TablaSalarios": [3, 4, 5],
     "/Configuracion/Cargos": [3, 4, 5],
+    "/Configuracion/Vacaciones": [3, 4, 5],
 
     // Gestión de Usuarios
     "/Configuracion/NuevoUsuario": [5],
     "/Configuracion/Usuarios": [5],
     "/Configuracion/Bitacora": [4, 5],
+
+    // Reportes
+    "/Reportes/CajaAhorro": [2, 3, 4, 5],
+    "/Reportes/Pagos": [2, 3, 4, 5],
+    "/Reportes/Primas": [2, 3, 4, 5],
+    "/Reportes/Ingresos": [2, 3, 4, 5],
+    "/Reportes/ResumenNomina": [2, 3, 4, 5],
+    "/Reportes/Padres": [2, 3, 4, 5],
 };
 
 // src/data/permissions.js
@@ -41,7 +75,7 @@ export const ACTIONS = {
 // Mapeamos cada acción a los tipos de usuario que tienen permiso.
 const permissions = {
 
-    [ACTIONS.VIEW_LOAN_DETAILS]: [2, 3, 4, 5], 
+    [ACTIONS.VIEW_LOAN_DETAILS]: [2, 3, 4, 5],
 
     [ACTIONS.JEFE_AREA]: [4, 5]
 };

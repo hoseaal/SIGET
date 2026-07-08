@@ -13,18 +13,18 @@ export class UnidadModel {
     return rows[0] || null
   }
 
-  static async create ({ nombre, division_id }) {
+  static async create ({ nombre, division_id, direccion_id }) {
     const [result] = await pool.query(
-      'INSERT INTO unidades (nombre, division_id) VALUES (?, ?)',
-      [nombre, division_id]
+      'INSERT INTO unidades (nombre, division_id, direccion_id) VALUES (?, ?, ?)',
+      [nombre, division_id, direccion_id]
     )
-    return { unidad_id: result.insertId, nombre, division_id }
+    return { unidad_id: result.insertId, nombre, division_id, direccion_id }
   }
 
-  static async update (id, { nombre, division_id }) {
+  static async update (id, { nombre, division_id, direccion_id }) {
     const [result] = await pool.query(
-      'UPDATE unidades SET nombre = ?, division_id = ? WHERE unidad_id = ?',
-      [nombre, division_id, id]
+      'UPDATE unidades SET nombre = ?, division_id = ?, direccion_id = ? WHERE unidad_id = ?',
+      [nombre, division_id, direccion_id, id]
     )
     return result.affectedRows > 0
   }

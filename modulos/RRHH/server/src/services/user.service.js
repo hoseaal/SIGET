@@ -6,6 +6,11 @@ export class UserService {
     return await UserModel.getAll()
   }
 
+  static async crearConEmpleado (datos) {
+    // Podríamos añadir más validaciones aquí
+    return await UserModel.create(datos)
+  }
+
   static async obtenerPorId (id) {
     const usuario = await UserModel.getById(id)
     if (!usuario) throw new Error('Usuario no encontrado')

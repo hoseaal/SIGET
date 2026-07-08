@@ -6,7 +6,8 @@ import {
   actualizarFuncionarioCompleto,
   eliminarFuncionario,
   asignarEncargo,
-  finalizarEncargo
+  finalizarEncargo,
+  cambiarEstatus
 } from '../controllers/funcionario.controller.js'
 
 const router = express.Router()
@@ -19,7 +20,10 @@ router.get('/:id', obtenerFuncionario)
 router.post('/', crearFuncionarioCompleto)
 router.put('/:id', actualizarFuncionarioCompleto)
 
+router.patch('/:id/cambiar-estatus', cambiarEstatus)
+
 router.delete('/:id', eliminarFuncionario)
+
 
 // --- SUB-RECURSO: ENCARGOS ---
 // POST: Asignar un encargo al funcionario :id

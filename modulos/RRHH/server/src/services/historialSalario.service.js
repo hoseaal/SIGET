@@ -1,65 +1,54 @@
 import { HistorialSalarioModel } from '../models/historialSalario.model.js'
 
 export class HistorialSalarioService {
-  
-  // Método principal modificado para manejar filtros y paginación
-  static async obtenerHistorial (empleado_id, query) {
+
+  static async obtenerHistorial(empleado_id, query = {}) {
     if (!empleado_id) throw new Error('ID de funcionario requerido')
 
-    const { page = 1, limit = 20, all, fecha_inicio, fecha_fin } = query
-    
-    const filtros = {
-      empleado_id,
-      fecha_inicio,
-      fecha_fin
-    }
-
-    // Opción para traer todo el histórico de una vez (ej: para imprimir reporte completo)
-    if (all === 'true') {
-      return await HistorialSalarioModel.getFiltered({ ...filtros, limit: null })
-    }
-
-    // Paginación estándar
-    const offset = (page - 1) * limit
-
-    const [data, total] = await Promise.all([
-      HistorialSalarioModel.getFiltered({ ...filtros, limit: Number(limit), offset: Number(offset) }),
-      HistorialSalarioModel.countFiltered(filtros)
-    ])
-
-    return {
-      data,
-      pagination: {
-        totalItems: total,
-        totalPages: Math.ceil(total / limit),
-        currentPage: Number(page),
-        itemsPerPage: Number(limit)
-      }
-    }
+    const rows = await HistorialSalarioModel.findByEmpleado(empleado_id)
+    return rows
   }
 
-  // ... CRUD básico se mantiene ...
-  
-  static async obtenerPorId (id) {
+  static async obtenerPorId(id) {
     const registro = await HistorialSalarioModel.getById(id)
     if (!registro) throw new Error('Registro de salario no encontrado')
     return registro
   }
 
-  static async crear (datos) {
-    if (!datos.empleado_id || !datos.fecha_pago) throw new Error('Funcionario y Fecha de pago requeridos')
-    if (isNaN(datos.monto_neto) || isNaN(datos.monto_bruto)) throw new Error('Montos inválidos')
+  static async crear(datos) {
+    if (!datos.empleado_id) throw new Error('ID del empleado requerido')
+    if (!datos.quincena_no || ![1, 2].includes(Number(datos.quincena_no))) {
+      throw new Error('quincena_no debe ser 1 o 2')
+    }
+    if (!datos.mes || datos.mes < 1 || datos.mes > 12) throw new Error('mes debe estar entre 1 y 12')
+    if (!datos.anio) throw new Error('anio requerido')
 
-    return await HistorialSalarioModel.create(datos)
+    try {
+      const result = await HistorialSalarioModel.insert({
+        empleado_id: datos.empleado_id,
+        quincena_no: Number(datos.quincena_no),
+        mes: Number(datos.mes),
+        anio: Number(datos.anio),
+        total_asignaciones: Number(datos.total_asignaciones) || 0,
+        total_deducciones: Number(datos.total_deducciones) || 0,
+        salario_neto: Number(datos.salario_neto) || 0
+      })
+      return result
+    } catch (err) {
+      if (err.code === 'ER_DUP_ENTRY') {
+        throw new Error(`Ya existe un registro en historial_pagos para el empleado ${datos.empleado_id} en el período Q${datos.quincena_no}/${datos.mes}/${datos.anio}. Use actualizar para modificar.`)
+      }
+      throw err
+    }
   }
 
-  static async actualizar (id, datos) {
+  static async actualizar(id, datos) {
     const existe = await HistorialSalarioModel.getById(id)
     if (!existe) throw new Error('Registro no existe')
     return await HistorialSalarioModel.update(id, datos)
   }
 
-  static async eliminar (id) {
+  static async eliminar(id) {
     const existe = await HistorialSalarioModel.getById(id)
     if (!existe) throw new Error('Registro no existe')
     return await HistorialSalarioModel.delete(id)

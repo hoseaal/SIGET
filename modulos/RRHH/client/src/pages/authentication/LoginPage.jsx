@@ -51,8 +51,12 @@ export const LoginPage = () => {
             console.log(responseData.user);
             setFormEnviado(true);
             setMensajeMostrado(true);
+            // Redirigir según el rol: el Visualizador va a su portal exclusivo
+            const destino = responseData.user?.nombre_rol === 'Visualizador'
+                ? '/visualizador'
+                : '/Dashboard';
             setTimeout(() => {
-                navigate('/Dashboard', { replace: true });
+                navigate(destino, { replace: true });
             }, 1000);
             }
         } catch (error) {

@@ -24,11 +24,18 @@ export class NivelSalarialAntiguoService {
     const existe = await NivelSalarialAntiguoModel.getById(id)
     if (!existe) throw new Error('Nivel salarial antiguo no existe')
     
-    if (!datos.nombre || !datos.salario_antiguo || !datos.cargo_onapre_id) {
+    // Auto-completar campos desde el registro existente si no vienen en el payload
+    const nombre = datos.nombre !== undefined ? datos.nombre : existe.nombre
+    const salario_antiguo = datos.salario_antiguo !== undefined ? datos.salario_antiguo : existe.salario_antiguo
+    const cargo_onapre_id = datos.cargo_onapre_id !== undefined ? datos.cargo_onapre_id : existe.cargo_onapre_id
+
+    if (nombre === undefined || salario_antiguo === undefined || cargo_onapre_id === undefined) {
       throw new Error('Nombre, Salario y Cargo ONAPRE son requeridos para actualizar')
     }
 
-    return await NivelSalarialAntiguoModel.update(id, datos)
+    const datosCompletos = { nombre, salario_antiguo, cargo_onapre_id }
+
+    return await NivelSalarialAntiguoModel.update(id, datosCompletos)
   }
 
   static async eliminar (id) {

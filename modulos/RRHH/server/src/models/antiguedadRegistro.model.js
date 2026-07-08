@@ -38,15 +38,20 @@ export class AntiguedadRegistroModel {
     // TIMESTAMPDIFF(YEAR, inicio, fin) calcula años completos.
     // Si fecha_fin es NULL, usa CURDATE() (Fecha actual).
     const sql = `
-      SELECT *, 
-        TIMESTAMPDIFF(YEAR, fecha_inicio, COALESCE(fecha_fin, CURDATE())) AS anios,
-        TIMESTAMPDIFF(MONTH, fecha_inicio, COALESCE(fecha_fin, CURDATE())) % 12 AS meses,
+      SELECT ra.*, 
+        ci.nombre AS institucion_nombre,
+        ci.siglas AS institucion_siglas,
+        COALESCE(ci.nombre, ra.institucion_alternativa) AS institucion,
+        TIMESTAMPDIFF(YEAR, ra.fecha_inicio, COALESCE(ra.fecha_fin, CURDATE())) AS anios,
+        TIMESTAMPDIFF(MONTH, ra.fecha_inicio, COALESCE(ra.fecha_fin, CURDATE())) % 12 AS meses,
         DATEDIFF(
-            COALESCE(fecha_fin, CURDATE()), 
-            fecha_inicio + INTERVAL TIMESTAMPDIFF(MONTH, fecha_inicio, COALESCE(fecha_fin, CURDATE())) MONTH
+            COALESCE(ra.fecha_fin, CURDATE()), 
+            ra.fecha_inicio + INTERVAL TIMESTAMPDIFF(MONTH, ra.fecha_inicio, COALESCE(ra.fecha_fin, CURDATE())) MONTH
         ) AS dias
-      FROM registros_antiguedades WHERE empleado_id = ?
-      ORDER BY fecha_inicio ASC;
+      FROM registros_antiguedades ra
+      LEFT JOIN catalogo_instituciones ci ON ra.id_institucion = ci.id_institucion
+      WHERE ra.empleado_id = ?
+      ORDER BY ra.fecha_inicio ASC;
     `
     const [rows] = await pool.query(sql, [empleado_id])
     return rows
@@ -54,15 +59,20 @@ export class AntiguedadRegistroModel {
 
   static async getById (id) {
     const sql = `
-      SELECT *, TIMESTAMPDIFF(YEAR, fecha_inicio, COALESCE(fecha_fin, CURDATE())) as anios
-      FROM registros_antiguedades 
-      WHERE antiguedad_id = ?
+      SELECT ra.*, 
+        ci.nombre AS institucion_nombre,
+        ci.siglas AS institucion_siglas,
+        COALESCE(ci.nombre, ra.institucion_alternativa) AS institucion,
+        TIMESTAMPDIFF(YEAR, ra.fecha_inicio, COALESCE(ra.fecha_fin, CURDATE())) as anios
+      FROM registros_antiguedades ra
+      LEFT JOIN catalogo_instituciones ci ON ra.id_institucion = ci.id_institucion
+      WHERE ra.antiguedad_id = ?
     `
     const [rows] = await pool.query(sql, [id])
     return rows[0] || null
   }
 
-  static async create ({ empleado_id, fecha_inicio, fecha_fin }) {
+  static async create ({ empleado_id, fecha_inicio, fecha_fin, id_institucion, institucion_alternativa }) {
     // Si fecha_fin es undefined o vacío, se guarda como NULL
     const fechaFin = fecha_fin || null;
     
@@ -74,11 +84,18 @@ export class AntiguedadRegistroModel {
     }
 
     const [result] = await pool.query(
-      'INSERT INTO registros_antiguedades (empleado_id, fecha_inicio, fecha_fin) VALUES (?, ?, ?)',
-      [empleado_id, fecha_inicio, fechaFin]
+      'INSERT INTO registros_antiguedades (empleado_id, fecha_inicio, fecha_fin, id_institucion, institucion_alternativa) VALUES (?, ?, ?, ?, ?)',
+      [empleado_id, fecha_inicio, fechaFin, id_institucion || null, institucion_alternativa || null]
     );
     
-    return { antiguedad_id: result.insertId, empleado_id, fecha_inicio, fecha_fin: fechaFin };
+    return { 
+      antiguedad_id: result.insertId, 
+      empleado_id, 
+      fecha_inicio, 
+      fecha_fin: fechaFin, 
+      id_institucion: id_institucion || null, 
+      institucion_alternativa: institucion_alternativa || null 
+    };
   }
 
   static async update (id, data) {

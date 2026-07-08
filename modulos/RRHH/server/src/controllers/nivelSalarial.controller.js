@@ -6,7 +6,7 @@ import { NivelSalarialService } from '../services/nivelSalarial.service.js'
  */
 export const obtenerNiveles = async (req, res) => {
   try {
-    const niveles = await NivelSalarialService.obtenerTodos()
+    const niveles = await NivelSalarialService.obtenerTodos(req.query)
     res.json(niveles)
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -38,7 +38,10 @@ export const obtenerNivel = async (req, res) => {
  */
 export const crearNivel = async (req, res) => {
   try {
-    const nuevoNivel = await NivelSalarialService.crear(req.body)
+    const payload = { ...req.body }
+    if (payload.niv_nom && !payload.nombre) payload.nombre = payload.niv_nom
+
+    const nuevoNivel = await NivelSalarialService.crear(payload)
     res.status(201).json(nuevoNivel)
   } catch (error) {
     // Manejo de error de llave foránea
@@ -53,7 +56,8 @@ export const crearNivel = async (req, res) => {
  * Actualiza los datos de un nivel salarial.
  * @param {number} req.params.id - ID del nivel a modificar.
  * @param {object} req.body - Datos nuevos.
- * @param {string} req.body.niv_nom - Nuevo nombre.
+ * @param {string} req.body.niv_nom - Nuevo nombre (alias para retrocompatibilidad).
+ * @param {string} req.body.nombre - Nuevo nombre.
  * @param {number} req.body.salario_base - Nuevo salario.
  * @param {number} req.body.cargo_onapre_id - Nuevo cargo ONAPRE asociado.
  * @returns {Promise<object>} Confirmación de éxito.
@@ -61,7 +65,10 @@ export const crearNivel = async (req, res) => {
 export const actualizarNivel = async (req, res) => {
   try {
     const { id } = req.params
-    const actualizado = await NivelSalarialService.actualizar(id, req.body)
+    const payload = { ...req.body }
+    if (payload.niv_nom && !payload.nombre) payload.nombre = payload.niv_nom
+
+    const actualizado = await NivelSalarialService.actualizar(id, payload)
     res.json({ success: actualizado })
   } catch (error) {
     res.status(400).json({ error: error.message })
