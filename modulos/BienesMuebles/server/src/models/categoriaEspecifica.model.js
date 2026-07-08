@@ -88,6 +88,16 @@ export class CategoriaEspecificaModel {
       ORDER BY ce.cae_ide ASC
       LIMIT ? OFFSET ?
     `, [`%${searchTerm}%`, limit, offset])
-    return rows
+
+    const [totalRows] = await pool.query(`
+      SELECT COUNT(*) as total 
+      FROM tescae ce
+      WHERE ce.cae_cae LIKE ?
+    `, [`%${searchTerm}%`])
+
+    return {
+      data: rows,
+      total: totalRows[0].total
+    }
   }
 }

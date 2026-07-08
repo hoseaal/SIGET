@@ -43,4 +43,25 @@ export class MarcaModel {
     )
     return result.affectedRows > 0
   }
+
+  static async getPage ({ page = 1, limit = 10, search = '' }) {
+    const offset = (page - 1) * limit
+    const params = []
+    const countParams = []
+    let whereClause = ''
+
+    if (search.trim()) {
+      whereClause = 'WHERE mar_mar LIKE ?'
+      params.push(`%${search}%`)
+      countParams.push(`%${search}%`)
+    }
+
+    const dataQuery = `SELECT mar_ide, mar_mar FROM tmamar ${whereClause} ORDER BY mar_ide ASC LIMIT ? OFFSET ?`
+    const countQuery = `SELECT COUNT(*) as total FROM tmamar ${whereClause}`
+
+    const [rows] = await pool.query(dataQuery, [...params, limit, offset])
+    const [[{ total }]] = await pool.query(countQuery, countParams)
+
+    return { data: rows, total }
+  }
 }

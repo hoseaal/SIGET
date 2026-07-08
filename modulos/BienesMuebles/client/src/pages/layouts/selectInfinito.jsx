@@ -11,15 +11,21 @@ const InfiniteSelect = ({ options, value, onChange, direction = 'right', onToggl
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Renderizar cada item de la lista
+   // Renderizar cada item de la lista
    const Row = ({ index, style }) => (
     <div
-      style={style}
+      style={{
+        ...style,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
+      }}
       className={`dropdown-item ${value === filteredOptions[index].value ? 'active' : ''}`}
       onClick={() => {
         onChange(filteredOptions[index].value); // Esto ejecutará handleTipoChange
         setIsOpen(false);
       }}
+      title={filteredOptions[index].label}
     >
       {filteredOptions[index].label}
     </div>
@@ -55,15 +61,17 @@ const InfiniteSelect = ({ options, value, onChange, direction = 'right', onToggl
         if (!selectRef.current) return {};
         const rect = selectRef.current.getBoundingClientRect();
         const style = {
-            width: rect.width,
-            top: rect.height,
+            minWidth: '220px',
+            maxWidth: '350px',
+            width: 'max-content',
+            top: rect.height + 4,
             zIndex: 1050,
-            // maxHeight: menuHeight + 'px', // Opcional: podríamos necesitar ajustar esto
             position: 'absolute',
-            left: 'auto',
-            right: 'auto',
-            // Eliminar overflowY: 'auto' aquí
-            // overflowY: 'auto', // <--- ELIMINAR ESTA LÍNEA
+            boxShadow: '0 8px 24px rgba(149, 157, 165, 0.2)',
+            borderRadius: '8px',
+            border: '1px solid rgba(0,0,0,0.08)',
+            padding: '6px',
+            backgroundColor: '#fff'
         };
 
         if (direction === 'left') {
@@ -75,12 +83,29 @@ const InfiniteSelect = ({ options, value, onChange, direction = 'right', onToggl
     };
 
   return (
-    <div className={`dropdown ${direction === 'left' ? 'dropend' : ''}`} ref={selectRef}>
+    <div className="dropdown" ref={selectRef} style={{ position: 'relative' }}>
       <button
-        className="btn btn-primary dropdown-toggle"
+        className="btn btn-outline-secondary dropdown-toggle w-100 d-inline-flex align-items-center justify-content-between"
+        type="button"
         onClick={handleButtonClick}
+        style={{
+          maxWidth: '190px',
+          minWidth: '150px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          border: '1px solid #d9dee3',
+          borderRadius: '6px',
+          backgroundColor: '#fff',
+          color: '#566a7f',
+          padding: '0.4375rem 1.25rem 0.4375rem 0.875rem',
+          fontSize: '0.875rem',
+          fontWeight: 400
+        }}
       >
-        {options.find(opt => opt.value === value)?.label || 'Tipo'}
+        <span className="text-truncate me-2">
+          {options.find(opt => opt.value === value)?.label || 'Tipo'}
+        </span>
       </button>
       
       {isOpen && (
