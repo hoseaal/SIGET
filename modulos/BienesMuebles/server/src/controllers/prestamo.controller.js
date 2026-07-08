@@ -33,6 +33,45 @@ export const getWarehouseItems = async (req, res) => {
   }
 }
 
+export const getNormalLoansPaginated = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 10
+    const filters = {
+      pre_ndo: req.query.pre_ndo,
+      bim_cod: req.query.bim_cod,
+      dep_origen_id: req.query.dep_origen_id,
+      dep_destino_id: req.query.dep_destino_id
+    }
+    // Eliminar filtros vacíos
+    Object.keys(filters).forEach(k => !filters[k] && delete filters[k])
+    const result = await PrestamoService.getNormalLoansPaginated({ page, limit, filters })
+    res.json(result)
+  } catch (error) {
+    console.error('Error al obtener préstamos normales paginados:', error)
+    res.status(500).json({ error: error.message })
+  }
+}
+
+export const getWarehouseItemsPaginated = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 10
+    const filters = {
+      pre_ndo: req.query.pre_ndo,
+      bim_cod: req.query.bim_cod,
+      dep_origen_id: req.query.dep_origen_id,
+      dep_destino_id: req.query.dep_destino_id
+    }
+    Object.keys(filters).forEach(k => !filters[k] && delete filters[k])
+    const result = await PrestamoService.getWarehouseItemsPaginated({ page, limit, filters })
+    res.json(result)
+  } catch (error) {
+    console.error('Error al obtener almacén paginado:', error)
+    res.status(500).json({ error: error.message })
+  }
+}
+
 export const getLoanById = async (req, res) => {
   try {
     const { id } = req.params
@@ -83,5 +122,31 @@ export const checkBienActivelyInvolved = async (req, res) => {
   } catch (error) {
     console.error('Error al verificar estado de bien:', error)
     res.status(500).json({ error: error.message })
+  }
+}
+
+export const addBienToPrestamo = async (req, res) => {
+  try {
+    const { id } = req.params // pre_ide
+    const { bim_ide } = req.body
+    if (!bim_ide) {
+      return res.status(400).json({ error: 'bim_ide es requerido en el cuerpo de la solicitud.' })
+    }
+    const success = await PrestamoService.addBienToPrestamo(id, bim_ide)
+    res.status(201).json({ success, message: `Bien '${bim_ide}' agregado al préstamo exitosamente.` })
+  } catch (error) {
+    console.error('Error al agregar bien al préstamo:', error)
+    res.status(400).json({ error: error.message })
+  }
+}
+
+export const getActiveBienesForLoan = async (req, res) => {
+  try {
+    const { id } = req.params // pre_ide
+    const bienes = await PrestamoService.getActiveBienesForLoan(id)
+    res.json({ bienes })
+  } catch (error) {
+    console.error('Error al obtener bienes activos del préstamo:', error)
+    res.status(404).json({ error: error.message })
   }
 }

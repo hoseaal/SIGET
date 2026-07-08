@@ -13,7 +13,7 @@ export const Bm3 = () => {
 
   const handleOpenModal = () => setShowVeriModal(true);
 
-    const [search, setSearch] = useState();
+    const [search, setSearch] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
 
@@ -24,14 +24,9 @@ export const Bm3 = () => {
     useEffect(() => {
     const loadData = async () => {
         try {
-            const limit = searchQuery ? 20 : 10;
-            let url;
-            
-            if (searchQuery) {
-                url = `/api/bienes/des?search=${encodeURIComponent(searchQuery)}&page=1&limit=20&estado=3`;
-            }else {
-                url = `/api/bienes?inc=1&page=${page}&limit=${limit}&estado=3`;
-            }
+            const limit = 10;
+            let url = `/api/bienes?inc=1&page=${page}&limit=${limit}&estado=3`;
+            if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
             
             const response = await fetch(url);
             const result = await response.json();
@@ -42,6 +37,7 @@ export const Bm3 = () => {
         } catch (error) {
             console.error('Error:', error);
             setData([]);
+            setMeta({});
         }
     };
     
@@ -165,34 +161,38 @@ useEffect(() => {
                             setSearchQuery(search); // Solo dispara búsqueda cuando se presiona el botón
                             setPage(1);
                         }}
-                        className=" d-flex gap-2 align-items-center"
-                        >
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Buscar bien por codigo o por descripcion..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                        <button type="submit" className="btn btn-outline-primary">
-                            Buscar
-                        </button>
-                        {search && (
-                            <button
-                            type="button"
-                            className="btn btn-outline-secondary"
-                            onClick={() => {
-                                setSearch('');
-                                setSearchQuery('');
-                                setPage(1);
-                                setFiltros('');
-                            }}
-                            >
-                            Limpiar
-                            </button>
-                        )}
-                        <hr className="my-5" />
-                        </form>
+                        className="mb-4"
+                    >
+                        <div className="row g-3">
+                            <div className="col-12 col-md-6">
+                                <div className="input-group">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Buscar por código o descripción..."
+                                        value={search || ''}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+                                    <button type="submit" className="btn btn-outline-primary">
+                                        Buscar
+                                    </button>
+                                    {(searchQuery || search) && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary"
+                                            onClick={() => {
+                                                setSearch('');
+                                                setSearchQuery('');
+                                                setPage(1);
+                                            }}
+                                        >
+                                            Limpiar
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                         <div className="table-responsive text-nowrap">
                         <table className="table table-bordered table-striped">
                             <thead>
@@ -224,28 +224,74 @@ useEffect(() => {
                             </tbody>
                         </table>
                     </div>
-                    <div className="d-flex justify-content-between align-items-center px-4 pb-3"> 
-                        <span className="fw-semibold">{`Total de resultados: ${meta.total || '...'}` }</span>
+                    {/* Dynamic Pagination Bar */}
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 px-4 py-3 bg-light border-top rounded-bottom mt-4">
+                        <div className="text-muted small">
+                            {meta.total > 0 ? (
+                                <span>
+                                    Mostrando <strong>{((page - 1) * 10) + 1}</strong> a{' '}
+                                    <strong>{Math.min(page * 10, meta.total)}</strong> de{' '}
+                                    <strong>{meta.total}</strong> resultados
+                                </span>
+                            ) : (
+                                <span>No hay resultados</span>
+                            )}
+                        </div>
+                        <nav aria-label="Navegación de páginas">
+                            <ul className="pagination pagination-sm mb-0">
+                                <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                                    <button
+                                        type="button"
+                                        className="page-link d-flex align-items-center"
+                                        onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                                        aria-label="Anterior"
+                                    >
+                                        <i className="bx bx-chevron-left me-1"></i> Anterior
+                                    </button>
+                                </li>
+                                
+                                {Array.from({ length: meta.totalPages || 1 }, (_, i) => i + 1).map((p) => {
+                                    const totalPages = meta.totalPages || 1;
+                                    if (totalPages > 6) {
+                                        if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) {
+                                            return (
+                                                <li key={p} className={`page-item ${page === p ? 'active' : ''}`}>
+                                                    <button type="button" className="page-link" onClick={() => setPage(p)}>
+                                                        {p}
+                                                    </button>
+                                                </li>
+                                            );
+                                        } else if ((p === 2 && page > 3) || (p === totalPages - 1 && page < totalPages - 2)) {
+                                            return (
+                                                <li key={p} className="page-item disabled">
+                                                    <span className="page-link">...</span>
+                                                </li>
+                                            );
+                                        }
+                                        return null;
+                                    }
+                                    return (
+                                        <li key={p} className={`page-item ${page === p ? 'active' : ''}`}>
+                                            <button type="button" className="page-link" onClick={() => setPage(p)}>
+                                                {p}
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+
+                                <li className={`page-item ${page === (meta.totalPages || 1) ? 'disabled' : ''}`}>
+                                    <button
+                                        type="button"
+                                        className="page-link d-flex align-items-center"
+                                        onClick={() => setPage(prev => Math.min(prev + 1, meta.totalPages || prev + 1))}
+                                        aria-label="Siguiente"
+                                    >
+                                        Siguiente <i className="bx bx-chevron-right ms-1"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
-                    <div className="d-flex justify-content-between align-items-center px-4 pb-3">
-                    <button
-                    className="btn btn-outline-secondary"
-                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                    disabled={page === 1}
-                    >
-                    ← Anterior
-                    </button>
-
-                    <span className="fw-semibold">Página {page} de {meta.totalPages || '...'}</span>
-
-                    <button
-                    className="btn btn-outline-secondary"
-                    onClick={() => setPage(prev => Math.min(prev + 1, meta.totalPages || prev + 1))}
-                    disabled={page === meta.totalPages}
-                    >
-                    Siguiente →
-                    </button>
-                </div>
                 </div>
             </div>
 
