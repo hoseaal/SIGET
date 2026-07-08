@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap'
 import { API, STATUS, formatDate, formatCurrency } from './utils/vacacionesUtils'
+import { useNotifications } from '../../hooks/NotificationContext'
 
 export const ModalRegistroVacaciones = ({ show, onHide, tipoEmpleado, onSuccess, onError }) => {
+  const { refreshNotifications } = useNotifications();
   const [wizardStep, setWizardStep] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
@@ -117,6 +119,7 @@ export const ModalRegistroVacaciones = ({ show, onHide, tipoEmpleado, onSuccess,
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || 'Error al registrar')
       const statusName = data.id_status_vacaciones === STATUS.DE_DISFRUTE ? 'De disfrute' : 'Programado'
+      refreshNotifications()
       onSuccess(`Vacaciones registradas exitosamente (status: ${statusName})`)
       onHide()
     } catch (err) {

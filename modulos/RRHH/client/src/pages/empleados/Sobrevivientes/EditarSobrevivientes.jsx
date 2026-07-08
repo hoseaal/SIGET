@@ -5,8 +5,10 @@ import Alert from '../../../components/atoms/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
 import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
+import { useNotifications } from '../../../hooks/NotificationContext';
 
 const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobreviviente_id, fromStatusChange }) => {
+    const { refreshNotifications } = useNotifications();
     const [paso, setPaso] = useState(1);
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -225,6 +227,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Error al actualizar sobreviviente');
 
+            refreshNotifications();
             if (onSaveEnd) onSaveEnd(true, 'Sobreviviente actualizado exitosamente.');
         } catch (error) {
             console.error('Error:', error);

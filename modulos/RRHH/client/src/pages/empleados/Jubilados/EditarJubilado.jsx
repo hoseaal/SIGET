@@ -5,8 +5,10 @@ import Alert from '../../../components/atoms/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
 import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
+import { useNotifications } from '../../../hooks/NotificationContext';
 
 export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubilado_id }) => {
+    const { refreshNotifications } = useNotifications();
     const [paso, setPaso] = useState(1);
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -215,6 +217,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Error al actualizar jubilado');
 
+            refreshNotifications();
             if (onSaveEnd) onSaveEnd(true, 'Jubilado actualizado exitosamente.');
         } catch (error) {
             console.error('Error:', error);

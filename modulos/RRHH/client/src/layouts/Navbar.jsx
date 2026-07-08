@@ -5,27 +5,22 @@ import { Dropdown, Nav, Navbar as BSNavbar, Image, Toast, ToastContainer } from 
 import { BsMenuApp, BsPerson, BsGear, BsCreditCard, BsPower } from 'react-icons/bs';
 import ModalContraseña from '../pages/Modales/modalContraseña'
 import { useAuth, clearAuthCache } from '../hooks/useAuth';
+import { useNotifications } from '../hooks/NotificationContext';
 
 const Navbar = () => {
-  const { user: authUser } = useAuth(); // Para leer el rol sin fetch extra
+  const { user: authUser } = useAuth();
   const isVisualizador = authUser?.nombre_rol === 'Visualizador';
+  const { vacationAlerts, refreshNotifications } = useNotifications();
 
   const [userData, setUserData] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastVariant, setToastVariant] = useState('success');
   const [showUserConModal, setShowUserConModal] = useState(false);
-  const [vacationAlerts, setVacationAlerts] = useState({
-    proximosDerecho: [],
-    proximosRetornar: [],
-    resumen: { por_derecho_funcionarios: 0, por_derecho_obreros: 0 }
-  });
 
   const navigate = useNavigate();
 
-  const handleSuccess = () => {
-            // Fuerza recarga
-        };
+  const handleSuccess = () => { };
 
   const formatAlertDate = (value) => {
     if (!value) return 'N/A';
@@ -34,31 +29,9 @@ const Navbar = () => {
     return Number.isNaN(parsed.getTime()) ? 'N/A' : parsed.toLocaleDateString();
   };
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch('/api/vacaciones/alertas');
-      if (res.ok) {
-        const data = await res.json();
-        const proximosDerecho = Array.isArray(data?.proximosDerecho)
-          ? data.proximosDerecho
-          : (Array.isArray(data?.por_derecho) ? data.por_derecho : []);
-        const proximosRetornar = Array.isArray(data?.proximosRetornar)
-          ? data.proximosRetornar
-          : (Array.isArray(data?.caducidad) ? data.caducidad : []);
-        setVacationAlerts({
-          proximosDerecho,
-          proximosRetornar,
-          resumen: data?.resumen || { por_derecho_funcionarios: 0, por_derecho_obreros: 0 }
-        });
-      }
-    } catch (error) {
-      console.error('Error al obtener alertas de vacaciones:', error);
-    }
-  };
-
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
+    refreshNotifications();
+    const interval = setInterval(refreshNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -154,7 +127,7 @@ const Navbar = () => {
                 <div className="dropdown-header d-flex align-items-center py-3">
                   <h6 className="text-body mb-0 me-auto">Notificaciones</h6>
                   <a href="#" className="text-muted" title="Refrescar">
-                    <i className="bx fs-4 bx-refresh" onClick={fetchNotifications}></i>
+                    <i className="bx fs-4 bx-refresh" onClick={refreshNotifications}></i>
                   </a>
                 </div>
               </div>

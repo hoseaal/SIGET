@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Alert, Badge, Spinner } from 'react-bootstrap'
 import { API, STATUS, TABS, POR_DERECHO_TAB, formatDate, daysUntil, esPorDerecho, buildGroups } from './utils/vacacionesUtils'
+import { useNotifications } from '../../hooks/NotificationContext'
 import { ModalRegistroVacaciones } from './ModalRegistroVacaciones'
 import { ModalVerPerfil } from './ModalVerPerfil'
 import { ModalReintegro } from './ModalReintegro'
@@ -11,6 +12,7 @@ import logoCet from '../../assets/logo-cet.png'
 import { getBase64FromUrl } from '../../utils/imageUtils'
 
 export const VacacionesGestion = ({ tipoEmpleado }) => {
+  const { refreshNotifications } = useNotifications();
   const [consolidado, setConsolidado] = useState([])
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState(STATUS.PROGRAMADO)
@@ -108,6 +110,7 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
       if (!res.ok) throw new Error(data.message || 'Error al pagar')
       flash(setSuccess, `Bono vacacional pagado: ${data.monto_bono}`)
       loadConsolidado()
+      refreshNotifications()
     } catch (err) { flash(setError, err.message) }
     finally { setActionLoading(false); setConfirmAction(null) }
   }
@@ -127,6 +130,7 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
       if (!res.ok) throw new Error(data.message || 'Error al reintegrar')
       flash(setSuccess, data.mensaje || 'Reintegro procesado correctamente')
       loadConsolidado()
+      refreshNotifications()
     } catch (err) { flash(setError, err.message) }
     finally { setActionLoading(false); setConfirmAction(null); setReintegroObs('') }
   }
@@ -143,6 +147,7 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
       if (!res.ok) throw new Error(data.message || 'Error al cerrar')
       flash(setSuccess, data.mensaje || 'Cierre forzoso aplicado correctamente')
       loadConsolidado()
+      refreshNotifications()
     } catch (err) { flash(setError, err.message) }
     finally { setActionLoading(false); setConfirmAction(null) }
   }
@@ -159,6 +164,7 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
       if (!res.ok) throw new Error(data.message || 'Error al posponer')
       flash(setSuccess, data.mensaje)
       loadConsolidado()
+      refreshNotifications()
     } catch (err) { flash(setError, err.message) }
     finally { setActionLoading(false); setConfirmAction(null) }
   }
@@ -698,7 +704,7 @@ export const VacacionesGestion = ({ tipoEmpleado }) => {
         show={showRegistro}
         onHide={() => setShowRegistro(false)}
         tipoEmpleado={tipoEmpleado}
-        onSuccess={msg => { flash(setSuccess, msg); loadConsolidado() }}
+        onSuccess={msg => { flash(setSuccess, msg); loadConsolidado(); refreshNotifications() }}
         onError={msg => flash(setError, msg)}
       />
 

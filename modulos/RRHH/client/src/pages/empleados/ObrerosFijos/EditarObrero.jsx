@@ -5,10 +5,12 @@ import Alert from '../../../components/atoms/Alert';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
 import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
+import { useNotifications } from '../../../hooks/NotificationContext';
 
 const CARGO_REGEX = /OBRERO|ASEADOR|MENSAJERO|VIGILANTE/i;
 
 export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, empleado_id }) => {
+    const { refreshNotifications } = useNotifications();
     const [paso, setPaso] = useState(1);
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -212,6 +214,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Error al actualizar obrero');
 
+            refreshNotifications();
             if (onSaveEnd) onSaveEnd(true, 'Obrero actualizado exitosamente.');
         } catch (error) {
             console.error('Error:', error);
