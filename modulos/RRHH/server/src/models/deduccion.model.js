@@ -3,33 +3,33 @@ import pool from '../utils/database.js'
 
 export class DeduccionModel {
   static async getAll () {
-    const [rows] = await pool.query('SELECT * FROM tmade')
+    const [rows] = await pool.query('SELECT * FROM deducciones')
     return rows
   }
 
   static async getById (id) {
-    const [rows] = await pool.query('SELECT * FROM tmade WHERE ded_ide = ?', [id])
+    const [rows] = await pool.query('SELECT * FROM deducciones WHERE deduccion_id = ?', [id])
     return rows[0] || null
   }
 
-  static async create ({ ded_nom, ded_por }) {
+  static async create ({ nombre, porcentaje }) {
     const [result] = await pool.query(
-      'INSERT INTO tmade (ded_nom, ded_por) VALUES (?, ?)',
-      [ded_nom, ded_por]
+      'INSERT INTO deducciones (nombre, porcentaje) VALUES (?, ?)',
+      [nombre, porcentaje]
     )
-    return { ded_ide: result.insertId, ded_nom, ded_por }
+    return { deduccion_id: result.insertId, nombre, porcentaje }
   }
 
-  static async update (id, { ded_nom, ded_por }) {
+  static async update (id, { nombre, porcentaje }) {
     const [result] = await pool.query(
-      'UPDATE tmade SET ded_nom = ?, ded_por = ? WHERE ded_ide = ?',
-      [ded_nom, ded_por, id]
+      'UPDATE deducciones SET nombre = ?, porcentaje = ? WHERE deduccion_id = ?',
+      [nombre, porcentaje, id]
     )
     return result.affectedRows > 0
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tmade WHERE ded_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM deducciones WHERE deduccion_id = ?', [id])
     return result.affectedRows > 0
   }
 }

@@ -16,7 +16,7 @@ export const obtenerDirecciones = async (req, res) => {
 
 /**
  * Busca una dirección específica por su ID.
- * @param {number} req.params.id - Identificador único de la dirección (dir_ide).
+ * @param {number} req.params.id - Identificador único de la dirección (direccion_id).
  * @returns {Promise<object>} Objeto con los datos de la dirección encontrada.
  */
 export const obtenerDireccion = async (req, res) => {
@@ -32,7 +32,7 @@ export const obtenerDireccion = async (req, res) => {
 /**
  * Crea una nueva dirección en la base de datos.
  * @param {object} req.body - Cuerpo de la petición.
- * @param {string} req.body.dir_nom - Nombre completo de la dirección (Requerido).
+ * @param {string} req.body.nombre - Nombre completo de la dirección (Requerido).
  * @returns {Promise<object>} Objeto de la dirección creada con su nuevo ID.
  */
 export const crearDireccion = async (req, res) => {
@@ -49,7 +49,7 @@ export const crearDireccion = async (req, res) => {
  * Valida que la dirección exista antes de actualizar.
  * @param {number} req.params.id - ID de la dirección a modificar.
  * @param {object} req.body - Datos a actualizar.
- * @param {string} req.body.dir_nom - Nuevo nombre de la dirección.
+ * @param {string} req.body.nombre - Nuevo nombre de la dirección.
  * @returns {Promise<object>} Confirmación de éxito (success: true).
  */
 export const actualizarDireccion = async (req, res) => {

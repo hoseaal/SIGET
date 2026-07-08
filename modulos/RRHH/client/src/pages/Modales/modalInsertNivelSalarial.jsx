@@ -2,44 +2,44 @@ import React, { useState, useEffect } from 'react';
 import { Form, Modal, Button } from 'react-bootstrap';
 import Alert from "../../components/atoms/Alert";
 
-export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna, matrizNiveles, tableName = 'tesniv' }) => {
+export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna, matrizNiveles, tableName = 'niveles_salariales' }) => {
     // ==========================================
     // CONFIGURACIÓN DINÁMICA SEGÚN LA TABLA
     // ==========================================
 
     console.log('Tabla en ModalInsertNivelSalarial:', tableName);
-    const isAntiguo = tableName === 'tesnivant';
+    const isAntiguo = tableName === 'niveles_salariales_antiguos';
     const endpoint = isAntiguo ? '/api/niveles-salariales-antiguos' : '/api/niveles-salariales';
-    const fieldNom = isAntiguo ? 'nivant_nom' : 'niv_nom';
-    const fieldSal = isAntiguo ? 'nivant_sal' : 'niv_sal';
+    const fieldNom = isAntiguo ? 'nombre' : 'niv_nom';
+    const fieldSal = isAntiguo ? 'salario_antiguo' : 'salario_base';
 
     // Usamos nombres genéricos en el estado para facilitar el manejo de los inputs
-    const [formData, setFormData] = useState({ ona_ide: '', nom: '', sal: '' });
+    const [formData, setFormData] = useState({ cargo_onapre_id: '', nom: '', sal: '' });
     const [enviando, setEnviando] = useState(false);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
     const todosLosNiveles = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
     // Calculamos qué niveles están ocupados para el cargo seleccionado
-    const nivelesOcupados = formData.ona_ide && matrizNiveles[formData.ona_ide] 
-        ? Object.keys(matrizNiveles[formData.ona_ide]) 
+    const nivelesOcupados = formData.cargo_onapre_id && matrizNiveles[formData.cargo_onapre_id] 
+        ? Object.keys(matrizNiveles[formData.cargo_onapre_id]) 
         : [];
     
     // Filtramos los niveles que aún están disponibles
     const nivelesDisponibles = todosLosNiveles.filter(lvl => !nivelesOcupados.includes(lvl));
-    const estaLleno = formData.ona_ide !== '' && nivelesDisponibles.length === 0;
+    const estaLleno = formData.cargo_onapre_id !== '' && nivelesDisponibles.length === 0;
 
     // Resetear formulario al abrir/cerrar
     useEffect(() => {
         if (show) {
-            setFormData({ ona_ide: '', nom: '', sal: '' });
+            setFormData({ cargo_onapre_id: '', nom: '', sal: '' });
             setMensaje({ tipo: '', texto: '' });
         }
     }, [show]);
 
     // Limpiar el nivel seleccionado si se cambia de cargo ONAPRE
     const handleChangeCargo = (e) => {
-        setFormData({ ...formData, ona_ide: e.target.value, nom: '' });
+        setFormData({ ...formData, cargo_onapre_id: e.target.value, nom: '' });
     };
 
     const handleChange = (e) => {
@@ -54,7 +54,7 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
 
         // Construir el objeto a enviar con los nombres de campos que pide la API
         const payload = {
-            ona_ide: formData.ona_ide,
+            cargo_onapre_id: formData.cargo_onapre_id,
             [fieldNom]: formData.nom,
             [fieldSal]: formData.sal
         };
@@ -94,11 +94,11 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
                 <Form id="formInsertNivel" onSubmit={handleSubmit}>
                     <Form.Group className="mb-3">
                         <Form.Label>Cargo ONAPRE</Form.Label>
-                        <Form.Select name="ona_ide" value={formData.ona_ide} onChange={handleChangeCargo} required>
+                        <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChangeCargo} required>
                             <option value="">Seleccione el cargo...</option>
                             {dataOna.map((ona) => (
-                                <option key={ona.ona_ide} value={ona.ona_ide}>
-                                    {ona.ona_nom}
+                                <option key={ona.cargo_onapre_id} value={ona.cargo_onapre_id}>
+                                    {ona.nombre}
                                 </option>
                             ))}
                         </Form.Select>
@@ -117,7 +117,7 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
                                     value={formData.nom} 
                                     onChange={handleChange} 
                                     required 
-                                    disabled={!formData.ona_ide}
+                                    disabled={!formData.cargo_onapre_id}
                                 >
                                     <option value="">Seleccione el nivel...</option>
                                     {nivelesDisponibles.map((lvl) => (
@@ -136,7 +136,7 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
                                     onChange={handleChange}
                                     placeholder="Ej: 130.00"
                                     required
-                                    disabled={!formData.ona_ide}
+                                    disabled={!formData.cargo_onapre_id}
                                 />
                             </Form.Group>
                         </>

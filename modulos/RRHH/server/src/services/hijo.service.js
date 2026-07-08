@@ -2,9 +2,9 @@ import { HijoModel } from '../models/hijo.model.js'
 
 export class HijoService {
   
-  static async obtenerPorFuncionario (fun_ide) {
-    if (!fun_ide) throw new Error('ID del funcionario es requerido')
-    return await HijoModel.getByFuncionarioId(fun_ide)
+  static async obtenerPorFuncionario (empleado_id) {
+    if (!empleado_id) throw new Error('ID del funcionario es requerido')
+    return await HijoModel.getByFuncionarioId(empleado_id)
   }
 
   static async obtenerPorId (id) {
@@ -15,9 +15,9 @@ export class HijoService {
 
   static async crear (datos) {
     // Validaciones de campos obligatorios
-    if (!datos.fun_ide) throw new Error('El ID del funcionario es requerido')
-    if (!datos.hij_nom || !datos.hij_ape) throw new Error('Nombre y Apellido son requeridos')
-    if (!datos.hij_fna) throw new Error('Fecha de nacimiento es requerida')
+    if (!datos.empleado_id) throw new Error('El ID del funcionario es requerido')
+    if (!datos.nombres || !datos.apellidos) throw new Error('Nombre y Apellido son requeridos')
+    if (!datos.fecha_nacimiento) throw new Error('Fecha de nacimiento es requerida')
 
     return await HijoModel.create(datos)
   }
@@ -27,7 +27,7 @@ export class HijoService {
     if (!existe) throw new Error('Registro no existe')
     
     // Validaciones parciales (si envían el campo, no puede estar vacío)
-    if ((datos.hij_nom === '') || (datos.hij_ape === '')) {
+    if ((datos.nombres === '') || (datos.apellidos === '')) {
       throw new Error('Nombre y Apellido no pueden estar vacíos')
     }
 

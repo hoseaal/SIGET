@@ -2,9 +2,9 @@ import { PermisoModel } from '../models/permiso.model.js'
 
 export class PermisoService {
   
-  static async obtenerPorFuncionario (fun_ide, estado) {
-    if (!fun_ide) throw new Error('ID de funcionario requerido')
-    return await PermisoModel.getByFuncionarioId(fun_ide, estado)
+  static async obtenerPorFuncionario (empleado_id, estado) {
+    if (!empleado_id) throw new Error('ID de funcionario requerido')
+    return await PermisoModel.getByFuncionarioId(empleado_id, estado)
   }
   
   static async obtenerPorId (id) {
@@ -14,14 +14,14 @@ export class PermisoService {
   }
 
   static async crear (datos) {
-    if (!datos.fun_ide) throw new Error('ID de funcionario requerido')
-    if (!datos.per_mot) throw new Error('El motivo es requerido')
-    if (!datos.per_fin) throw new Error('Fecha de inicio requerida')
-    if (!datos.per_fsol) throw new Error('Fecha de solicitud requerida')
+    if (!datos.empleado_id) throw new Error('ID de funcionario requerido')
+    if (!datos.motivo) throw new Error('El motivo es requerido')
+    if (!datos.fecha_inicio) throw new Error('Fecha de inicio requerida')
+    if (!datos.fecha_solicitud) throw new Error('Fecha de solicitud requerida')
 
-    if (datos.per_ffe) {
-      const inicio = new Date(datos.per_fin)
-      const fin = new Date(datos.per_ffe)
+    if (datos.fecha_fin) {
+      const inicio = new Date(datos.fecha_inicio)
+      const fin = new Date(datos.fecha_fin)
       if (fin < inicio) throw new Error('Fecha fin no puede ser anterior a fecha inicio')
     }
 
@@ -32,9 +32,9 @@ export class PermisoService {
     const existe = await PermisoModel.getById(id)
     if (!existe) throw new Error('Permiso no existe')
 
-    if (datos.per_fin && datos.per_ffe) {
-      const inicio = new Date(datos.per_fin)
-      const fin = new Date(datos.per_ffe)
+    if (datos.fecha_inicio && datos.fecha_fin) {
+      const inicio = new Date(datos.fecha_inicio)
+      const fin = new Date(datos.fecha_fin)
       if (fin < inicio) throw new Error('Fechas incoherentes')
     }
 
@@ -47,7 +47,7 @@ export class PermisoService {
     }
     const existe = await PermisoModel.getById(id)
     if (!existe) throw new Error('Permiso no existe')
-    return await PermisoModel.update(id, { per_apr: estado })
+    return await PermisoModel.update(id, { esta_aprobado: estado })
   }
 
   static async eliminar (id) {

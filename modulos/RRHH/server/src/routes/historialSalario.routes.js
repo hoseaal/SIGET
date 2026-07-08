@@ -10,9 +10,9 @@ import {
 const router = express.Router()
 
 // GET Historial de un Funcionario (con filtros de fecha y paginación)
-router.get('/funcionario/:fun_ide', obtenerHistorialFuncionario)
+router.get('/funcionario/:empleado_id', obtenerHistorialFuncionario)
 
-// CRUD individual por ID de Registro (his_ide) para correcciones
+// CRUD individual por ID de Registro (historial_salario_id) para correcciones
 router.get('/:id', obtenerRegistroSalario)
 router.post('/', crearRegistroSalario)
 router.put('/:id', actualizarRegistroSalario)

@@ -15,7 +15,7 @@ export const obtenerCondiciones = async (req, res) => {
 
 /**
  * Busca una condición laboral por su ID.
- * @param {number} req.params.id - Identificador único (col_ide).
+ * @param {number} req.params.id - Identificador único (condicion_laboral_id).
  */
 export const obtenerCondicion = async (req, res) => {
   try {
@@ -30,7 +30,7 @@ export const obtenerCondicion = async (req, res) => {
 /**
  * Crea una nueva condición laboral.
  * @param {object} req.body - Datos.
- * @param {string} req.body.col_nom - Nombre (Ej: "Personal Fijo").
+ * @param {string} req.body.nombre - Nombre (Ej: "Personal Fijo").
  */
 export const crearCondicion = async (req, res) => {
   try {

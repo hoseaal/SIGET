@@ -3,13 +3,13 @@ import { HistorialSalarioModel } from '../models/historialSalario.model.js'
 export class HistorialSalarioService {
   
   // Método principal modificado para manejar filtros y paginación
-  static async obtenerHistorial (fun_ide, query) {
-    if (!fun_ide) throw new Error('ID de funcionario requerido')
+  static async obtenerHistorial (empleado_id, query) {
+    if (!empleado_id) throw new Error('ID de funcionario requerido')
 
     const { page = 1, limit = 20, all, fecha_inicio, fecha_fin } = query
     
     const filtros = {
-      fun_ide,
+      empleado_id,
       fecha_inicio,
       fecha_fin
     }
@@ -47,8 +47,8 @@ export class HistorialSalarioService {
   }
 
   static async crear (datos) {
-    if (!datos.fun_ide || !datos.his_fpa) throw new Error('Funcionario y Fecha de pago requeridos')
-    if (isNaN(datos.his_net) || isNaN(datos.his_bru)) throw new Error('Montos inválidos')
+    if (!datos.empleado_id || !datos.fecha_pago) throw new Error('Funcionario y Fecha de pago requeridos')
+    if (isNaN(datos.monto_neto) || isNaN(datos.monto_bruto)) throw new Error('Montos inválidos')
 
     return await HistorialSalarioModel.create(datos)
   }

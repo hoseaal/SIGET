@@ -71,11 +71,11 @@ const Navbar = () => {
   };
 
   const tipo = [
-    { "usu_tip": 1, "tipo": "Visualizador" },
-    { "usu_tip": 2, "tipo": "Temporal" },
-    { "usu_tip": 3, "tipo": "Trabajador" },
-    { "usu_tip": 4, "tipo": "Jefe de área" },
-    { "usu_tip": 5, "tipo": "Administrador" }
+    { "rol_id": 1, "tipo": "Visualizador" },
+    { "rol_id": 2, "tipo": "Temporal" },
+    { "rol_id": 3, "tipo": "Trabajador" },
+    { "rol_id": 4, "tipo": "Jefe de área" },
+    { "rol_id": 5, "tipo": "Administrador" }
   ];
 
   return (
@@ -88,7 +88,7 @@ const Navbar = () => {
       </div>
 
       <div className="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-        {getGreetingMessage(userData?.usu_nom + ' ' + userData?.usu_ape)}
+        {getGreetingMessage(userData?.nombres + ' ' + userData?.apellidos)}
         <Nav className="flex-row align-items-center ms-auto">
           <Dropdown as={Nav.Item} className="navbar-dropdown dropdown-user">
             <Dropdown.Toggle as={Nav.Link} className="dropdown-toggle hide-arrow">
@@ -116,8 +116,8 @@ const Navbar = () => {
                     </div>
                   </div>
                   <div className="flex-grow-1">
-                    <span className="fw-medium d-block">{userData?.usu_nom + ' ' + userData?.usu_ape}</span>
-                    <small className="text-muted">{tipo.find(item => item?.usu_tip === userData?.usu_tip)?.tipo || "Desconocido"}</small>
+                    <span className="fw-medium d-block">{userData?.nombres + ' ' + userData?.apellidos}</span>
+                    <small className="text-muted">{tipo.find(item => item?.rol_id === userData?.rol_id)?.tipo || "Desconocido"}</small>
                   </div>
                 </div>
               </Dropdown.Item>
@@ -143,7 +143,7 @@ const Navbar = () => {
                     handleClose={() => setShowUserConModal(false)}
                     rowData={userData} 
                     onSuccess={handleSuccess}
-                    idColumn='usu_ide'
+                    idColumn='usuario_id'
                 />
     </BSNavbar>
 

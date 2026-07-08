@@ -19,40 +19,40 @@ export const RegistrarFuncionario = () => {
     // Estado del Formulario (Coincide con el endpoint POST /api/funcionarios)
     const [formData, setFormData] = useState({
         // Datos Personales
-        fun_ced: '',
-        fun_nom: '',
-        fun_ape: '',
-        fun_rif: '',
-        fun_fna: '',
-        fun_lna: '',
-        fun_gen: '',
-        fun_est: 'Soltero', // Valor por defecto
-        fun_san: '',
-        fun_dir: '',
-        fun_tel: '',
-        fun_cel: '',
-        fun_ema1: '',
-        fun_ema2: '',
-        fun_fing: new Date().toISOString().split('T')[0], // Fecha actual por defecto
-        fun_emer1: '',
-        fun_teme1: '',
-        fun_emer2: '',
-        fun_teme2: '',
-        fun_dep: '',
-        fun_cul: '',
+        cedula: '',
+        nombres: '',
+        apellidos: '',
+        rif: '',
+        fecha_nacimiento: '',
+        lugar_nacimiento: '',
+        genero: '',
+        estado_civil: 'Soltero', // Valor por defecto
+        tipo_sangre: '',
+        direccion_habitacion: '',
+        telefono_fijo: '',
+        celular: '',
+        correo_principal: '',
+        correo_secundario: '',
+        fecha_ingreso: new Date().toISOString().split('T')[0], // Fecha actual por defecto
+        contacto_emergencia_1: '',
+        telefono_emergencia_1: '',
+        contacto_emergencia_2: '',
+        telefono_emergencia_2: '',
+        deportes: '',
+        actividades_culturales: '',
         
         // Tablas Maestras Personales
-        pro_ide: '',
-        est_ide: 1, // Por defecto Activo (asumiendo ID 1)
+        profesion_id: '',
+        estatus_id: 1, // Por defecto Activo (asumiendo ID 1)
 
         // Datos Contractuales (Opcionales pero recomendados)
-        cet_ide: '',
-        ona_ide: '',
-        niv_ide: '',
-        col_ide: '',
-        dir_ide: '', // Nivel 1
-        div_ide: '', // Nivel 2
-        uni_ide: ''  // Nivel 3
+        cargo_cet_id: '',
+        cargo_onapre_id: '',
+        nivel_salarial_id: '',
+        condicion_laboral_id: '',
+        direccion_id: '', // Nivel 1
+        division_id: '', // Nivel 2
+        unidad_id: ''  // Nivel 3
     });
 
     // Estados para los Selectores (Catalogos)
@@ -78,7 +78,7 @@ export const RegistrarFuncionario = () => {
                     fetch('/api/estatus'),
                     fetch('/api/cargos-cet'),
                     fetch('/api/cargos-onapre'),
-                    fetch('/api/condiciones-laborales'), // tmacol
+                    fetch('/api/condiciones-laborales'), // condiciones_laborales
                     fetch('/api/direcciones')
                 ]);
 
@@ -103,13 +103,13 @@ export const RegistrarFuncionario = () => {
 
     useEffect(() => {
         const fetchDivisiones = async () => {
-            if (!formData.dir_ide) {
+            if (!formData.direccion_id) {
                 setCatalogos(prev => ({ ...prev, divisiones: [], unidades: [] }));
                 return;
             }
             try {
                 // Endpoint hipotético que trae divisiones por ID de dirección
-                const res = await fetch(`/api/divisiones?dir_ide=${formData.dir_ide}`);
+                const res = await fetch(`/api/divisiones?direccion_id=${formData.direccion_id}`);
                 const data = await res.json();
                 setCatalogos(prev => ({ ...prev, divisiones: data, unidades: [] })); // Limpiamos unidades por si cambia de dirección
             } catch (error) {
@@ -117,18 +117,18 @@ export const RegistrarFuncionario = () => {
             }
         };
         fetchDivisiones();
-    }, [formData.dir_ide]);
+    }, [formData.direccion_id]);
 
-    // Efecto Cascada 2: Cargar Unidades cuando cambia la División (div_ide)
+    // Efecto Cascada 2: Cargar Unidades cuando cambia la División (division_id)
     useEffect(() => {
         const fetchUnidades = async () => {
-            if (!formData.div_ide) {
+            if (!formData.division_id) {
                 setCatalogos(prev => ({ ...prev, unidades: [] }));
                 return;
             }
             try {
                 // Endpoint hipotético que trae unidades por ID de división
-                const res = await fetch(`/api/unidades?div_ide=${formData.div_ide}`);
+                const res = await fetch(`/api/unidades?division_id=${formData.division_id}`);
                 const data = await res.json();
                 setCatalogos(prev => ({ ...prev, unidades: data }));
             } catch (error) {
@@ -136,18 +136,18 @@ export const RegistrarFuncionario = () => {
             }
         };
         fetchUnidades();
-    }, [formData.div_ide]);
+    }, [formData.division_id]);
 
-    // Efecto: Cargar Niveles cuando cambia el Cargo ONAPRE (ona_ide)
+    // Efecto: Cargar Niveles cuando cambia el Cargo ONAPRE (cargo_onapre_id)
     useEffect(() => {
         const fetchNiveles = async () => {
-            if (!formData.ona_ide) {
+            if (!formData.cargo_onapre_id) {
                 setCatalogos(prev => ({ ...prev, niveles: [] }));
                 return;
             }
             try {
                 // Asumiendo un endpoint que filtre niveles por cargo ONAPRE
-                const res = await fetch(`/api/niveles-salariales?ona_ide=${formData.ona_ide}`);
+                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
                 const data = await res.json();
                 setCatalogos(prev => ({ ...prev, niveles: data }));
             } catch (error) {
@@ -155,7 +155,7 @@ export const RegistrarFuncionario = () => {
             }
         };
         fetchNiveles();
-    }, [formData.ona_ide]);
+    }, [formData.cargo_onapre_id]);
 
 
     // Manejador de cambios en inputs
@@ -166,11 +166,11 @@ export const RegistrarFuncionario = () => {
             const newData = { ...prev, [name]: value };
             
             // Lógica de limpieza en cascada
-            if (name === 'dir_ide') {
-                newData.div_ide = '';
-                newData.uni_ide = ''; 
-            } else if (name === 'div_ide') {
-                newData.uni_ide = ''; 
+            if (name === 'direccion_id') {
+                newData.division_id = '';
+                newData.unidad_id = ''; 
+            } else if (name === 'division_id') {
+                newData.unidad_id = ''; 
             }
             
             return newData;
@@ -179,12 +179,12 @@ export const RegistrarFuncionario = () => {
 
     const limpiarFormulario = () => {
         setFormData({
-            fun_ced: '', fun_nom: '', fun_ape: '', fun_rif: '',
-            fun_fna: '', fun_lna: '', fun_gen: '', fun_est: 'Soltero',
-            fun_san: '', fun_dir: '', fun_cel: '', fun_ema1: '', fun_ema2: '',
-            fun_fing: new Date().toISOString().split('T')[0],
-            fun_emer1: '', fun_teme1: '', fun_emer2: '', fun_teme2: '', pro_ide: '', est_ide: 1,
-            cet_ide: '', ona_ide: '', niv_ide: '', col_ide: '', dir_ide: ''
+            cedula: '', nombres: '', apellidos: '', rif: '',
+            fecha_nacimiento: '', lugar_nacimiento: '', genero: '', estado_civil: 'Soltero',
+            tipo_sangre: '', direccion_habitacion: '', celular: '', correo_principal: '', correo_secundario: '',
+            fecha_ingreso: new Date().toISOString().split('T')[0],
+            contacto_emergencia_1: '', telefono_emergencia_1: '', contacto_emergencia_2: '', telefono_emergencia_2: '', profesion_id: '', estatus_id: 1,
+            cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '', condicion_laboral_id: '', direccion_id: ''
         });
         setErrorMessage('');
         setMensajeMostrado(false);
@@ -194,7 +194,7 @@ export const RegistrarFuncionario = () => {
         e.preventDefault();
 
         // Validaciones básicas antes de enviar
-        if (!formData.fun_ced || !formData.fun_nom || !formData.fun_ape || !formData.dir_ide) {
+        if (!formData.cedula || !formData.nombres || !formData.apellidos || !formData.direccion_id) {
             setErrorMessage('Por favor complete Cédula, Nombres, Apellidos y Dirección de Adscripción.');
             setMensajeMostrado(true);
             setTimeout(() => setMensajeMostrado(false), 3000);
@@ -265,9 +265,9 @@ export const RegistrarFuncionario = () => {
                                             <Form.Label>Cédula de Identidad *</Form.Label>
                                             <Form.Control 
                                                 type="text" 
-                                                name="fun_ced"
+                                                name="cedula"
                                                 placeholder="Ej: V-12345678" 
-                                                value={formData.fun_ced} 
+                                                value={formData.cedula} 
                                                 onChange={handleChange} 
                                                 required 
                                             />
@@ -278,9 +278,9 @@ export const RegistrarFuncionario = () => {
                                             <Form.Label>RIF (Opcional)</Form.Label>
                                             <Form.Control 
                                                 type="text" 
-                                                name="fun_rif" 
+                                                name="rif" 
                                                 placeholder="Ej: V123456789"
-                                                value={formData.fun_rif} 
+                                                value={formData.rif} 
                                                 onChange={handleChange} 
                                             />
                                         </Form.Group>
@@ -291,13 +291,13 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Nombres *</Form.Label>
-                                            <Form.Control type="text" name="fun_nom" value={formData.fun_nom} onChange={handleChange} required />
+                                            <Form.Control type="text" name="nombres" value={formData.nombres} onChange={handleChange} required />
                                         </Form.Group>
                                     </div>
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Apellidos *</Form.Label>
-                                            <Form.Control type="text" name="fun_ape" value={formData.fun_ape} onChange={handleChange} required />
+                                            <Form.Control type="text" name="apellidos" value={formData.apellidos} onChange={handleChange} required />
                                         </Form.Group>
                                     </div>
                                 </div>
@@ -306,13 +306,13 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-4">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Fecha de Nacimiento</Form.Label>
-                                            <Form.Control type="date" name="fun_fna" value={formData.fun_fna} onChange={handleChange} />
+                                            <Form.Control type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                     <div className="col-md-4">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Género</Form.Label>
-                                            <Form.Select name="fun_gen" value={formData.fun_gen} onChange={handleChange}>
+                                            <Form.Select name="genero" value={formData.genero} onChange={handleChange}>
                                                 <option value="">Seleccione</option>
                                                 <option value="M">Masculino</option>
                                                 <option value="F">Femenino</option>
@@ -322,7 +322,7 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-4">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Estado Civil</Form.Label>
-                                            <Form.Select name="fun_est" value={formData.fun_est} onChange={handleChange}>
+                                            <Form.Select name="estado_civil" value={formData.estado_civil} onChange={handleChange}>
                                                 <option value="Soltero">Soltero(a)</option>
                                                 <option value="Casado">Casado(a)</option>
                                                 <option value="Divorciado">Divorciado(a)</option>
@@ -334,26 +334,26 @@ export const RegistrarFuncionario = () => {
                                 <div className="mb-3">
                                     <Form.Group>
                                         <Form.Label>Lugar de Nacimiento</Form.Label>
-                                        <Form.Control as="textarea" rows={2} name="fun_lna" value={formData.fun_lna} onChange={handleChange} />
+                                        <Form.Control as="textarea" rows={2} name="lugar_nacimiento" value={formData.lugar_nacimiento} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
                                 <div className="row mb-3">
                                     <div className="col-md-4">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Tipo de Sangre</Form.Label>
-                                            <Form.Control type="text" name="fun_san" value={formData.fun_san} onChange={handleChange} />
+                                            <Form.Control type="text" name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                     <div className="col-md-4">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Numero de Telefono Residencial</Form.Label>
-                                            <Form.Control type="text" name="fun_tel" placeholder="0276-0000000" value={formData.fun_tel} onChange={handleChange} />
+                                            <Form.Control type="text" name="telefono_fijo" placeholder="0276-0000000" value={formData.telefono_fijo} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                     <div className="col-md-4">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Numero de Celular</Form.Label>
-                                            <Form.Control type="text" name="fun_cel" placeholder="0426-0000000" value={formData.fun_cel} onChange={handleChange} />
+                                            <Form.Control type="text" name="celular" placeholder="0426-0000000" value={formData.celular} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                 </div>
@@ -361,13 +361,13 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Correo Electrónico</Form.Label>
-                                            <Form.Control type="email" name="fun_ema1" value={formData.fun_ema1} onChange={handleChange} />
+                                            <Form.Control type="email" name="correo_principal" value={formData.correo_principal} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Correo Electrónico Secundario</Form.Label>
-                                            <Form.Control type="email" name="fun_ema2" value={formData.fun_ema2} onChange={handleChange} />
+                                            <Form.Control type="email" name="correo_secundario" value={formData.correo_secundario} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                 </div>
@@ -375,20 +375,20 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Actividades Culturales</Form.Label>
-                                            <Form.Control type="text" name="fun_cul" value={formData.fun_cul} onChange={handleChange} />
+                                            <Form.Control type="text" name="actividades_culturales" value={formData.actividades_culturales} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Deportes que practica</Form.Label>
-                                            <Form.Control type="text" name="fun_dep" value={formData.fun_dep} onChange={handleChange} />
+                                            <Form.Control type="text" name="deportes" value={formData.deportes} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                 </div>
                                 <div className="mb-3">
                                     <Form.Group>
                                         <Form.Label>Dirección de Habitación</Form.Label>
-                                        <Form.Control as="textarea" rows={2} name="fun_dir" value={formData.fun_dir} onChange={handleChange} />
+                                        <Form.Control as="textarea" rows={2} name="direccion_habitacion" value={formData.direccion_habitacion} onChange={handleChange} />
                                     </Form.Group>
                                 </div>
 
@@ -397,13 +397,13 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>1. Nombres Y Apellidos</Form.Label>
-                                            <Form.Control type="text" name="fun_emer1" value={formData.fun_emer1} onChange={handleChange} />
+                                            <Form.Control type="text" name="contacto_emergencia_1" value={formData.contacto_emergencia_1} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>1. Teléfono de Emergencia</Form.Label>
-                                            <Form.Control type="text" name="fun_teme1" value={formData.fun_teme1} onChange={handleChange} />
+                                            <Form.Control type="text" name="telefono_emergencia_1" value={formData.telefono_emergencia_1} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                 </div>
@@ -411,13 +411,13 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>2. Nombres Y Apellidos</Form.Label>
-                                            <Form.Control type="text" name="fun_emer2" value={formData.fun_emer2} onChange={handleChange} />
+                                            <Form.Control type="text" name="contacto_emergencia_2" value={formData.contacto_emergencia_2} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>2. Teléfono de Emergencia</Form.Label>
-                                            <Form.Control type="text" name="fun_teme2" value={formData.fun_teme2} onChange={handleChange} />
+                                            <Form.Control type="text" name="telefono_emergencia_2" value={formData.telefono_emergencia_2} onChange={handleChange} />
                                         </Form.Group>
                                     </div>
                                 </div>
@@ -431,16 +431,16 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-4">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Fecha de Ingreso</Form.Label>
-                                            <Form.Control type="date" name="fun_fing" value={formData.fun_fing} onChange={handleChange} required />
+                                            <Form.Control type="date" name="fecha_ingreso" value={formData.fecha_ingreso} onChange={handleChange} required />
                                         </Form.Group>
                                     </div>
                                     <div className="col-md-4">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Estatus</Form.Label>
-                                            <Form.Select name="est_ide" value={formData.est_ide} onChange={handleChange}>
+                                            <Form.Select name="estatus_id" value={formData.estatus_id} onChange={handleChange}>
                                                 <option value="">Seleccione</option>
                                                 {catalogos.estatus.map(e => (
-                                                    <option key={e.est_ide} value={e.est_ide}>{e.est_nom}</option>
+                                                    <option key={e.estatus_id} value={e.estatus_id}>{e.nombre}</option>
                                                 ))}
                                             </Form.Select>
                                         </Form.Group>
@@ -448,10 +448,10 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-4">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Profesión</Form.Label>
-                                            <Form.Select name="pro_ide" value={formData.pro_ide} onChange={handleChange}>
+                                            <Form.Select name="profesion_id" value={formData.profesion_id} onChange={handleChange}>
                                                 <option value="">Seleccione</option>
                                                 {catalogos.profesiones.map(p => (
-                                                    <option key={p.pro_ide} value={p.pro_ide}>{p.pro_nom}</option>
+                                                    <option key={p.profesion_id} value={p.profesion_id}>{p.nombre}</option>
                                                 ))}
                                             </Form.Select>
                                         </Form.Group>
@@ -462,10 +462,10 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Cargo CET (Interno)</Form.Label>
-                                            <Form.Select name="cet_ide" value={formData.cet_ide} onChange={handleChange}>
+                                            <Form.Select name="cargo_cet_id" value={formData.cargo_cet_id} onChange={handleChange}>
                                                 <option value="">Seleccione</option>
                                                 {catalogos.cargosCET.map(c => (
-                                                    <option key={c.cet_ide} value={c.cet_ide}>{c.cet_nom}</option>
+                                                    <option key={c.cargo_cet_id} value={c.cargo_cet_id}>{c.nombre}</option>
                                                 ))}
                                             </Form.Select>
                                         </Form.Group>
@@ -473,10 +473,10 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Condición Laboral</Form.Label>
-                                            <Form.Select name="col_ide" value={formData.col_ide} onChange={handleChange}>
+                                            <Form.Select name="condicion_laboral_id" value={formData.condicion_laboral_id} onChange={handleChange}>
                                                 <option value="">Seleccione</option>
                                                 {catalogos.condiciones.map(c => (
-                                                    <option key={c.col_ide} value={c.col_ide}>{c.col_nom}</option>
+                                                    <option key={c.condicion_laboral_id} value={c.condicion_laboral_id}>{c.nombre}</option>
                                                 ))}
                                             </Form.Select>
                                         </Form.Group>
@@ -487,10 +487,10 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Clasificación ONAPRE</Form.Label>
-                                            <Form.Select name="ona_ide" value={formData.ona_ide} onChange={handleChange}>
+                                            <Form.Select name="cargo_onapre_id" value={formData.cargo_onapre_id} onChange={handleChange}>
                                                 <option value="">Seleccione</option>
                                                 {catalogos.cargosONAPRE.map(o => (
-                                                    <option key={o.ona_ide} value={o.ona_ide}>{o.ona_nom}</option>
+                                                    <option key={o.cargo_onapre_id} value={o.cargo_onapre_id}>{o.nombre}</option>
                                                 ))}
                                             </Form.Select>
                                         </Form.Group>
@@ -498,13 +498,13 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-6">
                                         <Form.Group className="mb-3">
                                             <Form.Label>Nivel Salarial</Form.Label>
-                                            <Form.Select name="niv_ide" value={formData.niv_ide} onChange={handleChange} disabled={!formData.ona_ide}>
+                                            <Form.Select name="nivel_salarial_id" value={formData.nivel_salarial_id} onChange={handleChange} disabled={!formData.cargo_onapre_id}>
                                                 <option value="">Seleccione</option>
                                                 {catalogos.niveles.map(n => (
-                                                    <option key={n.niv_ide} value={n.niv_ide}>{n.niv_nom} - {n.niv_sal} Bs.</option>
+                                                    <option key={n.nivel_salarial_id} value={n.nivel_salarial_id}>{n.niv_nom} - {n.salario_base} Bs.</option>
                                                 ))}
                                             </Form.Select>
-                                            {catalogos.niveles.length === 0 && formData.ona_ide && (
+                                            {catalogos.niveles.length === 0 && formData.cargo_onapre_id && (
                                                 <Form.Text className="text-muted">No hay niveles para este cargo.</Form.Text>
                                             )}
                                         </Form.Group>
@@ -517,10 +517,10 @@ export const RegistrarFuncionario = () => {
                                     <div className="col-md-4">
                                         <Form.Group>
                                             <Form.Label>Dirección *</Form.Label>
-                                            <Form.Select name="dir_ide" value={formData.dir_ide} onChange={handleChange} required>
+                                            <Form.Select name="direccion_id" value={formData.direccion_id} onChange={handleChange} required>
                                                 <option value="">Seleccione la Dirección</option>
                                                 {catalogos.direcciones.map(d => (
-                                                    <option key={d.dir_ide} value={d.dir_ide}>{d.dir_nom}</option>
+                                                    <option key={d.direccion_id} value={d.direccion_id}>{d.nombre}</option>
                                                 ))}
                                             </Form.Select>
                                         </Form.Group>
@@ -530,14 +530,14 @@ export const RegistrarFuncionario = () => {
                                         <Form.Group>
                                             <Form.Label>División (Opcional)</Form.Label>
                                             <Form.Select 
-                                                name="div_ide" 
-                                                value={formData.div_ide} 
+                                                name="division_id" 
+                                                value={formData.division_id} 
                                                 onChange={handleChange} 
-                                                disabled={!formData.dir_ide || catalogos.divisiones?.length === 0}
+                                                disabled={!formData.direccion_id || catalogos.divisiones?.length === 0}
                                             >
                                                 <option value="">-- Directo a la Dirección --</option>
                                                 {catalogos.divisiones?.map(d => (
-                                                    <option key={d.div_ide} value={d.div_ide}>{d.div_nom}</option>
+                                                    <option key={d.division_id} value={d.division_id}>{d.nombre}</option>
                                                 ))}
                                             </Form.Select>
                                         </Form.Group>
@@ -547,14 +547,14 @@ export const RegistrarFuncionario = () => {
                                         <Form.Group>
                                             <Form.Label>Unidad (Opcional)</Form.Label>
                                             <Form.Select 
-                                                name="uni_ide" 
-                                                value={formData.uni_ide} 
+                                                name="unidad_id" 
+                                                value={formData.unidad_id} 
                                                 onChange={handleChange} 
-                                                disabled={!formData.div_ide || catalogos.unidades?.length === 0}
+                                                disabled={!formData.division_id || catalogos.unidades?.length === 0}
                                             >
                                                 <option value="">-- Directo a la División --</option>
                                                 {catalogos.unidades?.map(u => (
-                                                    <option key={u.uni_ide} value={u.uni_ide}>{u.uni_nom}</option>
+                                                    <option key={u.unidad_id} value={u.unidad_id}>{u.nombre}</option>
                                                 ))}
                                             </Form.Select>
                                         </Form.Group>

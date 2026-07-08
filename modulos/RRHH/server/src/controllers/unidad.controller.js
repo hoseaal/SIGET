@@ -15,7 +15,7 @@ export const obtenerUnidades = async (req, res) => {
 
 /**
  * Busca una unidad específica por su ID.
- * @param {number} req.params.id - Identificador único de la unidad (uni_ide).
+ * @param {number} req.params.id - Identificador único de la unidad (unidad_id).
  * @returns {Promise<object>} Objeto con los datos de la unidad encontrada.
  */
 export const obtenerUnidad = async (req, res) => {
@@ -31,8 +31,8 @@ export const obtenerUnidad = async (req, res) => {
 /**
  * Crea una nueva unidad vinculada a una división.
  * @param {object} req.body - Cuerpo de la petición.
- * @param {string} req.body.uni_nom - Nombre de la unidad.
- * @param {number} req.body.div_ide - ID de la División (tesdiv) a la que pertenece.
+ * @param {string} req.body.nombre - Nombre de la unidad.
+ * @param {number} req.body.division_id - ID de la División (divisiones) a la que pertenece.
  * @returns {Promise<object>} Objeto de la unidad creada.
  */
 export const crearUnidad = async (req, res) => {
@@ -48,8 +48,8 @@ export const crearUnidad = async (req, res) => {
  * Actualiza los datos de una unidad existente.
  * @param {number} req.params.id - ID de la unidad a modificar.
  * @param {object} req.body - Datos a actualizar.
- * @param {string} req.body.uni_nom - Nuevo nombre de la unidad.
- * @param {number} req.body.div_ide - Nuevo ID de la división.
+ * @param {string} req.body.nombre - Nuevo nombre de la unidad.
+ * @param {number} req.body.division_id - Nuevo ID de la división.
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarUnidad = async (req, res) => {

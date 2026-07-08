@@ -14,3 +14,7 @@ vendor/firebase/php-jwt/
 /vendor
 /modulos/BienesMuebles/server/.env
 /modulos/RRHH/server/.env
+/modulos/Servicio_soporte/server/.env
+/modulos/Servicio_soporte/server/node_modules/
+/modulos/Servicio_soporte/client/.env
+/modulos/Servicio_soporte/client/node_modules/

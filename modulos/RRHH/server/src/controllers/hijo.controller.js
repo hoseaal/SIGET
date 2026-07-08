@@ -3,13 +3,13 @@ import { HijoService } from '../services/hijo.service.js'
 /**
  * Obtiene la lista de hijos de un funcionario específico.
  * Incluye el cálculo automático de la edad.
- * @param {number} req.params.fun_ide - ID del funcionario (Padre/Madre).
+ * @param {number} req.params.empleado_id - ID del funcionario (Padre/Madre).
  * @returns {Promise<object[]>} Lista de hijos con su edad actual.
  */
 export const obtenerHijosPorFuncionario = async (req, res) => {
   try {
-    const { fun_ide } = req.params
-    const hijos = await HijoService.obtenerPorFuncionario(fun_ide)
+    const { empleado_id } = req.params
+    const hijos = await HijoService.obtenerPorFuncionario(empleado_id)
     res.json(hijos)
   } catch (error) {
     res.status(404).json({ error: error.message })
@@ -18,7 +18,7 @@ export const obtenerHijosPorFuncionario = async (req, res) => {
 
 /**
  * Busca un hijo por su ID único.
- * @param {number} req.params.id - ID del hijo (hij_ide).
+ * @param {number} req.params.id - ID del hijo (hijo_id).
  */
 export const obtenerHijo = async (req, res) => {
   try {
@@ -33,10 +33,10 @@ export const obtenerHijo = async (req, res) => {
 /**
  * Registra un nuevo hijo en el sistema.
  * @param {object} req.body - Datos del hijo.
- * @param {number} req.body.fun_ide - ID del funcionario padre.
- * @param {string} req.body.hij_nom - Nombres.
- * @param {string} req.body.hij_ape - Apellidos.
- * @param {string} req.body.hij_fna - Fecha de nacimiento (YYYY-MM-DD).
+ * @param {number} req.body.empleado_id - ID del funcionario padre.
+ * @param {string} req.body.nombres - Nombres.
+ * @param {string} req.body.apellidos - Apellidos.
+ * @param {string} req.body.fecha_nacimiento - Fecha de nacimiento (YYYY-MM-DD).
  * @returns {Promise<object>} Registro creado.
  */
 export const crearHijo = async (req, res) => {

@@ -15,7 +15,7 @@ export const obtenerProfesiones = async (req, res) => {
 
 /**
  * Busca una profesión por su identificador.
- * @param {number} req.params.id - Identificador único (pro_ide).
+ * @param {number} req.params.id - Identificador único (profesion_id).
  * @returns {Promise<object>} Objeto con los datos de la profesión.
  */
 export const obtenerProfesion = async (req, res) => {
@@ -31,7 +31,7 @@ export const obtenerProfesion = async (req, res) => {
 /**
  * Registra una nueva profesión en el sistema.
  * @param {object} req.body - Datos de la profesión.
- * @param {string} req.body.pro_nom - Nombre de la profesión o título (Requerido).
+ * @param {string} req.body.nombre - Nombre de la profesión o título (Requerido).
  * @returns {Promise<object>} La profesión creada con su ID asignado.
  */
 export const crearProfesion = async (req, res) => {
@@ -47,7 +47,7 @@ export const crearProfesion = async (req, res) => {
  * Actualiza el nombre de una profesión existente.
  * @param {number} req.params.id - ID de la profesión a editar.
  * @param {object} req.body - Datos nuevos.
- * @param {string} req.body.pro_nom - Nuevo nombre de la profesión.
+ * @param {string} req.body.nombre - Nuevo nombre de la profesión.
  * @returns {Promise<object>} Confirmación de la operación.
  */
 export const actualizarProfesion = async (req, res) => {

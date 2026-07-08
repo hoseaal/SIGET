@@ -13,10 +13,10 @@ export class PrimaService {
 
   static async crear (datos) {
     // Validaciones
-    if (!datos.pri_nom) throw new Error('El nombre de la prima es requerido')
+    if (!datos.nombre) throw new Error('El nombre de la prima es requerido')
     
     // Verificamos que no sea undefined o null (0 es un valor válido)
-    if (datos.pri_por === undefined || datos.pri_por === null) {
+    if (datos.porcentaje === undefined || datos.porcentaje === null) {
       throw new Error('El porcentaje de la prima es requerido')
     }
 
@@ -27,7 +27,7 @@ export class PrimaService {
     const existe = await PrimaModel.getById(id)
     if (!existe) throw new Error('Prima no existe')
     
-    if (!datos.pri_nom || datos.pri_por === undefined) {
+    if (!datos.nombre || datos.porcentaje === undefined) {
       throw new Error('Nombre y Porcentaje son requeridos para actualizar')
     }
 

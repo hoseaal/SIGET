@@ -19,7 +19,7 @@ export class Validaciones {
       bim_val: 'Valor del bien',
       bim_moneda: 'Moneda',
       bim_sede: 'Sede',
-      est_ide: 'estado',
+      estatus_id: 'estado',
       foa_ide: 'Forma de Adquisición',
       con_ide: 'Condicion Fisica',
       esu_ide: 'Esatado de uso',
@@ -40,7 +40,7 @@ export class Validaciones {
     // Validación de tipos numéricos
     const camposNumericos = {
       bim_val: 'valor',
-      est_ide: 'estado',
+      estatus_id: 'estado',
       foa_ide: 'forma de adquisición',
       con_ide: 'condición',
       esu_ide: 'estado de uso',

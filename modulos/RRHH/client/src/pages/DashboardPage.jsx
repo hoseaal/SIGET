@@ -316,7 +316,7 @@ export const DashboardPage = () => {
               <div className="col-sm-12">
                 <Card.Body>
                   <h5 className="card-title text-primary">
-                    ¡Bienvenido {userData?.usu_nom || ''} {userData?.usu_ape || ''} 🎉!
+                    ¡Bienvenido {userData?.nombres || ''} {userData?.apellidos || ''} 🎉!
                   </h5>
                   <p className="mb-4">
                     Aquí tienes un resumen rápido del estado actual del inventario SIGET.

@@ -15,7 +15,7 @@ export const ClasificacionyCargos = () => {
     };
 
     // ==========================================
-    // ESTADOS PARA CARGOS ONAPRE (tmaona)
+    // ESTADOS PARA CARGOS ONAPRE (cargos_onapre)
     // ==========================================
     const [columnsOna, setColumnsOna] = useState([]);
     const [idColumnOna, setIdColumnOna] = useState(null);
@@ -25,12 +25,12 @@ export const ClasificacionyCargos = () => {
     const [showOnaDelModal, setShowOnaDelModal] = useState(false);
 
     const columnAliasOna = {
-        'ona_ide': 'Código',
-        'ona_nom': 'Cargo ONAPRE'
+        'cargo_onapre_id': 'Código',
+        'nombre': 'Cargo ONAPRE'
     };
 
     // ==========================================
-    // ESTADOS PARA CARGOS CET (tmacet)
+    // ESTADOS PARA CARGOS CET (cargos_cet)
     // ==========================================
     const [columnsCet, setColumnsCet] = useState([]);
     const [idColumnCet, setIdColumnCet] = useState(null);
@@ -40,12 +40,12 @@ export const ClasificacionyCargos = () => {
     const [showCetDelModal, setShowCetDelModal] = useState(false);
 
     const columnAliasCet = {
-        'cet_ide': 'Código',
-        'cet_nom': 'Cargo Interno (CET)'
+        'cargo_cet_id': 'Código',
+        'nombre': 'Cargo Interno (CET)'
     };
 
     // ==========================================
-    // ESTADOS PARA CONDICIÓN LABORAL (tmacol)
+    // ESTADOS PARA CONDICIÓN LABORAL (condiciones_laborales)
     // ==========================================
     const [columnsCol, setColumnsCol] = useState([]);
     const [idColumnCol, setIdColumnCol] = useState(null);
@@ -55,12 +55,12 @@ export const ClasificacionyCargos = () => {
     const [showColDelModal, setShowColDelModal] = useState(false);
 
     const columnAliasCol = {
-        'col_ide': 'Código',
-        'col_nom': 'Condición Laboral'
+        'condicion_laboral_id': 'Código',
+        'nombre': 'Condición Laboral'
     };
 
     // ==========================================
-    // ESTADOS PARA PROFESIONES (tmapro)
+    // ESTADOS PARA PROFESIONES (profesiones)
     // ==========================================
     const [columnsPro, setColumnsPro] = useState([]);
     const [idColumnPro, setIdColumnPro] = useState(null);
@@ -70,8 +70,8 @@ export const ClasificacionyCargos = () => {
     const [showProDelModal, setShowProDelModal] = useState(false);
 
     const columnAliasPro = {
-        'pro_ide': 'Código',
-        'pro_nom': 'Profesión'
+        'profesion_id': 'Código',
+        'nombre': 'Profesión'
     };
 
     // ==========================================
@@ -81,7 +81,7 @@ export const ClasificacionyCargos = () => {
     useEffect(() => {
         const loadOnaData = async () => {
             try {
-                const { columns, primaryKey } = await getTableMetadata('tmaona');
+                const { columns, primaryKey } = await getTableMetadata('cargos_onapre');
                 setColumnsOna(columns.map(col => ({
                     originalName: col.name,
                     displayName: columnAliasOna[col.name] || col.name,
@@ -99,7 +99,7 @@ export const ClasificacionyCargos = () => {
     useEffect(() => {
         const loadCetData = async () => {
             try {
-                const { columns, primaryKey } = await getTableMetadata('tmacet');
+                const { columns, primaryKey } = await getTableMetadata('cargos_cet');
                 setColumnsCet(columns.map(col => ({
                     originalName: col.name,
                     displayName: columnAliasCet[col.name] || col.name,
@@ -117,7 +117,7 @@ export const ClasificacionyCargos = () => {
     useEffect(() => {
         const loadColData = async () => {
             try {
-                const { columns, primaryKey } = await getTableMetadata('tmacol');
+                const { columns, primaryKey } = await getTableMetadata('condiciones_laborales');
                 setColumnsCol(columns.map(col => ({
                     originalName: col.name,
                     displayName: columnAliasCol[col.name] || col.name,
@@ -135,7 +135,7 @@ export const ClasificacionyCargos = () => {
     useEffect(() => {
         const loadProData = async () => {
             try {
-                const { columns, primaryKey } = await getTableMetadata('tmapro');
+                const { columns, primaryKey } = await getTableMetadata('profesiones');
                 setColumnsPro(columns.map(col => ({
                     originalName: col.name,
                     displayName: columnAliasPro[col.name] || col.name,
@@ -166,7 +166,7 @@ export const ClasificacionyCargos = () => {
                     </button>
                 </div>
                 
-                <ModalInsert show={showOnaModal} handleClose={() => setShowOnaModal(false)} columns={columnsOna} tableName="tmaona" onSuccess={handleSuccess} />
+                <ModalInsert show={showOnaModal} handleClose={() => setShowOnaModal(false)} columns={columnsOna} tableName="cargos_onapre" onSuccess={handleSuccess} />
 
                 <div className="table-responsive text-nowrap">
                     <table className="table table-striped">
@@ -191,7 +191,7 @@ export const ClasificacionyCargos = () => {
                                                 <Dropdown.Item href="#" onClick={() => { setEditingItem(item); setShowOnaUpModal(true); }}>
                                                     <i className="bx bx-edit-alt me-1"></i> Editar
                                                 </Dropdown.Item>
-                                                <Dropdown.Item href="#" onClick={() => { setDeleteItem(item.ona_ide); setShowOnaDelModal(true); }}>
+                                                <Dropdown.Item href="#" onClick={() => { setDeleteItem(item.cargo_onapre_id); setShowOnaDelModal(true); }}>
                                                     <i className="bx bx-trash me-1"></i> Eliminar
                                                 </Dropdown.Item>
                                             </Dropdown.Menu>
@@ -202,8 +202,8 @@ export const ClasificacionyCargos = () => {
                         </tbody>
                     </table>
                 </div>
-                <ModalUpdate show={showOnaUpModal} handleClose={() => setShowOnaUpModal(false)} columns={columnsOna} tableName='tmaona' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnOna} />
-                <ModalDelete show={showOnaDelModal} handleClose={() => setShowOnaDelModal(false)} tableName="tmaona" rowId={deleteItem} idColumn={idColumnOna} onSuccess={handleSuccess} />
+                <ModalUpdate show={showOnaUpModal} handleClose={() => setShowOnaUpModal(false)} columns={columnsOna} tableName='cargos_onapre' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnOna} />
+                <ModalDelete show={showOnaDelModal} handleClose={() => setShowOnaDelModal(false)} tableName="cargos_onapre" rowId={deleteItem} idColumn={idColumnOna} onSuccess={handleSuccess} />
             </div>
 
             <hr className="my-5" />
@@ -219,7 +219,7 @@ export const ClasificacionyCargos = () => {
                     </button>
                 </div>
 
-                <ModalInsert show={showCetModal} handleClose={() => setShowCetModal(false)} columns={columnsCet} tableName="tmacet" onSuccess={handleSuccess} />
+                <ModalInsert show={showCetModal} handleClose={() => setShowCetModal(false)} columns={columnsCet} tableName="cargos_cet" onSuccess={handleSuccess} />
 
                 <div className="table-responsive text-nowrap">
                     <table className="table table-striped">
@@ -244,7 +244,7 @@ export const ClasificacionyCargos = () => {
                                                 <Dropdown.Item href="#" onClick={() => { setEditingItem(item); setShowCetUpModal(true); }}>
                                                     <i className="bx bx-edit-alt me-1"></i> Editar
                                                 </Dropdown.Item>
-                                                <Dropdown.Item href="#" onClick={() => { setDeleteItem(item.cet_ide); setShowCetDelModal(true); }}>
+                                                <Dropdown.Item href="#" onClick={() => { setDeleteItem(item.cargo_cet_id); setShowCetDelModal(true); }}>
                                                     <i className="bx bx-trash me-1"></i> Eliminar
                                                 </Dropdown.Item>
                                             </Dropdown.Menu>
@@ -256,8 +256,8 @@ export const ClasificacionyCargos = () => {
                     </table>
                 </div>
 
-                <ModalUpdate show={showCetUpModal} handleClose={() => setShowCetUpModal(false)} columns={columnsCet} tableName='tmacet' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnCet} />
-                <ModalDelete show={showCetDelModal} handleClose={() => setShowCetDelModal(false)} tableName="tmacet" rowId={deleteItem} idColumn={idColumnCet} onSuccess={handleSuccess} />
+                <ModalUpdate show={showCetUpModal} handleClose={() => setShowCetUpModal(false)} columns={columnsCet} tableName='cargos_cet' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnCet} />
+                <ModalDelete show={showCetDelModal} handleClose={() => setShowCetDelModal(false)} tableName="cargos_cet" rowId={deleteItem} idColumn={idColumnCet} onSuccess={handleSuccess} />
             </div>
 
             <hr className="my-5" />
@@ -273,7 +273,7 @@ export const ClasificacionyCargos = () => {
                     </button>
                 </div>
 
-                <ModalInsert show={showColModal} handleClose={() => setShowColModal(false)} columns={columnsCol} tableName="tmacol" onSuccess={handleSuccess} />
+                <ModalInsert show={showColModal} handleClose={() => setShowColModal(false)} columns={columnsCol} tableName="condiciones_laborales" onSuccess={handleSuccess} />
 
                 <div className="table-responsive text-nowrap">
                     <table className="table table-striped">
@@ -298,7 +298,7 @@ export const ClasificacionyCargos = () => {
                                                 <Dropdown.Item href="#" onClick={() => { setEditingItem(item); setShowColUpModal(true); }}>
                                                     <i className="bx bx-edit-alt me-1"></i> Editar
                                                 </Dropdown.Item>
-                                                <Dropdown.Item href="#" onClick={() => { setDeleteItem(item.col_ide); setShowColDelModal(true); }}>
+                                                <Dropdown.Item href="#" onClick={() => { setDeleteItem(item.condicion_laboral_id); setShowColDelModal(true); }}>
                                                     <i className="bx bx-trash me-1"></i> Eliminar
                                                 </Dropdown.Item>
                                             </Dropdown.Menu>
@@ -310,8 +310,8 @@ export const ClasificacionyCargos = () => {
                     </table>
                 </div>
 
-                <ModalUpdate show={showColUpModal} handleClose={() => setShowColUpModal(false)} columns={columnsCol} tableName='tmacol' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnCol} />
-                <ModalDelete show={showColDelModal} handleClose={() => setShowColDelModal(false)} tableName="tmacol" rowId={deleteItem} idColumn={idColumnCol} onSuccess={handleSuccess} />
+                <ModalUpdate show={showColUpModal} handleClose={() => setShowColUpModal(false)} columns={columnsCol} tableName='condiciones_laborales' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnCol} />
+                <ModalDelete show={showColDelModal} handleClose={() => setShowColDelModal(false)} tableName="condiciones_laborales" rowId={deleteItem} idColumn={idColumnCol} onSuccess={handleSuccess} />
             </div>
 
             <hr className="my-5" />
@@ -327,7 +327,7 @@ export const ClasificacionyCargos = () => {
                     </button>
                 </div>
 
-                <ModalInsert show={showProModal} handleClose={() => setShowProModal(false)} columns={columnsPro} tableName="tmapro" onSuccess={handleSuccess} />
+                <ModalInsert show={showProModal} handleClose={() => setShowProModal(false)} columns={columnsPro} tableName="profesiones" onSuccess={handleSuccess} />
 
                 <div className="table-responsive text-nowrap">
                     <table className="table table-striped">
@@ -352,7 +352,7 @@ export const ClasificacionyCargos = () => {
                                                 <Dropdown.Item href="#" onClick={() => { setEditingItem(item); setShowProUpModal(true); }}>
                                                     <i className="bx bx-edit-alt me-1"></i> Editar
                                                 </Dropdown.Item>
-                                                <Dropdown.Item href="#" onClick={() => { setDeleteItem(item.pro_ide); setShowProDelModal(true); }}>
+                                                <Dropdown.Item href="#" onClick={() => { setDeleteItem(item.profesion_id); setShowProDelModal(true); }}>
                                                     <i className="bx bx-trash me-1"></i> Eliminar
                                                 </Dropdown.Item>
                                             </Dropdown.Menu>
@@ -364,8 +364,8 @@ export const ClasificacionyCargos = () => {
                     </table>
                 </div>
 
-                <ModalUpdate show={showProUpModal} handleClose={() => setShowProUpModal(false)} columns={columnsPro} tableName='tmapro' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnPro} />
-                <ModalDelete show={showProDelModal} handleClose={() => setShowProDelModal(false)} tableName="tmapro" rowId={deleteItem} idColumn={idColumnPro} onSuccess={handleSuccess} />
+                <ModalUpdate show={showProUpModal} handleClose={() => setShowProUpModal(false)} columns={columnsPro} tableName='profesiones' rowData={editingItem} onSuccess={handleSuccess} idColumn={idColumnPro} />
+                <ModalDelete show={showProDelModal} handleClose={() => setShowProDelModal(false)} tableName="profesiones" rowId={deleteItem} idColumn={idColumnPro} onSuccess={handleSuccess} />
             </div>
 
         </div>

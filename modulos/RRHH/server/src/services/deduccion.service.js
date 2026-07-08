@@ -13,8 +13,8 @@ export class DeduccionService {
 
   static async crear (datos) {
     // Validamos campos obligatorios
-    if (!datos.ded_nom) throw new Error('El nombre de la deducción es requerido')
-    if (datos.ded_por === undefined || datos.ded_por === null) {
+    if (!datos.nombre) throw new Error('El nombre de la deducción es requerido')
+    if (datos.porcentaje === undefined || datos.porcentaje === null) {
       throw new Error('El porcentaje de la deducción es requerido')
     }
     
@@ -25,7 +25,7 @@ export class DeduccionService {
     const existe = await DeduccionModel.getById(id)
     if (!existe) throw new Error('Deducción no existe')
     
-    if (!datos.ded_nom || datos.ded_por === undefined) {
+    if (!datos.nombre || datos.porcentaje === undefined) {
       throw new Error('Nombre y Porcentaje son requeridos para actualizar')
     }
 

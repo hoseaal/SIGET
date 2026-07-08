@@ -15,7 +15,7 @@ export const obtenerPrimasProf = async (req, res) => {
 
 /**
  * Busca una prima de profesionalización por su ID.
- * @param {number} req.params.id - Identificador único (prf_ide).
+ * @param {number} req.params.id - Identificador único (prima_profesional_id).
  * @returns {Promise<object>} Objeto con los datos de la prima.
  */
 export const obtenerPrimaProf = async (req, res) => {
@@ -31,9 +31,9 @@ export const obtenerPrimaProf = async (req, res) => {
 /**
  * Crea un registro de prima de profesionalización.
  * @param {object} req.body - Datos de la prima.
- * @param {string} req.body.prf_nom - Descripción (Ej: "Técnico Superior", "Licenciado").
- * @param {number} req.body.prf_act - Porcentaje Actual (Requerido).
- * @param {number} [req.body.prf_ant] - Porcentaje Anterior (Opcional).
+ * @param {string} req.body.descripcion - Descripción (Ej: "Técnico Superior", "Licenciado").
+ * @param {number} req.body.porcentaje_actual - Porcentaje Actual (Requerido).
+ * @param {number} [req.body.porcentaje_anterior] - Porcentaje Anterior (Opcional).
  * @returns {Promise<object>} La prima creada.
  */
 export const crearPrimaProf = async (req, res) => {
@@ -49,9 +49,9 @@ export const crearPrimaProf = async (req, res) => {
  * Actualiza los porcentajes o descripción de la prima.
  * @param {number} req.params.id - ID de la prima a modificar.
  * @param {object} req.body - Datos nuevos.
- * @param {string} req.body.prf_nom - Nueva descripción.
- * @param {number} req.body.prf_act - Nuevo porcentaje actual.
- * @param {number} [req.body.prf_ant] - Nuevo porcentaje anterior.
+ * @param {string} req.body.descripcion - Nueva descripción.
+ * @param {number} req.body.porcentaje_actual - Nuevo porcentaje actual.
+ * @param {number} [req.body.porcentaje_anterior] - Nuevo porcentaje anterior.
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarPrimaProf = async (req, res) => {

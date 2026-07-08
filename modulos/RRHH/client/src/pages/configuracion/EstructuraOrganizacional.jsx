@@ -25,8 +25,8 @@ export const EstructuraOrganizacional = () => {
     const [showDirDelModal, setShowDirDelModal] = useState(false);
 
     const columnAliasDir = {
-        'dir_ide': 'Código',
-        'dir_nom': 'Dirección'
+        'direccion_id': 'Código',
+        'nombre': 'Dirección'
     };
 
     // ==========================================
@@ -40,9 +40,9 @@ export const EstructuraOrganizacional = () => {
     const [showDivDelModal, setShowDivDelModal] = useState(false);
 
     const columnAliasDiv = {
-        'div_ide': 'Código',
-        'div_nom': 'División',
-        'dir_ide': 'Dirección'
+        'division_id': 'Código',
+        'nombre': 'División',
+        'direccion_id': 'Dirección'
     };
 
     // ==========================================
@@ -56,9 +56,9 @@ export const EstructuraOrganizacional = () => {
     const [showUniDelModal, setShowUniDelModal] = useState(false);
 
     const columnAliasUni = {
-        'uni_ide': 'Código',
-        'uni_nom': 'Unidad',
-        'div_ide': 'División'
+        'unidad_id': 'Código',
+        'nombre': 'Unidad',
+        'division_id': 'División'
     };
 
     // ==========================================
@@ -69,7 +69,7 @@ export const EstructuraOrganizacional = () => {
     useEffect(() => {
         const loadDirData = async () => {
             try {
-                const { columns, primaryKey } = await getTableMetadata('tmadir');
+                const { columns, primaryKey } = await getTableMetadata('direcciones');
                 setColumnsDir(columns.map(col => ({
                     originalName: col.name,
                     displayName: columnAliasDir[col.name] || col.name,
@@ -91,7 +91,7 @@ export const EstructuraOrganizacional = () => {
     useEffect(() => {
         const loadDivData = async () => {
             try {
-                const { columns, primaryKey } = await getTableMetadata('tesdiv');
+                const { columns, primaryKey } = await getTableMetadata('divisiones');
                 setColumnsDiv(columns.map(col => ({
                     originalName: col.name,
                     displayName: columnAliasDiv[col.name] || col.name,
@@ -113,7 +113,7 @@ export const EstructuraOrganizacional = () => {
     useEffect(() => {
         const loadUniData = async () => {
             try {
-                const { columns, primaryKey } = await getTableMetadata('tesuni');
+                const { columns, primaryKey } = await getTableMetadata('unidades');
                 setColumnsUni(columns.map(col => ({
                     originalName: col.name,
                     displayName: columnAliasUni[col.name] || col.name,
@@ -135,12 +135,12 @@ export const EstructuraOrganizacional = () => {
     // MAPEOS PARA MOSTRAR NOMBRES EN TABLAS AGRUPADAS
     // ==========================================
     const DireccionesMap = dataDir.reduce((acc, dir) => {
-        acc[dir.dir_ide] = dir.dir_nom;
+        acc[dir.direccion_id] = dir.nombre;
         return acc;
     }, {});
 
     const DivisionesMap = dataDiv.reduce((acc, div) => {
-        acc[div.div_ide] = div.div_nom;
+        acc[div.division_id] = div.nombre;
         return acc;
     }, {});
 
@@ -167,7 +167,7 @@ export const EstructuraOrganizacional = () => {
                     show={showDirModal}
                     handleClose={() => setShowDirModal(false)}
                     columns={columnsDir}
-                    tableName="tmadir"
+                    tableName="direcciones"
                     onSuccess={handleSuccess}
                 />
 
@@ -202,7 +202,7 @@ export const EstructuraOrganizacional = () => {
                                                     <i className="bx bx-edit-alt me-1"></i> Editar
                                                 </Dropdown.Item>
                                                 <Dropdown.Item href="#" onClick={() => {
-                                                    setDeleteItem(item.dir_ide);
+                                                    setDeleteItem(item.direccion_id);
                                                     setShowDirDelModal(true);
                                                 }}>
                                                     <i className="bx bx-trash me-1"></i> Eliminar
@@ -219,7 +219,7 @@ export const EstructuraOrganizacional = () => {
                     show={showDirUpModal}
                     handleClose={() => setShowDirUpModal(false)}
                     columns={columnsDir}
-                    tableName='tmadir'
+                    tableName='direcciones'
                     rowData={editingItem} 
                     onSuccess={handleSuccess}
                     idColumn={idColumnDir}
@@ -227,7 +227,7 @@ export const EstructuraOrganizacional = () => {
                 <ModalDelete 
                     show={showDirDelModal}
                     handleClose={() => setShowDirDelModal(false)}
-                    tableName="tmadir"
+                    tableName="direcciones"
                     rowId={deleteItem} 
                     idColumn={idColumnDir} 
                     onSuccess={handleSuccess} 
@@ -255,9 +255,9 @@ export const EstructuraOrganizacional = () => {
                     show={showDivModal}
                     handleClose={() => setShowDivModal(false)}
                     columns={columnsDiv}
-                    foreign={'tmadir'} // Referencia a la tabla Direcciones
+                    foreign={'direcciones'} // Referencia a la tabla Direcciones
                     idColumn={idColumnDiv}
-                    tableName="tesdiv"
+                    tableName="divisiones"
                     onSuccess={handleSuccess}
                 />
 
@@ -266,7 +266,7 @@ export const EstructuraOrganizacional = () => {
                         <thead>
                             <tr>
                                 {columnsDiv
-                                    .filter(col => col.originalName !== 'dir_ide') // Excluye la columna foránea
+                                    .filter(col => col.originalName !== 'direccion_id') // Excluye la columna foránea
                                     .map((col, index) => (
                                         <th key={index}>{col.displayName}</th>
                                     ))}
@@ -276,7 +276,7 @@ export const EstructuraOrganizacional = () => {
                         <tbody className="table-border-bottom-0">
                             {Object.entries(
                                 dataDiv.reduce((acc, item) => {
-                                    const dirId = item.dir_ide;
+                                    const dirId = item.direccion_id;
                                     if (!acc[dirId]) acc[dirId] = [];
                                     acc[dirId].push(item);
                                     return acc;
@@ -285,7 +285,7 @@ export const EstructuraOrganizacional = () => {
                                 <React.Fragment key={`group-div-${dirId}`}>
                                     {/* Cabecera Agrupadora */}
                                     <tr className="bg-light">
-                                        <td colSpan={columnsDiv.filter(col => col.originalName !== 'dir_ide').length + 1}>
+                                        <td colSpan={columnsDiv.filter(col => col.originalName !== 'direccion_id').length + 1}>
                                             <strong className="text-primary">Dirección {dirId}: {DireccionesMap[dirId] || `Dirección ${dirId}`}</strong>
                                         </td>
                                     </tr>
@@ -294,7 +294,7 @@ export const EstructuraOrganizacional = () => {
                                     {divisiones.map((item, index) => (
                                         <tr key={`div-${dirId}-${index}`}>
                                             {columnsDiv
-                                                .filter(col => col.originalName !== 'dir_ide')
+                                                .filter(col => col.originalName !== 'direccion_id')
                                                 .map((col) => (
                                                     <td key={`col-${dirId}-${index}-${col.originalName}`}>
                                                         {item[col.originalName.toLowerCase()] ?? 'N/A'}
@@ -313,7 +313,7 @@ export const EstructuraOrganizacional = () => {
                                                             <i className="bx bx-edit-alt me-1"></i> Editar
                                                         </Dropdown.Item>
                                                         <Dropdown.Item href="#" onClick={() => {
-                                                            setDeleteItem(item.div_ide);
+                                                            setDeleteItem(item.division_id);
                                                             setShowDivDelModal(true);
                                                         }}>
                                                             <i className="bx bx-trash me-1"></i> Eliminar
@@ -333,16 +333,16 @@ export const EstructuraOrganizacional = () => {
                     show={showDivUpModal}
                     handleClose={() => setShowDivUpModal(false)}
                     columns={columnsDiv}
-                    tableName='tesdiv'
+                    tableName='divisiones'
                     rowData={editingItem} 
-                    foreign='tmadir'
+                    foreign='direcciones'
                     onSuccess={handleSuccess}
                     idColumn={idColumnDiv}
                 />
                 <ModalDelete 
                     show={showDivDelModal}
                     handleClose={() => setShowDivDelModal(false)}
-                    tableName="tesdiv"
+                    tableName="divisiones"
                     rowId={deleteItem} 
                     idColumn={idColumnDiv} 
                     onSuccess={handleSuccess} 
@@ -370,9 +370,9 @@ export const EstructuraOrganizacional = () => {
                     show={showUniModal}
                     handleClose={() => setShowUniModal(false)}
                     columns={columnsUni}
-                    foreign={'tesdiv'} // Referencia a la tabla Divisiones
+                    foreign={'divisiones'} // Referencia a la tabla Divisiones
                     idColumn={idColumnUni}
-                    tableName="tesuni"
+                    tableName="unidades"
                     onSuccess={handleSuccess}
                 />
 
@@ -381,7 +381,7 @@ export const EstructuraOrganizacional = () => {
                         <thead>
                             <tr>
                                 {columnsUni
-                                    .filter(col => col.originalName !== 'div_ide') // Excluye la columna foránea
+                                    .filter(col => col.originalName !== 'division_id') // Excluye la columna foránea
                                     .map((col, index) => (
                                         <th key={index}>{col.displayName}</th>
                                     ))}
@@ -391,7 +391,7 @@ export const EstructuraOrganizacional = () => {
                         <tbody className="table-border-bottom-0">
                             {Object.entries(
                                 dataUni.reduce((acc, item) => {
-                                    const divId = item.div_ide;
+                                    const divId = item.division_id;
                                     if (!acc[divId]) acc[divId] = [];
                                     acc[divId].push(item);
                                     return acc;
@@ -400,7 +400,7 @@ export const EstructuraOrganizacional = () => {
                                 <React.Fragment key={`group-uni-${divId}`}>
                                     {/* Cabecera Agrupadora */}
                                     <tr className="bg-light">
-                                        <td colSpan={columnsUni.filter(col => col.originalName !== 'div_ide').length + 1}>
+                                        <td colSpan={columnsUni.filter(col => col.originalName !== 'division_id').length + 1}>
                                             <strong className="text-primary">División {divId}: {DivisionesMap[divId] || `División ${divId}`}</strong>
                                         </td>
                                     </tr>
@@ -409,7 +409,7 @@ export const EstructuraOrganizacional = () => {
                                     {unidades.map((item, index) => (
                                         <tr key={`uni-${divId}-${index}`}>
                                             {columnsUni
-                                                .filter(col => col.originalName !== 'div_ide')
+                                                .filter(col => col.originalName !== 'division_id')
                                                 .map((col) => (
                                                     <td key={`col-${divId}-${index}-${col.originalName}`}>
                                                         {item[col.originalName.toLowerCase()] ?? 'N/A'}
@@ -428,7 +428,7 @@ export const EstructuraOrganizacional = () => {
                                                             <i className="bx bx-edit-alt me-1"></i> Editar
                                                         </Dropdown.Item>
                                                         <Dropdown.Item href="#" onClick={() => {
-                                                            setDeleteItem(item.uni_ide);
+                                                            setDeleteItem(item.unidad_id);
                                                             setShowUniDelModal(true);
                                                         }}>
                                                             <i className="bx bx-trash me-1"></i> Eliminar
@@ -448,16 +448,16 @@ export const EstructuraOrganizacional = () => {
                     show={showUniUpModal}
                     handleClose={() => setShowUniUpModal(false)}
                     columns={columnsUni}
-                    tableName='tesuni'
+                    tableName='unidades'
                     rowData={editingItem} 
-                    foreign='tesdiv'
+                    foreign='divisiones'
                     onSuccess={handleSuccess}
                     idColumn={idColumnUni}
                 />
                 <ModalDelete 
                     show={showUniDelModal}
                     handleClose={() => setShowUniDelModal(false)}
-                    tableName="tesuni"
+                    tableName="unidades"
                     rowId={deleteItem} 
                     idColumn={idColumnUni} 
                     onSuccess={handleSuccess} 

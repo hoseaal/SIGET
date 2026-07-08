@@ -15,7 +15,7 @@ export const obtenerNivelesAntiguos = async (req, res) => {
 
 /**
  * Busca un nivel salarial antiguo por su ID.
- * @param {number} req.params.id - Identificador único (nivant_ide).
+ * @param {number} req.params.id - Identificador único (nivel_salarial_antiguo_id).
  * @returns {Promise<object>} Objeto con los datos del nivel.
  */
 export const obtenerNivelAntiguo = async (req, res) => {
@@ -31,9 +31,9 @@ export const obtenerNivelAntiguo = async (req, res) => {
 /**
  * Registra un nivel salarial histórico.
  * @param {object} req.body - Datos del nivel.
- * @param {string} req.body.nivant_nom - Nombre del nivel antiguo (Ej: "Nivel I - 2023").
- * @param {number} req.body.nivant_sal - Monto del salario base antiguo.
- * @param {number} req.body.ona_ide - ID del Cargo ONAPRE asociado (tmaona).
+ * @param {string} req.body.nombre - Nombre del nivel antiguo (Ej: "Nivel I - 2023").
+ * @param {number} req.body.salario_antiguo - Monto del salario base antiguo.
+ * @param {number} req.body.cargo_onapre_id - ID del Cargo ONAPRE asociado (cargos_onapre).
  * @returns {Promise<object>} El nivel creado.
  */
 export const crearNivelAntiguo = async (req, res) => {
@@ -53,9 +53,9 @@ export const crearNivelAntiguo = async (req, res) => {
  * Actualiza los datos de un nivel salarial antiguo.
  * @param {number} req.params.id - ID del nivel a modificar.
  * @param {object} req.body - Datos nuevos.
- * @param {string} req.body.nivant_nom - Nuevo nombre.
- * @param {number} req.body.nivant_sal - Nuevo salario.
- * @param {number} req.body.ona_ide - Nuevo cargo ONAPRE asociado.
+ * @param {string} req.body.nombre - Nuevo nombre.
+ * @param {number} req.body.salario_antiguo - Nuevo salario.
+ * @param {number} req.body.cargo_onapre_id - Nuevo cargo ONAPRE asociado.
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarNivelAntiguo = async (req, res) => {

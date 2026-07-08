@@ -10,7 +10,7 @@ import {
 const router = express.Router()
 
 // GET: Historial de antigüedad de un funcionario (Calculado)
-router.get('/funcionario/:fun_ide', obtenerPorFuncionario)
+router.get('/funcionario/:empleado_id', obtenerPorFuncionario)
 
 // CRUD Individual
 router.get('/:id', obtenerRegistro)

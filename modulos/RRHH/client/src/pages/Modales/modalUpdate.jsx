@@ -14,22 +14,22 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
     // MAPA UNIVERSAL DE ENDPOINTS (Sistema RRHH)
     const endpointMap = {
         // Estructura Organizacional
-        tmadir: '/api/direcciones',
-        tesdiv: '/api/divisiones',
-        tesuni: '/api/unidades',
+        direcciones: '/api/direcciones',
+        divisiones: '/api/divisiones',
+        unidades: '/api/unidades',
         
         // Clasificación y Cargos
-        tmaona: '/api/cargos-onapre',
-        tmacet: '/api/cargos-cet',
-        tmacol: '/api/condiciones-laborales',
-        tmapro: '/api/profesiones',
+        cargos_onapre: '/api/cargos-onapre',
+        cargos_cet: '/api/cargos-cet',
+        condiciones_laborales: '/api/condiciones-laborales',
+        profesiones: '/api/profesiones',
         
         // Tablas Salariales y Deducciones
-        tesniv: '/api/niveles-salariales',
-        tmapri: '/api/primas',
-        tmaprf: '/api/primas-profesionalizacion',
-        tmaant: '/api/antiguedad',
-        tmade: '/api/deducciones'
+        niveles_salariales: '/api/niveles-salariales',
+        primas_generales: '/api/primas',
+        primas_profesionalizacion: '/api/primas-profesionalizacion',
+        configuracion_antiguedad: '/api/antiguedad',
+        deducciones: '/api/deducciones'
     };
 
     // Al abrir el modal, cargamos los datos de la fila a editar

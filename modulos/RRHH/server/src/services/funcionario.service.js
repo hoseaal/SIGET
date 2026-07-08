@@ -8,19 +8,19 @@ export class FuncionarioService {
    * Evita errores de SQL por enviar columnas que no existen en la tabla destino.
    */
   static _separarDatos (datosSucios) {
-    // Columnas exactas de tabla tmafun
+    // Columnas exactas de tabla empleados
     const camposPersonal = [
-      'fun_ced', 'fun_nom', 'fun_ape', 'fun_rif', 'fun_fna', 'fun_lna',
-      'fun_gen', 'fun_est', 'fun_san', 'fun_dep', 'fun_cul', 'fun_dir',
-      'fun_tel', 'fun_cel', 'fun_ema1', 'fun_ema2', 'fun_fing', 'fun_estu',
-      'fun_fcul', 'fun_emer1', 'fun_emer2', 'fun_teme1', 'fun_teme2',
-      'pro_ide', 'est_ide'
+      'cedula', 'nombres', 'apellidos', 'rif', 'fecha_nacimiento', 'lugar_nacimiento',
+      'genero', 'estado_civil', 'tipo_sangre', 'deportes', 'actividades_culturales', 'direccion_habitacion',
+      'telefono_fijo', 'celular', 'correo_principal', 'correo_secundario', 'fecha_ingreso', 'estudios_actuales',
+      'fecha_culminacion_estudios', 'contacto_emergencia_1', 'contacto_emergencia_2', 'telefono_emergencia_1', 'telefono_emergencia_2',
+      'profesion_id', 'estatus_id'
     ]
 
-    // Columnas exactas de tabla tesfun (Contrato)
+    // Columnas exactas de tabla datos_laborales (Contrato)
     const camposContrato = [
-      'cet_ide', 'ona_ide', 'niv_ide', 'nivant_ide', 'col_ide', 'prf_ide',
-      'dir_ide', 'div_ide', 'uni_ide'
+      'cargo_cet_id', 'cargo_onapre_id', 'nivel_salarial_id', 'nivel_salarial_antiguo_id', 'condicion_laboral_id', 'prima_profesional_id',
+      'direccion_id', 'division_id', 'unidad_id'
     ]
 
     const datosPersonalClean = {}
@@ -46,34 +46,34 @@ export class FuncionarioService {
    * HELPER: Valida y corrige la jerarquía Unidad -> División -> Dirección.
    * Si se asigna unidad, ignora la dir/div enviada y busca la correcta en DB.
    */
-  static async _validarJerarquia (dir_ide, div_ide, uni_ide) {
-    if (uni_ide) {
-      const [uniRows] = await pool.query('SELECT div_ide FROM tesuni WHERE uni_ide = ?', [uni_ide])
+  static async _validarJerarquia (direccion_id, division_id, unidad_id) {
+    if (unidad_id) {
+      const [uniRows] = await pool.query('SELECT division_id FROM unidades WHERE unidad_id = ?', [unidad_id])
       if (uniRows.length === 0) throw new Error('Unidad no existe')
       
-      const realDiv = uniRows[0].div_ide
-      const [divRows] = await pool.query('SELECT dir_ide FROM tesdiv WHERE div_ide = ?', [realDiv])
+      const realDiv = uniRows[0].division_id
+      const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [realDiv])
       
-      return { dir_ide: divRows[0].dir_ide, div_ide: realDiv, uni_ide }
+      return { direccion_id: divRows[0].direccion_id, division_id: realDiv, unidad_id }
     }
     
-    if (div_ide) {
-      const [divRows] = await pool.query('SELECT dir_ide FROM tesdiv WHERE div_ide = ?', [div_ide])
+    if (division_id) {
+      const [divRows] = await pool.query('SELECT direccion_id FROM divisiones WHERE division_id = ?', [division_id])
       if (divRows.length === 0) throw new Error('División no existe')
       
-      return { dir_ide: divRows[0].dir_ide, div_ide, uni_ide: null }
+      return { direccion_id: divRows[0].direccion_id, division_id, unidad_id: null }
     }
     
-    if (dir_ide) {
+    if (direccion_id) {
       // Validamos que exista dirección
-      const [dirRows] = await pool.query('SELECT dir_ide FROM tmadir WHERE dir_ide = ?', [dir_ide])
+      const [dirRows] = await pool.query('SELECT direccion_id FROM direcciones WHERE direccion_id = ?', [direccion_id])
       if (dirRows.length === 0) throw new Error('Dirección no existe')
 
-      return { dir_ide, div_ide: null, uni_ide: null }
+      return { direccion_id, division_id: null, unidad_id: null }
     }
 
     // Caso: Funcionario sin ubicación asignada (válido en algunos casos)
-    return { dir_ide: null, div_ide: null, uni_ide: null }
+    return { direccion_id: null, division_id: null, unidad_id: null }
   }
 
   // --- MÉTODOS PÚBLICOS ---
@@ -115,27 +115,27 @@ export class FuncionarioService {
     // Separamos en Datos Personales, Contrato Base y Encargo Activo
     const respuesta = {
       datos_personales: {
-        fun_ide: rawData.fun_ide,
-        fun_ced: rawData.fun_ced,
-        fun_nom: rawData.fun_nom,
-        fun_ape: rawData.fun_ape,
-        fun_rif: rawData.fun_rif,
+        empleado_id: rawData.empleado_id,
+        cedula: rawData.cedula,
+        nombres: rawData.nombres,
+        apellidos: rawData.apellidos,
+        rif: rawData.rif,
         edad: rawData.edad,
-        fun_gen: rawData.fun_gen,
-        fun_fing: rawData.fun_fing,
-        fun_cel: rawData.fun_cel,
-        fun_ema1: rawData.fun_ema1,
-        fun_dir: rawData.fun_dir,
+        genero: rawData.genero,
+        fecha_ingreso: rawData.fecha_ingreso,
+        celular: rawData.celular,
+        correo_principal: rawData.correo_principal,
+        direccion_habitacion: rawData.direccion_habitacion,
         // ...puedes agregar más campos personales aquí si lo necesitas
-        est_ide: rawData.est_ide
+        estatus_id: rawData.estatus_id
       },
       contrato_base: {
-        cet_nom: rawData.cet_nom, // Nombre Cargo Base
-        ona_nom: rawData.ona_nom,
-        niv_sal: rawData.niv_sal, // Salario Base
-        dir_nom: rawData.dir_nom,
-        div_nom: rawData.div_nom,
-        uni_nom: rawData.uni_nom
+        nombre: rawData.nombre, // Nombre Cargo Base
+        nombre: rawData.nombre,
+        salario_base: rawData.salario_base, // Salario Base
+        nombre: rawData.nombre,
+        nombre: rawData.nombre,
+        nombre: rawData.nombre
       },
       // Objeto de Encargo (Solo si enc_id existe, sino null)
       encargo_activo: rawData.enc_id ? {
@@ -144,9 +144,9 @@ export class FuncionarioService {
         salario: rawData.enc_salario, // Salario Encargado
         direccion: rawData.enc_direccion,
         unidad: rawData.enc_unidad,
-        fecha_inicio: rawData.enc_ini,
+        fecha_inicio: rawData.fecha_inicio,
         // Calculamos diferencia salarial para el frontend
-        diferencia_salarial: (Number(rawData.enc_salario) - Number(rawData.niv_sal)).toFixed(2)
+        diferencia_salarial: (Number(rawData.enc_salario) - Number(rawData.salario_base)).toFixed(2)
       } : null
     }
 
@@ -158,16 +158,16 @@ export class FuncionarioService {
     let { datosPersonalClean, datosContratoClean } = this._separarDatos(datos)
 
     // Validaciones básicas de personales
-    if (!datosPersonalClean.fun_ced || !datosPersonalClean.fun_nom || !datosPersonalClean.fun_ape) {
+    if (!datosPersonalClean.cedula || !datosPersonalClean.nombres || !datosPersonalClean.apellidos) {
       throw new Error('Cédula, Nombre y Apellido son obligatorios')
     }
 
     // 2. Si hay contrato, validar jerarquía
     if (datosContratoClean) {
       const jerarquia = await this._validarJerarquia(
-        datosContratoClean.dir_ide,
-        datosContratoClean.div_ide,
-        datosContratoClean.uni_ide
+        datosContratoClean.direccion_id,
+        datosContratoClean.division_id,
+        datosContratoClean.unidad_id
       )
       // Fusionamos la jerarquía validada sobre los datos limpios
       datosContratoClean = { ...datosContratoClean, ...jerarquia }
@@ -186,12 +186,12 @@ export class FuncionarioService {
 
     // 2. Si hay contrato y se está cambiando la ubicación, re-validar jerarquía
     if (datosContratoClean) {
-      if (datosContratoClean.dir_ide !== undefined || datosContratoClean.div_ide !== undefined || datosContratoClean.uni_ide !== undefined) {
+      if (datosContratoClean.direccion_id !== undefined || datosContratoClean.division_id !== undefined || datosContratoClean.unidad_id !== undefined) {
          // Re-calculamos jerarquía
          const jerarquia = await this._validarJerarquia(
-            datosContratoClean.dir_ide,
-            datosContratoClean.div_ide,
-            datosContratoClean.uni_ide
+            datosContratoClean.direccion_id,
+            datosContratoClean.division_id,
+            datosContratoClean.unidad_id
          )
          datosContratoClean = { ...datosContratoClean, ...jerarquia }
       }
@@ -206,39 +206,39 @@ export class FuncionarioService {
     return await FuncionarioModel.delete(id)
   }
 
-  static async asignarEncargo (fun_ide, datos) {
+  static async asignarEncargo (empleado_id, datos) {
     // 1. Validar que el funcionario exista
-    const funcionario = await FuncionarioModel.getById(fun_ide, false)
+    const funcionario = await FuncionarioModel.getById(empleado_id, false)
     if (!funcionario) throw new Error('Funcionario no encontrado')
 
     // 2. Validar datos mínimos del encargo
-    if (!datos.cet_ide || !datos.enc_ini || !datos.niv_ide) {
+    if (!datos.cargo_cet_id || !datos.fecha_inicio || !datos.nivel_salarial_id) {
       throw new Error('Faltan datos del encargo (Cargo, Fecha Inicio o Nivel Salarial)')
     }
 
     // 3. Validar Jerarquía del Encargo
     // Asumimos que para un encargo deben decir al menos la unidad (o dirección)
     // Usamos el mismo helper _validarJerarquia
-    const jerarquia = await this._validarJerarquia(datos.dir_ide, datos.div_ide, datos.uni_ide)
+    const jerarquia = await this._validarJerarquia(datos.direccion_id, datos.division_id, datos.unidad_id)
     
     // Si la jerarquía retorna nulls puros, lanzamos error (un encargo debe tener sitio)
-    if (!jerarquia.dir_ide) {
+    if (!jerarquia.direccion_id) {
       throw new Error('Debe especificar la ubicación (Unidad o Dirección) del encargo')
     }
 
     // 4. Construir payload
     const payload = {
-      fun_ide,
+      empleado_id,
       ...datos,
-      ...jerarquia, // dir_ide, div_ide, uni_ide corregidos
-      enc_est: 1 // Forzamos estatus activo
+      ...jerarquia, // direccion_id, division_id, unidad_id corregidos
+      estatus_encargo: 1 // Forzamos estatus activo
     }
 
     return await FuncionarioModel.createEncargo(payload)
   }
 
-  static async finalizarEncargo (fun_ide) {
-    const afectado = await FuncionarioModel.deactivateEncargo(fun_ide)
+  static async finalizarEncargo (empleado_id) {
+    const afectado = await FuncionarioModel.deactivateEncargo(empleado_id)
     if (!afectado) throw new Error('El funcionario no tiene encargos activos para finalizar.')
     return true
   }

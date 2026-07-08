@@ -74,7 +74,7 @@ export const eliminarFuncionario = async (req, res) => {
 
 export const asignarEncargo = async (req, res) => {
   try {
-    const { id } = req.params // fun_ide viene en la URL
+    const { id } = req.params // empleado_id viene en la URL
     // Pasamos el ID y el body con los datos del encargo (cargo, fechas, ubicación)
     const nuevoId = await FuncionarioService.asignarEncargo(id, req.body)
     res.status(201).json({ 
@@ -90,7 +90,7 @@ export const asignarEncargo = async (req, res) => {
 
 export const finalizarEncargo = async (req, res) => {
   try {
-    const { id } = req.params // fun_ide
+    const { id } = req.params // empleado_id
     await FuncionarioService.finalizarEncargo(id)
     res.json({ 
       success: true, 

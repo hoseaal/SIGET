@@ -6,28 +6,28 @@ import bcrypt from 'bcrypt'
 export class UserModel {
   static async findByUsername (username) {
     const [users] = await pool.query(
-      'SELECT * FROM tesusu WHERE usu_usu = ?',
+      'SELECT * FROM usuarios WHERE username = ?',
       [username]
     )
     return users[0] || null
   }
 
-  static async create ({ ced, password1, usu_usu, nombre, ape, usu_tip, usu_mod }) {
+  static async create ({ ced, password1, username, nombre, ape, rol_id, modulo_id }) {
     const salt = bcrypt.genSaltSync(12)
     const hash = bcrypt.hashSync(password1, salt.replace(/^\$2a\$/, '$2y$'))
 
     // eslint-disable-next-line no-unused-vars
     const [result] = await pool.query(
-      `INSERT INTO tesusu 
-       (usu_usu, usu_con, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced) 
+      `INSERT INTO usuarios 
+       (username, password_hash, nombres, apellidos, rol_id, modulo_id, cedula_referencia) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [usu_usu, hash, nombre, ape, usu_tip, usu_mod, ced]
+      [username, hash, nombre, ape, rol_id, modulo_id, ced]
     )
 
     return {
-      usu_nom: nombre,
-      usu_ape: ape,
-      usu_tip
+      nombres: nombre,
+      apellidos: ape,
+      rol_id
     }
   }
 
@@ -36,7 +36,7 @@ export class UserModel {
    */
   static async getAll () {
     const [users] = await pool.query(
-      'SELECT usu_ide, usu_usu, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced FROM tesusu'
+      'SELECT usuario_id, username, nombres, apellidos, rol_id, modulo_id, cedula_referencia FROM usuarios'
     )
     return users
   }
@@ -46,7 +46,7 @@ export class UserModel {
    */
   static async getById (id) {
     const [user] = await pool.query(
-      'SELECT usu_ide, usu_usu, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced FROM tesusu WHERE usu_ide = ?',
+      'SELECT usuario_id, username, nombres, apellidos, rol_id, modulo_id, cedula_referencia FROM usuarios WHERE usuario_id = ?',
       [id]
     )
     return user[0] || null
@@ -55,17 +55,17 @@ export class UserModel {
   /**
    * Actualiza los datos de un usuario (excepto la contraseña).
    */
-  static async update (id, { usu_usu, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced }) {
+  static async update (id, { username, nombres, apellidos, rol_id, modulo_id, cedula_referencia }) {
     const [result] = await pool.query(
-      `UPDATE tesusu SET 
-        usu_usu = ?,
-        usu_nom = ?, 
-        usu_ape = ?, 
-        usu_tip = ?, 
-        usu_mod = ?, 
-        nom_ced = ? 
-      WHERE usu_ide = ?`,
-      [usu_usu, usu_nom, usu_ape, usu_tip, usu_mod, nom_ced, id]
+      `UPDATE usuarios SET 
+        username = ?,
+        nombres = ?, 
+        apellidos = ?, 
+        rol_id = ?, 
+        modulo_id = ?, 
+        cedula_referencia = ? 
+      WHERE usuario_id = ?`,
+      [username, nombres, apellidos, rol_id, modulo_id, cedula_referencia, id]
     )
     return result.affectedRows > 0
   }
@@ -78,7 +78,7 @@ export class UserModel {
     const hash = bcrypt.hashSync(password, salt.replace(/^\$2a\$/, '$2y$'))
 
     const [result] = await pool.query(
-      'UPDATE tesusu SET usu_con = ? WHERE usu_ide = ?',
+      'UPDATE usuarios SET password_hash = ? WHERE usuario_id = ?',
       [hash, id]
     )
     return result.affectedRows > 0
@@ -89,7 +89,7 @@ export class UserModel {
    */
   static async delete (id) {
     const [result] = await pool.query(
-      'DELETE FROM tesusu WHERE usu_ide = ?',
+      'DELETE FROM usuarios WHERE usuario_id = ?',
       [id]
     )
     return result.affectedRows > 0

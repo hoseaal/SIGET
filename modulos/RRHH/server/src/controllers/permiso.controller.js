@@ -2,15 +2,15 @@ import { PermisoService } from '../services/permiso.service.js'
 
 /**
  * Obtiene el historial de permisos de un funcionario.
- * @param {number} req.params.fun_ide - ID del funcionario.
+ * @param {number} req.params.empleado_id - ID del funcionario.
  * @param {string} [req.query.estado] - Opcional: '0' (Pendiente), '1' (Aprobado).
  */
 export const obtenerPermisosPorFuncionario = async (req, res) => {
   try {
-    const { fun_ide } = req.params
+    const { empleado_id } = req.params
     const { estado } = req.query // Filtro opcional
     
-    const permisos = await PermisoService.obtenerPorFuncionario(fun_ide, estado)
+    const permisos = await PermisoService.obtenerPorFuncionario(empleado_id, estado)
     res.json(permisos)
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -52,8 +52,8 @@ export const actualizarPermiso = async (req, res) => {
 export const cambiarEstadoAprobacion = async (req, res) => {
   try {
     const { id } = req.params
-    const { per_apr } = req.body
-    const resultado = await PermisoService.cambiarEstado(id, per_apr)
+    const { esta_aprobado } = req.body
+    const resultado = await PermisoService.cambiarEstado(id, esta_aprobado)
     res.json({ success: true, message: 'Estado de aprobación actualizado.' })
   } catch (error) {
     res.status(400).json({ error: error.message })

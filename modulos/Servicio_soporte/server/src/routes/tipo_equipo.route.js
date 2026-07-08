@@ -1,0 +1,12 @@
+import express from 'express'
+import { getAll, getById, create, update, remove } from '../controllers/tipo_equipo.controller.js'
+
+const router = express.Router()
+
+router.get('/', getAll)
+router.get('/:id', getById)
+router.post('/', create)
+router.patch('/:id', update)
+router.delete('/:id', remove)
+
+export default router

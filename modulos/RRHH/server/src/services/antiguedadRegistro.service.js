@@ -2,18 +2,18 @@ import { AntiguedadRegistroModel } from '../models/antiguedadRegistro.model.js'
 
 export class AntiguedadRegistroService {
   
-  static async obtenerPorFuncionario (fun_ide) {
-    if (!fun_ide) throw new Error('ID del funcionario requerido')
+  static async obtenerPorFuncionario (empleado_id) {
+    if (!empleado_id) throw new Error('ID del funcionario requerido')
     
     // Obtenemos los registros con el cálculo individual
-    const historial = await AntiguedadRegistroModel.getByFuncionarioId(fun_ide)
+    const historial = await AntiguedadRegistroModel.getByFuncionarioId(empleado_id)
     
     // Calculamos el total sumando la columna 'anios' que viene del SQL
     // Nota: Number() asegura que sumemos números
     const totalAnios = historial.reduce((acc, curr) => acc + Number(curr.anios), 0)
 
     return {
-      funcionario_id: fun_ide,
+      funcionario_id: empleado_id,
       total_anios_acumulados: totalAnios,
       historial
     }
@@ -26,8 +26,8 @@ export class AntiguedadRegistroService {
   }
 
   static async crear (datos) {
-    if (!datos.fun_ide) throw new Error('El ID del funcionario es requerido')
-    if (!datos.ant_fin) throw new Error('La fecha de inicio (ant_fin) es requerida')
+    if (!datos.empleado_id) throw new Error('El ID del funcionario es requerido')
+    if (!datos.fecha_inicio) throw new Error('La fecha de inicio (fecha_inicio) es requerida')
 
     return await AntiguedadRegistroModel.create(datos)
   }

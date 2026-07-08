@@ -4,33 +4,33 @@ import pool from '../utils/database.js'
 
 export class UnidadModel {
   static async getAll () {
-    const [rows] = await pool.query('SELECT * FROM tesuni')
+    const [rows] = await pool.query('SELECT * FROM unidades')
     return rows
   }
 
   static async getById (id) {
-    const [rows] = await pool.query('SELECT * FROM tesuni WHERE uni_ide = ?', [id])
+    const [rows] = await pool.query('SELECT * FROM unidades WHERE unidad_id = ?', [id])
     return rows[0] || null
   }
 
-  static async create ({ uni_nom, div_ide }) {
+  static async create ({ nombre, division_id }) {
     const [result] = await pool.query(
-      'INSERT INTO tesuni (uni_nom, div_ide) VALUES (?, ?)',
-      [uni_nom, div_ide]
+      'INSERT INTO unidades (nombre, division_id) VALUES (?, ?)',
+      [nombre, division_id]
     )
-    return { uni_ide: result.insertId, uni_nom, div_ide }
+    return { unidad_id: result.insertId, nombre, division_id }
   }
 
-  static async update (id, { uni_nom, div_ide }) {
+  static async update (id, { nombre, division_id }) {
     const [result] = await pool.query(
-      'UPDATE tesuni SET uni_nom = ?, div_ide = ? WHERE uni_ide = ?',
-      [uni_nom, div_ide, id]
+      'UPDATE unidades SET nombre = ?, division_id = ? WHERE unidad_id = ?',
+      [nombre, division_id, id]
     )
     return result.affectedRows > 0
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tesuni WHERE uni_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM unidades WHERE unidad_id = ?', [id])
     return result.affectedRows > 0
   }
 }

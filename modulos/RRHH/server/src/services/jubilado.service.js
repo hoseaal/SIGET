@@ -14,12 +14,12 @@ export class JubiladoService {
 
   static async crear (datos) {
     // Validaciones
-    if (!datos.fun_ide) throw new Error('El ID del funcionario es requerido')
-    if (!datos.jub_por) throw new Error('El porcentaje de jubilación es requerido')
-    if (!datos.jub_fju) throw new Error('La fecha de jubilación es requerida')
+    if (!datos.empleado_id) throw new Error('El ID del funcionario es requerido')
+    if (!datos.porcentaje_jubilacion) throw new Error('El porcentaje de jubilación es requerido')
+    if (!datos.fecha_efectiva) throw new Error('La fecha de jubilación es requerida')
 
     // Validar rango lógico del porcentaje
-    if (datos.jub_por < 1 || datos.jub_por > 100) {
+    if (datos.porcentaje_jubilacion < 1 || datos.porcentaje_jubilacion > 100) {
       throw new Error('El porcentaje debe estar entre 1 y 100')
     }
 

@@ -13,7 +13,7 @@ const foreignKeyEndpoints = {
     'mar_ide': '/api/marcas',
     'cae_ide': '/api/categorias',
     'com_ide': '/api/conceptos-movimiento',
-    'est_ide': '/api/estados-uso'
+    'estatus_id': '/api/estados-uso'
 };
 
 // Campos editables
@@ -25,7 +25,7 @@ const editableFields = {
     'bim_color': 'Color',
     'bim_cod': 'Código SUDEBIP',
     'bim_obs': 'Observación',
-    'est_ide': 'Estado del Bien',
+    'estatus_id': 'Estado del Bien',
     'con_ide': 'Condición Física',
     'esu_ide': 'Estado de Uso',
     'mod_ide': 'Modelo',
@@ -43,7 +43,7 @@ const columnAliasBim = {
     'bim_cod': 'Código SUDEBIP',
     'bim_obs': 'Observación',
     'bim_sede': 'Sede',
-    'est_ide': 'Estado del Bien',
+    'estatus_id': 'Estado del Bien',
     'foa_ide': 'Forma de Adquisición',
     'con_ide': 'Condición Física',
     'esu_ide': 'Estado de Uso',
@@ -58,10 +58,10 @@ const columnAliasBim = {
 };
 
 const estadosBien = [
-    { est_ide: 1, est_est: 'Sin etiqueta', badgeClass: 'bg-label-secondary' },
-    { est_ide: 2, est_est: 'Inoperativo', badgeClass: 'bg-label-danger' },
-    { est_ide: 3, est_est: 'Faltante', badgeClass: 'bg-label-warning' },
-    { est_ide: 4, est_est: 'Operativo', badgeClass: 'bg-label-success' }
+    { estatus_id: 1, est_est: 'Sin etiqueta', badgeClass: 'bg-label-secondary' },
+    { estatus_id: 2, est_est: 'Inoperativo', badgeClass: 'bg-label-danger' },
+    { estatus_id: 3, est_est: 'Faltante', badgeClass: 'bg-label-warning' },
+    { estatus_id: 4, est_est: 'Operativo', badgeClass: 'bg-label-success' }
 ];
 
 function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
@@ -239,18 +239,18 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
             'com_ide': bienData?.concepto
         };
 
-        if (fieldName === 'est_ide') {
+        if (fieldName === 'estatus_id') {
             return (
                 <div>
                     <Form.Select
-                        name="est_ide"
-                        value={formData.est_ide || ''}
+                        name="estatus_id"
+                        value={formData.estatus_id || ''}
                         onChange={handleChange}
                         disabled={isDisabled}
                     >
                         <option value="">-- Seleccione estado --</option>
                         {estadosBien.map(estado => (
-                            <option key={estado.est_ide} value={estado.est_ide}>
+                            <option key={estado.estatus_id} value={estado.estatus_id}>
                                 {estado.est_est}
                             </option>
                         ))}
@@ -337,8 +337,8 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
         );
     };
 
-    const getEstadoBadge = (est_ide) => {
-        const estado = estadosBien.find(e => e.est_ide === est_ide);
+    const getEstadoBadge = (estatus_id) => {
+        const estado = estadosBien.find(e => e.estatus_id === estatus_id);
         if (!estado) return null;
         
         return (
@@ -355,9 +355,9 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     <Modal.Title className="w-100"> {/* w-100 para que ocupe todo el ancho */}
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <span>Editar Bien: {bienData?.bim_ide} - {truncateText(bienData?.bim_des)}</span>
-                            {bienData?.est_ide && (
+                            {bienData?.estatus_id && (
                                 <div>
-                                    {getEstadoBadge(formData.est_ide)}
+                                    {getEstadoBadge(formData.estatus_id)}
                                 </div>
                             )}
                         </div>

@@ -98,7 +98,7 @@ function ModalContraseña({ show, handleClose, rowData, idColumn, onSuccess }) {
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
-                <Modal.Title>Actualizar Contraseña de {rowData?.usu_usu || rowData?.usu_nom}</Modal.Title>
+                <Modal.Title>Actualizar Contraseña de {rowData?.username || rowData?.nombres}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form onSubmit={handleSubmit}>

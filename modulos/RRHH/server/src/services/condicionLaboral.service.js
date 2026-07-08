@@ -12,7 +12,7 @@ export class CondicionLaboralService {
   }
 
   static async crear (datos) {
-    if (!datos.col_nom) throw new Error('El nombre de la condición laboral es requerido')
+    if (!datos.nombre) throw new Error('El nombre de la condición laboral es requerido')
     return await CondicionLaboralModel.create(datos)
   }
 
@@ -20,7 +20,7 @@ export class CondicionLaboralService {
     const existe = await CondicionLaboralModel.getById(id)
     if (!existe) throw new Error('Condición laboral no existe')
     
-    if (!datos.col_nom) throw new Error('El nombre es requerido para actualizar')
+    if (!datos.nombre) throw new Error('El nombre es requerido para actualizar')
 
     return await CondicionLaboralModel.update(id, datos)
   }

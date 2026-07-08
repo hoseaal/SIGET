@@ -18,7 +18,7 @@ export const DetailsModal = ({ show, onHide, oldData, newData }) => {
         'bim_cod': 'Código SUDEBIP',
         'bim_obs': 'Observación',
         'bim_sede': 'Sede',
-        'est_ide': 'Estado',
+        'estatus_id': 'Estado',
         'foa_ide': 'Forma Adquisición',
         'con_ide': 'Condición',
         'esu_ide': 'Estado Uso',

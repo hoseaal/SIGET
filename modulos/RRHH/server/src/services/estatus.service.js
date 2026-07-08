@@ -12,7 +12,7 @@ export class EstatusService {
   }
 
   static async crear (datos) {
-    if (!datos.est_nom) throw new Error('El nombre del estatus es requerido')
+    if (!datos.nombre) throw new Error('El nombre del estatus es requerido')
     return await EstatusModel.create(datos)
   }
 
@@ -20,7 +20,7 @@ export class EstatusService {
     const existe = await EstatusModel.getById(id)
     if (!existe) throw new Error('Estatus no existe')
     
-    if (!datos.est_nom) throw new Error('El nombre es requerido para actualizar')
+    if (!datos.nombre) throw new Error('El nombre es requerido para actualizar')
 
     return await EstatusModel.update(id, datos)
   }

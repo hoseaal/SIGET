@@ -38,7 +38,7 @@ export const FuncionariosActivos = () => {
                 
                 if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido.');
                 
-                setUserType(userDataResult.user.usu_tip);
+                setUserType(userDataResult.user.rol_id);
             } catch (error) {
                 console.error('Error fetching user data:', error);
             }
@@ -51,8 +51,8 @@ export const FuncionariosActivos = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                // type=full es necesario para que el backend devuelva "dir_nom" (Dirección)
-                let url = `/api/funcionarios?page=${page}&limit=${limit}&est_ide=1&type=full`;
+                // type=full es necesario para que el backend devuelva "nombre" (Dirección)
+                let url = `/api/funcionarios?page=${page}&limit=${limit}&estatus_id=1&type=full`;
                 
                 if (searchQuery) {
                     url += `&search=${encodeURIComponent(searchQuery)}`;
@@ -159,19 +159,19 @@ export const FuncionariosActivos = () => {
                             <tbody className="table-border-bottom-0">
                                 {data.length > 0 ? (
                                     data.map((item) => (
-                                        <tr key={item.fun_ide}>
-                                            <td><span className="fw-semibold">{item.fun_ced}</span></td>
-                                            <td>{item.fun_nom}</td>
-                                            <td>{item.fun_ape}</td>
+                                        <tr key={item.empleado_id}>
+                                            <td><span className="fw-semibold">{item.cedula}</span></td>
+                                            <td>{item.nombres}</td>
+                                            <td>{item.apellidos}</td>
                                             <td>
                                                 {/* Mostramos la dirección del encargo si lo tiene, sino la base */}
-                                                {item.enc_direccion || item.dir_nom || (
+                                                {item.enc_direccion || item.nombre || (
                                                     <span className="text-muted fst-italic">Sin asignar</span>
                                                 )}
                                             </td>
                                             <td>
                                                 <Dropdown>
-                                                    <Dropdown.Toggle variant="secondary" id={`dropdown-${item.fun_ide}`} className="nav-dropdown-dark-example btn-sm">
+                                                    <Dropdown.Toggle variant="secondary" id={`dropdown-${item.empleado_id}`} className="nav-dropdown-dark-example btn-sm">
                                                         <i className="bx bx-dots-vertical-rounded"></i>
                                                     </Dropdown.Toggle>
                                                     <Dropdown.Menu>
@@ -237,7 +237,7 @@ export const FuncionariosActivos = () => {
                 <ModalAntiguedades
                 show={showAnt}
                 handleClose={() => setShowAnt(false)}
-                fun_ide={antItem?.fun_ide}
+                empleado_id={antItem?.empleado_id}
             />
             </div>
 

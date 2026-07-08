@@ -6,10 +6,10 @@ export class JubiladoModel {
   static async getAll () {
     // Traemos datos del funcionario para mostrar nombres en la lista
     const sql = `
-      SELECT j.*, f.fun_nom, f.fun_ape, f.fun_ced, f.est_ide
-      FROM tesjub j
-      JOIN tmafun f ON j.fun_ide = f.fun_ide
-      ORDER BY j.jub_fju DESC
+      SELECT j.*, f.nombres, f.apellidos, f.cedula, f.estatus_id
+      FROM jubilados j
+      JOIN empleados f ON j.empleado_id = f.empleado_id
+      ORDER BY j.fecha_efectiva DESC
     `
     const [rows] = await pool.query(sql)
     return rows
@@ -17,10 +17,10 @@ export class JubiladoModel {
 
   static async getById (id) {
     const sql = `
-      SELECT j.*, f.fun_nom, f.fun_ape, f.fun_ced
-      FROM tesjub j
-      JOIN tmafun f ON j.fun_ide = f.fun_ide
-      WHERE j.jub_ide = ?
+      SELECT j.*, f.nombres, f.apellidos, f.cedula
+      FROM jubilados j
+      JOIN empleados f ON j.empleado_id = f.empleado_id
+      WHERE j.jubilado_id = ?
     `
     const [rows] = await pool.query(sql, [id])
     return rows[0] || null
@@ -28,11 +28,11 @@ export class JubiladoModel {
 
   /**
    * TRANSACCIÓN DE JUBILACIÓN
-   * 1. Inserta en tesjub
-   * 2. Actualiza tmafun (est_ide = 3)
+   * 1. Inserta en jubilados
+   * 2. Actualiza empleados (estatus_id = 3)
    */
   static async createTransactional (data) {
-    const { fun_ide, jub_por, jub_fju } = data
+    const { empleado_id, porcentaje_jubilacion, fecha_efectiva } = data
     const connection = await pool.getConnection()
     
     try {
@@ -40,19 +40,19 @@ export class JubiladoModel {
 
       // PASO 1: Insertar registro de jubilado
       const [resJub] = await connection.query(
-        'INSERT INTO tesjub (fun_ide, jub_por, jub_fju) VALUES (?, ?, ?)',
-        [fun_ide, jub_por, jub_fju]
+        'INSERT INTO jubilados (empleado_id, porcentaje_jubilacion, fecha_efectiva) VALUES (?, ?, ?)',
+        [empleado_id, porcentaje_jubilacion, fecha_efectiva]
       )
 
       // PASO 2: Actualizar estatus del funcionario a 3 (Jubilado)
-      // Asumimos que 3 es el ID para "Jubilado" en tmaest
+      // Asumimos que 3 es el ID para "Jubilado" en estatus_funcionarios
       await connection.query(
-        'UPDATE tmafun SET est_ide = 3 WHERE fun_ide = ?',
-        [fun_ide]
+        'UPDATE empleados SET estatus_id = 3 WHERE empleado_id = ?',
+        [empleado_id]
       )
 
       await connection.commit()
-      return { jub_ide: resJub.insertId, ...data, estatus_nuevo: 3 }
+      return { jubilado_id: resJub.insertId, ...data, estatus_nuevo: 3 }
 
     } catch (error) {
       await connection.rollback()
@@ -63,12 +63,12 @@ export class JubiladoModel {
   }
 
   static async update (id, data) {
-    const [result] = await pool.query('UPDATE tesjub SET ? WHERE jub_ide = ?', [data, id])
+    const [result] = await pool.query('UPDATE jubilados SET ? WHERE jubilado_id = ?', [data, id])
     return result.affectedRows > 0
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tesjub WHERE jub_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM jubilados WHERE jubilado_id = ?', [id])
     return result.affectedRows > 0
   }
 }

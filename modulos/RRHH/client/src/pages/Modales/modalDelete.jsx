@@ -18,9 +18,9 @@ function ModalDelete({
 
 
 const endpointMap = {
-        tmadir: '/api/direcciones',
-        tesdiv: '/api/divisiones',
-        tesuni: '/api/unidades',
+        direcciones: '/api/direcciones',
+        divisiones: '/api/divisiones',
+        unidades: '/api/unidades',
     };
 
     const [userType, setUserType] = useState(null);
@@ -33,7 +33,7 @@ const endpointMap = {
                     const userDataResult = await userRes.json();
                     if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
                     
-                    const currentUserType = userDataResult.user.usu_tip;
+                    const currentUserType = userDataResult.user.rol_id;
                     setUserType(currentUserType);
                     setUserData(userDataResult.user)
                 } catch (error) {
@@ -50,8 +50,8 @@ const endpointMap = {
         setIsDeleting(true);
 
         try {
-            if (tableName === 'tesusu'){
-                if(userData?.usu_ide === rowId) {
+            if (tableName === 'usuarios'){
+                if(userData?.usuario_id === rowId) {
                 throw new Error ('No Puedes Eliminarte a ti mismo')
             }
             }

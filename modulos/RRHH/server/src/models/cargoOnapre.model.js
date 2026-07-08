@@ -3,33 +3,33 @@ import pool from '../utils/database.js'
 
 export class CargoOnapreModel {
   static async getAll () {
-    const [rows] = await pool.query('SELECT * FROM tmaona')
+    const [rows] = await pool.query('SELECT * FROM cargos_onapre')
     return rows
   }
 
   static async getById (id) {
-    const [rows] = await pool.query('SELECT * FROM tmaona WHERE ona_ide = ?', [id])
+    const [rows] = await pool.query('SELECT * FROM cargos_onapre WHERE cargo_onapre_id = ?', [id])
     return rows[0] || null
   }
 
-  static async create ({ ona_nom }) {
+  static async create ({ nombre }) {
     const [result] = await pool.query(
-      'INSERT INTO tmaona (ona_nom) VALUES (?)',
-      [ona_nom]
+      'INSERT INTO cargos_onapre (nombre) VALUES (?)',
+      [nombre]
     )
-    return { ona_ide: result.insertId, ona_nom }
+    return { cargo_onapre_id: result.insertId, nombre }
   }
 
-  static async update (id, { ona_nom }) {
+  static async update (id, { nombre }) {
     const [result] = await pool.query(
-      'UPDATE tmaona SET ona_nom = ? WHERE ona_ide = ?',
-      [ona_nom, id]
+      'UPDATE cargos_onapre SET nombre = ? WHERE cargo_onapre_id = ?',
+      [nombre, id]
     )
     return result.affectedRows > 0
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tmaona WHERE ona_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM cargos_onapre WHERE cargo_onapre_id = ?', [id])
     return result.affectedRows > 0
   }
 }

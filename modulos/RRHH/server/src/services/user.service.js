@@ -18,7 +18,7 @@ export class UserService {
     if (!existe) throw new Error('Usuario no encontrado para actualizar')
 
     // Validaciones básicas
-    if (!datos.usu_nom || !datos.usu_ape || !datos.usu_tip) {
+    if (!datos.nombres || !datos.apellidos || !datos.rol_id) {
       throw new Error('Nombre, apellido y tipo de usuario son requeridos.')
     }
 

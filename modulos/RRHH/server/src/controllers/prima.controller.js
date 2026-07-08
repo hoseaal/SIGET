@@ -15,7 +15,7 @@ export const obtenerPrimas = async (req, res) => {
 
 /**
  * Busca una prima específica por su ID.
- * @param {number} req.params.id - Identificador único (pri_ide).
+ * @param {number} req.params.id - Identificador único (prima_id).
  * @returns {Promise<object>} Objeto con los datos de la prima.
  */
 export const obtenerPrima = async (req, res) => {
@@ -31,8 +31,8 @@ export const obtenerPrima = async (req, res) => {
 /**
  * Registra una nueva prima en el sistema.
  * @param {object} req.body - Datos de la prima.
- * @param {string} req.body.pri_nom - Nombre de la prima (Ej: "Prima por Hijos").
- * @param {number} req.body.pri_por - Porcentaje asignado (Ej: 12.50).
+ * @param {string} req.body.nombre - Nombre de la prima (Ej: "Prima por Hijos").
+ * @param {number} req.body.porcentaje - Porcentaje asignado (Ej: 12.50).
  * @returns {Promise<object>} La prima creada.
  */
 export const crearPrima = async (req, res) => {
@@ -48,8 +48,8 @@ export const crearPrima = async (req, res) => {
  * Actualiza los datos de una prima existente.
  * @param {number} req.params.id - ID de la prima a modificar.
  * @param {object} req.body - Datos nuevos.
- * @param {string} req.body.pri_nom - Nuevo nombre.
- * @param {number} req.body.pri_por - Nuevo porcentaje.
+ * @param {string} req.body.nombre - Nuevo nombre.
+ * @param {number} req.body.porcentaje - Nuevo porcentaje.
  * @returns {Promise<object>} Confirmación de éxito.
  */
 export const actualizarPrima = async (req, res) => {

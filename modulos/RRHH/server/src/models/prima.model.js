@@ -3,33 +3,33 @@ import pool from '../utils/database.js'
 
 export class PrimaModel {
   static async getAll () {
-    const [rows] = await pool.query('SELECT * FROM tmapri')
+    const [rows] = await pool.query('SELECT * FROM primas_generales')
     return rows
   }
 
   static async getById (id) {
-    const [rows] = await pool.query('SELECT * FROM tmapri WHERE pri_ide = ?', [id])
+    const [rows] = await pool.query('SELECT * FROM primas_generales WHERE prima_id = ?', [id])
     return rows[0] || null
   }
 
-  static async create ({ pri_nom, pri_por }) {
+  static async create ({ nombre, porcentaje }) {
     const [result] = await pool.query(
-      'INSERT INTO tmapri (pri_nom, pri_por) VALUES (?, ?)',
-      [pri_nom, pri_por]
+      'INSERT INTO primas_generales (nombre, porcentaje) VALUES (?, ?)',
+      [nombre, porcentaje]
     )
-    return { pri_ide: result.insertId, pri_nom, pri_por }
+    return { prima_id: result.insertId, nombre, porcentaje }
   }
 
-  static async update (id, { pri_nom, pri_por }) {
+  static async update (id, { nombre, porcentaje }) {
     const [result] = await pool.query(
-      'UPDATE tmapri SET pri_nom = ?, pri_por = ? WHERE pri_ide = ?',
-      [pri_nom, pri_por, id]
+      'UPDATE primas_generales SET nombre = ?, porcentaje = ? WHERE prima_id = ?',
+      [nombre, porcentaje, id]
     )
     return result.affectedRows > 0
   }
 
   static async delete (id) {
-    const [result] = await pool.query('DELETE FROM tmapri WHERE pri_ide = ?', [id])
+    const [result] = await pool.query('DELETE FROM primas_generales WHERE prima_id = ?', [id])
     return result.affectedRows > 0
   }
 }

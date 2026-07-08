@@ -12,17 +12,17 @@ export class AuthService {
     const user = await UserModel.findByUsername(ci)
     if (!user) throw new Error('Usuario incorrecto')
 
-    const hash = user.usu_con.replace(/^\$2y\$/, '$2a$')
+    const hash = user.password_hash.replace(/^\$2y\$/, '$2a$')
     const isValid = await bcrypt.compare(password, hash)
     if (!isValid) throw new Error('Contraseña incorrecta')
-    const modulo = user.usu_mod
+    const modulo = user.modulo_id
     if (modulo === 2) throw new Error('No tienes acceso a este modulo del sistema SIGET')
     const token = jwt.sign(
       {
-        usu_ide: user.usu_ide,
-        usu_nom: user.usu_nom,
-        usu_ape: user.usu_ape,
-        usu_tip: user.usu_tip
+        usuario_id: user.usuario_id,
+        nombres: user.nombres,
+        apellidos: user.apellidos,
+        rol_id: user.rol_id
       },
       process.env.SECRET_KEY,
       { expiresIn: '6h' }
@@ -31,16 +31,16 @@ export class AuthService {
     return {
       token,
       user: {
-        usu_ide: user.usu_ide,
-        usu_nom: user.usu_nom,
-        usu_ape: user.usu_ape,
-        usu_tip: user.usu_tip
+        usuario_id: user.usuario_id,
+        nombres: user.nombres,
+        apellidos: user.apellidos,
+        rol_id: user.rol_id
       }
     }
   }
 
   static async register (userData) {
-    Validaciones.username(userData.usu_usu)
+    Validaciones.username(userData.username)
     Validaciones.password(userData.password1)
     return await UserModel.create(userData)
   }
