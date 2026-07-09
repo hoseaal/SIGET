@@ -37,7 +37,7 @@ const Sidebar = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                const userRes = await fetch('/api/sp/auth/verify-auth', { credentials: 'include' });
                 if (!userRes.ok) throw new Error('No autorizado.');
                 const userDataResult = await userRes.json();
                 if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');

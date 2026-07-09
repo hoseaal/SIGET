@@ -97,7 +97,7 @@ export const ControlRedPage = () => {
         try {
             setLoadingPuntos(true);
             // Usamos un fetch estándar porque helpFetch.POST por defecto serializa a JSON
-            const response = await fetch("/api/croquis", {
+            const response = await fetch("/api/sp/croquis", {
                 method: "POST",
                 body: formData,
             });

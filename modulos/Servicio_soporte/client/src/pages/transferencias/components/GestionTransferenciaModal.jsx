@@ -79,7 +79,7 @@ export const GestionTransferenciaModal = ({ show, onHide, onSuccess, transferenc
             setFetchingInitial(true);
             setFetchingEquipo(true);
             const [userRes, typesRes, equiposRes] = await Promise.all([
-                fetch('/api/auth/verify-auth', { credentials: 'include' }),
+                fetch('/api/sp/auth/verify-auth', { credentials: 'include' }),
                 helpFetch.GET('/tipo_act'),
                 helpFetch.GET('/equipo')
             ]);

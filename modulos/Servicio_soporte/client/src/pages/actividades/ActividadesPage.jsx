@@ -108,7 +108,7 @@ export const ActividadesPage = () => {
         try {
             setLoading(true);
             const [userRes, data, deps] = await Promise.all([
-                fetch('/api/auth/verify-auth', { credentials: 'include' }),
+                fetch('/api/sp/auth/verify-auth', { credentials: 'include' }),
                 helpFetch.GET("/actividades"),
                 helpFetch.GET("/departamento")
             ]);

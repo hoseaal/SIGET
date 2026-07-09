@@ -1,5 +1,5 @@
 export const getTableMetadata = async (tableName) => {
-  const res = await fetch(`/api/meta/table-metadata?table=${tableName}`, {
+  const res = await fetch(`/api/sp/meta/table-metadata?table=${tableName}`, {
     credentials: 'include'
   });
 

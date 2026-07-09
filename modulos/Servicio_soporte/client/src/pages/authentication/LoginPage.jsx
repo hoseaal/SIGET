@@ -30,7 +30,7 @@ export const LoginPage = () => {
 
     const onSubmit = async (data) => {
         try {
-            const res = await fetch('/api/auth/login', {
+            const res = await fetch('/api/sp/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

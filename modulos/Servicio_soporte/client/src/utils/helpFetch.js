@@ -6,7 +6,7 @@
 
 // Config global (como tu .env)
 const API_CONFIG = {
-  baseURL: '/api',
+  baseURL: '/api/sp',
   credentials: 'include',
   timeout: 10000,
   retries: 2

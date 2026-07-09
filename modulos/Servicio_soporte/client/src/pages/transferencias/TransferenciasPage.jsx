@@ -33,7 +33,7 @@ export const TransferenciasPage = () => {
             setLoading(true);
 
             // 1. Verificar usuario para filtrar por su departamento
-            const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+            const userRes = await fetch('/api/sp/auth/verify-auth', { credentials: 'include' });
             const userData = await userRes.json();
 
             if (userData.success) {
