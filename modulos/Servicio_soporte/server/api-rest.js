@@ -74,7 +74,7 @@ app.use('/api/croquis', croquis)
 app.use('/api/puntos_red_posicion', puntos_red_posicion)
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')))
 
-const PORT = 5002
+const PORT = 5003
 app.listen(PORT, () => {
   console.log(`🚀 Servidor en http://localhost:${PORT}`)
 })
