@@ -47,6 +47,7 @@ export class TransferenciaModel {
             SELECT 
                 t.*, 
                 s.nombre as status_nombre,
+                d_orig.nombre as origen_nombre,
                 d_dest.nombre as destino_nombre,
                 e.nro_bien as equipo_nro_bien,
                 te.nombre as equipo_tipo,
@@ -56,6 +57,7 @@ export class TransferenciaModel {
                 t.tipo_act
             FROM transferencia t
             JOIN status s ON t.status = s.id
+            JOIN departamentos d_orig ON t.origen_id = d_orig.id
             JOIN departamentos d_dest ON t.destino_id = d_dest.id
             JOIN equipos e ON t.equipo_id = e.id
             JOIN tipo_equipo te ON e.tipo_equipo = te.id

@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        const res = await fetch('/api/auth/verify-auth', {
+        const res = await fetch('/api/sp/auth/verify-auth', {
           method: 'GET',
           credentials: 'include',
         });

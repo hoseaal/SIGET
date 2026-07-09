@@ -206,5 +206,5 @@ export const exportMensualPDF = async (reportData, monthLabel, year, actividades
     }
 
     // ── 7. Guardar ───────────────────────────────────────────────────────────
-    window.open(doc.output('bloburl'), '_blank');
+    doc.save(`Reporte_Mensual_${monthLabel}_${year}.pdf`);
 };

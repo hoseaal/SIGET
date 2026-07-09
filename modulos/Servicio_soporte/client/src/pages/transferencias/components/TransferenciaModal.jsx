@@ -64,7 +64,7 @@ export const TransferenciaModal = ({ show, onHide, onSuccess }) => {
             setInitialLoading(true);
 
             // 1. Verificar usuario
-            const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+            const userRes = await fetch('/api/sp/auth/verify-auth', { credentials: 'include' });
             const userData = await userRes.json();
 
             if (!userData.success) {

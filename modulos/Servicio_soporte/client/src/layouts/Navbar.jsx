@@ -21,7 +21,7 @@ const Navbar = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await fetch('/api/auth/verify-auth', {
+        const res = await fetch('/api/sp/auth/verify-auth', {
           method: 'GET',
           credentials: 'include'
         });
@@ -51,7 +51,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch('/api/auth/logout', {
+      const res = await fetch('/api/sp/auth/logout', {
         method: 'POST',
         credentials: 'include'
       });

@@ -9,7 +9,7 @@ export const createEquipoSchema = z.object({
     tipo_equipo: z.string().or(z.number()),
     direc_id: z.string().or(z.number()),
     marca_id: z.string().or(z.number()),
-    pp_pared: z.string().or(z.number()),
+    pp_pared: z.string().or(z.number()).optional().nullable(),
     modelo_id: z.string().or(z.number()).optional().nullable(),
     ip: z.string()
       .regex(ipv4Regex, "La dirección IP debe tener un formato IPv4 válido (ej. 192.168.1.50)")

@@ -31,7 +31,7 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+            const userRes = await fetch('/api/sp/auth/verify-auth', { credentials: 'include' });
             const userData = await userRes.json();
 
             if (userData.success) {

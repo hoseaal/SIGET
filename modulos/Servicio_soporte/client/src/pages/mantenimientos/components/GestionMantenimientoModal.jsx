@@ -68,7 +68,7 @@ export const GestionMantenimientoModal = ({ show, onHide, onSuccess, mantenimien
         try {
             setFetchingEquipo(true);
             const [userRes, typesRes, equiposRes] = await Promise.all([
-                fetch('/api/auth/verify-auth', { credentials: 'include' }),
+                fetch('/api/sp/auth/verify-auth', { credentials: 'include' }),
                 helpFetch.GET('/tipo_act'),
                 helpFetch.GET('/equipo')
             ]);
