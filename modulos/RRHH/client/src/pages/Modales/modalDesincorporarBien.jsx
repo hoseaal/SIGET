@@ -56,7 +56,7 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
     useEffect(() => {
         const fetchConceptosMov = async () => {
             try {
-                const conceptosMovRes = await fetch('/api/conceptos-movimiento');
+                const conceptosMovRes = await fetch('/api/rrhh/conceptos-movimiento');
                 const conceptosMovData = await conceptosMovRes.json();
                 setConceptoMov(conceptosMovData);
             } catch (error) {
@@ -100,7 +100,7 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
         setLoading(true);
         setMensaje('');
         try {
-            const response = await fetch(`/api/bienes/${id}`);
+            const response = await fetch(`/api/rrhh/bienes/${id}`);
             if (!response.ok) {
                 throw new Error('No se pudo encontrar el bien con el código proporcionado.');
             }
@@ -131,7 +131,7 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
         setMensaje('');
 
         try {
-            const response = await fetch(`/api/bienes/${bienData.bim_ide}/desincorporar`, {
+            const response = await fetch(`/api/rrhh/bienes/${bienData.bim_ide}/desincorporar`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -199,7 +199,7 @@ function ModalDesincorporarBien({ show, handleClose, BienId, onSuccess }) {
                 nombreFuncionarioElabora
             };
 
-            const response = await fetch('/api/pdf/acta-desincorporacion', {
+            const response = await fetch('/api/rrhh/pdf/acta-desincorporacion', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

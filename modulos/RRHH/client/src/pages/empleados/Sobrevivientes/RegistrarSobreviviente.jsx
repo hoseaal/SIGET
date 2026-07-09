@@ -71,14 +71,14 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
         const fetchCatalogos = async () => {
             try {
                 const [proRes, primasProfRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes] = await Promise.all([
-                    fetch('/api/profesiones'),
-                    fetch('/api/primas-profesionalizacion'),
-                    fetch('/api/cargos-cet'),
-                    fetch('/api/cargos-onapre'),
-                    fetch('/api/direcciones'),
-                    fetch('/api/condiciones-laborales'),
-                    fetch('/api/divisiones'),
-                    fetch('/api/unidades'),
+                    fetch('/api/rrhh/profesiones'),
+                    fetch('/api/rrhh/primas-profesionalizacion'),
+                    fetch('/api/rrhh/cargos-cet'),
+                    fetch('/api/rrhh/cargos-onapre'),
+                    fetch('/api/rrhh/direcciones'),
+                    fetch('/api/rrhh/condiciones-laborales'),
+                    fetch('/api/rrhh/divisiones'),
+                    fetch('/api/rrhh/unidades'),
                 ]);
 
                 const [profesiones, primasProfesionales, cargosCET, cargosONAPRE, direcciones, condicionesLaborales, divisiones, unidades] = await Promise.all([
@@ -114,7 +114,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                 return;
             }
             try {
-                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
+                const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
                 const nivelesData = await res.json();
                 const data = nivelesData.success ? nivelesData.data : nivelesData;
                 const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
@@ -205,7 +205,7 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
         if (onSaveStart) onSaveStart();
 
         try {
-            const response = await fetch('/api/sobrevivientes', {
+            const response = await fetch('/api/rrhh/sobrevivientes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

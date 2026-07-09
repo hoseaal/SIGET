@@ -24,7 +24,7 @@ export const ModalInsertJerarquia = ({ show, handleClose, onSuccess, cargosJerar
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('/api/porcentajes-jerarquias', {
+            const response = await fetch('/api/rrhh/porcentajes-jerarquias', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

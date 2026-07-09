@@ -21,31 +21,31 @@ const ModalVerPerfil = ({ show, handleClose, empleado_id, tipo = 'funcionario' }
     // Configuración dinámica por tipo de personal
     const config = {
         funcionario: {
-            endpoint: `/api/funcionarios/${empleado_id}?type=full`,
+            endpoint: `/api/rrhh/funcionarios/${empleado_id}?type=full`,
             titulo: 'Perfil del Funcionario',
             icon: 'bx-user',
             color: 'primary'
         },
         obrero: {
-            endpoint: `/api/obreros/${empleado_id}`,
+            endpoint: `/api/rrhh/obreros/${empleado_id}`,
             titulo: 'Perfil del Obrero',
             icon: 'bx-wrench',
             color: 'info'
         },
         jubilado: {
-            endpoint: `/api/jubilados/${empleado_id}`,
+            endpoint: `/api/rrhh/jubilados/${empleado_id}`,
             titulo: 'Perfil del Jubilado',
             icon: 'bx-勲章', // bx-medal equivalent or similar
             color: 'warning'
         },
         pensionado: {
-            endpoint: `/api/pensionados/${empleado_id}`,
+            endpoint: `/api/rrhh/pensionados/${empleado_id}`,
             titulo: 'Perfil del Pensionado',
             icon: 'bx-wallet',
             color: 'secondary'
         },
         sobreviviente: {
-            endpoint: `/api/funcionarios/${empleado_id}?type=full`, // Ajustar si existe endpoint específico
+            endpoint: `/api/rrhh/funcionarios/${empleado_id}?type=full`, // Ajustar si existe endpoint específico
             titulo: 'Perfil del Sobreviviente',
             icon: 'bx-heart',
             color: 'danger'

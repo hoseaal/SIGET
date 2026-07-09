@@ -33,14 +33,14 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
 
         try {
             // Obtener empleado
-            const resEmp = await fetch(`/api/funcionarios/${empleado_id}`);
+            const resEmp = await fetch(`/api/rrhh/funcionarios/${empleado_id}`);
             if (resEmp.ok) {
                 const dataEmp = await resEmp.json();
                 const personalInfo = dataEmp.datos_personales || dataEmp;
                 setEmpleado(personalInfo);
             } else {
-                // If it's an obrero, try fetching from /api/obreros
-                const resObrero = await fetch(`/api/obreros/${empleado_id}`);
+                // If it's an obrero, try fetching from /api/rrhh/obreros
+                const resObrero = await fetch(`/api/rrhh/obreros/${empleado_id}`);
                 if (resObrero.ok) {
                     const dataObrero = await resObrero.json();
                     const personalInfo = dataObrero.datos_personales || dataObrero;
@@ -49,7 +49,7 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
             }
 
             // Obtener carga familiar
-            const resCarga = await fetch(`/api/carga-familiar/empleado/${empleado_id}`);
+            const resCarga = await fetch(`/api/rrhh/carga-familiar/empleado/${empleado_id}`);
             if (resCarga.ok) {
                 const dataCarga = await resCarga.json();
                 setCargas(Array.isArray(dataCarga) ? dataCarga : []);
@@ -92,13 +92,13 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
 
         setSaving(true);
         try {
-            let url = '/api/carga-familiar';
+            let url = '/api/rrhh/carga-familiar';
             let method = 'POST';
             let payload;
 
             if (editId) {
                 // Para UPDATE: NO enviar empleado_id
-                url = `/api/carga-familiar/${editId}`;
+                url = `/api/rrhh/carga-familiar/${editId}`;
                 method = 'PUT';
                 payload = {
                     nombres: formData.nombres,
@@ -163,7 +163,7 @@ function ModalCargaFamiliar({ show, handleClose, empleado_id }) {
 
         setError('');
         try {
-            const response = await fetch(`/api/carga-familiar/${id}`, {
+            const response = await fetch(`/api/rrhh/carga-familiar/${id}`, {
                 method: 'DELETE'
             });
 

@@ -50,7 +50,7 @@ const ModalGenerarEtiquetas = ({ show, handleClose }) => {
         setIsLoading(true);
         setError('');
         try {
-          const response = await fetch('/api/departamentos', { credentials: 'include' });
+          const response = await fetch('/api/rrhh/departamentos', { credentials: 'include' });
           if (!response.ok) {
             throw new Error('No se pudo cargar la lista de departamentos.');
           }
@@ -75,7 +75,7 @@ const ModalGenerarEtiquetas = ({ show, handleClose }) => {
         setError('');
         setBienesParaEnviar([]);
         try {
-          const response = await fetch(`/api/bienes/all?dep=${selectedDepId}&inc=1`);
+          const response = await fetch(`/api/rrhh/bienes/all?dep=${selectedDepId}&inc=1`);
           if (!response.ok) {
             throw new Error('No se pudieron encontrar bienes para este departamento.');
           }
@@ -124,7 +124,7 @@ const ModalGenerarEtiquetas = ({ show, handleClose }) => {
     setBienesParaEnviar([]);
 
     try {
-      const response = await fetch(`/api/bienes/${codigoBienInput}`);
+      const response = await fetch(`/api/rrhh/bienes/${codigoBienInput}`);
       if (!response.ok) {
         throw new Error('Este código no está asignado a ningún bien.');
       }
@@ -166,7 +166,7 @@ const ModalGenerarEtiquetas = ({ show, handleClose }) => {
     };
 
     try {
-      const response = await fetch('/api/pdf/etiquetas', {
+      const response = await fetch('/api/rrhh/pdf/etiquetas', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

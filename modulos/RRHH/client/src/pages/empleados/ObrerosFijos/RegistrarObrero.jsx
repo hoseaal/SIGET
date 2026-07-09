@@ -72,11 +72,11 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
         const fetchCatalogos = async () => {
             try {
                 const [cetRes, onaRes, dirRes, divRes, uniRes] = await Promise.all([
-                    fetch('/api/cargos-cet'),
-                    fetch('/api/cargos-onapre'),
-                    fetch('/api/direcciones'),
-                    fetch('/api/divisiones'),
-                    fetch('/api/unidades')
+                    fetch('/api/rrhh/cargos-cet'),
+                    fetch('/api/rrhh/cargos-onapre'),
+                    fetch('/api/rrhh/direcciones'),
+                    fetch('/api/rrhh/divisiones'),
+                    fetch('/api/rrhh/unidades')
                 ]);
 
                 const [cargosCETAll, cargosONAPREAll, direcciones, divisiones, unidades] = await Promise.all([
@@ -107,7 +107,7 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                 return;
             }
             try {
-                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
+                const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
                 const nivelesData = await res.json();
                 const data = nivelesData.success ? nivelesData.data : nivelesData;
 
@@ -190,7 +190,7 @@ export const RegistrarObrero = ({ show, handleClose, onSaveStart, onSaveEnd }) =
 
         try {
             // condicion_laboral_id=1 (Fijo) lo añade el backend automáticamente
-            const response = await fetch('/api/obreros', {
+            const response = await fetch('/api/rrhh/obreros', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

@@ -13,29 +13,29 @@ function ModalUpdate({ show, handleClose, columns, tableName, foreign, onSuccess
 
     // MAPA UNIVERSAL DE ENDPOINTS (Sistema RRHH)
     const endpointMap = {
-        catalogo_instituciones: '/api/instituciones',
+        catalogo_instituciones: '/api/rrhh/instituciones',
         // Estructura Organizacional
-        direcciones: '/api/direcciones',
-        divisiones: '/api/divisiones',
-        unidades: '/api/unidades',
+        direcciones: '/api/rrhh/direcciones',
+        divisiones: '/api/rrhh/divisiones',
+        unidades: '/api/rrhh/unidades',
         
         // Clasificación y Cargos
-        cargos_onapre: '/api/cargos-onapre',
-        cargos_cet: '/api/cargos-cet',
-        condiciones_laborales: '/api/condiciones-laborales',
-        profesiones: '/api/profesiones',
+        cargos_onapre: '/api/rrhh/cargos-onapre',
+        cargos_cet: '/api/rrhh/cargos-cet',
+        condiciones_laborales: '/api/rrhh/condiciones-laborales',
+        profesiones: '/api/rrhh/profesiones',
         
         // Tablas Salariales y Deducciones
-        niveles_salariales: '/api/niveles-salariales',
-        niveles_salariales_antiguos: '/api/niveles-salariales-antiguos',
-        primas_generales: '/api/primas',
-        primas_profesionalizacion: '/api/primas-profesionalizacion',
-        configuracion_antiguedad: '/api/antiguedad',
-        deducciones: '/api/deducciones',
-        sueldos_pensionados: '/api/sueldo-pensionado',
-        sueldo_sobreviente: '/api/sueldo-sobreviviente',
-        configuracion_vacaciones: '/api/configuracion-vacaciones',
-        configuracion_vacaciones_obreros: '/api/configuracion-vacaciones-obreros'
+        niveles_salariales: '/api/rrhh/niveles-salariales',
+        niveles_salariales_antiguos: '/api/rrhh/niveles-salariales-antiguos',
+        primas_generales: '/api/rrhh/primas',
+        primas_profesionalizacion: '/api/rrhh/primas-profesionalizacion',
+        configuracion_antiguedad: '/api/rrhh/antiguedad',
+        deducciones: '/api/rrhh/deducciones',
+        sueldos_pensionados: '/api/rrhh/sueldo-pensionado',
+        sueldo_sobreviente: '/api/rrhh/sueldo-sobreviviente',
+        configuracion_vacaciones: '/api/rrhh/configuracion-vacaciones',
+        configuracion_vacaciones_obreros: '/api/rrhh/configuracion-vacaciones-obreros'
     };
 
     // Al abrir el modal, cargamos los datos de la fila a editar

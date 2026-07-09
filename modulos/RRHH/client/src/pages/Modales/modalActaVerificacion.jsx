@@ -36,7 +36,7 @@ function ModalActaVerificacion({ show, handleClose }) {
 
       const fetchDepartamentos = async () => {
         try {
-          const response = await fetch('/api/departamentos', {
+          const response = await fetch('/api/rrhh/departamentos', {
             credentials: 'include'
           });
           if (!response.ok) {
@@ -80,8 +80,8 @@ function ModalActaVerificacion({ show, handleClose }) {
         analista_cedula: analistaCedula,
       };
 
-      // Assuming your PDF route is still '/api/pdf/acta-verificacion'
-      const response = await fetch('/api/pdf/acta-verificacion', { // THIS IS YOUR PDF ENDPOINT
+      // Assuming your PDF route is still '/api/rrhh/pdf/acta-verificacion'
+      const response = await fetch('/api/rrhh/pdf/acta-verificacion', { // THIS IS YOUR PDF ENDPOINT
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,7 +139,7 @@ function ModalActaVerificacion({ show, handleClose }) {
       }).toString();
 
       // Use the new Excel endpoint
-      const response = await fetch(`/api/excel/acta-verificacion?${queryParams}`, { // NEW EXCEL ENDPOINT
+      const response = await fetch(`/api/rrhh/excel/acta-verificacion?${queryParams}`, { // NEW EXCEL ENDPOINT
         method: 'GET', // Changed to GET as per your route
         credentials: 'include'
       });

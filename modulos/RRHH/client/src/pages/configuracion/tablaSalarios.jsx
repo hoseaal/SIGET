@@ -168,8 +168,8 @@ export const TablaSalarios = () => {
                 setIdColumnNiv(primaryKey);
 
                 const [resOna, resNiv] = await Promise.all([
-                    fetch('/api/cargos-onapre', { credentials: 'include' }),
-                    fetch('/api/niveles-salariales', { credentials: 'include' })
+                    fetch('/api/rrhh/cargos-onapre', { credentials: 'include' }),
+                    fetch('/api/rrhh/niveles-salariales', { credentials: 'include' })
                 ]);
                 setDataOna(await resOna.json());
                 setDataNiv(await resNiv.json());
@@ -189,7 +189,7 @@ export const TablaSalarios = () => {
                 })));
                 setIdColumnNivAnt(primaryKey);
 
-                const resNivAnt = await fetch('/api/niveles-salariales-antiguos', { credentials: 'include' });
+                const resNivAnt = await fetch('/api/rrhh/niveles-salariales-antiguos', { credentials: 'include' });
                 setDataNivAnt(await resNivAnt.json());
             } catch (error) { console.error('Error cargando Matriz ONAPRE:', error); }
         };
@@ -202,7 +202,7 @@ export const TablaSalarios = () => {
                 const { columns, primaryKey } = await getTableMetadata('primas_generales');
                 setColumnsPri(columns.map(col => ({ originalName: col.name, displayName: columnAliasPri[col.name] || col.name, isPrimaryKey: col.name === primaryKey })));
                 setIdColumnPri(primaryKey);
-                const res = await fetch('/api/primas', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/primas', { credentials: 'include' });
                 setDataPri(await res.json());
             } catch (error) { console.error('Error cargando Primas:', error); }
         };
@@ -215,7 +215,7 @@ export const TablaSalarios = () => {
                 const { columns, primaryKey } = await getTableMetadata('primas_profesionalizacion');
                 setColumnsPrf(columns.map(col => ({ originalName: col.name, displayName: columnAliasPrf[col.name] || col.name, isPrimaryKey: col.name === primaryKey })));
                 setIdColumnPrf(primaryKey);
-                const res = await fetch('/api/primas-profesionalizacion', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/primas-profesionalizacion', { credentials: 'include' });
                 setDataPrf(await res.json());
             } catch (error) { console.error('Error cargando Profesionalización:', error); }
         };
@@ -225,7 +225,7 @@ export const TablaSalarios = () => {
     useEffect(() => {
         const loadJerData = async () => {
             try {
-                const res = await fetch('/api/porcentajes-jerarquias', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/porcentajes-jerarquias', { credentials: 'include' });
                 setDataJer(await res.json());
             } catch (error) { console.error('Error cargando Jerarquías:', error); }
         };
@@ -238,7 +238,7 @@ export const TablaSalarios = () => {
                 const { columns, primaryKey } = await getTableMetadata('configuracion_antiguedad');
                 setColumnsAnt(columns.map(col => ({ originalName: col.name, displayName: columnAliasAnt[col.name] || col.name, isPrimaryKey: col.name === primaryKey })));
                 setIdColumnAnt(primaryKey);
-                const res = await fetch('/api/antiguedad', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/antiguedad', { credentials: 'include' });
                 setDataAnt(await res.json());
             } catch (error) { console.error('Error cargando Antigüedad:', error); }
         };
@@ -251,7 +251,7 @@ export const TablaSalarios = () => {
                 const { columns, primaryKey } = await getTableMetadata('deducciones');
                 setColumnsDe(columns.map(col => ({ originalName: col.name, displayName: columnAliasDe[col.name] || col.name, isPrimaryKey: col.name === primaryKey })));
                 setIdColumnDe(primaryKey);
-                const res = await fetch('/api/deducciones', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/deducciones', { credentials: 'include' });
                 setDataDe(await res.json());
             } catch (error) { console.error('Error cargando Deducciones:', error); }
         };
@@ -264,7 +264,7 @@ export const TablaSalarios = () => {
                 const { columns, primaryKey } = await getTableMetadata('sueldos_pensionados');
                 setColumnsPen(columns.map(col => ({ originalName: col.name, displayName: columnAliasPen[col.name] || col.name, isPrimaryKey: col.name === primaryKey })));
                 setIdColumnPen(primaryKey);
-                const res = await fetch('/api/sueldo-pensionado', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/sueldo-pensionado', { credentials: 'include' });
                 const result = await res.json();
                 // Si el API retorna un objeto, lo envolvemos en un array para la tabla
                 setDataPen(result && result.sueldo_pensionado_id ? [result] : []);
@@ -279,7 +279,7 @@ export const TablaSalarios = () => {
                 const { columns, primaryKey } = await getTableMetadata('sueldo_sobreviente');
                 setColumnsSob(columns.map(col => ({ originalName: col.name, displayName: columnAliasSob[col.name] || col.name, isPrimaryKey: col.name === primaryKey })));
                 setIdColumnSob(primaryKey);
-                const res = await fetch('/api/sueldo-sobreviviente', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/sueldo-sobreviviente', { credentials: 'include' });
                 const result = await res.json();
                 setDataSob(result && result.id_sueldo ? [result] : []);
             } catch (error) { console.error('Error cargando Sueldos Sobrevivientes:', error); }

@@ -25,8 +25,8 @@ const ModalRegistrarUsuario = ({ show, handleClose, onSuccess }) => {
             setLoadingCatalogos(true);
             try {
                 const [resRoles, resModulos] = await Promise.all([
-                    fetch('/api/meta/roles'),
-                    fetch('/api/meta/modulos')
+                    fetch('/api/rrhh/meta/roles'),
+                    fetch('/api/rrhh/meta/modulos')
                 ]);
                 if (resRoles.ok) setRoles(await resRoles.json());
                 if (resModulos.ok) {
@@ -50,7 +50,7 @@ const ModalRegistrarUsuario = ({ show, handleClose, onSuccess }) => {
             if (searchTerm.length >= 3 && !selectedEmpleado) {
                 setIsSearching(true);
                 try {
-                    const response = await fetch(`/api/empleados/buscar-registro?q=${searchTerm}`);
+                    const response = await fetch(`/api/rrhh/empleados/buscar-registro?q=${searchTerm}`);
                     if (response.ok) setEmpleados(await response.json());
                 } catch (err) {
                     console.error('Error buscando empleados', err);
@@ -87,7 +87,7 @@ const ModalRegistrarUsuario = ({ show, handleClose, onSuccess }) => {
         setIsSubmitting(true);
         setError('');
         try {
-            const response = await fetch('/api/user/registrar-con-empleado', {
+            const response = await fetch('/api/rrhh/user/registrar-con-empleado', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

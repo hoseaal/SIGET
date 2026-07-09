@@ -42,7 +42,7 @@ export const ReportePadres = () => {
     try {
       const params = new URLSearchParams();
       if (tipoPersonal !== 'Todos') params.append('tipo_personal', tipoPersonal);
-      const res = await fetch(`/api/reporte-padres/generar?${params}`, {
+      const res = await fetch(`/api/rrhh/reporte-padres/generar?${params}`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();

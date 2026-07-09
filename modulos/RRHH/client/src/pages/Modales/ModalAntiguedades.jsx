@@ -44,7 +44,7 @@ function ModalAntiguedades({ show, handleClose, empleado_id }) {
     const buscarInstituciones = async (term) => {
         try {
             setBuscandoInstituciones(true);
-            const res = await fetch(`/api/instituciones?search=${encodeURIComponent(term || '')}`);
+            const res = await fetch(`/api/rrhh/instituciones?search=${encodeURIComponent(term || '')}`);
             if (res.ok) {
                 const data = await res.json();
                 const dbOptions = data.map(inst => ({
@@ -73,7 +73,7 @@ function ModalAntiguedades({ show, handleClose, empleado_id }) {
         
         try {
             // 1. Obtener datos básicos del funcionario para el título
-            const resFun = await fetch(`/api/funcionarios/${empleado_id}`);
+            const resFun = await fetch(`/api/rrhh/funcionarios/${empleado_id}`);
             if (resFun.ok) {
                 const dataFun = await resFun.json();
                 // Si el backend devuelve el JSON anidado (type=full), o plano:
@@ -82,7 +82,7 @@ function ModalAntiguedades({ show, handleClose, empleado_id }) {
             }
 
             // 2. Obtener el historial de antigüedad
-            const resAnt = await fetch(`/api/registros-antiguedad/funcionario/${empleado_id}`);
+            const resAnt = await fetch(`/api/rrhh/registros-antiguedad/funcionario/${empleado_id}`);
             if (resAnt.ok) {
                 const dataAnt = await resAnt.json();
                 
@@ -202,7 +202,7 @@ function ModalAntiguedades({ show, handleClose, empleado_id }) {
                 institucion_alternativa: mostrarAlternativa ? formData.institucion_alternativa : null
             };
 
-            const url = editId ? `/api/registros-antiguedad/${editId}` : '/api/registros-antiguedad';
+            const url = editId ? `/api/rrhh/registros-antiguedad/${editId}` : '/api/rrhh/registros-antiguedad';
             const method = editId ? 'PUT' : 'POST';
 
             const response = await fetch(url, {
@@ -250,7 +250,7 @@ function ModalAntiguedades({ show, handleClose, empleado_id }) {
 
         setError('');
         try {
-            const response = await fetch(`/api/registros-antiguedad/${antiguedad_id}`, {
+            const response = await fetch(`/api/rrhh/registros-antiguedad/${antiguedad_id}`, {
                 method: 'DELETE'
             });
 

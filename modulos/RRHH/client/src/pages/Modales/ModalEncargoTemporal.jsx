@@ -81,12 +81,12 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
     const cargarCatalogos = async () => {
         try {
             const [resCet, resOnapre, resNivAnt, resDir, resDiv, resUni] = await Promise.all([
-                fetch('/api/cargos-cet'),
-                fetch('/api/cargos-onapre'),
-                fetch('/api/niveles-salariales-antiguos'),
-                fetch('/api/direcciones'),
-                fetch('/api/divisiones'),
-                fetch('/api/unidades')
+                fetch('/api/rrhh/cargos-cet'),
+                fetch('/api/rrhh/cargos-onapre'),
+                fetch('/api/rrhh/niveles-salariales-antiguos'),
+                fetch('/api/rrhh/direcciones'),
+                fetch('/api/rrhh/divisiones'),
+                fetch('/api/rrhh/unidades')
             ]);
 
             const [cetData, onapreData, nivAntData, dirData, divData, uniData] = await Promise.all([
@@ -115,14 +115,14 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
         setError('');
         try {
             // Datos del funcionario
-            const resFun = await fetch(`/api/funcionarios/${empleado_id}?type=full`);
+            const resFun = await fetch(`/api/rrhh/funcionarios/${empleado_id}?type=full`);
             if (resFun.ok) {
                 const dataFun = await resFun.json();
                 setFuncionario(dataFun.datos_personales || dataFun);
             }
 
             // Historial de encargos
-            const resEnc = await fetch(`/api/encargos-temporales/funcionario/${empleado_id}`);
+            const resEnc = await fetch(`/api/rrhh/encargos-temporales/funcionario/${empleado_id}`);
             if (resEnc.ok) {
                 const dataEnc = await resEnc.json();
                 setHistorial(dataEnc.historial || []);
@@ -154,7 +154,7 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
         const fetchNiveles = async () => {
             if (!formData.cargo_onapre_id || !show || loading) return;
             try {
-                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
+                const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
                 const nivelesData = await res.json();
                 const data = nivelesData.success ? nivelesData.data : nivelesData;
                 const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
@@ -223,7 +223,7 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
                 observacion: formData.observacion
             };
 
-            const res = await fetch('/api/encargos-temporales', {
+            const res = await fetch('/api/rrhh/encargos-temporales', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -260,7 +260,7 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
         setFinalizando(true);
         setError('');
         try {
-            const res = await fetch(`/api/encargos-temporales/${encargoAFinalizar.encargo_id}/finalizar`, {
+            const res = await fetch(`/api/rrhh/encargos-temporales/${encargoAFinalizar.encargo_id}/finalizar`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fecha_fin: fechaFin })
@@ -286,7 +286,7 @@ function ModalEncargoTemporal({ show, handleClose, empleado_id }) {
         if (!window.confirm('¿Está seguro de eliminar este encargo temporal? Esta acción no se puede deshacer.')) return;
         setError('');
         try {
-            const res = await fetch(`/api/encargos-temporales/${encargo_id}`, { method: 'DELETE' });
+            const res = await fetch(`/api/rrhh/encargos-temporales/${encargo_id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Error al eliminar el encargo.');
             flash(setSuccessMsg, 'Encargo eliminado correctamente.');
             cargarHistorial();

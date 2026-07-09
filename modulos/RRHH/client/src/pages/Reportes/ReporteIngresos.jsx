@@ -55,7 +55,7 @@ export const ReporteIngresos = () => {
     setReporteData(null);
     setSearchTerm('');
     try {
-      const url = new URL('/api/reporte-ingresos/generar', window.location.origin);
+      const url = new URL('/api/rrhh/reporte-ingresos/generar', window.location.origin);
       url.searchParams.append('desde', desde);
       url.searchParams.append('hasta', hasta);
       url.searchParams.append('tipo_personal', tipoPersonal);

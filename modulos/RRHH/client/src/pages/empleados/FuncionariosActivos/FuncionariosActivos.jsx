@@ -59,7 +59,7 @@ export const FuncionariosActivos = () => {
         const fetchUserData = async () => {
             try {
                 // Simulación/Llamada real a tu auth
-                const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                const userRes = await fetch('/api/rrhh/auth/verify-auth', { credentials: 'include' });
                 if (!userRes.ok) throw new Error('No autorizado.');
                 const userDataResult = await userRes.json();
 
@@ -79,7 +79,7 @@ export const FuncionariosActivos = () => {
         const loadData = async () => {
             try {
                 // type=full es necesario para que el backend devuelva "nombre" (Dirección)
-                let url = `/api/funcionarios?page=${page}&limit=${limit}&estatus_id=1&type=full`;
+                let url = `/api/rrhh/funcionarios?page=${page}&limit=${limit}&estatus_id=1&type=full`;
 
                 if (searchQuery) {
                     url += `&search=${encodeURIComponent(searchQuery)}`;
@@ -112,7 +112,7 @@ export const FuncionariosActivos = () => {
 
     useEffect(() => {
         const fetchAllData = async () => {
-            const DepRes = await fetch('/api/direcciones');
+            const DepRes = await fetch('/api/rrhh/direcciones');
             const DepData = await DepRes.json();
             setDireccion(DepData || []);
         };

@@ -65,7 +65,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
             setShowAlert(false);
             setErrorMessage('');
             setAlertMessage('');
-            const response = await fetch(`/api/prestamos/${id}`, { credentials: 'include' });
+            const response = await fetch(`/api/rrhh/prestamos/${id}`, { credentials: 'include' });
 
             if (!response.ok) {
                 if (response.status === 404) {
@@ -138,7 +138,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
         };
 
         try {
-            const response = await fetch('/api/pdf/acta-de-entrega', {
+            const response = await fetch('/api/rrhh/pdf/acta-de-entrega', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datosReporte)
@@ -185,7 +185,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
             let responseData;
 
             if (opcionDevolucion === 'oficio') {
-                response = await fetch(`/api/prestamos/${prestamoDetalle.pre_ide}/estado`, {
+                response = await fetch(`/api/rrhh/prestamos/${prestamoDetalle.pre_ide}/estado`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pre_est: 0 })
@@ -209,7 +209,7 @@ function ModalVerDetallesPrestamo({ show, handleClose, prestamoId, onSuccess }) 
                     pre_ide: prestamoDetalle.pre_ide,
                 };
 
-                response = await fetch(`/api/prestamos/bien/${bienIndividualSeleccionado}/estado`, {
+                response = await fetch(`/api/rrhh/prestamos/bien/${bienIndividualSeleccionado}/estado`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

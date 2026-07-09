@@ -1,4 +1,4 @@
-export const API = '/api/vacaciones'
+export const API = '/api/rrhh/vacaciones'
 
 export const STATUS = {
   PROGRAMADO: 1,

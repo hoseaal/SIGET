@@ -17,7 +17,7 @@ function ModalCerrarMes({
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/reporteBM4/cerrar-mes', {
+            const response = await fetch('/api/rrhh/reporteBM4/cerrar-mes', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

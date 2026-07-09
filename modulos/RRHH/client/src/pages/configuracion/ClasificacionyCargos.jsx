@@ -89,7 +89,7 @@ export const ClasificacionyCargos = () => {
                 })));
                 setIdColumnOna(primaryKey);
 
-                const res = await fetch('/api/cargos-onapre', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/cargos-onapre', { credentials: 'include' });
                 setDataOna(await res.json());
             } catch (error) { console.error('Error cargando ONAPRE:', error); }
         };
@@ -107,7 +107,7 @@ export const ClasificacionyCargos = () => {
                 })));
                 setIdColumnCet(primaryKey);
 
-                const res = await fetch('/api/cargos-cet', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/cargos-cet', { credentials: 'include' });
                 setDataCet(await res.json());
             } catch (error) { console.error('Error cargando CET:', error); }
         };
@@ -125,7 +125,7 @@ export const ClasificacionyCargos = () => {
                 })));
                 setIdColumnCol(primaryKey);
 
-                const res = await fetch('/api/condiciones-laborales', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/condiciones-laborales', { credentials: 'include' });
                 setDataCol(await res.json());
             } catch (error) { console.error('Error cargando Condición Laboral:', error); }
         };
@@ -143,7 +143,7 @@ export const ClasificacionyCargos = () => {
                 })));
                 setIdColumnPro(primaryKey);
 
-                const res = await fetch('/api/profesiones', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/profesiones', { credentials: 'include' });
                 setDataPro(await res.json());
             } catch (error) { console.error('Error cargando Profesiones:', error); }
         };

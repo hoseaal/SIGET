@@ -33,7 +33,7 @@ export function PadresChart() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ tipo_personal: tipo });
-      const res = await fetch(`/api/reporte-padres/generar?${params}`);
+      const res = await fetch(`/api/rrhh/reporte-padres/generar?${params}`);
       const d = await res.json();
       if (d.ok) {
         setData(d.rangos || []);

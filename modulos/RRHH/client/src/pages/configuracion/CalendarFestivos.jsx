@@ -4,7 +4,7 @@ import { Modal, Button, Form, Spinner, Alert } from 'react-bootstrap';
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-const API_FESTIVOS = '/api/festivos';
+const API_FESTIVOS = '/api/rrhh/festivos';
 
 export const CalendarFestivos = () => {
     const [currentDate, setCurrentDate] = useState(new Date());

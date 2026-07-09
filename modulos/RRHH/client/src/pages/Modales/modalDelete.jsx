@@ -18,14 +18,14 @@ function ModalDelete({
 
 
 const endpointMap = {
-        catalogo_instituciones: '/api/instituciones',
-        direcciones: '/api/direcciones',
-        divisiones: '/api/divisiones',
-        unidades: '/api/unidades',
-        sueldos_pensionados: '/api/sueldo-pensionado',
-        sueldo_sobreviente: '/api/sueldo-sobreviviente',
-        configuracion_vacaciones: '/api/configuracion-vacaciones',
-        configuracion_vacaciones_obreros: '/api/configuracion-vacaciones-obreros'
+        catalogo_instituciones: '/api/rrhh/instituciones',
+        direcciones: '/api/rrhh/direcciones',
+        divisiones: '/api/rrhh/divisiones',
+        unidades: '/api/rrhh/unidades',
+        sueldos_pensionados: '/api/rrhh/sueldo-pensionado',
+        sueldo_sobreviente: '/api/rrhh/sueldo-sobreviviente',
+        configuracion_vacaciones: '/api/rrhh/configuracion-vacaciones',
+        configuracion_vacaciones_obreros: '/api/rrhh/configuracion-vacaciones-obreros'
     };
 
     const [userType, setUserType] = useState(null);
@@ -33,7 +33,7 @@ const endpointMap = {
     useEffect(() => {
             const fetchUserData = async () => {
                 try {
-                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                    const userRes = await fetch('/api/rrhh/auth/verify-auth', { credentials: 'include' });
                     if (!userRes.ok) throw new Error('No autorizado.');
                     const userDataResult = await userRes.json();
                     if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');

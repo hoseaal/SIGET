@@ -63,7 +63,7 @@ export const RegisterPage = () => {
     useEffect(() => {
         const fetchEmpleados = async () => {
             try {
-                const res = await fetch('/api/funcionarios', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/funcionarios', { credentials: 'include' });
                 if (res.ok) {
                     const data = await res.json();
                     setEmpleados(data.data || data); // Dependiendo de si está paginado o no
@@ -88,7 +88,7 @@ export const RegisterPage = () => {
         e.preventDefault();
         if(formData.password1 !== formData.password2) throw new Error('Las contraseñas no concuerdan')
         try {
-           const response = await fetch('/api/auth/register', {
+           const response = await fetch('/api/rrhh/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

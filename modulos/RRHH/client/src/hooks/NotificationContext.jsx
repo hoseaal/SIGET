@@ -14,7 +14,7 @@ export function NotificationProvider({ children }) {
   const refreshNotifications = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/vacaciones/alertas')
+      const res = await fetch('/api/rrhh/vacaciones/alertas')
       if (res.ok) {
         const data = await res.json()
         if (mountedRef.current) {

@@ -121,7 +121,7 @@ export const obtenerDetalleNomina = async (req, res) => {
 }
 
 /**
- * POST /api/vacaciones/calcular
+ * POST /api/rrhh/vacaciones/calcular
  * Body: { empleado_id, fecha_inicio }
  *
  * Orquesta los tres módulos en el servidor:

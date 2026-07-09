@@ -40,7 +40,7 @@ export function NominaResumenCard() {
     setCargado(false);
     try {
       const params = new URLSearchParams({ mes, anio, quincena, tipo_personal: tipoPersonal });
-      const res = await fetch(`/api/nomina/resumen-quincenal?${params}`);
+      const res = await fetch(`/api/rrhh/nomina/resumen-quincenal?${params}`);
       const d = await res.json();
       if (d.ok) {
         setResumen(d.resumen);

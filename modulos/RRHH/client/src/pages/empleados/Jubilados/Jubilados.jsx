@@ -30,17 +30,17 @@ export const Jubilados = () => {
 
     // Catálogo de direcciones para el filtro
     useEffect(() => {
-        fetch('/api/direcciones')
+        fetch('/api/rrhh/direcciones')
             .then(r => r.json())
             .then(data => setDirecciones(data || []))
             .catch(e => console.error('Error cargando direcciones:', e));
     }, []);
 
-    // Carga de datos de jubilados — apunta a /api/jubilados
+    // Carga de datos de jubilados — apunta a /api/rrhh/jubilados
     useEffect(() => {
         const loadData = async () => {
             try {
-                let url = `/api/jubilados?page=${page}&limit=${limit}`;
+                let url = `/api/rrhh/jubilados?page=${page}&limit=${limit}`;
 
                 if (searchQuery) {
                     url += `&search=${encodeURIComponent(searchQuery)}`;

@@ -52,12 +52,12 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
             setErrorMessage('');
             try {
                 const [cetRes, onaRes, dirRes, divRes, uniRes, obreroRes] = await Promise.all([
-                    fetch('/api/cargos-cet'),
-                    fetch('/api/cargos-onapre'),
-                    fetch('/api/direcciones'),
-                    fetch('/api/divisiones'),
-                    fetch('/api/unidades'),
-                    fetch(`/api/obreros/${empleado_id}`)
+                    fetch('/api/rrhh/cargos-cet'),
+                    fetch('/api/rrhh/cargos-onapre'),
+                    fetch('/api/rrhh/direcciones'),
+                    fetch('/api/rrhh/divisiones'),
+                    fetch('/api/rrhh/unidades'),
+                    fetch(`/api/rrhh/obreros/${empleado_id}`)
                 ]);
 
                 if (!obreroRes.ok) throw new Error('Error al obtener datos del obrero');
@@ -72,7 +72,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
                 let nivelesFetch = [];
 
                 if (ona_id) {
-                    const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
+                    const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${ona_id}`);
                     const nivelesData = await res.json();
                     const data = nivelesData.success ? nivelesData.data : nivelesData;
                     nivelesFetch = Array.isArray(data) ? data.map(n => ({
@@ -143,7 +143,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
         if (!formData.cargo_onapre_id || !show || isLoadingData) return;
         const fetch_ = async () => {
             try {
-                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
+                const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
                 const nivelesData = await res.json();
                 const data = nivelesData.success ? nivelesData.data : nivelesData;
                 const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
@@ -205,7 +205,7 @@ export const EditarObrero = ({ show, handleClose, onSaveStart, onSaveEnd, emplea
         if (onSaveStart) onSaveStart();
 
         try {
-            const response = await fetch(`/api/obreros/${empleado_id}`, {   // ← endpoint de obreros
+            const response = await fetch(`/api/rrhh/obreros/${empleado_id}`, {   // ← endpoint de obreros
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

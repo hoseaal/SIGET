@@ -38,7 +38,7 @@ export const NominaActivos = () => {
         const loadPeriodoObjetivo = async () => {
             setPeriodoLoading(true);
             try {
-                const res = await fetch('/api/nomina/periodo-objetivo', {
+                const res = await fetch('/api/rrhh/nomina/periodo-objetivo', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -64,8 +64,8 @@ export const NominaActivos = () => {
         if (!mes || !anio) return
         try {
             const [resQ1, resQ2] = await Promise.all([
-                fetch(`/api/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=1&tipo_personal=${TIPO_PERSONAL}`),
-                fetch(`/api/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=2&tipo_personal=${TIPO_PERSONAL}`)
+                fetch(`/api/rrhh/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=1&tipo_personal=${TIPO_PERSONAL}`),
+                fetch(`/api/rrhh/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=2&tipo_personal=${TIPO_PERSONAL}`)
             ])
             const dataQ1 = await resQ1.json()
             const dataQ2 = await resQ2.json()
@@ -95,7 +95,7 @@ export const NominaActivos = () => {
         setLoadingCalcular(true);
         setNominaData([]);
         try {
-            const res = await fetch('/api/nomina/calcular-en-caliente', {
+            const res = await fetch('/api/rrhh/nomina/calcular-en-caliente', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tipo_personal: TIPO_PERSONAL, quincena: tipoNomina })
@@ -123,7 +123,7 @@ export const NominaActivos = () => {
         const quincenaKey = tipoNomina === 'unificada' ? 'unificada' : `q${tipoNomina}`
         setCierreStatus(prev => ({ ...prev, [quincenaKey]: true }))
         try {
-            const res = await fetch('/api/nomina/guardar-cierre', {
+            const res = await fetch('/api/rrhh/nomina/guardar-cierre', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tipo_personal: TIPO_PERSONAL, quincena: tipoNomina, mes, anio })
@@ -272,7 +272,7 @@ export const NominaActivos = () => {
         // Obtener firmantes dinámicos desde la BD
         let firmantes = null;
         try {
-            const resFirm = await fetch('/api/nomina-activos/firmantes', {
+            const resFirm = await fetch('/api/rrhh/nomina-activos/firmantes', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -323,7 +323,7 @@ export const NominaActivos = () => {
             ];
 
             try {
-                const resResumen = await fetch(`/api/nomina-activos/resumen-mensual?mes=${mes}&anio=${anio}`, {
+                const resResumen = await fetch(`/api/rrhh/nomina-activos/resumen-mensual?mes=${mes}&anio=${anio}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });

@@ -39,7 +39,7 @@ const [userType, setUserType] = useState(null);
     useEffect(() => {
             const fetchUserData = async () => {
                 try {
-                    const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+                    const userRes = await fetch('/api/rrhh/auth/verify-auth', { credentials: 'include' });
                     if (!userRes.ok) throw new Error('No autorizado.');
                     const userDataResult = await userRes.json();
                     if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
@@ -60,7 +60,7 @@ const [userType, setUserType] = useState(null);
             setLoading(true);
             setError(null);
             try {
-                let url = `/api/prestamos/normales?`;
+                let url = `/api/rrhh/prestamos/normales?`;
 
                 // Añadir filtros a la URL
                 if (searchQueryOficio) {
@@ -101,7 +101,7 @@ const [userType, setUserType] = useState(null);
     useEffect(() => {
         const fetchDepartamentos = async () => {
             try {
-                const response = await fetch('/api/departamentos', {credentials: 'include'});
+                const response = await fetch('/api/rrhh/departamentos', {credentials: 'include'});
                 if (!response.ok) {
                     throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }

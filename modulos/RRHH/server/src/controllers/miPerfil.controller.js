@@ -1,7 +1,7 @@
 import pool from '../utils/database.js';
 
 /**
- * GET /api/mi-perfil/nomina
+ * GET /api/rrhh/mi-perfil/nomina
  *
  * Devuelve el historial de recibos de nómina del empleado autenticado.
  * - Si es Visualizador: el middleware `requireEmployeeScope` ya garantizó
@@ -61,7 +61,7 @@ export const getMiNomina = async (req, res) => {
 
 
 /**
- * GET /api/mi-perfil/datos-laborales
+ * GET /api/rrhh/mi-perfil/datos-laborales
  *
  * Devuelve los datos laborales del empleado autenticado.
  * Mismo patrón de aislamiento que getMiNomina.

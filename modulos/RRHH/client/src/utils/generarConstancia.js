@@ -1,6 +1,6 @@
 export async function generarConstancia(empleadoId, cedula) {
     const res = await fetch(
-        `/api/constancias/trabajo?empleado_id=${empleadoId}`,
+        `/api/rrhh/constancias/trabajo?empleado_id=${empleadoId}`,
         { credentials: 'include' }
     );
     if (!res.ok) throw new Error('No se pudo generar la constancia');

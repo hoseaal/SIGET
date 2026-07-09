@@ -13,7 +13,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
     const [mensajeMostrado, setMensajeMostrado] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
-    // Estado del Formulario (Coincide con el endpoint POST /api/funcionarios)
+    // Estado del Formulario (Coincide con el endpoint POST /api/rrhh/funcionarios)
     const [formData, setFormData] = useState({
         // Datos Personales
         cedula: '',
@@ -82,14 +82,14 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
         const fetchCatalogos = async () => {
             try {
                 const [proRes, primasProfRes, cetRes, onaRes, colRes, dirRes, divRes, uniRes] = await Promise.all([
-                    fetch('/api/profesiones'),
-                    fetch('/api/primas-profesionalizacion'),
-                    fetch('/api/cargos-cet'),
-                    fetch('/api/cargos-onapre'),
-                    fetch('/api/condiciones-laborales'),
-                    fetch('/api/direcciones'),
-                    fetch('/api/divisiones'),
-                    fetch('/api/unidades')
+                    fetch('/api/rrhh/profesiones'),
+                    fetch('/api/rrhh/primas-profesionalizacion'),
+                    fetch('/api/rrhh/cargos-cet'),
+                    fetch('/api/rrhh/cargos-onapre'),
+                    fetch('/api/rrhh/condiciones-laborales'),
+                    fetch('/api/rrhh/direcciones'),
+                    fetch('/api/rrhh/divisiones'),
+                    fetch('/api/rrhh/unidades')
                 ]);
 
                 setCatalogos({
@@ -122,7 +122,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
             }
             try {
                 // Asumiendo un endpoint que filtre niveles por cargo ONAPRE
-                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
+                const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
                 const data = await res.json();
                 setCatalogos(prev => ({ ...prev, niveles: data }));
             } catch (error) {
@@ -201,7 +201,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
         if (onSaveStart) onSaveStart();
 
         try {
-            const response = await fetch('/api/funcionarios', {
+            const response = await fetch('/api/rrhh/funcionarios', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

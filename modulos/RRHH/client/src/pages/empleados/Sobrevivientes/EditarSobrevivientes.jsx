@@ -56,7 +56,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
         if (!sobreviviente_id) return;
         setLoadingFamiliares(true);
         try {
-            const res = await fetch(`/api/sobrevivientes/${sobreviviente_id}/familiares`);
+            const res = await fetch(`/api/rrhh/sobrevivientes/${sobreviviente_id}/familiares`);
             const result = await res.json();
             if (result.success) {
                 setFamiliares(result.data || []);
@@ -80,15 +80,15 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
             setErrorMessage('');
             try {
                 const [proRes, primasProfRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, sobRes] = await Promise.all([
-                    fetch('/api/profesiones'),
-                    fetch('/api/primas-profesionalizacion'),
-                    fetch('/api/cargos-cet'),
-                    fetch('/api/cargos-onapre'),
-                    fetch('/api/direcciones'),
-                    fetch('/api/condiciones-laborales'),
-                    fetch('/api/divisiones'),
-                    fetch('/api/unidades'),
-                    fetch(`/api/sobrevivientes/${sobreviviente_id}`),
+                    fetch('/api/rrhh/profesiones'),
+                    fetch('/api/rrhh/primas-profesionalizacion'),
+                    fetch('/api/rrhh/cargos-cet'),
+                    fetch('/api/rrhh/cargos-onapre'),
+                    fetch('/api/rrhh/direcciones'),
+                    fetch('/api/rrhh/condiciones-laborales'),
+                    fetch('/api/rrhh/divisiones'),
+                    fetch('/api/rrhh/unidades'),
+                    fetch(`/api/rrhh/sobrevivientes/${sobreviviente_id}`),
                 ]);
 
                 if (!sobRes.ok) throw new Error('Error al obtener datos del sobreviviente');
@@ -103,7 +103,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
                 let nivelesFetch = [];
 
                 if (ona_id) {
-                    const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
+                    const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${ona_id}`);
                     const nivelesData = await res.json();
                     const data = nivelesData.success ? nivelesData.data : nivelesData;
                     nivelesFetch = Array.isArray(data) ? data.map(n => ({
@@ -168,7 +168,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
     // Cascada: Niveles Salariales según Clasificación ONAPRE (se mantiene API)
     useEffect(() => {
         if (!formData.cargo_onapre_id || !show || isLoadingData) return;
-        fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
+        fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
             .then(r => r.json())
             .then(nivelesData => {
                 const data = nivelesData.success ? nivelesData.data : nivelesData;
@@ -218,7 +218,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
         if (onSaveStart) onSaveStart();
 
         try {
-            const response = await fetch(`/api/sobrevivientes/${sobreviviente_id}`, {
+            const response = await fetch(`/api/rrhh/sobrevivientes/${sobreviviente_id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -300,14 +300,14 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
             let response;
             if (editingFamiliar) {
                 // Actualizar familiar existente
-                response = await fetch(`/api/sobrevivientes/familiares/${editingFamiliar}`, {
+                response = await fetch(`/api/rrhh/sobrevivientes/familiares/${editingFamiliar}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(familiarForm),
                 });
             } else {
                 // Agregar nuevo familiar
-                response = await fetch(`/api/sobrevivientes/${sobreviviente_id}/familiares`, {
+                response = await fetch(`/api/rrhh/sobrevivientes/${sobreviviente_id}/familiares`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(familiarForm),
@@ -340,7 +340,7 @@ const EditarSobrevivientes = ({ show, handleClose, onSaveStart, onSaveEnd, sobre
         if (!window.confirm('¿Está seguro de eliminar este familiar?')) return;
 
         try {
-            const response = await fetch(`/api/sobrevivientes/familiares/${familiarId}`, {
+            const response = await fetch(`/api/rrhh/sobrevivientes/familiares/${familiarId}`, {
                 method: 'DELETE',
             });
             const result = await response.json();

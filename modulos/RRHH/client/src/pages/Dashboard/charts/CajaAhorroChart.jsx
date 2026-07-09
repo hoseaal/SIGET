@@ -42,7 +42,7 @@ export function CajaAhorroChart({ tipoPersonal: propTipo }) {
     try {
       const params = new URLSearchParams({ mes, anio, tipo_personal: tipoPersonal });
       if (periodo === 'quincenal') params.append('quincena_no', quincenaNo);
-      const res = await fetch(`/api/caja-ahorro/reporte?${params}`);
+      const res = await fetch(`/api/rrhh/caja-ahorro/reporte?${params}`);
       const d = await res.json();
       if (d.ok) {
         setResumen(d.resumen);

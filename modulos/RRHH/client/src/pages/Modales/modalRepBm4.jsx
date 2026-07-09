@@ -85,7 +85,7 @@ function ModalGenerarReporteBM4({ show, handleClose, initialFinancialData }) {
                 existenciaFinal: parseFloat(existenciaFinal),
             };
 
-            const response = await fetch('/api/pdf/reporte-bm4', {
+            const response = await fetch('/api/rrhh/pdf/reporte-bm4', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

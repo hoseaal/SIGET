@@ -500,7 +500,7 @@ export class VacacionesService {
   }
 
   /* ─────────────────────────────────────────────────────────
-   *  ENDPOINT PRINCIPAL — POST /api/vacaciones/calcular
+   *  ENDPOINT PRINCIPAL — POST /api/rrhh/vacaciones/calcular
    *
    *  Orquesta los tres módulos en secuencia:
    *    1. Obtiene tipo_personal desde empleados.

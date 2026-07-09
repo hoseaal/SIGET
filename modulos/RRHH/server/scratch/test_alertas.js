@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 
 async function testAlerts() {
   try {
-    const res = await fetch('http://localhost:5002/api/vacaciones/alertas')
+    const res = await fetch('http://localhost:5002/api/rrhh/vacaciones/alertas')
     console.log('Status:', res.status)
     const json = await res.json()
     console.log('Response:')
