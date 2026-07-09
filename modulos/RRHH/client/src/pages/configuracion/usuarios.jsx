@@ -50,7 +50,7 @@ export const Usuarios = () => {
                 })));
                 setIdColumn(primaryKey);
 
-                const res = await fetch('/api/user', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/user', { credentials: 'include' });
                 const data = await res.json();
                 setData(data);
             } catch (error) {

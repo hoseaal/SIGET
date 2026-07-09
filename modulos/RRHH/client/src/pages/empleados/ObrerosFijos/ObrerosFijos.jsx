@@ -42,7 +42,7 @@ export const ObrerosFijos = () => {
     useEffect(() => {
         const fetchDirecciones = async () => {
             try {
-                const res = await fetch('/api/direcciones');
+                const res = await fetch('/api/rrhh/direcciones');
                 const data = await res.json();
                 setDireccion(data || []);
             } catch (e) {
@@ -52,11 +52,11 @@ export const ObrerosFijos = () => {
         fetchDirecciones();
     }, []);
 
-    // Carga de datos de Obreros Fijos — apunta a /api/obreros
+    // Carga de datos de Obreros Fijos — apunta a /api/rrhh/obreros
     useEffect(() => {
         const loadData = async () => {
             try {
-                let url = `/api/obreros?page=${page}&limit=${limit}&estatus_id=1`;
+                let url = `/api/rrhh/obreros?page=${page}&limit=${limit}&estatus_id=1`;
 
                 if (searchQuery) {
                     url += `&search=${encodeURIComponent(searchQuery)}`;

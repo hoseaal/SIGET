@@ -69,7 +69,7 @@ export const ReporteResumenNomina = () => {
     setVerDetalle(false);
     try {
       const params = new URLSearchParams({ mes, anio, quincena });
-      const res = await fetch(`/api/resumen-nomina/generar?${params}`, {
+      const res = await fetch(`/api/rrhh/resumen-nomina/generar?${params}`, {
         method: 'GET', headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();

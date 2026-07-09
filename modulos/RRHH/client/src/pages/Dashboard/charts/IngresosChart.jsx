@@ -14,7 +14,7 @@ export function IngresosChart() {
       hasta: hoy.toISOString().split('T')[0],
       tipo_personal: 'Todos',
     });
-    fetch(`/api/reporte-ingresos/generar?${params}`)
+    fetch(`/api/rrhh/reporte-ingresos/generar?${params}`)
       .then(r => r.json())
       .then(d => {
         if (d.ok) {

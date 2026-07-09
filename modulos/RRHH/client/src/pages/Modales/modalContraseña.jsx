@@ -63,7 +63,7 @@ function ModalContraseña({ show, handleClose, rowData, idColumn, onSuccess }) {
         // --- Fin Validación ---
 
         try {
-            const response = await fetch(`/api/user/${rowId}/password`, { // Corregido el slash final
+            const response = await fetch(`/api/rrhh/user/${rowId}/password`, { // Corregido el slash final
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

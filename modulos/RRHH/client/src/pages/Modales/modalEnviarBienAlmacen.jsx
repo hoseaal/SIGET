@@ -52,8 +52,8 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
     const fetchInitialData = async () => {
         try {
             const [depRes, bienesRes] = await Promise.all([
-                fetch('/api/departamentos', { credentials: 'include' }),
-                fetch('/api/bienes/all?inc=1', { credentials: 'include' }),
+                fetch('/api/rrhh/departamentos', { credentials: 'include' }),
+                fetch('/api/rrhh/bienes/all?inc=1', { credentials: 'include' }),
             ]);
 
             if (!depRes.ok || !bienesRes.ok) {
@@ -176,7 +176,7 @@ function ModalEnviarBienAlmacen({ show, handleClose, onSuccess }) {
 
         try {
             // Usamos el endpoint específico para préstamos a almacén
-            const response = await fetch('/api/prestamos/', {
+            const response = await fetch('/api/rrhh/prestamos/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

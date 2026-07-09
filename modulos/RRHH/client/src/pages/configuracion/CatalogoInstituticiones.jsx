@@ -49,7 +49,7 @@ export const CatalogoInstituticiones = () => {
             setModalColumns(formattedColumns.filter(col => col.originalName !== 'siglas'));
             setIdColumn(primaryKey);
 
-            const res = await fetch('/api/instituciones', { credentials: 'include' });
+            const res = await fetch('/api/rrhh/instituciones', { credentials: 'include' });
             const data = await res.json();
             setData(data);
           } catch (error) {

@@ -52,9 +52,9 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
     const fetchInitialData = async () => {
         try {
             const [depRes, condRes, bienesRes] = await Promise.all([
-                fetch('/api/departamentos', { credentials: 'include' }),
-                fetch('/api/condiciones-fisicas', { credentials: 'include' }),
-                fetch('/api/bienes/all?inc=1', { credentials: 'include' }),
+                fetch('/api/rrhh/departamentos', { credentials: 'include' }),
+                fetch('/api/rrhh/condiciones-fisicas', { credentials: 'include' }),
+                fetch('/api/rrhh/bienes/all?inc=1', { credentials: 'include' }),
             ]);
 
             if (!depRes.ok || !condRes.ok || !bienesRes.ok) {
@@ -175,7 +175,7 @@ function ModalRegistrarPrestamo({ show, handleClose, onSuccess }) {
         console.log(payload)
 
         try {
-            const response = await fetch('/api/prestamos', { // Endpoint para crear un nuevo préstamo
+            const response = await fetch('/api/rrhh/prestamos', { // Endpoint para crear un nuevo préstamo
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

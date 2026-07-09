@@ -58,12 +58,12 @@ export const DashboardPage = () => {
     const fetchDashboardData = async () => {
       setError(null);
       try {
-        const userRes = await fetch('/api/auth/verify-auth', { credentials: 'include' });
+        const userRes = await fetch('/api/rrhh/auth/verify-auth', { credentials: 'include' });
         if (!userRes.ok) throw new Error('No autorizado.');
         const userDataResult = await userRes.json();
         if (!userDataResult.success) throw new Error(userDataResult.message || 'Error desconocido al verificar usuario.');
         setUserData(userDataResult.user);
-        const statsRes = await fetch('/api/dashboard/stats', { credentials: 'include' });
+        const statsRes = await fetch('/api/rrhh/dashboard/stats', { credentials: 'include' });
         if (statsRes.ok) setRrhhStats(await statsRes.json());
       } catch (err) {
         console.error('Error al cargar el dashboard:', err);

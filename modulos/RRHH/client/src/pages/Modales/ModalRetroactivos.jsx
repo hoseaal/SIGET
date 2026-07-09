@@ -80,11 +80,11 @@ export default function ModalRetroactivos({ show, handleClose, empleado_id, onCh
 
   const cargarCatalogos = async () => {
     const [resCet, resOnapre, resDir, resDiv, resUni] = await Promise.all([
-      fetch('/api/cargos-cet'),
-      fetch('/api/cargos-onapre'),
-      fetch('/api/direcciones'),
-      fetch('/api/divisiones'),
-      fetch('/api/unidades')
+      fetch('/api/rrhh/cargos-cet'),
+      fetch('/api/rrhh/cargos-onapre'),
+      fetch('/api/rrhh/direcciones'),
+      fetch('/api/rrhh/divisiones'),
+      fetch('/api/rrhh/unidades')
     ])
 
     const [cetData, onapreData, dirData, divData, uniData] = await Promise.all([
@@ -108,8 +108,8 @@ export default function ModalRetroactivos({ show, handleClose, empleado_id, onCh
 
     try {
       const [resFuncionario, resRetroactivos] = await Promise.all([
-        fetch(`/api/funcionarios/${empleado_id}?type=full`),
-        fetch(`/api/retroactivos/empleado/${empleado_id}`)
+        fetch(`/api/rrhh/funcionarios/${empleado_id}?type=full`),
+        fetch(`/api/rrhh/retroactivos/empleado/${empleado_id}`)
       ])
 
       const funcionarioData = await resFuncionario.json()
@@ -141,7 +141,7 @@ export default function ModalRetroactivos({ show, handleClose, empleado_id, onCh
       if (!formData.cargo_onapre_id || !show) return
 
       try {
-        const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
+        const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
         const nivelesData = await res.json()
         const data = nivelesData.success ? nivelesData.data : nivelesData
         setCatalogos(prev => ({ ...prev, niveles: Array.isArray(data) ? data : [] }))
@@ -207,8 +207,8 @@ export default function ModalRetroactivos({ show, handleClose, empleado_id, onCh
         observacion: formData.observacion
       }
       const url = editingId
-        ? `/api/retroactivos/empleado/${empleado_id}/${editingId}`
-        : `/api/retroactivos/empleado/${empleado_id}`
+        ? `/api/rrhh/retroactivos/empleado/${empleado_id}/${editingId}`
+        : `/api/rrhh/retroactivos/empleado/${empleado_id}`
       const res = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -249,7 +249,7 @@ export default function ModalRetroactivos({ show, handleClose, empleado_id, onCh
     setError('')
 
     try {
-      const res = await fetch(`/api/retroactivos/${retroactivoId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/rrhh/retroactivos/${retroactivoId}`, { method: 'DELETE' })
       const data = await res.json()
 
       if (!res.ok || !data.ok) throw new Error(data.error || 'No se pudo eliminar el retroactivo.')
@@ -267,7 +267,7 @@ export default function ModalRetroactivos({ show, handleClose, empleado_id, onCh
     setError('')
 
     try {
-      const res = await fetch(`/api/retroactivos/${retroactivoId}/pagar`, {
+      const res = await fetch(`/api/rrhh/retroactivos/${retroactivoId}/pagar`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tipoNomina: tipoNominaPago })

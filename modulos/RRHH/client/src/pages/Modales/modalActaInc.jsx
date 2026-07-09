@@ -30,7 +30,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
       if (BienId) {
         try {
           setLoading(true);
-          const response = await fetch(`/api/bienes/${BienId}`);
+          const response = await fetch(`/api/rrhh/bienes/${BienId}`);
           if (!response.ok) {
             throw new Error('No se pudo obtener los datos del bien');
           }
@@ -55,7 +55,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
 
     try {
       setLoading(true);
-      const response = await fetch(`/api/bienes/${codigoBienInput}`);
+      const response = await fetch(`/api/rrhh/bienes/${codigoBienInput}`);
       if (!response.ok) {
         throw new Error('Este código no está asignado a ningún bien');
       }
@@ -246,7 +246,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
       setErrorMessage('');
 
       const [pdfResp1, pdfResp2] = await Promise.all([
-        fetch('/api/pdf/acta-incorporacion', {
+        fetch('/api/rrhh/pdf/acta-incorporacion', {
           method: 'POST',
           body: JSON.stringify(datosActa),
           headers: {
@@ -255,7 +255,7 @@ function ModalActaInc({ show, handleClose, BienId, limpiarFormulario }) {
           credentials: 'include'
         }).then(response => response.blob()),
 
-        fetch('/api/pdf/acta-cet', {
+        fetch('/api/rrhh/pdf/acta-cet', {
           method: 'POST',
           body: JSON.stringify(datosActaCET),
           headers: {

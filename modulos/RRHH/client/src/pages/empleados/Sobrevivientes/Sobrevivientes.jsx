@@ -37,7 +37,7 @@ export const Sobrevivientes = () => {
 
     // Catálogo de direcciones para el filtro
     useEffect(() => {
-        fetch('/api/direcciones')
+        fetch('/api/rrhh/direcciones')
             .then(r => r.json())
             .then(data => setDirecciones(data || []))
             .catch(e => console.error('Error cargando direcciones:', e));
@@ -55,7 +55,7 @@ export const Sobrevivientes = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                let url = `/api/sobrevivientes?page=${page}&limit=${limit}`;
+                let url = `/api/rrhh/sobrevivientes?page=${page}&limit=${limit}`;
 
                 if (searchQuery) {
                     url += `&search=${encodeURIComponent(searchQuery)}`;
@@ -106,7 +106,7 @@ export const Sobrevivientes = () => {
         if (!window.confirm('¿Está seguro de eliminar este registro de sobreviviente? Se eliminarán también los familiares vinculados.')) return;
 
         try {
-            const response = await fetch(`/api/sobrevivientes/${id}`, { method: 'DELETE' });
+            const response = await fetch(`/api/rrhh/sobrevivientes/${id}`, { method: 'DELETE' });
             const result = await response.json();
 
             if (response.ok) {

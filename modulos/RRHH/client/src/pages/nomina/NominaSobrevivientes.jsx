@@ -21,7 +21,7 @@ export const NominaSobrevivientes = () => {
     const [cierreStatus, setCierreStatus] = useState({ q1: false, q2: false, unificada: false })
     const meses = MESES_NOMINA;
     const { periodoNomina, setPeriodoNomina, periodoLoading, mes, anio } = usePeriodoNomina(
-        '/api/nomina',
+        '/api/rrhh/nomina',
         () => toast.error('Error al obtener el periodo de nomina desde el servidor.')
     );
 
@@ -31,8 +31,8 @@ export const NominaSobrevivientes = () => {
         if (!mes || !anio) return
         try {
             const [resQ1, resQ2] = await Promise.all([
-                fetch(`/api/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=1&tipo_personal=${TIPO_PERSONAL}`),
-                fetch(`/api/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=2&tipo_personal=${TIPO_PERSONAL}`)
+                fetch(`/api/rrhh/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=1&tipo_personal=${TIPO_PERSONAL}`),
+                fetch(`/api/rrhh/nomina/verificar-cierre?mes=${mes}&anio=${anio}&quincena=2&tipo_personal=${TIPO_PERSONAL}`)
             ])
             const dataQ1 = await resQ1.json()
             const dataQ2 = await resQ2.json()
@@ -67,7 +67,7 @@ export const NominaSobrevivientes = () => {
         setNominaData([]);
         try {
             if (quincena === 'unificada') {
-                const res = await fetch('/api/nomina/calcular-en-caliente', {
+                const res = await fetch('/api/rrhh/nomina/calcular-en-caliente', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ tipo_personal: TIPO_PERSONAL, quincena: 'unificada' })
@@ -80,7 +80,7 @@ export const NominaSobrevivientes = () => {
                     toast.error(data.message || 'Error calculando la nómina unificada.');
                 }
             } else {
-                const res = await fetch('/api/nomina/calcular-en-caliente', {
+                const res = await fetch('/api/rrhh/nomina/calcular-en-caliente', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ tipo_personal: TIPO_PERSONAL, quincena: parseInt(quincena, 10) })
@@ -109,7 +109,7 @@ export const NominaSobrevivientes = () => {
         const quincenaKey = quincena === 'unificada' ? 'unificada' : `q${quincena}`
         setCierreStatus(prev => ({ ...prev, [quincenaKey]: true }))
         try {
-            const res = await fetch('/api/nomina/guardar-cierre', {
+            const res = await fetch('/api/rrhh/nomina/guardar-cierre', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tipo_personal: TIPO_PERSONAL, quincena, mes, anio })

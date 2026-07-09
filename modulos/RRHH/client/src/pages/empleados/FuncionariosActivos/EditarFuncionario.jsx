@@ -53,15 +53,15 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
             try {
                 // 1. Cargar bases estáticas
                 const [proRes, primasProfRes, cetRes, onaRes, colRes, dirRes, divRes, uniRes, funRes] = await Promise.all([
-                    fetch('/api/profesiones'),
-                    fetch('/api/primas-profesionalizacion'),
-                    fetch('/api/cargos-cet'),
-                    fetch('/api/cargos-onapre'),
-                    fetch('/api/condiciones-laborales'),
-                    fetch('/api/direcciones'),
-                    fetch('/api/divisiones'),
-                    fetch('/api/unidades'),
-                    fetch(`/api/funcionarios/${empleado_id}?type=full`)
+                    fetch('/api/rrhh/profesiones'),
+                    fetch('/api/rrhh/primas-profesionalizacion'),
+                    fetch('/api/rrhh/cargos-cet'),
+                    fetch('/api/rrhh/cargos-onapre'),
+                    fetch('/api/rrhh/condiciones-laborales'),
+                    fetch('/api/rrhh/direcciones'),
+                    fetch('/api/rrhh/divisiones'),
+                    fetch('/api/rrhh/unidades'),
+                    fetch(`/api/rrhh/funcionarios/${empleado_id}?type=full`)
                 ]);
 
                 if (!funRes.ok) throw new Error('Error al obtener datos del funcionario');
@@ -83,7 +83,7 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
                 let nivelesFetch = [];
 
                 if (ona_id) {
-                    const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
+                    const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${ona_id}`);
                     const nivelesData = await res.json();
                     const data = nivelesData.success ? nivelesData.data : nivelesData;
                     nivelesFetch = Array.isArray(data) ? data.map(n => ({
@@ -162,7 +162,7 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
         const fetchNiveles = async () => {
             if (!formData.cargo_onapre_id || !show || isLoadingData) return;
             try {
-                const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
+                const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
                 const nivelesData = await res.json();
                 const data = nivelesData.success ? nivelesData.data : nivelesData;
                 const nivelesFormateados = Array.isArray(data) ? data.map(n => ({
@@ -226,7 +226,7 @@ export const EditarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd, e
         if (onSaveStart) onSaveStart();
 
         try {
-            const response = await fetch(`/api/funcionarios/${empleado_id}`, {
+            const response = await fetch(`/api/rrhh/funcionarios/${empleado_id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'

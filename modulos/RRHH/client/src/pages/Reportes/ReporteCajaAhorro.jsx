@@ -46,7 +46,7 @@ export const ReporteCajaAhorro = () => {
     try {
       const params = new URLSearchParams({ mes, anio, tipo_personal: tipoPersonal });
       if (periodo === 'quincenal') params.append('quincena_no', quincenaNo);
-      const res = await fetch(`/api/caja-ahorro/reporte?${params}`);
+      const res = await fetch(`/api/rrhh/caja-ahorro/reporte?${params}`);
       const data = await res.json();
       if (data.ok) { setReporteData(data); toast.success('Reporte generado.'); }
       else toast.error(data.error || 'Error al generar el reporte.');

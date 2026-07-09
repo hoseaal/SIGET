@@ -5,15 +5,15 @@ import { getTableMetadata } from '../../data/fetchData';
 
 // Mapeo de columnas a endpoints para las claves foráneas.
 const foreignKeyEndpoints = {
-    'dep_ide': '/api/departamentos',
-    'foa_ide': '/api/formas-adquisicion',
-    'esu_ide': '/api/estados-uso',
-    'con_ide': '/api/condiciones-fisicas',
-    'mod_ide': '/api/modelos/alfabeticamente',
-    'mar_ide': '/api/marcas',
-    'cae_ide': '/api/categorias',
-    'com_ide': '/api/conceptos-movimiento',
-    'estatus_id': '/api/estados-uso'
+    'dep_ide': '/api/rrhh/departamentos',
+    'foa_ide': '/api/rrhh/formas-adquisicion',
+    'esu_ide': '/api/rrhh/estados-uso',
+    'con_ide': '/api/rrhh/condiciones-fisicas',
+    'mod_ide': '/api/rrhh/modelos/alfabeticamente',
+    'mar_ide': '/api/rrhh/marcas',
+    'cae_ide': '/api/rrhh/categorias',
+    'com_ide': '/api/rrhh/conceptos-movimiento',
+    'estatus_id': '/api/rrhh/estados-uso'
 };
 
 // Campos editables
@@ -125,7 +125,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     
 
                     // --- Carga de datos del bien ---
-                    const bienRes = await fetch(`/api/bienes/${BienId}`);
+                    const bienRes = await fetch(`/api/rrhh/bienes/${BienId}`);
                     if (!bienRes.ok) throw new Error('No se pudo cargar el bien.');
                     const bienJson = await bienRes.json();
                     const bien = Array.isArray(bienJson.data) ? bienJson.data[0] : bienJson; 
@@ -135,7 +135,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                     setFormData(bien);
 
                     // --- Carga de información de préstamo ---
-                    const prestamoRes = await fetch(`/api/prestamos/estado-bien/${BienId}`);
+                    const prestamoRes = await fetch(`/api/rrhh/prestamos/estado-bien/${BienId}`);
                     if (!prestamoRes.ok) {
                         if (prestamoRes.status === 404) {
                             setPrestamoInfo(null);
@@ -203,7 +203,7 @@ function ModalEditBm({ show, handleClose, BienId, onSuccess }) {
                 throw new Error('No se puede cambiar la condición física del bien mientras esté prestado.');
             }
 
-            const response = await fetch(`/api/bienes/${BienId}`, {
+            const response = await fetch(`/api/rrhh/bienes/${BienId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(changedFields),

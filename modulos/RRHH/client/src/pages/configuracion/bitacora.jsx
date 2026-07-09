@@ -55,7 +55,7 @@ export const Bitacora = () => {
                 }));
                 setColumns(processedColumns);
 
-                const res = await fetch(`/api/bienes/bitacora?page=${currentPage}&limit=${limit}`, { credentials: 'include' });
+                const res = await fetch(`/api/rrhh/bienes/bitacora?page=${currentPage}&limit=${limit}`, { credentials: 'include' });
 
                 if (!res.ok) {
                     throw new Error(`Error HTTP! estado: ${res.status}`);

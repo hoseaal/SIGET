@@ -1,7 +1,7 @@
 import { EncargoTemporalService } from '../services/encargoTemporal.service.js'
 
 /**
- * GET /api/encargos-temporales/funcionario/:empleado_id
+ * GET /api/rrhh/encargos-temporales/funcionario/:empleado_id
  * Historial completo de encargos de un funcionario + encargo activo señalado.
  */
 export const obtenerPorFuncionario = async (req, res) => {
@@ -15,7 +15,7 @@ export const obtenerPorFuncionario = async (req, res) => {
 }
 
 /**
- * GET /api/encargos-temporales/activo/:empleado_id
+ * GET /api/rrhh/encargos-temporales/activo/:empleado_id
  * Retorna solo el encargo activo del funcionario (o null).
  */
 export const obtenerActivo = async (req, res) => {
@@ -29,7 +29,7 @@ export const obtenerActivo = async (req, res) => {
 }
 
 /**
- * GET /api/encargos-temporales/:id
+ * GET /api/rrhh/encargos-temporales/:id
  * Obtiene un encargo por su ID.
  */
 export const obtenerPorId = async (req, res) => {
@@ -43,7 +43,7 @@ export const obtenerPorId = async (req, res) => {
 }
 
 /**
- * POST /api/encargos-temporales
+ * POST /api/rrhh/encargos-temporales
  * Registra un nuevo encargo temporal activo.
  * Body: { empleado_id, fecha_inicio, cargo_cet_id, cargo_onapre_id,
  *         nivel_salarial_id, nivel_salarial_antiguo_id?,
@@ -62,7 +62,7 @@ export const crearEncargo = async (req, res) => {
 }
 
 /**
- * PATCH /api/encargos-temporales/:id/finalizar
+ * PATCH /api/rrhh/encargos-temporales/:id/finalizar
  * Finaliza el encargo: registra fecha_fin y cambia estatus a 0.
  * Body: { fecha_fin }
  */
@@ -78,7 +78,7 @@ export const finalizarEncargo = async (req, res) => {
 }
 
 /**
- * PUT /api/encargos-temporales/:id
+ * PUT /api/rrhh/encargos-temporales/:id
  * Actualiza los datos de un encargo temporal.
  */
 export const actualizarEncargo = async (req, res) => {
@@ -92,7 +92,7 @@ export const actualizarEncargo = async (req, res) => {
 }
 
 /**
- * DELETE /api/encargos-temporales/:id
+ * DELETE /api/rrhh/encargos-temporales/:id
  * Elimina un encargo temporal.
  */
 export const eliminarEncargo = async (req, res) => {

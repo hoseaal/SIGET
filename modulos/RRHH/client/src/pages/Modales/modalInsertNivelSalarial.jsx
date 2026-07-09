@@ -9,7 +9,7 @@ export const ModalInsertNivelSalarial = ({ show, handleClose, onSuccess, dataOna
 
     console.log('Tabla en ModalInsertNivelSalarial:', tableName);
     const isAntiguo = tableName === 'niveles_salariales_antiguos';
-    const endpoint = isAntiguo ? '/api/niveles-salariales-antiguos' : '/api/niveles-salariales';
+    const endpoint = isAntiguo ? '/api/rrhh/niveles-salariales-antiguos' : '/api/rrhh/niveles-salariales';
     const fieldNom = 'nombre';
     const fieldSal = isAntiguo ? 'salario_antiguo' : 'salario_base';
 

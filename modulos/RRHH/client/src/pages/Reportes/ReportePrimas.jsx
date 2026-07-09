@@ -54,7 +54,7 @@ export const ReportePrimas = () => {
     setReporteData(null);
     try {
       const params = new URLSearchParams({ mes, anio, tipo_personal: tipoPersonal });
-      const res = await fetch(`/api/reporte-primas/generar?${params}`);
+      const res = await fetch(`/api/rrhh/reporte-primas/generar?${params}`);
       const data = await res.json();
       if (data.ok) { setReporteData(data); toast.success('Reporte generado.'); }
       else toast.error(data.error || 'Error al generar el reporte.');

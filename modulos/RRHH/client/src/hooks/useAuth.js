@@ -25,7 +25,7 @@ export function useAuth() {
       return
     }
 
-    cachedPromise = fetch('/api/auth/verify-auth', {
+    cachedPromise = fetch('/api/rrhh/auth/verify-auth', {
       method: 'GET',
       credentials: 'include'
     }).then(res => {

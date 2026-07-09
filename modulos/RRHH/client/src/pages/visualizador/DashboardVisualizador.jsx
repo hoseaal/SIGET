@@ -105,7 +105,7 @@ const VistaPerfil = ({ empleado }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const VistaAntiguedades = ({ empleadoId }) => {
     const { data, loading, error } = useFetch(
-        empleadoId ? `/api/mi-perfil/antiguedades?empleado_id=${empleadoId}` : null
+        empleadoId ? `/api/rrhh/mi-perfil/antiguedades?empleado_id=${empleadoId}` : null
     );
 
     if (loading) return <div className="text-center py-5"><Spinner animation="border" size="sm" className="me-2" />Cargando historial...</div>;
@@ -153,7 +153,7 @@ const VistaAntiguedades = ({ empleadoId }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const VistaEncargos = ({ empleadoId }) => {
     const { data, loading, error } = useFetch(
-        empleadoId ? `/api/mi-perfil/encargos?empleado_id=${empleadoId}` : null
+        empleadoId ? `/api/rrhh/mi-perfil/encargos?empleado_id=${empleadoId}` : null
     );
 
     if (loading) return <div className="text-center py-5"><Spinner animation="border" size="sm" className="me-2" />Cargando encargos...</div>;
@@ -209,7 +209,7 @@ const VistaEncargos = ({ empleadoId }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const VistaVacaciones = ({ empleadoId }) => {
     const { data, loading, error } = useFetch(
-        empleadoId ? `/api/mi-perfil/vacaciones?empleado_id=${empleadoId}` : null
+        empleadoId ? `/api/rrhh/mi-perfil/vacaciones?empleado_id=${empleadoId}` : null
     );
 
     if (loading) return <div className="text-center py-5"><Spinner animation="border" size="sm" className="me-2" />Cargando historial vacacional...</div>;
@@ -268,7 +268,7 @@ const VistaVacaciones = ({ empleadoId }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const VistaNomina = ({ empleadoId }) => {
     const { data, loading, error } = useFetch(
-        empleadoId ? `/api/mi-perfil/nomina?empleado_id=${empleadoId}` : null
+        empleadoId ? `/api/rrhh/mi-perfil/nomina?empleado_id=${empleadoId}` : null
     );
 
     if (loading) return <div className="text-center py-5"><Spinner animation="border" size="sm" className="me-2" />Cargando historial de nómina...</div>;
@@ -334,7 +334,7 @@ export const DashboardVisualizador = () => {
     const [descargando, setDescargando] = useState(false);
 
     const { data: empleado, loading, error } = useFetch(
-        user?.empleado_id ? `/api/mi-perfil/datos-laborales?empleado_id=${user.empleado_id}` : null
+        user?.empleado_id ? `/api/rrhh/mi-perfil/datos-laborales?empleado_id=${user.empleado_id}` : null
     );
 
     const handleDownloadConstancia = async () => {

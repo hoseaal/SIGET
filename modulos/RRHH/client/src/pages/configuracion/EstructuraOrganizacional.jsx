@@ -78,7 +78,7 @@ export const EstructuraOrganizacional = () => {
                 })));
                 setIdColumnDir(primaryKey);
 
-                const res = await fetch('/api/direcciones', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/direcciones', { credentials: 'include' });
                 const data = await res.json();
                 setDataDir(data);
             } catch (error) {
@@ -100,7 +100,7 @@ export const EstructuraOrganizacional = () => {
                 })));
                 setIdColumnDiv(primaryKey);
 
-                const res = await fetch('/api/divisiones', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/divisiones', { credentials: 'include' });
                 const data = await res.json();
                 setDataDiv(data);
             } catch (error) {
@@ -122,7 +122,7 @@ export const EstructuraOrganizacional = () => {
                 })));
                 setIdColumnUni(primaryKey);
 
-                const res = await fetch('/api/unidades', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/unidades', { credentials: 'include' });
                 const data = await res.json();
                 setDataUni(data);
             } catch (error) {

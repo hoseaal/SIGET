@@ -13,7 +13,7 @@ const VerFamiliares = ({ show, handleClose, sobreviviente_id }) => {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await fetch(`/api/sobrevivientes/${sobreviviente_id}/familiares`);
+                const response = await fetch(`/api/rrhh/sobrevivientes/${sobreviviente_id}/familiares`);
                 const result = await response.json();
                 if (result.success) {
                     const familiaresFiltrados = (result.data || []).filter(

@@ -58,7 +58,7 @@ const ModalCambioEstatus = ({ show, handleClose, empleado }) => {
         const fetchFamiliares = async () => {
             if (formData.nuevo_estatus_id == 7 && empleado) {
                 try {
-                    const response = await fetch(`/api/carga-familiar/${empleado.empleado_id}`);
+                    const response = await fetch(`/api/rrhh/carga-familiar/${empleado.empleado_id}`);
                     const data = await response.json();
                     const current = new Date();
                     const familiaresMayores = data.filter(f => {
@@ -111,7 +111,7 @@ const ModalCambioEstatus = ({ show, handleClose, empleado }) => {
         setError('');
 
         try {
-            const response = await fetch(`/api/funcionarios/${empleado.empleado_id}/cambiar-estatus`, {
+            const response = await fetch(`/api/rrhh/funcionarios/${empleado.empleado_id}/cambiar-estatus`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

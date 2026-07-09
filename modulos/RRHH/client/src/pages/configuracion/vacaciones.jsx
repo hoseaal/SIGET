@@ -65,7 +65,7 @@ export const VacacionesConfig = () => {
                     isPrimaryKey: col.name === primaryKey
                 })));
                 setIdColumnVac(primaryKey);
-                const res = await fetch('/api/configuracion-vacaciones', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/configuracion-vacaciones', { credentials: 'include' });
                 const data = await res.json();
                 setDataVac(Array.isArray(data) ? data : []);
             } catch (error) {
@@ -86,7 +86,7 @@ export const VacacionesConfig = () => {
                     isPrimaryKey: col.name === primaryKey
                 })));
                 setIdColumnVacObr(primaryKey);
-                const res = await fetch('/api/configuracion-vacaciones-obreros', { credentials: 'include' });
+                const res = await fetch('/api/rrhh/configuracion-vacaciones-obreros', { credentials: 'include' });
                 const data = await res.json();
                 setDataVacObr(Array.isArray(data) ? data : []);
             } catch (error) {

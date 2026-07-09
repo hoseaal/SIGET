@@ -56,15 +56,15 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
             setErrorMessage('');
             try {
                 const [proRes, primasProfRes, cetRes, onaRes, dirRes, condRes, divRes, uniRes, jubRes] = await Promise.all([
-                    fetch('/api/profesiones'),
-                    fetch('/api/primas-profesionalizacion'),
-                    fetch('/api/cargos-cet'),
-                    fetch('/api/cargos-onapre'),
-                    fetch('/api/direcciones'),
-                    fetch('/api/condiciones-laborales'),
-                    fetch('/api/divisiones'),
-                    fetch('/api/unidades'),
-                    fetch(`/api/jubilados/${jubilado_id}`),
+                    fetch('/api/rrhh/profesiones'),
+                    fetch('/api/rrhh/primas-profesionalizacion'),
+                    fetch('/api/rrhh/cargos-cet'),
+                    fetch('/api/rrhh/cargos-onapre'),
+                    fetch('/api/rrhh/direcciones'),
+                    fetch('/api/rrhh/condiciones-laborales'),
+                    fetch('/api/rrhh/divisiones'),
+                    fetch('/api/rrhh/unidades'),
+                    fetch(`/api/rrhh/jubilados/${jubilado_id}`),
                 ]);
 
                 if (!jubRes.ok) throw new Error('Error al obtener datos del jubilado');
@@ -77,7 +77,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
                 const ona_id = jub.cargo_onapre_id || '';
                 let nivelesFetch = [];
                 if (ona_id) {
-                    const res = await fetch(`/api/niveles-salariales?cargo_onapre_id=${ona_id}`);
+                    const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${ona_id}`);
                     const nivelesData = await res.json();
                     const data = nivelesData.success ? nivelesData.data : nivelesData;
                     nivelesFetch = Array.isArray(data) ? data.map(n => ({
@@ -148,7 +148,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
     // Cascada Cargo ONAPRE → Niveles (se mantiene API)
     useEffect(() => {
         if (!formData.cargo_onapre_id || !show || isLoadingData) return;
-        fetch(`/api/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
+        fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`)
             .then(r => r.json())
             .then(nivelesData => {
                 const data = nivelesData.success ? nivelesData.data : nivelesData;
@@ -208,7 +208,7 @@ export const EditarJubilado = ({ show, handleClose, onSaveStart, onSaveEnd, jubi
             if (onSaveStart) onSaveStart();
 
         try {
-            const response = await fetch(`/api/jubilados/${jubilado_id}`, {
+            const response = await fetch(`/api/rrhh/jubilados/${jubilado_id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
