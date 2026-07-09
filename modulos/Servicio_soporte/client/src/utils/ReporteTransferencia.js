@@ -104,7 +104,7 @@ export const generateTransferPDF = (transferencia, tecnico = null) => {
         // Dibujar parte inferior (Copia) con un offset de 140mm
         drawContent(140);
 
-        window.open(doc.output('bloburl'), '_blank');
+        doc.save(`Transferencia_${transferencia.nro_caso || 'documento'}.pdf`);
     };
 
     img.onerror = () => {
@@ -112,6 +112,6 @@ export const generateTransferPDF = (transferencia, tecnico = null) => {
         // Generar el reporte aunque el logo falle
         drawContent(0);
         drawContent(140);
-        window.open(doc.output('bloburl'), '_blank');
+        doc.save(`Transferencia_${transferencia.nro_caso || 'documento'}.pdf`);
     };
 };

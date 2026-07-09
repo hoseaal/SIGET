@@ -176,5 +176,5 @@ export const exportActividadesToPDF = async (actividades) => {
 
     // ── 6. Guardar ───────────────────────────────────────────────────────────
     const fecha = new Date().toISOString().slice(0, 10);
-    window.open(doc.output('bloburl'), '_blank');
+    doc.save(`Historial_Actividades_${fecha}.pdf`);
 };

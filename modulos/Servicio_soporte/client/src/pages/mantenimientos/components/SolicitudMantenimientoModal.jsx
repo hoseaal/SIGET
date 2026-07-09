@@ -104,6 +104,7 @@ export const SolicitudMantenimientoModal = ({ show, onHide, onSuccess, user }) =
             const payload = {
                 ...data,
                 nro_caso: activeTab === 'toner' ? data.nro_caso : undefined,
+                tipo_falla: activeTab === 'toner' ? 10 : undefined,
                 usuario_id: user.usuario_id
             };
             const result = await helpFetch.POST('/mantenimiento', payload);

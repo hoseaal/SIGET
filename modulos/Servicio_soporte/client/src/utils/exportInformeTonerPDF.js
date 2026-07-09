@@ -138,14 +138,14 @@ export const exportInformeTonerPDF = async (mantenimiento, usuarioTecnico) => {
     doc.setFontSize(10);
     currentY += 5;
     doc.text("Dirección General – Unidad de Soporte Técnico.", pageWidth / 2, currentY, { align: "center" });
-    
+
     currentY += 5;
     doc.text("Analista de Soporte Técnico PI", pageWidth / 2, currentY, { align: "center" });
-    
+
     currentY += 4.5;
     doc.setFontSize(9);
     doc.text("Según resolución C.E.T. N° 145 del 22 de septiembre de 2022.", pageWidth / 2, currentY, { align: "center" });
 
-    // Abrir PDF en pestaña nueva
-    window.open(doc.output('bloburl'), '_blank');
+    // Guardar PDF
+    doc.save(`Informe_Toner_${mantenimiento.nro_caso || 'documento'}.pdf`);
 };
