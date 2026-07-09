@@ -12,7 +12,7 @@ const equipoSchema = z.object({
     direc_id: z.string().min(1, "Seleccione departamento"),
     marca_id: z.string().min(1, "Seleccione marca"),
     modelo_id: z.string().optional(),
-    pp_pared: z.string().min(1, "Seleccione puerto de pared"),
+    pp_pared: z.string().optional(),
     ip: z.string().optional(),
     nombre_equipo: z.string().max(100).optional(),
     sistema_operativo: z.string().max(100).optional(),
@@ -193,7 +193,8 @@ export const ModalEquipo = ({ show, onHide, onSuccess, equipo }) => {
                 general: {
                     ...data,
                     nro_bien: data.nro_bien.trim(),
-                    ip: data.ip?.trim() || null
+                    ip: data.ip?.trim() || null,
+                    pp_pared: data.pp_pared || null
                 },
                 detallesComputo: String(data.tipo_equipo) === "1" ? {
                     nombre_equipo: data.nombre_equipo,

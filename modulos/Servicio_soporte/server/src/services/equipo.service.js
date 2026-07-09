@@ -13,8 +13,10 @@ export class EquipoService {
         try {
             await connection.beginTransaction()
 
-            const puerto = await EquipoModel.getByPuerto({ pp_pared: datos.general.pp_pared }, connection)
-            if (puerto) throw new Error('Ya existe un equipo registrado en ese puerto del panel')
+            if (datos.general.pp_pared) {
+                const puerto = await EquipoModel.getByPuerto({ pp_pared: datos.general.pp_pared }, connection)
+                if (puerto) throw new Error('Ya existe un equipo registrado en ese puerto del panel')
+            }
 
             // 1. Crear el equipo base (Siempre se hace)
             const { id: equipoId } = await EquipoModel.create(datos.general, connection)
@@ -91,8 +93,10 @@ export class EquipoService {
         try {
             await connection.beginTransaction();
 
-            const puerto = await EquipoModel.getByPuerto({ pp_pared: datos.general.pp_pared }, connection)
-            if (puerto && puerto.id != id) throw new Error('Ya existe otro equipo registrado en ese puerto del panel')
+            if (datos.general.pp_pared) {
+                const puerto = await EquipoModel.getByPuerto({ pp_pared: datos.general.pp_pared }, connection)
+                if (puerto && puerto.id != id) throw new Error('Ya existe otro equipo registrado en ese puerto del panel')
+            }
 
             // 1. Actualizar equipo base
             await EquipoModel.update(id, datos.general, connection);

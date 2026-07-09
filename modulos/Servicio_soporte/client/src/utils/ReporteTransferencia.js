@@ -6,8 +6,9 @@ import jsPDF from "jspdf";
  * 
  * @param {Object} transferencia - Datos de la transferencia.
  * @param {Object} tecnico - Datos del técnico (opcional).
+ * @param {string} tipo - Tipo de texto: 'entrega' (por defecto) o 'entrega_revision'.
  */
-export const generateTransferPDF = (transferencia, tecnico = null) => {
+export const generateTransferPDF = (transferencia, tecnico = null, tipo = 'entrega') => {
     const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -47,7 +48,10 @@ export const generateTransferPDF = (transferencia, tecnico = null) => {
         doc.setFont("helvetica", "bold");
         doc.text("De:", 123, startY + 37);
         doc.setFont("helvetica", "normal");
-        const deLines = doc.splitTextToSize("División de Soporte Técnico Planificación y Soporte", 60);
+        const deValue = tipo === 'entrega'
+            ? (transferencia.destino_nombre || "Servicio Técnico")
+            : (transferencia.origen_nombre || "Departamento de Origen");
+        const deLines = doc.splitTextToSize(deValue, 60);
         doc.text(deLines, 135, startY + 37);
 
         const nextY = startY + 38 + (deLines.length * 5);
@@ -55,7 +59,10 @@ export const generateTransferPDF = (transferencia, tecnico = null) => {
         doc.setFont("helvetica", "bold");
         doc.text("Para:", 123, nextY);
         doc.setFont("helvetica", "normal");
-        const paraLines = doc.splitTextToSize(transferencia.origen_nombre || "Departamento Solicitante", 60);
+        const paraValue = tipo === 'entrega'
+            ? (transferencia.origen_nombre || "Departamento de Origen")
+            : (transferencia.destino_nombre || "Servicio Técnico");
+        const paraLines = doc.splitTextToSize(paraValue, 60);
         doc.text(paraLines, 135, nextY);
 
         // --- Cuerpo del Reporte (Texto Justificado) ---
@@ -65,7 +72,13 @@ export const generateTransferPDF = (transferencia, tecnico = null) => {
         const diagnostico = transferencia.diagnostico_tecnico || "No especificado";
         const solucion = transferencia.solucion_tecnica || "Mantenimiento realizado";
         const bien = transferencia.equipo_nro_bien || "N/A";
-        const cuerpoTexto = `Reciba un cordial saludo, sirva la presente para hacer entrega del bien mueble ${bien}, el cual presentaba ${diagnostico}, ${solucion}. El equipo está operativo.`;
+        const tipoEquipo = transferencia.equipo_tipo || "equipo";
+        let cuerpoTexto;
+        if (tipo === 'entrega_revision') {
+            cuerpoTexto = `Reciba un cordial saludo, sirva la presente para hacer entrega del bien mueble ${bien} (${tipoEquipo}), para su revisión.`;
+        } else {
+            cuerpoTexto = `Reciba un cordial saludo, sirva la presente para hacer entrega del bien mueble ${bien}, el cual presentaba ${diagnostico}, ${solucion}. El equipo está operativo.`;
+        }
 
         doc.setFont("helvetica", "normal");
         // align: "justify" requiere el parámetro maxWidth para funcionar

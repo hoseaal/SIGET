@@ -6,6 +6,7 @@ import { TransferenciaModal } from "./components/TransferenciaModal";
 import { TransferenciaDetalleModal } from "./components/TransferenciaDetalleModal";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { PaginationComponent } from "../../components/PaginationComponent";
+import { generateTransferPDF } from "../../utils/ReporteTransferencia";
 
 export const TransferenciasPage = () => {
     const [transferencias, setTransferencias] = useState([]);
@@ -250,6 +251,16 @@ export const TransferenciasPage = () => {
                                                 >
                                                     <i className="bx bx-show me-1"></i>
                                                 </Button>
+                                                {user?.rol_id === 3 && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="info"
+                                                        title="Exportar PDF de Transferencia"
+                                                        onClick={() => generateTransferPDF(t, null, 'entrega_revision')}
+                                                    >
+                                                        <i className="bx bxs-file-pdf me-1"></i>
+                                                    </Button>
+                                                )}
                                                 {user?.usuario_id === t.usuario_id && parseInt(t.status) === 2 && (
                                                     <Button
                                                         size="sm"

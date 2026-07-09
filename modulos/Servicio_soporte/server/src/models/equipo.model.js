@@ -6,9 +6,10 @@ export class EquipoModel {
         const mid = modelo_id === "" ? null : modelo_id;
         const maid = marca_id === "" ? null : marca_id;
         const tip = ip === "" ? null : ip;
+        const pp = pp_pared === "" || pp_pared === undefined ? null : pp_pared;
         const [result] = await connection.query(
             'INSERT INTO equipos (nro_bien, direc_id, tipo_equipo, pp_pared, modelo_id, marca_id, ip) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [nro_bien, direc_id, tipo_equipo, pp_pared, mid, maid, tip]
+            [nro_bien, direc_id, tipo_equipo, pp, mid, maid, tip]
         )
         return { id: result.insertId }
     }
@@ -17,9 +18,10 @@ export class EquipoModel {
         const mid = modelo_id === "" ? null : modelo_id;
         const maid = marca_id === "" ? null : marca_id;
         const tip = ip === "" ? null : ip;
+        const pp = pp_pared === "" || pp_pared === undefined ? null : pp_pared;
         await connection.query(
             'UPDATE equipos SET nro_bien = ?, direc_id = ?, tipo_equipo = ?, pp_pared = ?, modelo_id = ?, marca_id = ?, ip = ? WHERE id = ?',
-            [nro_bien, direc_id, tipo_equipo, pp_pared, mid, maid, tip, id]
+            [nro_bien, direc_id, tipo_equipo, pp, mid, maid, tip, id]
         )
     }
     static async getByPuerto({ pp_pared }, connection = pool) {
