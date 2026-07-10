@@ -24,9 +24,6 @@ import { NominaJubilados } from "../pages/nomina/NominaJubilados.jsx";
 import { NominaPensionados } from "../pages/nomina/NominaPensionados.jsx";
 import { NominaSobrevivientes } from "../pages/nomina/NominaSobrevivientes.jsx";
 
-import { Prestamos } from "../pages/prestamos/prestamos";
-import { Almacen } from "../pages/prestamos/almacen.jsx"
-
 import { ClasificacionyCargos } from "../pages/configuracion/ClasificacionyCargos";
 import { TablaSalarios } from "../pages/configuracion/tablaSalarios"
 import { EstructuraOrganizacional } from "../pages/configuracion/EstructuraOrganizacional.jsx";
