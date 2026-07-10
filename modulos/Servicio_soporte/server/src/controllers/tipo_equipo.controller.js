@@ -1,4 +1,4 @@
-import { tipo_equipoService } from '../services/tipo_equipo.Service.js'
+import { tipo_equipoService } from '../services/tipo_equipo.service.js'
 
 export const getAll = async (req, res) => {
     try {
@@ -14,10 +14,10 @@ export const getById = async (req, res) => {
         const { id } = req.params
         // Llamamos al servicio (ej. CategoriasService, TipoTonerService, etc.)
         const registro = await tipo_equipoService.obtenerPorId(id)
-        
-        res.json({ 
-            success: registro, 
-            message: "Registro obtenido con éxito" 
+
+        res.json({
+            success: registro,
+            message: "Registro obtenido con éxito"
         })
     } catch (error) {
         // Si el servicio lanza "Registro no encontrado", cae aquí con un 404
