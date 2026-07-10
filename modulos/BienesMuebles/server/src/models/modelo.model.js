@@ -62,4 +62,37 @@ export class ModeloModel {
     )
     return result.affectedRows > 0
   }
+
+  static async getPage ({ page = 1, limit = 10, search = '' }) {
+    const offset = (page - 1) * limit
+    const params = []
+    const countParams = []
+    let whereClause = ''
+
+    if (search.trim()) {
+      whereClause = 'WHERE m.mod_mod LIKE ? OR ma.mar_mar LIKE ?'
+      params.push(`%${search}%`, `%${search}%`)
+      countParams.push(`%${search}%`, `%${search}%`)
+    }
+
+    const dataQuery = `
+      SELECT m.mod_ide, m.mod_mod, m.mar_ide, ma.mar_mar 
+      FROM tesmod m
+      JOIN tmamar ma ON m.mar_ide = ma.mar_ide
+      ${whereClause}
+      ORDER BY m.mod_ide ASC
+      LIMIT ? OFFSET ?
+    `
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM tesmod m
+      JOIN tmamar ma ON m.mar_ide = ma.mar_ide
+      ${whereClause}
+    `
+
+    const [rows] = await pool.query(dataQuery, [...params, limit, offset])
+    const [[{ total }]] = await pool.query(countQuery, countParams)
+
+    return { data: rows, total }
+  }
 }

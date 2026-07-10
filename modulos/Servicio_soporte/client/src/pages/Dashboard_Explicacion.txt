@@ -1,0 +1,94 @@
+Dashboard - Explicaci�n de cambios para usuarios rol_id=3 (consulta)
+====================================================================
+
+1. PROBLEMA ORIGINAL
+--------------------
+El DashboardPage.jsx cargaba todos los datos del endpoint /api/dashboard y
+mostraba la informaci�n completa (Mantenimientos, Equipos, Actividades,
+Transferencias) sin importar el rol del usuario.
+
+Esto significaba que un usuario con rol_id=3 ("consulta") ve�a m�dulos a los
+que no ten�a acceso seg�n el sistema de permisos del men� lateral.
+
+2. SISTEMA DE PERMISOS EXISTENTE
+--------------------------------
+El archivo src/data/dataPermissions.js define un objeto llamado menuPermissions
+que asigna cada ruta del frontend a los roles que pueden acceder a ella:
+
+    export const menuPermissions = {
+        "/Dashboard":             [1, 2, 3],   // Todos
+        "/Equipos":               [1, 2],      // Solo Admin y T�cnico
+        "/Mantenimientos":        [1, 2, 3],   // Admin, T�cnico y Consulta
+        "/Mantenimientos/Gestion":[1, 2],      // Solo Admin y T�cnico
+        "/Actividades":           [1, 2],      // Solo Admin y T�cnico
+        "/Transferencias":        [1, 2, 3],   // Admin, T�cnico y Consulta
+        "/Transferencias/Tecnico":[1, 2],      // Solo Admin y T�cnico
+        ...
+    };
+
+    Roles:
+        1 = Administrador
+        2 = T�cnico
+        3 = Consulta
+
+3. SOLUCI�N IMPLEMENTADA
+-------------------------
+Se modific� el DashboardPage.jsx para reutilizar el mismo sistema de permisos
+del men� lateral. Los cambios fueron:
+
+a) Se import� menuPermissions desde dataPermissions:
+       import { menuPermissions } from "../data/dataPermissions";
+
+b) Se cre� un helper hasAccess que verifica si el rol del usuario tiene
+   permiso para una ruta dada:
+       const userRole = userData?.rol_id;
+       const hasAccess = (path) => menuPermissions[path]?.includes(userRole) ?? false;
+
+c) Se envolvieron las secciones del JSX con condicionales para que solo se
+   rendericen si el usuario tiene acceso al m�dulo correspondiente.
+
+4. COMPORTAMIENTO FINAL
+------------------------
+Para un usuario con rol_id=3 (consulta):
+
+    Secci�n del Dashboard        �Visible?
+    ========================     =========
+    KPI Mantenimientos            S�  (permiso en "/Mantenimientos")
+    KPI Transferencias            S�  (permiso en "/Transferencias")
+    KPI Equipos                   NO  (sin permiso en "/Equipos")
+    KPI Actividades               NO  (sin permiso en "/Actividades")
+    Gr�fico Mantenimientos        S�  (permiso en "/Mantenimientos")
+    Gr�fico Equipos               NO  (sin permiso en "/Equipos")
+    Tabla Tickets Recientes       S�  (permiso en "/Mantenimientos")
+
+5. ARCHIVOS MODIFICADOS
+-----------------------
+- modulos/Servicio_soporte/client/src/pages/DashboardPage.jsx
+- modulos/Servicio_soporte/server/src/services/dashboard.service.js
+
+6. FILTRADO POR DEPARTAMENTO PARA CONSULTA (rol_id=3)
+-------------------------------------------------------
+Adicionalmente, se modific� el backend para que los usuarios con rol_id=3
+solo vean en "�ltimos Tickets de Mantenimiento" los tickets de su propio
+departamento.
+
+C�mo funciona:
+- El endpoint /api/dashboard recibe el user object del JWT (que incluye
+  rol_id y direc_id)
+- En dashboard.service.js, la consulta de mantenimientos recientes ahora
+  verifica: si user.rol_id === 3, agrega WHERE m.direc_id = ? con el
+  direc_id del usuario
+- Para admin (rol_id=1) y t�cnico (rol_id=2), la consulta sigue siendo
+  sin filtro (todos los tickets)
+
+7. FLUJO DE EJECUCI�N
+----------------------
+1. El componente se monta y llama a /api/auth/verify-auth para obtener el usuario
+2. Obtiene userData.user.rol_id (ej: 3 para consulta) y direc_id
+3. Llama a /api/dashboard que internamente recibe req.user
+4. El servicio dashboard.service.js revisa user.rol_id:
+   - Si es 3: filtra mantenimientos recientes por direc_id del usuario
+   - Si es 1 � 2: no aplica filtro, devuelve todos
+5. En el frontend, cada secci�n consulta hasAccess("/ruta") para
+   decidir si se renderiza o no
+6. Resultado: un dashboard adaptado al rol y departamento del usuario

@@ -1,0 +1,188 @@
+/* Control de Red Premium Styles */
+
+.premium-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease;
+}
+
+.glassmorphic-body {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+}
+
+.custom-select-premium {
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid #d9dee3;
+    padding: 0 16px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-select-premium:focus {
+    border-color: #696cff;
+    box-shadow: 0 0 0 3px rgba(105, 108, 255, 0.15);
+}
+
+/* Dropzone styling */
+.upload-dropzone {
+    border: 2px dashed #696cff;
+    border-radius: 12px;
+    background-color: #f7f8ff;
+    width: 100%;
+    max-width: 500px;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.upload-dropzone:hover {
+    background-color: #f0f2ff;
+    border-color: #5f61e6;
+}
+
+.upload-input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #566a7f;
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+/* Croquis Workspace */
+.croquis-workspace-wrapper {
+    display: inline-block;
+    max-width: 100%;
+    overflow: auto;
+    border-radius: 8px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    background: #fdfdfd;
+}
+
+.croquis-container {
+    position: relative;
+    display: block;
+    cursor: crosshair;
+    user-select: none;
+}
+
+.croquis-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    max-height: 75vh;
+}
+
+.red-pin {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background-color: #696cff;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(105, 108, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.red-pin:hover {
+    transform: translate(-50%, -50%) scale(1.3);
+    z-index: 20;
+}
+
+/* Pin Label */
+.pin-label {
+    position: absolute;
+    top: -24px;
+    background: rgba(43, 64, 85, 0.9);
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: all 0.2s ease;
+}
+
+.red-pin:hover .pin-label {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Pulse Animation */
+.pin-pulse {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    border: 2px solid inherit;
+    animation: pinPulse 2s infinite ease-out;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.red-pin .pin-pulse {
+    border-color: #696cff;
+}
+
+@keyframes pinPulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

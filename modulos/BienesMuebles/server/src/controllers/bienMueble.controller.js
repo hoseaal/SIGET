@@ -76,7 +76,8 @@ export const obtenerBienesPagina = async (req, res) => {
       inc: req.query.inc,
       dep: req.query.dep,
       con: req.query.con,
-      esu: req.query.esu
+      esu: req.query.esu,
+      search: req.query.search
     }
     // Eliminar parámetros de paginación de los filtros
     delete filters.page
