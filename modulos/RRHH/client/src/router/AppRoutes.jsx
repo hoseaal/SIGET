@@ -9,7 +9,7 @@ import { Jubilados } from "../pages/empleados/Jubilados/Jubilados.jsx";
 import { Pensionados } from "../pages/empleados/Pensionados/Pensionados.jsx";
 import { Sobrevivientes } from "../pages/empleados/Sobrevivientes/Sobrevivientes.jsx";
 
-import { Reportes } from "../pages/Reportes/Reportes"
+import { Reportes } from "../pages/Reportes/reportes"
 import { ReporteCajaAhorro } from "../pages/Reportes/ReporteCajaAhorro"
 import { ReportePagos } from "../pages/Reportes/ReportePagos"
 import { ReporteIngresos } from "../pages/Reportes/ReporteIngresos"
@@ -38,7 +38,7 @@ import { DashboardPage } from "../pages/DashboardPage";
 
 import { Usuarios } from "../pages/configuracion/usuarios"
 import { CatalogoInstituticiones } from "../pages/configuracion/CatalogoInstituticiones.jsx"
-import { DashboardVisualizador } from "../pages/Visualizador/DashboardVisualizador.jsx"
+import { DashboardVisualizador } from "../pages/visualizador/DashboardVisualizador.jsx"
 
 
 const AppRoutes = () => {
