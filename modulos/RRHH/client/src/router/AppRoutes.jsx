@@ -9,7 +9,7 @@ import { Jubilados } from "../pages/empleados/Jubilados/Jubilados.jsx";
 import { Pensionados } from "../pages/empleados/Pensionados/Pensionados.jsx";
 import { Sobrevivientes } from "../pages/empleados/Sobrevivientes/Sobrevivientes.jsx";
 
-import { Reportes } from "../pages/Reportes/Reportes"
+import { Reportes } from "../pages/Reportes/reportes"
 import { ReporteCajaAhorro } from "../pages/Reportes/ReporteCajaAhorro"
 import { ReportePagos } from "../pages/Reportes/ReportePagos"
 import { ReporteIngresos } from "../pages/Reportes/ReporteIngresos"
@@ -38,7 +38,7 @@ import { DashboardPage } from "../pages/DashboardPage";
 
 import { Usuarios } from "../pages/configuracion/usuarios"
 import { CatalogoInstituticiones } from "../pages/configuracion/CatalogoInstituticiones.jsx"
-import { DashboardVisualizador } from "../pages/Visualizador/DashboardVisualizador.jsx"
+import { DashboardVisualizador } from "../pages/visualizador/DashboardVisualizador.jsx"
 
 
 const AppRoutes = () => {
@@ -70,18 +70,6 @@ const AppRoutes = () => {
             <Route path="/Configuracion/EstructuraOrganizacional" element={
                 <ProtectedRoute>
                     <EstructuraOrganizacional />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Configuracion/Instituciones" element={
-                <ProtectedRoute>
-                    <CatalogoInstituticiones />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Configuracion/Vacaciones" element={
-                <ProtectedRoute>
-                    <VacacionesConfig />
                 </ProtectedRoute>
             } />
 
@@ -176,60 +164,7 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/Reportes" element={
-                <ProtectedRoute>
-                    <Reportes />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/CajaAhorro" element={
-                <ProtectedRoute>
-                    <ReporteCajaAhorro />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/Pagos" element={
-                <ProtectedRoute>
-                    <ReportePagos />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/Primas" element={
-                <ProtectedRoute>
-                    <ReportePrimas />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/Ingresos" element={
-                <ProtectedRoute>
-                    <ReporteIngresos />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/ResumenNomina" element={
-                <ProtectedRoute>
-                    <ReporteResumenNomina />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/Padres" element={
-                <ProtectedRoute>
-                    <ReportePadres />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Prestamos" element={
-                <ProtectedRoute>
-                    <Prestamos />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Almacen" element={
-                <ProtectedRoute>
-                    <Almacen />
-                </ProtectedRoute>
-            } />
-
+            <Route path="/Configuracion/NuevoUsuario" element={<RegisterPage />} />
 
 
 

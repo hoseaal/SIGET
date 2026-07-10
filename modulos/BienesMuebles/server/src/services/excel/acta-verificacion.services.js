@@ -4,9 +4,9 @@ import path from 'path'
 import fs from 'fs'
 
 // --- Función para hacer fetch a la API ---
-const API_BASE_URL = 'http://localhost:5001' 
+const API_BASE_URL = 'http://localhost:5001'
 
-async function fetchApiData (endpoint, token) {
+async function fetchApiData(endpoint, token) {
   const url = `${API_BASE_URL}${endpoint}`
   const options = {
     headers: {
@@ -28,7 +28,7 @@ async function fetchApiData (endpoint, token) {
   }
 }
 
-function toUpperCase (str) {
+function toUpperCase(str) {
   return str ? str.toUpperCase() : 'N/A'
 }
 
@@ -38,8 +38,8 @@ const extraerBienesPrestamo = (data) => {
 
   return data.flatMap(prestamo => {
     try {
-      const detalles = typeof prestamo.bienes_detalles === 'string' 
-        ? JSON.parse(prestamo.bienes_detalles) 
+      const detalles = typeof prestamo.bienes_detalles === 'string'
+        ? JSON.parse(prestamo.bienes_detalles)
         : (prestamo.bienes_detalles || [])
 
       const bienes = Array.isArray(detalles) ? detalles : [detalles]
@@ -56,7 +56,7 @@ const extraerBienesPrestamo = (data) => {
       }))
     } catch (e) {
       console.warn('Error al parsear bienes_detalles:', e)
-      return [] 
+      return []
     }
   })
 }
@@ -70,7 +70,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       bienesAllData,
       prestamosSalientesData,
       prestamosEntrantesData,
-      bienesEnAlmacenData    
+      bienesEnAlmacenData
     ] = await Promise.all([
       fetchApiData(`/api/bienes/all?dep=${dep_ide}&inc=1`, accessToken),
       fetchApiData(`/api/prestamos/normales?dep_origen_id=${dep_ide}`, accessToken),
@@ -80,36 +80,37 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
 
     // 2. --- PROCESAR Y ESTRUCTURAR LOS DATOS ---
     const bienesDelDepartamento = Array.isArray(bienesAllData) ? bienesAllData : (bienesAllData.data || [])
-    
+
     const prestamosSalientes = extraerBienesPrestamo(prestamosSalientesData)
     const prestamosEntrantes = extraerBienesPrestamo(prestamosEntrantesData)
     const bienesEnAlmacen = extraerBienesPrestamo(bienesEnAlmacenData)
 
     const salientesMap = new Map(prestamosSalientes.map(b => [b.bim_ide, b]))
-    const almacenMap = new Map(bienesEnAlmacen.map(b => [b.bim_ide, b])) 
+    const almacenMap = new Map(bienesEnAlmacen.map(b => [b.bim_ide, b]))
 
     // 3. --- CONSOLIDAR LA LISTA DE BIENES Y ASIGNAR OBSERVACIONES ---
     const excelRows = []
+    const bienesProcesados = new Set() // Control de duplicados
 
     // A) Procesar la lista principal
     bienesDelDepartamento.forEach(bien => {
-      
-      //bienes sin etiqueta se omiten del acta de verificación
+
+      // bienes sin etiqueta se omiten del acta de verificación
       if (Number(bien.est_ide) === 1) {
-        return; 
+        return;
       }
       // -----------------------------------------------------------
 
-      let observacion = bien.bim_obs || '' 
-      const direccion = toUpperCase(departamento_nombre) 
+      let observacion = bien.bim_obs || ''
+      const direccion = toUpperCase(departamento_nombre)
 
       if (salientesMap.has(bien.bim_ide)) {
         const prestamo = salientesMap.get(bien.bim_ide)
-        observacion =  bien.bim_obs || `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
+        observacion = bien.bim_obs || `Se encuentra en calidad de préstamo en ${prestamo.departamento_destino_nombre}`
       }
       else if (almacenMap.has(bien.bim_ide)) {
         const itemAlmacen = almacenMap.get(bien.bim_ide)
-        observacion =  bien.bim_obs || `Ubicado en ${itemAlmacen.departamento_destino_nombre} para su resguardo`
+        observacion = bien.bim_obs || `Ubicado en ${itemAlmacen.departamento_destino_nombre} para su resguardo`
       }
 
       excelRows.push({
@@ -118,16 +119,26 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
         direccion,
         observacion
       })
+
+      // Registrar el bien como procesado
+      bienesProcesados.add(bien.bim_ide)
     })
 
     // B) Añadir los bienes prestados EN ESTE departamento
     prestamosEntrantes.forEach(prestamoBien => {
+      // Si el bien ya fue añadido en la lista principal, lo ignoramos
+      if (bienesProcesados.has(prestamoBien.bim_ide)) {
+        return
+      }
+
       excelRows.push({
         bim_ide: prestamoBien.bim_ide,
         bim_des: prestamoBien.bim_des,
         direccion: toUpperCase(prestamoBien.departamento_origen_nombre),
         observacion: prestamoBien.bim_obs || `Este bien pertenece a ${prestamoBien.departamento_origen_nombre} y se encuentra en calidad de préstamo en esta dirección.`
       })
+
+      bienesProcesados.add(prestamoBien.bim_ide)
     })
 
     // C) Si es Almacén, listar resguardados
@@ -136,12 +147,19 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
       const bienesResguardados = extraerBienesPrestamo(todosEnAlmacenData)
 
       bienesResguardados.forEach(prestamoBien => {
+        // Si ya se procesó previamente, evitamos duplicarlo aquí también
+        if (bienesProcesados.has(prestamoBien.bim_ide)) {
+          return
+        }
+
         excelRows.push({
           bim_ide: prestamoBien.bim_ide,
           bim_des: prestamoBien.bim_des,
           direccion: prestamoBien.departamento_origen_nombre,
-          observacion:  prestamoBien.bim_obs ||`Bien perteneciente a ${prestamoBien.departamento_origen_nombre} se encuentra en ${prestamoBien.departamento_destino_nombre} para su resguardo`
+          observacion: prestamoBien.bim_obs || `Bien perteneciente a ${prestamoBien.departamento_origen_nombre} se encuentra en ${prestamoBien.departamento_destino_nombre} para su resguardo`
         })
+
+        bienesProcesados.add(prestamoBien.bim_ide)
       })
     }
 
@@ -204,7 +222,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
     })
 
     // --- ORDENAR Y POBLAR LAS FILAS ---
-    
+
     // 1. Ordenamos el array completo por ID del bien (bim_ide)
     excelRows.sort((a, b) => {
       return String(a.bim_ide).localeCompare(String(b.bim_ide), undefined, { numeric: true });
@@ -212,10 +230,10 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
 
     // 2. Ahora escribimos las filas y asignamos el número secuencial (index + 1)
     const startDataRow = columnHeaderRowNumber + 1
-    
+
     excelRows.forEach((rowData, index) => {
       const row = worksheet.getRow(startDataRow + index)
-      
+
       row.values = [
         index + 1, // Número secuencial generado aquí
         rowData.bim_ide,
@@ -223,7 +241,7 @@ export const generarActaVerificacionExcelService = async (datos, accessToken) =>
         rowData.direccion,
         rowData.observacion
       ]
-      
+
       row.eachCell((cell) => {
         cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true }
         cell.font = { name: 'Arial', size: 10 }

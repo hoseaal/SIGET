@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { BienMuebleModel } from '../models/bienMueble.model.js'
+import { PrestamoModel } from '../models/prestamo.model.js'
 import { Validaciones } from '../utils/validations.js'
 
 export class BienMuebleService {
@@ -23,6 +24,27 @@ export class BienMuebleService {
   static async actualizar (id, datos, userId) {
     const existe = await BienMuebleModel.getById(id)
     if (!existe) throw new Error('Bien mueble no existe')
+
+    // Validación de integridad referencial:
+    // Si se intenta cambiar el departamento del bien, verificar que no tenga préstamo/almacén activo.
+    if (datos.dep_ide !== undefined && Number(datos.dep_ide) !== Number(existe.dep_ide)) {
+      const prestamoActivo = await PrestamoModel.checkBienPrestadoActiveNormalLoan(id)
+      if (prestamoActivo) {
+        throw new Error(
+          `No se puede cambiar el departamento del bien '${id}' porque tiene un préstamo activo ` +
+          `(Oficio: ${prestamoActivo.pre_ndo}, Destino: ${prestamoActivo.departamento_destino_nombre}). ` +
+          `Devuélvalo primero.`
+        )
+      }
+      const enAlmacen = await PrestamoModel.checkBienEnAlmacen(id)
+      if (enAlmacen) {
+        throw new Error(
+          `No se puede cambiar el departamento del bien '${id}' porque está registrado en almacén ` +
+          `(Oficio: ${enAlmacen.pre_ndo}). Devuélvalo primero.`
+        )
+      }
+    }
+
     return await BienMuebleModel.update(id, datos, userId)
   }
 

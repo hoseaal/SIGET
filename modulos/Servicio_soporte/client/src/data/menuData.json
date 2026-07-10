@@ -1,0 +1,88 @@
+[
+    {
+        "header": "",
+        "items": [
+            {
+                "text": "Dashboard",
+                "icon": "bx bx-home",
+                "available": true,
+                "link": "/Dashboard"
+            }
+        ]
+    },
+    {
+        "header": "Reportes",
+        "items": [
+            {
+                "text": "Gestión de Fallas",
+                "icon": "bx bx-error-alt",
+                "available": true,
+                "link": "/Mantenimientos"
+            },
+            {
+                "text": "Transferencias",
+                "icon": "bx bx-transfer-alt",
+                "available": true,
+                "link": "/Transferencias"
+            }
+        ]
+    },
+    {
+        "header": "Soporte",
+        "items": [
+            {
+                "text": "Lógica de Red",
+                "icon": "bx bx-network-chart",
+                "available": true,
+                "link": "/Infraestructura/Red"
+            },
+            {
+                "text": "Control de Red",
+                "icon": "bx bx-map-alt",
+                "available": true,
+                "link": "/Infraestructura/ControlRed"
+            },
+            {
+                "text": "Inventario de Equipos",
+                "icon": "bx bx-desktop",
+                "available": true,
+                "link": "/Equipos"
+            },
+            {
+                "text": "Gestión de Transferencias",
+                "icon": "bx bx-transfer",
+                "available": true,
+                "link": "/Transferencias/Tecnico"
+            },
+            {
+                "text": "Gestión de Mantenimientos",
+                "icon": "bx bx-wrench",
+                "available": true,
+                "link": "/Mantenimientos/Gestion"
+            },
+            {
+                "text": "Historial de Actividades",
+                "icon": "bx bx-list-check",
+                "available": true,
+                "link": "/Actividades"
+            },
+            {
+                "text": "Configuración General",
+                "icon": "bx bx-cog",
+                "available": true,
+                "link": "/Configuracion/Maestros"
+            }
+        ]
+    },
+    {
+        "header": "Administración",
+        "items": [
+            {
+                "text": "Gestión de Usuarios",
+                "icon": "bx bx-shield-quarter",
+                "available": true,
+                "link": "/Seguridad/Usuarios"
+            }
+        ]
+    }
+]

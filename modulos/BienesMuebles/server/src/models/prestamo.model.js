@@ -54,6 +54,7 @@ export class PrestamoModel {
    * Obtiene una lista de préstamos "normales" (excluyendo bienes en almacén por mal estado).
    * @param {object} filters - Filtros para la consulta.
    * @param {string} [filters.pre_ndo] - Filtro por número de oficio.
+   * @param {string} [filters.bim_cod] - Filtro por código de bien (número de bien en ttrdpr).
    * @param {number} [filters.dep_origen_id] - Filtro por ID de departamento de origen.
    * @param {number} [filters.dep_destino_id] - Filtro por ID de departamento de destino.
    * @returns {Promise<Array>} Lista de préstamos normales.
@@ -103,6 +104,11 @@ export class PrestamoModel {
       whereClauses.push('tp.pre_ndo LIKE ?')
       params.push(`%${filters.pre_ndo}%`)
     }
+    if (filters.bim_cod) {
+      // Filtrar por código de bien: el préstamo debe contener al menos un bien con ese código
+      whereClauses.push('tp.pre_ide IN (SELECT tdd2.pre_ide FROM ttrdpr tdd2 JOIN tmab_m tm2 ON tdd2.bim_ide = tm2.bim_ide WHERE tm2.bim_cod LIKE ?)')
+      params.push(`%${filters.bim_cod}%`)
+    }
     if (filters.dep_origen_id) { // Filtro por el nuevo campo dep_origen_ide en ttrpre
       whereClauses.push('tp.dep_origen_ide = ?')
       params.push(filters.dep_origen_id)
@@ -127,6 +133,7 @@ export class PrestamoModel {
    * Obtiene una lista de bienes en almacén por mal estado.
    * @param {object} filters - Filtros para la consulta.
    * @param {string} [filters.pre_ndo] - Filtro por número de oficio.
+   * @param {string} [filters.bim_cod] - Filtro por código de bien (número de bien en ttrdpr).
    * @param {number} [filters.dep_origen_id] - Filtro por ID de departamento de origen del bien.
    * @param {number} [filters.dep_destino_id] - Filtro por ID de departamento de destino.
    * @returns {Promise<Array>} Lista de bienes en almacén por mal estado.
@@ -165,6 +172,11 @@ export class PrestamoModel {
       query += ' AND tp.pre_ndo LIKE ?'
       params.push(`%${filters.pre_ndo}%`)
     }
+    if (filters.bim_cod) {
+      // Filtrar por código de bien: el préstamo debe contener al menos un bien con ese código
+      query += ' AND tp.pre_ide IN (SELECT tdd2.pre_ide FROM ttrdpr tdd2 JOIN tmab_m tm2 ON tdd2.bim_ide = tm2.bim_ide WHERE tm2.bim_cod LIKE ?)'
+      params.push(`%${filters.bim_cod}%`)
+    }
     if (filters.dep_origen_id) {
       query += ' AND tp.dep_origen_ide = ?'
       params.push(filters.dep_origen_id)
@@ -194,8 +206,9 @@ export class PrestamoModel {
         tp.pre_fec,
         tp.pre_ndo,
         tp.pre_est,
+        tp.dep_origen_ide,
         td_destino.dep_nom AS departamento_destino_nombre,
-        td_origen.dep_nom AS departamento_origen_nombre, -- Usar dep_origen_ide de ttrpre
+        td_origen.dep_nom AS departamento_origen_nombre,
         GROUP_CONCAT(JSON_OBJECT(
             'bim_ide', tdd.bim_ide,
             'bim_des', tm.bim_des,
@@ -204,7 +217,7 @@ export class PrestamoModel {
         )) AS bienes_detalles
       FROM ttrpre tp
       LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
-      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide -- Usar dep_origen_ide de ttrpre
+      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
       LEFT JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
       LEFT JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
       WHERE tp.pre_ide = ?
@@ -356,5 +369,215 @@ export class PrestamoModel {
     `, [bim_ide]);
     
     return rows[0] || null;
+  }
+
+  /**
+   * Verifica si un bien ya existe como detalle en un préstamo específico (activo o no).
+   * @param {string} bim_ide - ID del bien.
+   * @param {number} pre_ide - ID del préstamo.
+   * @returns {Promise<object|null>}
+   */
+  static async checkBienEnPrestamo (bim_ide, pre_ide) {
+    const [rows] = await pool.query(
+      'SELECT * FROM ttrdpr WHERE bim_ide = ? AND pre_ide = ?',
+      [bim_ide, pre_ide]
+    )
+    return rows[0] || null
+  }
+
+  /**
+   * Inserta un nuevo bien en el detalle de un préstamo existente.
+   * @param {number} pre_ide - ID del préstamo.
+   * @param {string} bim_ide - ID del bien.
+   * @returns {Promise<boolean>}
+   */
+  static async addBienToPrestamo (pre_ide, bim_ide) {
+    const connection = await pool.getConnection()
+    try {
+      await connection.beginTransaction()
+      await connection.query(
+        'INSERT INTO ttrdpr (pre_ide, bim_ide) VALUES (?, ?)',
+        [pre_ide, bim_ide]
+      )
+      await connection.commit()
+      return true
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
+    }
+  }
+
+  /**
+   * Obtiene préstamos normales paginados.
+   * @param {object} options - { page, limit, filters }
+   * @returns {Promise<{data: Array, total: number}>}
+   */
+  static async getNormalLoansPaginated ({ page = 1, limit = 10, filters = {} }) {
+    const offset = (page - 1) * limit
+
+    const whereClauses = ['tp.pre_est = 1 AND tdd.dpr_est = 1', 'tp.pre_cla = ?']
+    const params = [TIPO_PRESTAMO]
+
+    if (filters.pre_ndo) {
+      whereClauses.push('tp.pre_ndo LIKE ?')
+      params.push(`%${filters.pre_ndo}%`)
+    }
+    if (filters.bim_cod) {
+      whereClauses.push('tp.pre_ide IN (SELECT tdd2.pre_ide FROM ttrdpr tdd2 JOIN tmab_m tm2 ON tdd2.bim_ide = tm2.bim_ide WHERE tm2.bim_cod LIKE ?)')
+      params.push(`%${filters.bim_cod}%`)
+    }
+    if (filters.dep_origen_id) {
+      whereClauses.push('tp.dep_origen_ide = ?')
+      params.push(filters.dep_origen_id)
+    }
+    if (filters.dep_destino_id) {
+      whereClauses.push('tp.dep_ide = ?')
+      params.push(filters.dep_destino_id)
+    }
+
+    const whereStr = 'WHERE ' + whereClauses.join(' AND ')
+
+    const dataQuery = `
+      SELECT
+        tp.pre_ide,
+        tp.pre_tip,
+        tp.pre_fec,
+        tp.pre_ndo,
+        tp.pre_est,
+        td_destino.dep_nom AS departamento_destino_nombre,
+        td_origen.dep_nom AS departamento_origen_nombre,
+        CONCAT('[',
+          GROUP_CONCAT(JSON_OBJECT(
+            'bim_ide', tdd.bim_ide,
+            'bim_des', tm.bim_des,
+            'dpr_est', tdd.dpr_est,
+            'con_ide', tm.con_ide,
+            'bim_obs', tm.bim_obs
+          )),
+        ']') AS bienes_detalles
+      FROM ttrpre tp
+      LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
+      LEFT JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
+      LEFT JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
+      ${whereStr}
+      GROUP BY tp.pre_ide
+      ORDER BY tp.pre_fec DESC, tp.pre_ndo ASC
+      LIMIT ? OFFSET ?
+    `
+
+    // Para el COUNT necesitamos un subquery sobre los pre_ide únicos
+    const countQuery = `
+      SELECT COUNT(DISTINCT tp.pre_ide) as total
+      FROM ttrpre tp
+      LEFT JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      LEFT JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
+      LEFT JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
+      LEFT JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
+      ${whereStr}
+    `
+
+    const [rows] = await pool.query(dataQuery, [...params, limit, offset])
+    const [[{ total }]] = await pool.query(countQuery, params)
+
+    return { data: rows, total }
+  }
+
+  /**
+   * Obtiene bienes en almacén paginados.
+   * @param {object} options - { page, limit, filters }
+   * @returns {Promise<{data: Array, total: number}>}
+   */
+  static async getWarehouseItemsPaginated ({ page = 1, limit = 10, filters = {} }) {
+    const offset = (page - 1) * limit
+
+    const whereClauses = ['tp.pre_est = 1 AND tdd.dpr_est = 1', 'tp.pre_cla = ?']
+    const params = [TIPO_ALMACEN]
+
+    if (filters.pre_ndo) {
+      whereClauses.push('tp.pre_ndo LIKE ?')
+      params.push(`%${filters.pre_ndo}%`)
+    }
+    if (filters.bim_cod) {
+      whereClauses.push('tp.pre_ide IN (SELECT tdd2.pre_ide FROM ttrdpr tdd2 JOIN tmab_m tm2 ON tdd2.bim_ide = tm2.bim_ide WHERE tm2.bim_cod LIKE ?)')
+      params.push(`%${filters.bim_cod}%`)
+    }
+    if (filters.dep_origen_id) {
+      whereClauses.push('tp.dep_origen_ide = ?')
+      params.push(filters.dep_origen_id)
+    }
+    if (filters.dep_destino_id) {
+      whereClauses.push('tp.dep_ide = ?')
+      params.push(filters.dep_destino_id)
+    }
+
+    const whereStr = 'WHERE ' + whereClauses.join(' AND ')
+
+    const dataQuery = `
+      SELECT
+        tp.pre_ide,
+        tp.pre_tip,
+        tp.pre_fec,
+        tp.pre_ndo,
+        tp.pre_est,
+        tp.dep_ide,
+        td_destino.dep_nom AS departamento_destino_nombre,
+        td_origen.dep_nom AS departamento_origen_nombre,
+        CONCAT('[',
+          GROUP_CONCAT(JSON_OBJECT(
+            'bim_ide', tdd.bim_ide,
+            'bim_des', tm.bim_des,
+            'dpr_est', tdd.dpr_est,
+            'con_ide', tm.con_ide
+          )),
+        ']') AS bienes_detalles
+      FROM ttrpre tp
+      INNER JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      INNER JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
+      INNER JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
+      INNER JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
+      ${whereStr}
+      GROUP BY tp.pre_ide
+      ORDER BY tp.pre_fec DESC, tp.pre_ndo ASC, tm.bim_cod ASC
+      LIMIT ? OFFSET ?
+    `
+
+    const countQuery = `
+      SELECT COUNT(DISTINCT tp.pre_ide) as total
+      FROM ttrpre tp
+      INNER JOIN tesdep td_destino ON tp.dep_ide = td_destino.dep_ide
+      INNER JOIN tesdep td_origen ON tp.dep_origen_ide = td_origen.dep_ide
+      INNER JOIN ttrdpr tdd ON tp.pre_ide = tdd.pre_ide
+      INNER JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
+      ${whereStr}
+    `
+
+    const [rows] = await pool.query(dataQuery, [...params, limit, offset])
+    const [[{ total }]] = await pool.query(countQuery, params)
+
+    return { data: rows, total }
+  }
+
+  /**
+   * Obtiene solo los bienes ACTIVOS (dpr_est = 1) de un préstamo específico.
+   * Usado para generar el Acta de Entrega PDF con la realidad actual.
+   * @param {number} pre_ide - ID del préstamo.
+   * @returns {Promise<Array>}
+   */
+  static async getActiveBienesForLoan (pre_ide) {
+    const [rows] = await pool.query(`
+      SELECT
+        tdd.bim_ide,
+        tm.bim_des,
+        tdd.dpr_est
+      FROM ttrdpr tdd
+      INNER JOIN tmab_m tm ON tdd.bim_ide = tm.bim_ide
+      WHERE tdd.pre_ide = ?
+        AND tdd.dpr_est = 1
+      ORDER BY tdd.bim_ide ASC
+    `, [pre_ide])
+    return rows
   }
 }

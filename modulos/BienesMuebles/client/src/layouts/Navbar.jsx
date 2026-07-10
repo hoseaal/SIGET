@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Dropdown, Nav, Navbar as BSNavbar, Image, Toast, ToastContainer } from 'react-bootstrap';
 import { BsMenuApp, BsPerson, BsGear, BsCreditCard, BsPower } from 'react-icons/bs';
 import ModalContraseña from '../pages/Modales/modalContraseña'
+import avatar1 from '../../public/assets/img/avatars/1.jpg';
 
 const Navbar = () => {
   const [userData, setUserData] = useState(null);
@@ -94,7 +95,7 @@ const Navbar = () => {
             <Dropdown.Toggle as={Nav.Link} className="dropdown-toggle hide-arrow">
               <div className="avatar avatar-online">
                 <Image 
-                  src="../assets/img/avatars/1.jpg" 
+                  src={avatar1} 
                   className="w-px-40 h-auto rounded-circle" 
                   alt="avatar-image" 
                   aria-label='Avatar Image'
@@ -108,7 +109,7 @@ const Navbar = () => {
                   <div className="flex-shrink-0 me-3">
                     <div className="avatar avatar-online">
                       <Image 
-                        src="../assets/img/avatars/1.jpg" 
+                        src={avatar1} 
                         className="w-px-40 h-auto rounded-circle" 
                         alt="avatar-image" 
                         aria-label='Avatar Image'

@@ -21,6 +21,10 @@ SET time_zone = "+00:00";
 -- Base de datos: `dbsigetrrhh-1`
 --
 
+DROP DATABASE IF EXISTS `dbsigetrrhh-1`;
+CREATE DATABASE IF NOT EXISTS `dbsigetrrhh-1`;
+USE `dbsigetrrhh-1`;
+
 -- --------------------------------------------------------
 
 --
