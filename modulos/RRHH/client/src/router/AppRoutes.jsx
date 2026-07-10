@@ -9,6 +9,24 @@ import { Jubilados } from "../pages/empleados/Jubilados/Jubilados.jsx";
 import { Pensionados } from "../pages/empleados/Pensionados/Pensionados.jsx";
 import { Sobrevivientes } from "../pages/empleados/Sobrevivientes/Sobrevivientes.jsx";
 
+import { Reportes } from "../pages/Reportes/reportes"
+import { ReporteCajaAhorro } from "../pages/Reportes/ReporteCajaAhorro"
+import { ReportePagos } from "../pages/Reportes/ReportePagos"
+import { ReporteIngresos } from "../pages/Reportes/ReporteIngresos"
+import { ReportePrimas } from "../pages/Reportes/ReportePrimas"
+import { ReporteResumenNomina } from "../pages/Reportes/ReporteResumenNomina"
+import { ReportePadres } from "../pages/Reportes/ReportePadres"
+import { ReportePlaceholder } from "../pages/Reportes/ReportePlaceholder"
+import { ObrerosFijos } from "../pages/empleados/ObrerosFijos/ObrerosFijos.jsx";
+import { NominaActivos } from "../pages/nomina/NominaActivos.jsx";
+import { NominaObreros } from "../pages/nomina/NominaObreros.jsx";
+import { NominaJubilados } from "../pages/nomina/NominaJubilados.jsx";
+import { NominaPensionados } from "../pages/nomina/NominaPensionados.jsx";
+import { NominaSobrevivientes } from "../pages/nomina/NominaSobrevivientes.jsx";
+
+import { Prestamos } from "../pages/prestamos/prestamos";
+import { Almacen } from "../pages/prestamos/almacen.jsx"
+
 import { ClasificacionyCargos } from "../pages/configuracion/ClasificacionyCargos";
 import { TablaSalarios } from "../pages/configuracion/tablaSalarios"
 import { EstructuraOrganizacional } from "../pages/configuracion/EstructuraOrganizacional.jsx";
@@ -20,7 +38,7 @@ import { DashboardPage } from "../pages/DashboardPage";
 
 import { Usuarios } from "../pages/configuracion/usuarios"
 import { CatalogoInstituticiones } from "../pages/configuracion/CatalogoInstituticiones.jsx"
-import { DashboardVisualizador } from "../pages/Visualizador/DashboardVisualizador.jsx"
+import { DashboardVisualizador } from "../pages/visualizador/DashboardVisualizador.jsx"
 
 
 const AppRoutes = () => {
