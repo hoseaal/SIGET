@@ -9,24 +9,6 @@ import { Jubilados } from "../pages/empleados/Jubilados/Jubilados.jsx";
 import { Pensionados } from "../pages/empleados/Pensionados/Pensionados.jsx";
 import { Sobrevivientes } from "../pages/empleados/Sobrevivientes/Sobrevivientes.jsx";
 
-import { Reportes } from "../pages/Reportes/Reportes"
-import { ReporteCajaAhorro } from "../pages/Reportes/ReporteCajaAhorro"
-import { ReportePagos } from "../pages/Reportes/ReportePagos"
-import { ReporteIngresos } from "../pages/Reportes/ReporteIngresos"
-import { ReportePrimas } from "../pages/Reportes/ReportePrimas"
-import { ReporteResumenNomina } from "../pages/Reportes/ReporteResumenNomina"
-import { ReportePadres } from "../pages/Reportes/ReportePadres"
-import { ReportePlaceholder } from "../pages/Reportes/ReportePlaceholder"
-import { ObrerosFijos } from "../pages/empleados/ObrerosFijos/ObrerosFijos.jsx";
-import { NominaActivos } from "../pages/nomina/NominaActivos.jsx";
-import { NominaObreros } from "../pages/nomina/NominaObreros.jsx";
-import { NominaJubilados } from "../pages/nomina/NominaJubilados.jsx";
-import { NominaPensionados } from "../pages/nomina/NominaPensionados.jsx";
-import { NominaSobrevivientes } from "../pages/nomina/NominaSobrevivientes.jsx";
-
-import { Prestamos } from "../pages/prestamos/prestamos";
-import { Almacen } from "../pages/prestamos/almacen.jsx"
-
 import { ClasificacionyCargos } from "../pages/configuracion/ClasificacionyCargos";
 import { TablaSalarios } from "../pages/configuracion/tablaSalarios"
 import { EstructuraOrganizacional } from "../pages/configuracion/EstructuraOrganizacional.jsx";
@@ -70,18 +52,6 @@ const AppRoutes = () => {
             <Route path="/Configuracion/EstructuraOrganizacional" element={
                 <ProtectedRoute>
                     <EstructuraOrganizacional />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Configuracion/Instituciones" element={
-                <ProtectedRoute>
-                    <CatalogoInstituticiones />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Configuracion/Vacaciones" element={
-                <ProtectedRoute>
-                    <VacacionesConfig />
                 </ProtectedRoute>
             } />
 
@@ -176,60 +146,7 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/Reportes" element={
-                <ProtectedRoute>
-                    <Reportes />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/CajaAhorro" element={
-                <ProtectedRoute>
-                    <ReporteCajaAhorro />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/Pagos" element={
-                <ProtectedRoute>
-                    <ReportePagos />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/Primas" element={
-                <ProtectedRoute>
-                    <ReportePrimas />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/Ingresos" element={
-                <ProtectedRoute>
-                    <ReporteIngresos />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/ResumenNomina" element={
-                <ProtectedRoute>
-                    <ReporteResumenNomina />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Reportes/Padres" element={
-                <ProtectedRoute>
-                    <ReportePadres />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Prestamos" element={
-                <ProtectedRoute>
-                    <Prestamos />
-                </ProtectedRoute>
-            } />
-
-            <Route path="/Almacen" element={
-                <ProtectedRoute>
-                    <Almacen />
-                </ProtectedRoute>
-            } />
-
+            <Route path="/Configuracion/NuevoUsuario" element={<RegisterPage />} />
 
 
 
