@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 21-06-2026 a las 00:14:20
+-- Tiempo de generación: 10-07-2026 a las 17:53:30
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -72,7 +72,21 @@ INSERT INTO `caja_ahorro` (`id_caja`, `empleado_id`, `tipo_personal`, `quincena_
 (84, 58, 'Pensionado', 1, 7, 2026, 6.50, 6.50, 6.50, '2026-06-16 14:19:46'),
 (85, 59, 'Pensionado', 1, 7, 2026, 6.50, 6.50, 6.50, '2026-06-16 14:19:46'),
 (86, 58, 'Pensionado', 2, 7, 2026, 6.50, 6.50, 6.50, '2026-06-16 14:19:52'),
-(87, 59, 'Pensionado', 2, 7, 2026, 6.50, 6.50, 6.50, '2026-06-16 14:19:52');
+(87, 59, 'Pensionado', 2, 7, 2026, 6.50, 6.50, 6.50, '2026-06-16 14:19:52'),
+(88, 67, 'Funcionario', 2, 8, 2026, 37.60, 18.80, 18.80, '2026-07-07 15:42:57'),
+(89, 46, 'Funcionario', 2, 8, 2026, 37.60, 18.80, 18.80, '2026-07-07 15:42:57'),
+(90, 69, 'Funcionario', 2, 8, 2026, 36.30, 18.15, 18.15, '2026-07-07 15:42:57'),
+(91, 51, 'Funcionario', 2, 8, 2026, 37.60, 18.80, 18.80, '2026-07-07 15:42:57'),
+(92, 68, 'Funcionario', 2, 8, 2026, 24.60, 12.30, 12.30, '2026-07-07 15:42:57'),
+(93, 45, 'Funcionario', 2, 8, 2026, 24.80, 12.40, 12.40, '2026-07-07 15:42:57'),
+(94, 70, 'Funcionario', 2, 8, 2026, 37.60, 18.80, 18.80, '2026-07-07 15:42:57'),
+(95, 67, 'Funcionario', 1, 8, 2026, 37.60, 18.80, 18.80, '2026-07-07 15:43:01'),
+(96, 46, 'Funcionario', 1, 8, 2026, 37.60, 18.80, 18.80, '2026-07-07 15:43:01'),
+(97, 69, 'Funcionario', 1, 8, 2026, 36.30, 18.15, 18.15, '2026-07-07 15:43:01'),
+(98, 51, 'Funcionario', 1, 8, 2026, 37.60, 18.80, 18.80, '2026-07-07 15:43:01'),
+(99, 68, 'Funcionario', 1, 8, 2026, 24.60, 12.30, 12.30, '2026-07-07 15:43:01'),
+(100, 45, 'Funcionario', 1, 8, 2026, 24.80, 12.40, 12.40, '2026-07-07 15:43:01'),
+(101, 70, 'Funcionario', 1, 8, 2026, 37.60, 18.80, 18.80, '2026-07-07 15:43:01');
 
 --
 -- Disparadores `caja_ahorro`
@@ -574,7 +588,7 @@ INSERT INTO `datos_laborales` (`empleado_id`, `cargo_cet_id`, `cargo_onapre_id`,
 (46, 80, 23, 158, 165, 1, 4, 11, NULL, NULL),
 (49, 40, 21, 99, 106, 1, 4, 17, NULL, NULL),
 (50, 69, 34, 131, 138, 1, 3, 1, NULL, NULL),
-(51, 48, 26, 137, 144, 1, 4, 3, 4, 5),
+(51, 41, 22, 100, 107, 1, 4, 2, NULL, NULL),
 (54, 76, 46, 163, 170, 1, NULL, 10, NULL, 17),
 (55, 76, 46, 163, 109, 1, NULL, 10, NULL, 17),
 (56, 80, 23, 158, 165, 1, 4, NULL, NULL, NULL),
@@ -584,8 +598,11 @@ INSERT INTO `datos_laborales` (`empleado_id`, `cargo_cet_id`, `cargo_onapre_id`,
 (61, 60, 26, 102, 109, 1, NULL, 2, 8, NULL),
 (65, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (66, 76, 46, 163, 170, 1, NULL, 14, NULL, 17),
-(67, 41, 22, 100, 107, 1, 1, 10, NULL, NULL),
-(68, 51, 26, 102, 109, 1, 4, 2, 9, NULL);
+(67, 41, 22, 100, 107, 1, 1, 12, 12, 8),
+(68, 47, 26, 102, 109, 1, 4, 2, 9, NULL),
+(69, 43, 25, 159, 166, 1, 5, 2, 8, NULL),
+(70, 80, 23, 158, 165, 1, 1, 15, NULL, NULL),
+(71, 80, 23, 158, 165, 1, 1, 8, NULL, NULL);
 
 --
 -- Disparadores `datos_laborales`
@@ -1078,6 +1095,7 @@ CREATE TABLE `empleados` (
   `telefono_emergencia_2` varchar(20) DEFAULT NULL,
   `profesion_id` int(11) DEFAULT NULL,
   `estatus_id` int(11) NOT NULL,
+  `fecha_proximo_derecho` date DEFAULT NULL,
   `nro_cuenta_bancaria` varchar(20) NOT NULL,
   `cuenta_bancaria` varchar(25) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1086,23 +1104,26 @@ CREATE TABLE `empleados` (
 -- Volcado de datos para la tabla `empleados`
 --
 
-INSERT INTO `empleados` (`empleado_id`, `cedula`, `nombres`, `apellidos`, `rif`, `fecha_nacimiento`, `lugar_nacimiento`, `genero`, `estado_civil`, `tipo_sangre`, `deportes`, `actividades_culturales`, `direccion_habitacion`, `telefono_fijo`, `celular`, `correo_principal`, `correo_secundario`, `fecha_ingreso`, `estudios_actuales`, `fecha_culminacion_estudios`, `contacto_emergencia_1`, `telefono_emergencia_1`, `contacto_emergencia_2`, `telefono_emergencia_2`, `profesion_id`, `estatus_id`, `nro_cuenta_bancaria`, `cuenta_bancaria`) VALUES
-(45, 'V14502107', 'Luis Mariano', 'Mantione Contreras', 'V16778235', '1998-08-09', 'por ahi', 'M', 'Casado', 'A+', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'cpasic', '04161373897', '098765', 'salamanca101@gmail.com', 'salamanca102@gmail.com', '2022-10-17', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 1, 9, '', '12345678901234567890'),
-(46, 'V15947515', 'Jenifer Carolina', 'Restrepo Arellano', 'V15947515-1', '1999-09-09', 'por ahi', 'F', 'Viudo', 'A+', 'kl.hk,jvh', 'ajedrez', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2021-09-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 2, 8, '', '09999999999999999999'),
-(49, 'V18845038', 'Luis Alejandro', 'Aguilar Montilva', 'V18845038-1', '1999-08-09', 'pojijpi', 'M', 'Soltero', 'A+', 'j bj', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2023-02-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 2, 4, '', '12345678901234567890'),
-(50, 'V16408021', 'Nilsy Lisbeth', 'Arias Niño', 'V16408021-1', '1999-08-08', 'fefeew', 'F', 'Soltero', 'A+', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2022-07-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 11, 7, '', '09999999999999999999'),
-(51, 'V30111366', 'Jose Alberto', 'Omaña Sanchez', 'V30111366-1', '2004-02-02', 'seboruco city', 'M', 'Soltero', 'A+', 'baila', 'baila', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2025-07-02', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', 1, 8, '', '12345678901234567890'),
-(54, 'V10175817', 'Elizabeth', 'Lizarazo', 'V10175817-1', '1999-09-09', 'uhSOINXS', 'F', 'Soltero', 'B-', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '098765', 'lewis@gmail.com', 'angelavillamizar900@gmail.com', '2004-03-23', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 8, '', ''),
-(55, 'V9217928', 'Ediz', 'Marquez de Jimenez', 'V9217928-9', '1944-09-08', 'etrl´_.,mhn', 'F', 'Casado', 'A-', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'salamanca1@gmail.com', '2012-05-16', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', NULL, 1, '', '09999999999999999999'),
-(56, 'V9336657', 'Blanca Gladys', 'Ramirez Mendoza', 'V9336657-9', '1999-09-09', '', 'F', 'Soltero', 'O+', '', '', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2021-10-03', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 2, 3, '', '09999999999999999999'),
-(57, 'V5683136', 'Gloria Zulay', 'Velasco de Jaimes', 'V5683136-1', '1952-02-09', '', 'F', 'Casado', 'O+', '', '', 'Municipio Libertador, Calle 2, Casa n3', '0412345986', '0412345986', 'angelavillamizar900@gmail.com', 'SONIARGUELLO10Y@GMAIL.COM', '1983-05-02', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345982', NULL, 3, '', '12345678901234567890'),
-(58, 'V1584405', 'Roger Alberto', 'Castellanos', 'V1584405-1', '1967-09-09', '', 'M', 'Soltero', 'AB-', '', '', 'cpasic', '04161373897', '0412345986', 'SONIARGUELLO11Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2007-05-15', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 4, '', '12345678901234567890'),
-(59, 'V9225056', 'Carolina', 'Parcesepe Martinez', 'V9225056', '1976-09-09', '', 'F', 'Soltero', 'O+', '', '', 'cpasic', '04161373897', '0412345986', 'salamanca@gmail.com', 'salamanca1@gmail.com', '2007-11-10', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 6, 4, '', '09999999999999999999'),
-(61, 'V5665819', 'Doly Ysolina', 'Quiroz', 'N/A', '1979-09-09', 'No especificado', 'F', 'Soltero', NULL, NULL, NULL, 'axdgcfhnñm.,mnhgx', NULL, '', '', NULL, '0000-00-00', NULL, NULL, NULL, NULL, NULL, NULL, 1, 7, '', NULL),
-(65, 'V31053492', 'Marlene ', 'Pedraza de Armas', NULL, '1978-08-09', 'No especificado', 'F', 'Soltero', NULL, NULL, NULL, 'iwdjwqijcfioqefiojfe', NULL, '', '', NULL, '0000-00-00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7, '', NULL),
-(66, 'V9226358', 'Rosa Elena', 'Useche de Osorio', 'V9226358-1', '1999-09-09', 'fgvbencoieqvo', 'F', 'Casado', 'O+', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '09876521111', 'lewis@gmail.com', 'angelavillamizar900@gmail.com', '2003-02-16', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 8, '', ''),
-(67, 'V90609124627', 'Empleado', 'Prueba Notificacion', 'V90609124627-1', '1994-01-15', NULL, 'M', 'Soltero', NULL, NULL, NULL, 'Direccion de prueba para notificaciones', NULL, '04140000000', 'prueba.0609124627@example.com', NULL, '2022-03-09', NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, '', '00000000000000000000'),
-(68, '29908320', 'ANGELA MARINA ', 'VILLAMIZAR', '29908320-1', '2003-02-08', 'wqdqwedwqd', 'F', 'Soltero', 'A+', 'adefef', 'bauolsa', 'WDWDDWQDWDQDW', '04161373897', '0412345986', 'angelavillamizar101@gmail.com', 'angelavillamizar101@gmail.com', '2024-06-18', NULL, NULL, NULL, NULL, NULL, NULL, 1, 1, '', '2134567890\'¿');
+INSERT INTO `empleados` (`empleado_id`, `cedula`, `nombres`, `apellidos`, `rif`, `fecha_nacimiento`, `lugar_nacimiento`, `genero`, `estado_civil`, `tipo_sangre`, `deportes`, `actividades_culturales`, `direccion_habitacion`, `telefono_fijo`, `celular`, `correo_principal`, `correo_secundario`, `fecha_ingreso`, `estudios_actuales`, `fecha_culminacion_estudios`, `contacto_emergencia_1`, `telefono_emergencia_1`, `contacto_emergencia_2`, `telefono_emergencia_2`, `profesion_id`, `estatus_id`, `fecha_proximo_derecho`, `nro_cuenta_bancaria`, `cuenta_bancaria`) VALUES
+(45, 'V14502107', 'Luis Mariano', 'Mantione Contreras', 'V16778235', '1998-08-09', 'por ahi', 'M', 'Casado', 'A+', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'cpasic', '04161373897', '098765', 'salamanca101@gmail.com', 'salamanca102@gmail.com', '2022-10-17', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 1, 9, NULL, '', '12345678901234567890'),
+(46, 'V15947515', 'Jenifer Carolina', 'Restrepo Arellano', 'V15947515-1', '1999-09-09', 'por ahi', 'F', 'Viudo', 'A+', 'kl.hk,jvh', 'ajedrez', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2021-09-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 2, 8, NULL, '', '09999999999999999999'),
+(49, 'V18845038', 'Luis Alejandro', 'Aguilar Montilva', 'V18845038-1', '1999-08-09', 'pojijpi', 'M', 'Soltero', 'A+', 'j bj', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2023-02-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 2, 4, NULL, '', '12345678901234567890'),
+(50, 'V16408021', 'Nilsy Lisbeth', 'Arias Niño', 'V16408021-1', '1999-08-08', 'fefeew', 'F', 'Soltero', 'A+', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2022-07-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 11, 7, NULL, '', '09999999999999999999'),
+(51, 'V30111366', 'Jose Alberto', 'Omaña Sanchez', 'V30111366-1', '2004-02-02', 'seboruco city', 'M', 'Soltero', 'A+', 'baila', 'baila', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2023-03-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', 1, 8, NULL, '', '12345678901234567890'),
+(54, 'V10175817', 'Elizabeth', 'Lizarazo', 'V10175817-1', '1999-09-09', 'uhSOINXS', 'F', 'Soltero', 'B-', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '098765', 'lewis@gmail.com', 'angelavillamizar900@gmail.com', '2004-03-23', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 8, NULL, '', ''),
+(55, 'V9217928', 'Ediz', 'Marquez de Jimenez', 'V9217928-9', '1944-09-08', 'etrl´_.,mhn', 'F', 'Casado', 'A-', 'kl.hk,jvh', 'bauiop\';olikugyfc bn', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'salamanca1@gmail.com', '2013-01-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000000', NULL, 1, NULL, '', '09999999999999999999'),
+(56, 'V9336657', 'Blanca Gladys', 'Ramirez Mendoza', 'V9336657-9', '1999-09-09', '', 'F', 'Soltero', 'O+', '', '', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'SONIARGUELLO10Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2021-10-03', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 2, 3, NULL, '', '09999999999999999999'),
+(57, 'V5683136', 'Gloria Zulay', 'Velasco de Jaimes', 'V5683136-1', '1952-02-09', '', 'F', 'Casado', 'O+', '', '', 'Municipio Libertador, Calle 2, Casa n3', '0412345986', '0412345986', 'angelavillamizar900@gmail.com', 'SONIARGUELLO10Y@GMAIL.COM', '1983-05-02', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345982', NULL, 3, NULL, '', '12345678901234567890'),
+(58, 'V1584405', 'Roger Alberto', 'Castellanos', 'V1584405-1', '1967-09-09', '', 'M', 'Soltero', 'AB-', '', '', 'cpasic', '04161373897', '0412345986', 'SONIARGUELLO11Y@GMAIL.COM', 'SONIARGUELLO10Y@GMAIL.COM', '2007-05-15', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 4, NULL, '', '12345678901234567890'),
+(59, 'V9225056', 'Carolina', 'Parcesepe Martinez', 'V9225056', '1976-09-09', '', 'F', 'Soltero', 'O+', '', '', 'cpasic', '04161373897', '0412345986', 'salamanca@gmail.com', 'salamanca1@gmail.com', '2007-11-10', '', NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', 6, 4, NULL, '', '09999999999999999999'),
+(61, 'V5665819', 'Doly Ysolina', 'Quiroz', 'N/A', '1979-09-09', 'No especificado', 'F', 'Soltero', NULL, NULL, NULL, 'axdgcfhnñm.,mnhgx', NULL, '', '', NULL, '0000-00-00', NULL, NULL, NULL, NULL, NULL, NULL, 1, 7, NULL, '', NULL),
+(65, 'V31053492', 'Marlene ', 'Pedraza de Armas', NULL, '1978-08-09', 'No especificado', 'F', 'Soltero', NULL, NULL, NULL, 'iwdjwqijcfioqefiojfe', NULL, '', '', NULL, '0000-00-00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 7, NULL, '', NULL),
+(66, 'V9226358', 'Rosa Elena', 'Useche de Osorio', 'V9226358-1', '1999-09-09', 'fgvbencoieqvo', 'F', 'Casado', 'O+', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '09876521111', 'lewis@gmail.com', 'angelavillamizar900@gmail.com', '2003-02-16', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '0412345986', NULL, 8, NULL, '', ''),
+(67, 'V90609124627', 'Empleado', 'Prueba Notificacion', 'V90609124627-1', '1994-01-15', NULL, 'M', 'Soltero', NULL, NULL, NULL, 'Direccion de prueba para notificaciones', NULL, '04140000000', 'prueba.0609124627@example.com', NULL, '2024-03-25', NULL, NULL, NULL, NULL, NULL, NULL, 1, 8, '2027-07-24', '', '00000000000000000000'),
+(68, '29908320', 'ANGELA MARINA ', 'VILLAMIZAR', '29908320-1', '2003-02-08', 'wqdqwedwqd', 'F', 'Soltero', 'A+', 'adefef', 'bauolsa', 'WDWDDWQDWDQDW', '04161373897', '0412345986', 'angelavillamizar101@gmail.com', 'angelavillamizar101@gmail.com', '2025-04-24', NULL, NULL, NULL, NULL, NULL, NULL, 1, 8, NULL, '', '2134567890\'¿'),
+(69, '21220954', 'Bustamante Lozada', 'Mariana Yudely', '212209541', '1999-08-09', 'ndwidiowdidw', 'F', 'Soltero', 'A+', 'j bj', 'bauiop\';olikugyfc bn', 'cpasic', '04161373897', '0412345986', 'angelavillamizar101@gmail.com', 'angelavillamizar101@gmail.com', '2022-07-15', NULL, NULL, 'Luis Bolaños', '0412345986', 'Luis Bolaños', '00000001', 2, 1, NULL, '', '12345678901234567899'),
+(70, 'V5664045', 'Gladys Mireya', 'Galanti Chacón', 'V56640451', '1978-12-12', NULL, 'F', 'Soltero', 'A+', 'kl.hk,jvh', 'bauolsa', 'cpasic', NULL, '0987653333', 'angelavillamizar101@gmail.com', 'angelavillamizar101@gmail.com', '2023-03-01', NULL, NULL, 'Luis Bolaños', '0412345986', NULL, NULL, 2, 1, NULL, '', '12345678901234567890'),
+(71, '9127453', 'Luis Alberto', 'Colmenares Mora', '9127453', '1999-02-02', 'San Cristóbal, La Concordia.', 'M', 'Soltero', 'O+', 'j bj', 'bauolsa', 'Municipio Libertador, Calle 2, Casa n3', '04161373897', '0412345986', 'lewis@gmail.com', 'lewis@gmail.com', '2019-10-01', NULL, NULL, 'Luis Bolaños', '0412345986', 'Lewis Roa', '0412345982', 2, 1, NULL, '', '12345678901234567890');
 
 -- --------------------------------------------------------
 
@@ -1132,7 +1153,10 @@ CREATE TABLE `encargos_temporales` (
 
 INSERT INTO `encargos_temporales` (`encargo_id`, `empleado_id`, `fecha_inicio`, `fecha_fin`, `estatus_encargo`, `cargo_cet_id`, `cargo_onapre_id`, `nivel_salarial_id`, `nivel_salarial_antiguo_id`, `direccion_id`, `division_id`, `unidad_id`, `observacion`) VALUES
 (14, 50, '2026-05-14', NULL, 1, 41, 22, 100, NULL, 7, 17, NULL, NULL),
-(15, 46, '2026-05-22', '2026-05-26', 0, 44, 24, 101, NULL, 3, 4, 5, 'kjh');
+(15, 46, '2026-05-22', '2026-05-26', 0, 44, 24, 101, NULL, 3, 4, 5, 'kjh'),
+(17, 51, '2026-07-05', NULL, 1, 80, 23, 158, NULL, 16, 19, 19, 'dds'),
+(18, 70, '2024-02-02', '2026-07-07', 0, 44, 24, 101, NULL, 15, NULL, NULL, 'ee2e2e'),
+(19, 71, '2026-05-15', NULL, 1, 41, 22, 100, NULL, 8, NULL, NULL, 'Por decreto 19898');
 
 -- --------------------------------------------------------
 
@@ -1171,18 +1195,18 @@ CREATE TABLE `fechas_vacaciones` (
   `fecha_fin` date DEFAULT NULL,
   `dias_habiles` int(11) DEFAULT NULL,
   `observaciones` text DEFAULT NULL,
-  `id_status_vacaciones` int(11) NOT NULL
+  `id_status_vacaciones` int(11) NOT NULL,
+  `fecha_finalizacion_real` date DEFAULT NULL COMMENT 'Último día hábil de disfrute (proyección pura, inmutable)',
+  `fecha_reintegro_laboral` date DEFAULT NULL COMMENT 'Primer día hábil posterior a fecha_finalizacion_real'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `fechas_vacaciones`
 --
 
-INSERT INTO `fechas_vacaciones` (`id_vacaciones`, `id_fecha`, `fecha_inicio`, `fecha_fin`, `dias_habiles`, `observaciones`, `id_status_vacaciones`) VALUES
-(36, 48, '2026-06-18', '2026-07-06', 12, 'ffvgrvt', 2),
-(36, 49, '2026-06-18', '2026-07-06', 11, 'fefqffqwwf', 4),
-(36, 50, '2026-06-18', '2026-07-06', 12, 'ef', 2),
-(36, 51, '2026-06-18', '2026-07-06', 11, 'HVFUYFUY', 4);
+INSERT INTO `fechas_vacaciones` (`id_vacaciones`, `id_fecha`, `fecha_inicio`, `fecha_fin`, `dias_habiles`, `observaciones`, `id_status_vacaciones`, `fecha_finalizacion_real`, `fecha_reintegro_laboral`) VALUES
+(53, 64, '2026-07-07', '2026-07-22', 12, 'POKPO', 2, '2026-08-11', '2026-07-23'),
+(54, 65, '2026-07-09', '2026-07-27', 12, 'wddwefe', 2, '2026-08-10', '2026-07-28');
 
 -- --------------------------------------------------------
 
@@ -1263,7 +1287,21 @@ INSERT INTO `historial_pagos` (`id_historial`, `empleado_id`, `tipo_personal`, `
 (151, 58, 'Pensionado', 1, 7, 2026, 65.00, 6.50, 58.50, '2026-06-16 14:19:46'),
 (152, 59, 'Pensionado', 1, 7, 2026, 65.00, 6.50, 58.50, '2026-06-16 14:19:46'),
 (153, 58, 'Pensionado', 2, 7, 2026, 65.00, 6.50, 58.50, '2026-06-16 14:19:52'),
-(154, 59, 'Pensionado', 2, 7, 2026, 65.00, 6.50, 58.50, '2026-06-16 14:19:52');
+(154, 59, 'Pensionado', 2, 7, 2026, 65.00, 6.50, 58.50, '2026-06-16 14:19:52'),
+(155, 67, 'Funcionario', 2, 8, 2026, 295.89, 45.95, 249.94, '2026-07-07 15:42:57'),
+(156, 46, 'Funcionario', 2, 8, 2026, 312.61, 47.39, 265.22, '2026-07-07 15:42:57'),
+(157, 69, 'Funcionario', 2, 8, 2026, 314.88, 46.53, 268.35, '2026-07-07 15:42:57'),
+(158, 51, 'Funcionario', 2, 8, 2026, 301.13, 46.44, 254.69, '2026-07-07 15:42:57'),
+(159, 68, 'Funcionario', 2, 8, 2026, 199.14, 30.43, 168.71, '2026-07-07 15:42:57'),
+(160, 45, 'Funcionario', 2, 8, 2026, 207.66, 31.37, 176.29, '2026-07-07 15:42:57'),
+(161, 70, 'Funcionario', 2, 8, 2026, 354.82, 49.93, 304.89, '2026-07-07 15:42:57'),
+(162, 67, 'Funcionario', 1, 8, 2026, 295.89, 39.81, 256.08, '2026-07-07 15:43:01'),
+(163, 46, 'Funcionario', 1, 8, 2026, 312.61, 40.90, 271.71, '2026-07-07 15:43:01'),
+(164, 69, 'Funcionario', 1, 8, 2026, 314.88, 39.99, 274.89, '2026-07-07 15:43:01'),
+(165, 51, 'Funcionario', 1, 8, 2026, 301.13, 40.19, 260.94, '2026-07-07 15:43:01'),
+(166, 68, 'Funcionario', 1, 8, 2026, 199.14, 26.29, 172.85, '2026-07-07 15:43:01'),
+(167, 45, 'Funcionario', 1, 8, 2026, 207.66, 27.06, 180.60, '2026-07-07 15:43:01'),
+(168, 70, 'Funcionario', 1, 8, 2026, 354.82, 43.18, 311.64, '2026-07-07 15:43:01');
 
 --
 -- Disparadores `historial_pagos`
@@ -1350,7 +1388,12 @@ CREATE TABLE `historial_salarios` (
 
 INSERT INTO `historial_salarios` (`id_historial`, `empleado_id`, `fecha`, `monto_neto`, `observaciones`) VALUES
 (1, 46, '2026-06-13', 376.00, 'Ajuste salarial por Cambio de Cargo. Cargo anterior: Jefe de Division General. Cargo nuevo: Director de Línea.'),
-(2, 68, '2026-06-18', 246.00, 'Salario inicial asignado por ingreso a la institución. Cargo: Analista de Personal.');
+(2, 68, '2026-06-18', 246.00, 'Salario inicial asignado por ingreso a la institución. Cargo: Analista de Personal.'),
+(3, 51, '2026-06-23', 348.00, 'Ajuste salarial por Cambio de Cargo. Cargo anterior: Analista de Sistema. Cargo nuevo: Jefe de División.'),
+(4, 69, '2026-06-24', 363.00, 'Salario inicial asignado por ingreso a la institución. Cargo: Jefe de Division General.'),
+(5, 51, '2026-07-05', 376.00, 'Ajuste salarial por Cambio de Cargo. Cargo anterior: Jefe de División. Cargo nuevo: Director General.'),
+(6, 70, '2026-07-07', 376.00, 'Salario inicial asignado por ingreso a la institución. Cargo: Director de Línea.'),
+(7, 71, '2026-07-07', 376.00, 'Salario inicial asignado por ingreso a la institución. Cargo: Director de Línea.');
 
 -- --------------------------------------------------------
 
@@ -1393,7 +1436,8 @@ CREATE TABLE `modulos_acceso` (
 INSERT INTO `modulos_acceso` (`modulo_id`, `nombre_modulo`) VALUES
 (1, 'Acceso Global'),
 (2, 'Módulo de Recursos Humanos'),
-(3, 'Módulo de Bienes');
+(3, 'Módulo de Bienes'),
+(5, 'Visualizador Empleado');
 
 -- --------------------------------------------------------
 
@@ -1698,7 +1742,9 @@ INSERT INTO `nucleo_familiar` (`familiar_id`, `nombres`, `apellidos`, `fecha_nac
 (15, 'Luis', 'Avendaño', '2019-08-09', 1, 'hijo', NULL, NULL, NULL, '', NULL, NULL),
 (17, 'Lewis', 'Perez Roa', '2003-06-30', 1, 'conyuge', NULL, 'Municipio Libertador, Calle 2, Casa n3', NULL, '12345678901234567899', '04161373897', '19807345'),
 (18, 'Alberto Jesus', 'Bolaños', '2003-09-01', 0, 'hijo', NULL, NULL, NULL, '', NULL, NULL),
-(19, 'Alber', 'Bolaños', '2012-09-01', 1, 'hijo', NULL, NULL, NULL, '', NULL, NULL);
+(19, 'Alber', 'Bolaños', '2012-09-01', 1, 'hijo', NULL, NULL, NULL, '', NULL, NULL),
+(20, 'Lewis', 'Bolaños', '2009-08-09', 1, 'hijo', NULL, NULL, NULL, '', NULL, NULL),
+(21, 'Luis', 'Colmenares', '2003-01-09', 0, 'hijo', NULL, NULL, NULL, '', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1807,8 +1853,8 @@ CREATE TABLE `primas_profesionalizacion` (
 --
 
 INSERT INTO `primas_profesionalizacion` (`prima_profesional_id`, `descripcion`, `porcentaje_actual`, `porcentaje_anterior`) VALUES
-(1, 'Especialización', 30.00, 40.00),
-(2, 'Maestría', 35.00, 40.00),
+(1, 'Especialización', 25.00, 30.00),
+(2, 'Maestría', 35.00, 50.00),
 (3, 'T.S.U', 20.00, 20.00),
 (4, 'Profesional', 25.00, 30.00),
 (5, 'Doctorado', 40.00, 60.00);
@@ -1870,7 +1916,7 @@ CREATE TABLE `registros_antiguedades` (
 --
 
 INSERT INTO `registros_antiguedades` (`antiguedad_id`, `empleado_id`, `fecha_inicio`, `fecha_fin`, `id_institucion`, `institucion_alternativa`) VALUES
-(8, 51, '2024-07-01', '2025-07-01', NULL, NULL),
+(8, 51, '2024-07-01', '2025-07-01', 191, NULL),
 (9, 45, '2012-08-01', '2014-12-30', NULL, NULL),
 (10, 66, '2001-09-03', '2001-10-02', NULL, NULL),
 (11, 66, '2001-10-03', '2001-11-02', NULL, NULL),
@@ -1881,7 +1927,13 @@ INSERT INTO `registros_antiguedades` (`antiguedad_id`, `empleado_id`, `fecha_ini
 (16, 66, '2002-04-01', '2002-12-31', NULL, NULL),
 (22, 46, '2020-08-09', '2021-09-09', 24, NULL),
 (23, 46, '2019-08-09', '2019-09-09', 132, NULL),
-(29, 49, '1999-09-09', '2008-03-02', 53, NULL);
+(29, 49, '1999-09-09', '2008-03-02', 53, NULL),
+(32, 70, '1998-01-02', '2000-03-21', 133, NULL),
+(33, 70, '2001-01-16', '2001-12-31', 118, NULL),
+(34, 70, '2002-01-01', '2016-03-31', 137, NULL),
+(35, 70, '2016-04-01', '2023-06-30', 136, NULL),
+(36, 67, '1988-10-17', '2019-09-30', 135, NULL),
+(37, 71, '1988-08-17', '2019-09-30', 132, NULL);
 
 -- --------------------------------------------------------
 
@@ -1923,7 +1975,13 @@ INSERT INTO `relacion_cargos` (`relacion_cargo_id`, `empleado_id`, `cargo_cet_id
 (20, 51, 48, '2026-05-26', '2026-05-12', 'Cambio de cargo', 'Unidad de Archivo'),
 (21, 67, 41, '2026-06-09', NULL, 'Asignación de cargo', 'Dirección de Servicios Generales, Seguridad y Transporte '),
 (22, 46, 80, '2026-06-13', '2026-05-25', 'Cambio de cargo', 'Dirección de Planificación, Organización y Métodos'),
-(23, 68, 51, '2026-06-18', NULL, 'Asignación de cargo', 'División de Remuneraciones');
+(23, 68, 51, '2026-06-18', NULL, 'Asignación de cargo', 'División de Remuneraciones'),
+(24, 68, 47, '2026-06-23', '2026-06-18', 'Cambio de cargo', 'División de Remuneraciones'),
+(25, 51, 44, '2026-06-23', '2026-05-26', 'Cambio de cargo', 'División de Remuneraciones'),
+(26, 69, 43, '2026-06-24', NULL, 'Asignación de cargo', 'División General de Recursos Humanos'),
+(27, 51, 41, '2026-07-05', '2026-06-23', 'Cambio de cargo', 'Dirección de Recursos Humanos'),
+(28, 70, 80, '2026-07-07', NULL, 'Asignación de cargo', 'Oficina de Atención AL Público Y Participación Ciudadana '),
+(29, 71, 80, '2026-07-07', NULL, 'Asignación de cargo', 'Dirección de Control de la Administración Central y Poder Legislativo');
 
 -- --------------------------------------------------------
 
@@ -1970,7 +2028,10 @@ CREATE TABLE `retroactivos` (
 INSERT INTO `retroactivos` (`retroactivo_id`, `empleado_id`, `cargo_cet_id`, `cargo_onapre_anterior_id`, `nivel_salarial_anterior_id`, `cargo_onapre_id`, `nivel_salarial_id`, `nivel_salarial_antiguo_id`, `direccion_id`, `division_id`, `unidad_id`, `dias_diferencia`, `delta_sueldo`, `delta_antiguedad`, `delta_profesionalizacion`, `delta_jerarquia`, `monto_retroactivo`, `estado`, `periodo_pago_mes`, `periodo_pago_anio`, `periodo_pago_quincena`, `fecha_pago`, `fecha_inicio`, `fecha_corte`, `fecha_fin`, `estatus`, `observacion`, `created_at`, `updated_at`) VALUES
 (7, 46, 80, NULL, NULL, 23, 158, NULL, 11, NULL, NULL, 5, 6.50, 0.32, 1.63, 1.06, 3.17, 'PAGADO', 6, 2026, '2', '2026-05-26 09:08:44', '2026-05-26', '2026-05-30', NULL, NULL, 'kjhnddddddddddd\n', '2026-05-26 13:08:24', '2026-05-26 13:08:44'),
 (8, 51, 48, 40, 137, 26, 137, NULL, 3, 4, 5, 4, 0.00, 0.00, 0.00, 0.00, 0.00, 'PENDIENTE', NULL, NULL, NULL, NULL, '2026-05-26', '2026-05-30', NULL, NULL, 'Creado automáticamente por cambio de cargo/nivel', '2026-05-26 13:29:25', '2026-05-26 13:29:25'),
-(9, 46, 80, 25, 159, 23, 158, NULL, 11, NULL, NULL, 17, 0.00, 0.00, 0.00, 0.00, 0.00, 'PENDIENTE', NULL, NULL, NULL, NULL, '2026-06-13', '2026-06-30', NULL, NULL, 'Creado automáticamente por cambio de cargo/nivel', '2026-06-13 22:34:27', '2026-06-13 22:34:27');
+(9, 46, 80, 25, 159, 23, 158, NULL, 11, NULL, NULL, 17, 0.00, 0.00, 0.00, 0.00, 0.00, 'PENDIENTE', NULL, NULL, NULL, NULL, '2026-06-13', '2026-06-30', NULL, NULL, 'Creado automáticamente por cambio de cargo/nivel', '2026-06-13 22:34:27', '2026-06-13 22:34:27'),
+(10, 51, 44, 26, 137, 24, 101, NULL, 2, 9, NULL, 7, 0.00, 0.00, 0.00, 0.00, 0.00, 'PENDIENTE', NULL, NULL, NULL, NULL, '2026-06-23', '2026-06-30', NULL, NULL, 'Creado automáticamente por cambio de cargo/nivel', '2026-06-23 15:24:24', '2026-06-23 15:24:24'),
+(11, 51, 41, 24, 101, 22, 100, NULL, 2, NULL, NULL, 25, 0.00, 0.00, 0.00, 0.00, 0.00, 'PENDIENTE', NULL, NULL, NULL, NULL, '2026-07-05', '2026-07-30', NULL, NULL, 'Creado automáticamente por cambio de cargo/nivel', '2026-07-05 22:00:30', '2026-07-05 22:00:30'),
+(12, 71, 41, NULL, NULL, 22, 100, NULL, 8, NULL, NULL, 22, 0.00, 0.00, 0.00, 0.94, 1.37, 'PENDIENTE', NULL, NULL, NULL, NULL, '2023-12-09', '2023-12-30', NULL, NULL, 'por que si', '2026-07-07 22:28:50', '2026-07-07 22:28:50');
 
 -- --------------------------------------------------------
 
@@ -2022,7 +2083,9 @@ INSERT INTO `sobreviviente` (`id_sobreviviente`, `empleado_id`, `familiar_id`, `
 (16, 49, 15, NULL, 0, NULL),
 (18, 50, 17, '2026-05-19', 1, 'Bajo resolucion 334\n'),
 (19, 46, 18, NULL, 0, NULL),
-(20, 46, 19, NULL, 0, NULL);
+(20, 46, 19, NULL, 0, NULL),
+(21, 71, 20, NULL, 0, NULL),
+(22, 71, 21, NULL, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -2142,8 +2205,29 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`usuario_id`, `username`, `password_hash`, `nombres`, `apellidos`, `rol_id`, `modulo_id`, `cedula_referencia`) VALUES
 (1, 'amvar', '$2b$12$SnnQFedf42t8Wzcer.c7qORVul2OuZDmN2kVdxjtM17Es1T0EzD8m', 'Angela', 'Villamizar', 5, 1, '29907321'),
-(2, 'vis_1', '$2b$12$zljSb9vyTBCj7FC4F.L6iumxpRzFE26MV631rZ8RvkNAW6ci8hmSW', 'Maria', 'Lopez', 1, 2, '29907321'),
-(3, 'vis?2', '$2b$12$WsxKSIqMrLwqLEhdKc9gTO6eN5B/PkN9BtguhqtDZKM66CuJab6Vy', 'Maria', 'Lopez', 1, 1, '299073213');
+(6, 'jose_vis', '$2b$12$cR4xq85eq2ufmCnBFj.jluAJccpP5.LblxiWoLHJqOYY3NG3ROXrG', 'Jose Alberto', 'Omaña Sanchez', 1, 5, 'V30111366');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `usuarios_empleados`
+--
+
+CREATE TABLE `usuarios_empleados` (
+  `id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `empleado_id` int(11) NOT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
+  `actualizado_en` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `asignado_por` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `usuarios_empleados`
+--
+
+INSERT INTO `usuarios_empleados` (`id`, `usuario_id`, `empleado_id`, `creado_en`, `actualizado_en`, `asignado_por`) VALUES
+(2, 6, 51, '2026-07-04 20:39:42', '2026-07-04 20:39:42', NULL);
 
 -- --------------------------------------------------------
 
@@ -2166,7 +2250,8 @@ CREATE TABLE `vacaciones` (
 --
 
 INSERT INTO `vacaciones` (`id_empleado`, `id_vacaciones`, `id_status_vacaciones`, `dias_acumulados`, `fecha_tope`, `pagado`, `antiguedad_id`) VALUES
-(67, 36, 4, 0, '2026-07-09', 0, NULL);
+(51, 53, 2, 0, '2026-07-01', 0, NULL),
+(68, 54, 2, 0, '2026-08-24', 0, NULL);
 
 --
 -- Índices para tablas volcadas
@@ -2471,6 +2556,15 @@ ALTER TABLE `usuarios`
   ADD KEY `fk_usuario_modulo` (`modulo_id`);
 
 --
+-- Indices de la tabla `usuarios_empleados`
+--
+ALTER TABLE `usuarios_empleados`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `usuario_id` (`usuario_id`),
+  ADD UNIQUE KEY `empleado_id` (`empleado_id`),
+  ADD KEY `asignado_por` (`asignado_por`);
+
+--
 -- Indices de la tabla `vacaciones`
 --
 ALTER TABLE `vacaciones`
@@ -2486,7 +2580,7 @@ ALTER TABLE `vacaciones`
 -- AUTO_INCREMENT de la tabla `caja_ahorro`
 --
 ALTER TABLE `caja_ahorro`
-  MODIFY `id_caja` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
+  MODIFY `id_caja` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
 
 --
 -- AUTO_INCREMENT de la tabla `cargos_cet`
@@ -2558,13 +2652,13 @@ ALTER TABLE `divisiones`
 -- AUTO_INCREMENT de la tabla `empleados`
 --
 ALTER TABLE `empleados`
-  MODIFY `empleado_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `empleado_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT de la tabla `encargos_temporales`
 --
 ALTER TABLE `encargos_temporales`
-  MODIFY `encargo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `encargo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT de la tabla `estatus_funcionarios`
@@ -2576,7 +2670,7 @@ ALTER TABLE `estatus_funcionarios`
 -- AUTO_INCREMENT de la tabla `fechas_vacaciones`
 --
 ALTER TABLE `fechas_vacaciones`
-  MODIFY `id_fecha` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id_fecha` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT de la tabla `firmantes_recibo`
@@ -2588,13 +2682,13 @@ ALTER TABLE `firmantes_recibo`
 -- AUTO_INCREMENT de la tabla `historial_pagos`
 --
 ALTER TABLE `historial_pagos`
-  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
+  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=169;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_salarios`
 --
 ALTER TABLE `historial_salarios`
-  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `jubilados`
@@ -2606,7 +2700,7 @@ ALTER TABLE `jubilados`
 -- AUTO_INCREMENT de la tabla `modulos_acceso`
 --
 ALTER TABLE `modulos_acceso`
-  MODIFY `modulo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `modulo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `niveles_salariales`
@@ -2624,7 +2718,7 @@ ALTER TABLE `niveles_salariales_antiguos`
 -- AUTO_INCREMENT de la tabla `nucleo_familiar`
 --
 ALTER TABLE `nucleo_familiar`
-  MODIFY `familiar_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `familiar_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de la tabla `pensionado`
@@ -2666,19 +2760,19 @@ ALTER TABLE `profesiones`
 -- AUTO_INCREMENT de la tabla `registros_antiguedades`
 --
 ALTER TABLE `registros_antiguedades`
-  MODIFY `antiguedad_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `antiguedad_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT de la tabla `relacion_cargos`
 --
 ALTER TABLE `relacion_cargos`
-  MODIFY `relacion_cargo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `relacion_cargo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT de la tabla `retroactivos`
 --
 ALTER TABLE `retroactivos`
-  MODIFY `retroactivo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `retroactivo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `roles_sistema`
@@ -2690,7 +2784,7 @@ ALTER TABLE `roles_sistema`
 -- AUTO_INCREMENT de la tabla `sobreviviente`
 --
 ALTER TABLE `sobreviviente`
-  MODIFY `id_sobreviviente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id_sobreviviente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT de la tabla `status_vacaciones`
@@ -2720,13 +2814,19 @@ ALTER TABLE `unidades`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `usuario_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `usuario_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de la tabla `usuarios_empleados`
+--
+ALTER TABLE `usuarios_empleados`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `vacaciones`
 --
 ALTER TABLE `vacaciones`
-  MODIFY `id_vacaciones` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id_vacaciones` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- Restricciones para tablas volcadas
@@ -2872,6 +2972,14 @@ ALTER TABLE `unidades`
 ALTER TABLE `usuarios`
   ADD CONSTRAINT `fk_usuario_modulo` FOREIGN KEY (`modulo_id`) REFERENCES `modulos_acceso` (`modulo_id`),
   ADD CONSTRAINT `fk_usuario_rol` FOREIGN KEY (`rol_id`) REFERENCES `roles_sistema` (`rol_id`);
+
+--
+-- Filtros para la tabla `usuarios_empleados`
+--
+ALTER TABLE `usuarios_empleados`
+  ADD CONSTRAINT `usuarios_empleados_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`usuario_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `usuarios_empleados_ibfk_2` FOREIGN KEY (`empleado_id`) REFERENCES `empleados` (`empleado_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `usuarios_empleados_ibfk_3` FOREIGN KEY (`asignado_por`) REFERENCES `usuarios` (`usuario_id`) ON DELETE SET NULL;
 
 --
 -- Filtros para la tabla `vacaciones`
