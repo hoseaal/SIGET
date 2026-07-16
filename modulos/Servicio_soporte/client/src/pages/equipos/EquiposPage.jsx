@@ -27,7 +27,7 @@ export const EquiposPage = () => {
 
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(2);
+    const [itemsPerPage] = useState(4);
 
     const fetchEquipos = async () => {
         try {

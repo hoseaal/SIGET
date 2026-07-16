@@ -33,7 +33,14 @@ export class marcaService {
 
     static async eliminar(id) {
         await this.obtenerPorId(id)
-         // Validamos que exista antes de eliminar
-        return await marcaModel.delete(id)
+        // Validamos que exista antes de eliminar
+        try {
+            return await marcaModel.delete(id)
+        } catch (error) {
+            if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.errno === 1451) {
+                throw new Error('No se puede eliminar esta marca porque tiene equipos asociados. Desvincule los equipos antes de eliminarla.')
+            }
+            throw error
+        }
     }
 }

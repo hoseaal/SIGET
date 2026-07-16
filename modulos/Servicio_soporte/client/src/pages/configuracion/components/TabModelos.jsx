@@ -49,13 +49,24 @@ export const TabModelos = () => {
         fetchDataList();
     }, []);
 
-    const handleShowCreate = () => {
+    const refreshMarcas = async () => {
+        try {
+            const marcaData = await helpFetch.GET("/marca");
+            setMarcas(marcaData);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleShowCreate = async () => {
+        await refreshMarcas();
         reset({ nombre: "", marcaId: "" });
         setModalAction('crear');
         setModalVisible(true);
     };
 
-    const handleShowEdit = (item) => {
+    const handleShowEdit = async (item) => {
+        await refreshMarcas();
         setCurrentId(item.id);
         reset({ nombre: item.nombre, marcaId: String(item.marca_id || "") });
         setModalAction('editar');

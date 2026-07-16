@@ -26,7 +26,7 @@ export const MantenimientosPage = ({ isTechnicalDashboard = false }) => {
 
     // Paginación
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(3);
+    const [itemsPerPage] = useState(4);
 
     const fetchData = async () => {
         try {
