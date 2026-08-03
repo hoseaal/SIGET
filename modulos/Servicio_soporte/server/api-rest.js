@@ -42,7 +42,6 @@ connectDB()
   .then(() => console.log('🟢 DB Conectada'))
   .catch(err => {
     console.error('🔴 Error DB:', err)
-    process.exit(1)
   })
 
 
