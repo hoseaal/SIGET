@@ -8,7 +8,7 @@ import {
   obtenerRoles
 } from '../controllers/user.controller.js'
 // Aquí podrías agregar middlewares de autenticación o autorización si lo necesitas
-// import { authRequired } from '../middlewares/auth.middleware.js'
+// import { authRequired } from '../auth/auth.middleware.js'
 
 import { validateSchema } from '../middlewares/validateSchema.js'
 import { updateUserSchema, updatePasswordSchema } from '../utils/schemas/userSchema.js'
