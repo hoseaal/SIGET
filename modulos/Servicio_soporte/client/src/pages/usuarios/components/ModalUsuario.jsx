@@ -6,8 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import helpFetch from "../../../utils/helpFetch";
 
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?/{}~|])/;
-
 const createSchema = z.object({
     cedula_referencia: z.string().min(6, "La cédula debe tener al menos 6 dígitos").max(15, "La cédula es muy larga").regex(/^\d+$/, "Debe contener solo números"),
     nombres: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(50, "El nombre es muy largo"),
@@ -15,14 +13,12 @@ const createSchema = z.object({
     username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres").max(30, "El nombre de usuario es muy largo"),
     rol_id: z.string().min(1, "Seleccione un rol"),
     direc_id: z.string().min(1, "Seleccione un departamento"),
-    password1: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").regex(passwordRegex, "Debe contener mayúscula, minúscula, número y símbolo"),
-    password2: z.string().min(8, "La confirmación debe tener al menos 8 caracteres")
+    password1: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+    password2: z.string().min(6, "La confirmación debe tener al menos 6 caracteres")
 }).refine((data) => data.password1 === data.password2, {
     message: "Las contraseñas no coinciden",
     path: ["password2"]
 });
-
-const updatePasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?/{}~|])/;
 
 const updateSchema = z.object({
     cedula_referencia: z.string().min(6, "La cédula debe tener al menos 6 dígitos").max(15, "La cédula es muy larga").regex(/^\d+$/, "Debe contener solo números"),
@@ -43,12 +39,11 @@ const updateSchema = z.object({
     path: ["password2"]
 }).refine((data) => {
     if (data.password1 && data.password1.length > 0) {
-        if (data.password1.length < 8) return false;
-        return updatePasswordRegex.test(data.password1);
+        return data.password1.length >= 6;
     }
     return true;
 }, {
-    message: "Debe tener al menos 8 caracteres, mayúscula, minúscula, número y símbolo",
+    message: "La contraseña debe tener al menos 6 caracteres",
     path: ["password1"]
 });
 

@@ -6,8 +6,6 @@ import './page-auth.css'
 import Form from 'react-bootstrap/Form';
 import Alert from "../../components/atoms/Alert";
 
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?/{}~|])/;
-
 const schema = z.object({
   ced: z.string().min(6, "La cédula debe tener al menos 6 caracteres").max(15, "La cédula es muy larga").regex(/^\d+$/, "Solo se permiten números"),
   nombre: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(50, "El nombre es muy largo"),
@@ -15,8 +13,8 @@ const schema = z.object({
   rol_id: z.string().min(1, "Seleccione un tipo de usuario"),
   modulo_id: z.string().min(1, "Seleccione un módulo"),
   username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres").max(30, "El nombre de usuario es muy largo"),
-  password1: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").regex(passwordRegex, "Debe contener mayúscula, minúscula, número y símbolo"),
-  password2: z.string().min(8, "La confirmación debe tener al menos 8 caracteres")
+  password1: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  password2: z.string().min(6, "La confirmación debe tener al menos 6 caracteres")
 }).refine((data) => data.password1 === data.password2, {
   message: "Las contraseñas no coinciden",
   path: ["password2"]
