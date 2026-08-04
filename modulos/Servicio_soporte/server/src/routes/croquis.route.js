@@ -5,7 +5,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { CroquisModel } from '../models/croquis.model.js'
 
-import Jimp from 'jimp'
+import { Jimp } from 'jimp'
 
 const router = Router()
 
