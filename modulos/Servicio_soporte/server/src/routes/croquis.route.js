@@ -5,7 +5,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { CroquisModel } from '../models/croquis.model.js'
 
-import sharp from 'sharp'
+import Jimp from 'jimp'
 
 const router = Router()
 
@@ -36,7 +36,7 @@ const upload = multer({
     }
 })
 
-// Subir o actualizar croquis de un piso (procesado con sharp y guardado como webp)
+// Subir o actualizar croquis de un piso (procesado con jimp y guardado como webp)
 router.post('/', upload.single('imagen'), async (req, res) => {
     try {
         const { piso_id } = req.body
@@ -51,10 +51,9 @@ router.post('/', upload.single('imagen'), async (req, res) => {
         const filename = `${uniqueSuffix}.webp`
         const destPath = path.join(uploadDir, filename)
 
-        // Convertir y comprimir con sharp a webp
-        await sharp(req.file.buffer)
-            .webp({ quality: 80 })
-            .toFile(destPath)
+        // Convertir y comprimir con jimp a webp
+        const image = await Jimp.read(req.file.buffer)
+        await image.quality(80).writeAsync(destPath)
 
         const imagen_url = `/uploads/${filename}`
         
