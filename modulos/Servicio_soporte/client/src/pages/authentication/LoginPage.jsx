@@ -31,27 +31,27 @@ export const LoginPage = () => {
     const onSubmit = async (data) => {
         try {
             const res = await fetch('/api/sp/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify(data),
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(data),
             });
 
             if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || 'Error al iniciar sesión');
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'Error al iniciar sesión');
             }
 
             const responseData = await res.json();
 
             if (responseData.success) {
-            setFormEnviado(true);
-            setMensajeMostrado(true);
-            setTimeout(() => {
-                navigate('/Dashboard', { replace: true });
-            }, 1000);
+                setFormEnviado(true);
+                setMensajeMostrado(true);
+                setTimeout(() => {
+                    navigate('/Dashboard', { replace: true });
+                }, 1000);
             }
         } catch (error) {
             setFormEnviado(false);
@@ -59,13 +59,13 @@ export const LoginPage = () => {
             setErrorMessage(error.message);
 
             setTimeout(() => {
-            setMensajeMostrado(false);
+                setMensajeMostrado(false);
             }, 3000);
         }
     };
     return (
         <AuthWrapper>
-            <h4 className="mb-2">Bienvenido al modulo de Gestion de Recursos Humanos! 👋</h4>
+            <h4 className="mb-2">Bienvenido al modulo de Servicio Técnico! 👋</h4>
             <p className="mb-4">Porfavor ingresa tus datos para acceder. </p>
 
             <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit(onSubmit)}>
@@ -101,10 +101,10 @@ export const LoginPage = () => {
                     <button aria-label='Click me' className="btn btn-primary d-grid w-100" type="submit">Ingresar</button>
                 </div>
                 {mensajeMostrado &&
-                <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
-                {formEnviado ? 'Iniciando sesion...' : `${errorMessage}`}
-            </Alert>
-              }
+                    <Alert key={formEnviado ? 'success' : 'danger'} type={formEnviado ? 'success' : 'danger'}>
+                        {formEnviado ? 'Iniciando sesion...' : `${errorMessage}`}
+                    </Alert>
+                }
             </form>
 
         </AuthWrapper>
