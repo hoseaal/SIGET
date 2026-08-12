@@ -1,383 +1,604 @@
 # SIGET - Sistema Integral de Gestión para la Contraloría del Estado Táchira
 
-[![PHP 8.2.12](https://img.shields.io/badge/PHP-8.2.12-777BB4?logo=php)](https://www.php.net/releases/8.2/en.php)
-[![XAMPP](https://img.shields.io/badge/XAMPP-3.3.0-FB7A24?logo=apache)](https://www.apachefriends.org/es/index.html)
-[![Node.js 18+](https://img.shields.io/badge/Node.js-18+-339933?logo=nodedotjs)](https://nodejs.org/)  
-[![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)  
-[![MySQL 8](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql)](https://www.mysql.com/)  
+[![Node.js 18+](https://img.shields.io/badge/Node.js-18+-339933?logo=nodedotjs)](https://nodejs.org/)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
+[![MySQL 8](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql)](https://www.mysql.com/)
+[![PM2](https://img.shields.io/badge/PM2-5.3.0-2B6C8C?logo=pm2)](https://pm2.keymetrics.io/)
 
-Sistema web diseñado para automatizar procesos clave en los departamentos de la **Contraloría del Estado Táchira**.
-
----
-
-## 🛠️ Configuración del Entorno
-
-Esta sección detalla los pasos necesarios para configurar y ejecutar el sistema, tanto para desarrollo local como para despliegue en un servidor de producción.
-
-### Requisitos Previos
-
-Asegúrate de tener instalados los siguientes componentes antes de iniciar:
-
-* **PHP 8.2.12** ([Descargar](https://windows.php.net/download#php-8.2))
-* **XAMPP** (versión con Apache y MySQL activados)
-* **Composer** ([Guía de Instalación](https://getcomposer.org/download/))
-* **Node.js v18+**
-* **MySQL 8+**
-* **Git** + **GitHub Desktop** (opcional, para gestión de versiones)
+Sistema web modular diseñado para automatizar los procesos clave de la **Contraloría del Estado Táchira**. La plataforma está compuesta por módulos independientes que comparten una misma infraestructura pero utilizan **bases de datos separadas** para cada módulo.
 
 ---
 
-### Configuración para Desarrollo Local
+## 🧩 Módulos del Sistema
 
-Sigue estos pasos para poner en marcha el sistema en tu entorno local.
+| Módulo               | Frontend (React) | Backend (Node.js) | Puerto API | Nombre PM2      | Base de Datos        |
+|----------------------|------------------|-------------------|------------|-----------------|----------------------|
+| Bienes Muebles       | `modulos/BienesMuebles/client`  | `modulos/BienesMuebles/server`  | 5001 | `api-bienes-muebles` | `dbsiget`            |
+| Recursos Humanos     | `modulos/RRHH/client`           | `modulos/RRHH/server`           | 5002 | `api-rrrhh`     | `dbsigetrrhh-1`      |
+| Soporte Técnico      | `modulos/Servicio_soporte/client`| `modulos/Servicio_soporte/server`| 5003 | `api-soporte`   | `control_informatica`|
 
-1.  **Clonar el Repositorio**:
-
-    ```bash
-    cd /opt/lampp/htdocs # O la ruta donde desees clonar el proyecto
-    git clone [https://github.com/hoseaal/SIGET.git](https://github.com/hoseaal/SIGET.git)
-    cd SIGET
-    ```
-
-2.  **Instalar Dependencias**:
-
-    * **Módulo de Bienes Muebles (Node.js + React)**:
-
-        ```bash
-        cd modulos/BienesMuebles/server && npm install
-        cd ../../../ # Regresar a la raíz del proyecto
-        cd modulos/BienesMuebles/client && npm install
-        cd ../../../ # Regresar a la raíz del proyecto
-        ```
-
-    * **Módulo de Recursos Humanos (PHP)**:
-
-        ```bash
-        composer require firebase/php-jwt phpoffice/phpspreadsheet vlucas/phpdotenv
-        ```
-
-3.  **Configurar Variables de Entorno (`.env`)**:
-
-    * **Importante**: ¡Nunca subas tus archivos `.env` a GitHub!
-
-    * Para el **Módulo de Recursos Humanos**: Solicita el archivo `.env` al Jefe de Área Técnica. Contiene el token JWT y configuraciones sensibles.
-
-    * Para el **Módulo de Bienes Muebles**: Solicita el archivo `.env` al Jefe de Área Técnica y colócalo en la ruta `/modulos/BienesMuebles/server`.
-
-    * **Ejemplo de archivo `.env`** (los archivos `.env` son separados para cada módulo, aunque comparten algunas claves):
-
-        ```ini
-        DB_HOST=localhost
-        DB_USER=[usuario_mysql]
-        DB_PASSWORD=[contraseña_mysql]
-        DB_DATABASE=[nombre_de_la_bd]
-        JWT_SECRET=[clave_secreta_minimo_32_caracteres_para_JWT]
-        PORT=[puerto_para_el_servidor_de_node]
-        ```
-
-4.  **Base de Datos**:
-
-    * Importa el archivo `dbsiget.sql` desde la carpeta `BDA/` utilizando **PHPMyAdmin** (disponible en XAMPP).
-
-5.  **Ejecutar el Proyecto**:
-
-    * Inicia los servicios de **Apache** y **MySQL** en XAMPP.
-    * Accede al sistema a través de tu navegador: `http://localhost/SIGET/home/`
-    * *Nota*: La carpeta `home/` funciona como la página de inicio principal del sistema, sirviendo de portal para acceder a los diferentes módulos.
+Además, el sistema cuenta con una **landing page** (`/home/`) que actúa como portal de entrada a los módulos.
 
 ---
 
-### Configuración para Despliegue en un Servidor (Producción)
+## 🛠️ Requisitos Previos
 
-Esta sección detalla la configuración recomendada para un entorno de producción, asumiendo un sistema operativo Linux (Ubuntu/Debian) y un servidor web Nginx.
+Antes de comenzar, asegúrate de tener instalado en tu máquina:
 
-**Entorno del Servidor Recomendado**:
+- **Node.js** (versión 18 LTS o superior) – [Descargar](https://nodejs.org/)
+- **MySQL** (versión 8.0 o superior) – [Descargar](https://dev.mysql.com/downloads/)
+- **Git** – [Descargar](https://git-scm.com/)
+- (Opcional) **MySQL Workbench** o **phpMyAdmin** para administrar la base de datos.
 
-* **Sistema Operativo**: Linux (Ubuntu/Debian).
-* **Base de Datos**: MySQL/MariaDB (se recomienda una instalación standalone en producción, no XAMPP).
-* **Servidor Web**: Nginx
-* **Runtime JavaScript**: Node.js
-* **Proceso de Aplicación**: PM2
+> **Nota:** Ya no se utiliza XAMPP ni PHP. Todo el sistema está construido con Node.js y React.
 
-#### 1. Preparación del Servidor
+---
 
-* **Actualizar paquetes del sistema**:
+## 🚀 Configuración para Desarrollo Local (Windows / Linux / macOS)
 
-    ```bash
-    sudo apt update
-    sudo apt upgrade -y
-    ```
+Sigue estos pasos para ejecutar el sistema en tu entorno local. Puedes clonar el repositorio en cualquier directorio de tu elección.
 
-* **Instalar Node.js y NPM (versión recomendada LTS)**:
+### 1. Clonar el repositorio
 
-    ```bash
-    sudo apt install curl -y
-    curl -o- [https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh](https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh) | bash
-    # Cierra y vuelve a abrir tu terminal o ejecuta: source ~/.bashrc (o ~/.zshrc)
-    nvm install --lts
-    nvm use --lts
-    ```
+```bash
+git clone https://github.com/hoseaal/SIGET.git
+cd SIGET
+```
 
-    * **Verificar instalación**:
+### 2. Crear las bases de datos e importar los datos
 
-        ```bash
-        node -v  # Debe mostrar v18.x o superior
-        npm -v   # Debe mostrar 9.x o superior
-        ```
+Los scripts SQL se encuentran en la carpeta `BDA/`. Cada módulo tiene su propia base de datos y su propio archivo de importación.
 
-* **Instalar herramientas de compilación** (necesarias para librerías nativas como `bcrypt`):
+Conéctate a MySQL y crea las tres bases de datos:
 
-    ```bash
-    sudo apt install build-essential -y
-    ```
+```sql
+CREATE DATABASE dbsiget;
+CREATE DATABASE dbsigetrrhh-1;
+CREATE DATABASE control_informatica;
+```
 
-#### 2. Configuración de los Módulos
+Luego importa cada script SQL en su base de datos correspondiente:
 
-* **Para el Backend (Servidor Node.js)**:
+```bash
+mysql -u root -p dbsiget < BDA/dbsiget.sql
+mysql -u root -p dbsigetrrhh-1 < BDA/dbsigetrrhh-1.sql
+mysql -u root -p control_informatica < BDA/control_informatica.sql
+```
 
-    ```bash
-    cd /opt/lampp/htdocs/SIGET/modulos/BienesMuebles/server # (Nota: Ajusta esta ruta si tu proyecto está en otra ubicación en el servidor)
-    rm -rf node_modules package-lock.json # Limpiar dependencias existentes
-    npm cache clean --force
-    npm install --unsafe-perm --build-from-source # Reinstalar con compilación nativa
-    ```
+(Introduce la contraseña de tu usuario root cuando se solicite.)
 
-* **Para el Frontend (Aplicación React)**:
+### 3. Configurar variables de entorno (`.env`) para cada módulo
 
-    ```bash
-    cd /opt/lampp/htdocs/SIGET/modulos/BienesMuebles/client # (Nota: Ajusta esta ruta si tu proyecto está en otra ubicación en el servidor)
-    npm install
-    npm run build
-    ```
-    *Esto creará una carpeta `dist` (o `build`, dependiendo de tu configuración de Vite) dentro del directorio del frontend con todos los archivos estáticos listos para ser servidos.*
+Cada backend necesita su propio archivo `.env` con las credenciales de conexión a su base de datos correspondiente.  
+Crea los siguientes archivos:
 
-#### 3. Configuración e Instalación de Nginx
+- `modulos/BienesMuebles/server/.env`
+- `modulos/RRHH/server/.env`
+- `modulos/Servicio_soporte/server/.env`
 
-* **Instalar Nginx**:
+Con este contenido (ajusta `DB_PASSWORD`, `DB_NAME` y `PORT` según el módulo):
 
-    ```bash
-    sudo apt install nginx -y
-    ```
+#### Para Bienes Muebles (`modulos/BienesMuebles/server/.env`):
 
-* **Crear el archivo de configuración de Nginx para tu aplicación**:
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=tu_contraseña
+DB_NAME=dbsiget
+PORT=5001
+JWT_SECRET=una_clave_secreta_muy_segura_de_al_menos_32_caracteres
+```
 
-    ```bash
-    sudo rm /etc/nginx/sites-enabled/default # (Opcional) Borrar el archivo de configuración por defecto si existe
-    sudo nano /etc/nginx/sites-available/siget_bienes # Crear un nuevo archivo de configuración
-    ```
+#### Para RRHH (`modulos/RRHH/server/.env`):
 
-    * Añade la siguiente configuración al archivo (`siget_bienes`):
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=tu_contraseña
+DB_NAME=dbsigetrrhh-1
+PORT=5002
+JWT_SECRET=una_clave_secreta_muy_segura_de_al_menos_32_caracteres
+```
 
-        ```nginx
-        server {
-            listen 8080; # Puerto para acceder al frontend desde la red (ej. http://IP_DEL_SERVIDOR:8080)
-            server_name _; # Acepta cualquier nombre de host
+#### Para Soporte (`modulos/Servicio_soporte/server/.env`):
 
-            # Ruta a los archivos estáticos de tu React App (la carpeta 'dist' generada)
-            root /opt/lampp/htdocs/SIGET/modulos/BienesMuebles/client/dist; # Ajusta la ruta si es necesario
-            index index.html;
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=tu_contraseña
+DB_NAME=control_informatica
+PORT=5003
+JWT_SECRET=una_clave_secreta_muy_segura_de_al_menos_32_caracteres
+```
 
-            # Sirve la aplicación de React para cualquier ruta que no sea la API
-            location / {
-                try_files $uri $uri/ /index.html;
-            }
+> **Importante:** Estos archivos contienen información sensible y **nunca deben subirse al repositorio** (ya están en `.gitignore`).
 
-            # Redirige las peticiones /api a tu servidor Node.js (backend)
-            location /api {
-                proxy_pass http://localhost:5001; # Puerto donde corre tu API de Node.js
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-            }
-        }
-        ```
+### 4. Instalar dependencias de cada módulo
 
-* **Habilitar la configuración de Nginx**:
+Ejecuta los siguientes comandos desde la raíz del proyecto para instalar las dependencias del backend y del frontend de **cada módulo**.
 
-    ```bash
-    sudo ln -s /etc/nginx/sites-available/siget_bienes /etc/nginx/sites-enabled/
-    ```
+#### Módulo Bienes Muebles
 
-* **Probar la sintaxis de Nginx y reiniciar**:
+```bash
+# Backend
+cd modulos/BienesMuebles/server
+npm install
 
-    ```bash
-    sudo nginx -t # Debe retornar "syntax is ok" y "test is successful"
-    sudo systemctl restart nginx
-    ```
+# Frontend
+cd ../client
+npm install
 
-#### 4. Ejecutar el Backend de Forma Permanente con PM2
+# Volver a la raíz
+cd ../../..
+```
 
-* **Instalar PM2 de forma global**:
+#### Módulo Recursos Humanos (RRHH)
 
-    ```bash
-    sudo npm install pm2 -g
-    ```
+```bash
+# Backend
+cd modulos/RRHH/server
+npm install
 
-* **Navega al directorio de tu backend**:
+# Frontend
+cd ../client
+npm install
 
-    ```bash
-    cd /opt/lampp/htdocs/SIGET/modulos/BienesMuebles/server # Ajusta la ruta si es necesario
-    ```
+# Volver a la raíz
+cd ../../..
+```
 
-* **Iniciar la aplicación con PM2**:
+#### Módulo Soporte Técnico
 
-    ```bash
-    pm2 start npm --name "api-bienes-muebles" -- run start
-    ```
+```bash
+# Backend
+cd modulos/Servicio_soporte/server
+npm install
 
-* **Configurar PM2 para que se inicie con el sistema**:
+# Frontend
+cd ../client
+npm install
 
-    ```bash
-    pm2 startup # Copia y pega el comando que te proporcione PM2 (ej. sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u your_username --hp /home/your_username)
-    pm2 save
-    ```
+# Volver a la raíz
+cd ../../..
+```
 
-* **Verificar el estado de tu aplicación con PM2**:
+### 5. Ejecutar el sistema en modo desarrollo
 
-    ```bash
-    pm2 status # Tu aplicación (api-bienes-muebles) debería aparecer como 'online'
-    ```
-    * **IMPORTANTE**: Después de cualquier cambio en el backend, reinicia el proceso de PM2: `pm2 restart api-bienes-muebles`.
+Necesitarás mantener abiertas varias terminales (una por cada backend y una por cada frontend).  
+Puedes usar un administrador de terminales como el integrado en VS Code.
 
-* **Verificar logs del servidor**:
+**Iniciar los backends** (una terminal por módulo):
 
-    ```bash
-    pm2 logs api-bienes-muebles # Debería aparecer un mensaje similar a: "🚀 Servidor en http://localhost:5001 ✅ Conexión exitosa a MySQL 🟢 DB Conectada"
-    ```
+```bash
+# Bienes Muebles (puerto 5001)
+cd modulos/BienesMuebles/server
+npm run dev   # o node api-rest.js
 
-#### 5. Prueba Final
+# RRHH (puerto 5002)
+cd modulos/RRHH/server
+npm run dev
 
-* Accede a tu aplicación desde un navegador: `http://<IP_DEL_SERVIDOR>:8080`
-* Deberías ver la interfaz de usuario de tu aplicación React. Interactúa con las funcionalidades que requieren la API (ej. iniciar sesión) para confirmar que la comunicación entre el frontend, Nginx y el backend de Node.js es correcta.
+# Soporte (puerto 5003)
+cd modulos/Servicio_soporte/server
+npm run dev
+```
+
+**Iniciar los frontends** (una terminal por módulo):
+
+```bash
+# Bienes Muebles (Vite servirá en http://localhost:5173)
+cd modulos/BienesMuebles/client
+npm run dev
+
+# RRHH (puerto 5174 u otro)
+cd modulos/RRHH/client
+npm run dev
+
+# Soporte
+cd modulos/Servicio_soporte/client
+npm run dev
+```
+
+### 6. Acceder al sistema
+
+- La **landing page** se encuentra en `SIGET/home/index.html`. Puedes abrirla directamente en tu navegador o servirla con un servidor estático (por ejemplo, `npx serve home`).
+- Desde la landing, los enlaces a cada módulo apuntan a las URLs de desarrollo de Vite (ej. `http://localhost:5173` para Bienes Muebles).  
+  Asegúrate de que los enlaces en `home/index.html` estén actualizados con las rutas correctas (puedes editarlos manualmente).
+
+---
+
+## 🌐 Configuración para Producción (Linux – Ubuntu/Debian)
+
+**El sistema debe ser clonado en el directorio `/var/www/SIGET/`** para que Nginx y PM2 funcionen correctamente con las rutas definidas.
+
+Esta sección describe el despliegue completo en un servidor de producción con **Nginx** como proxy inverso y **PM2** para gestionar los procesos Node.js.
+
+### Requisitos del servidor
+
+- Sistema operativo: Ubuntu 20.04 / Debian 10 (o superior)
+- Acceso con `sudo`
+- Conexión a Internet para descargar paquetes
+- Una IP fija dentro de la red interna (ej. `192.168.4.4`)
+
+### 1. Actualizar el sistema e instalar herramientas básicas
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install curl git build-essential -y
+```
+
+### 2. Instalar Node.js (LTS) con NVM
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.bashrc
+nvm install --lts
+nvm use --lts
+```
+
+Verifica la instalación:
+
+```bash
+node -v   # v18.x o superior
+npm -v    # 9.x o superior
+```
+
+### 3. Instalar MySQL Server
+
+```bash
+sudo apt install mysql-server -y
+sudo systemctl start mysql
+sudo systemctl enable mysql
+```
+
+Realiza la configuración de seguridad:
+
+```bash
+sudo mysql_secure_installation
+```
+
+(Establece una contraseña para root, elimina usuarios anónimos, etc.)
+
+Crea las tres bases de datos:
+
+```bash
+sudo mysql -u root -p
+CREATE DATABASE dbsiget;
+CREATE DATABASE dbsigetrrhh-1;
+CREATE DATABASE control_informatica;
+EXIT;
+```
+
+### 4. Instalar Nginx
+
+```bash
+sudo apt install nginx -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+### 5. Instalar PM2 globalmente
+
+```bash
+sudo npm install pm2 -g
+```
+
+### 6. Clonar el repositorio en el directorio de trabajo
+
+**Asegúrate de clonar en `/var/www/SIGET`**:
+
+```bash
+sudo mkdir -p /var/www
+cd /var/www
+sudo git clone https://github.com/hoseaal/SIGET.git
+cd SIGET
+```
+
+Ajusta los permisos:
+
+```bash
+sudo chown -R $USER:$USER /var/www/SIGET
+sudo chmod -R 755 /var/www/SIGET
+```
+
+### 7. Configurar variables de entorno (`.env`) para cada módulo
+
+Crea los archivos `.env` en las carpetas `server/` de cada módulo con las credenciales y el nombre de la base de datos correspondiente (como se indicó en la sección de desarrollo, pero adaptando `DB_NAME` y `PORT`).
+
+### 8. Importar las bases de datos
+
+Los scripts SQL están en `BDA/`. Importa cada uno a su base de datos:
+
+```bash
+sudo mysql -u root -p dbsiget < /var/www/SIGET/BDA/dbsiget.sql
+sudo mysql -u root -p dbsigetrrhh-1 < /var/www/SIGET/BDA/dbsigetrrhh-1.sql
+sudo mysql -u root -p control_informatica < /var/www/SIGET/BDA/control_informatica.sql
+```
+
+### 9. Instalar dependencias y compilar los frontends para cada módulo
+
+Ejecuta estos comandos para **cada módulo** (BienesMuebles, RRHH, Servicio_soporte):
+
+```bash
+cd /var/www/SIGET/modulos/NOMBRE_MODULO
+
+# Backend (dependencias de producción)
+cd server
+npm install --production
+cd ..
+
+# Frontend (instalar dependencias y compilar)
+cd client
+npm install
+npm run build   # genera la carpeta dist/ con los archivos estáticos
+cd ../..
+```
+
+Repite para los tres módulos.
+
+### 10. Iniciar los backends con PM2 (usando los nombres exactos)
+
+```bash
+cd /var/www/SIGET/modulos/BienesMuebles/server
+pm2 start api-rest.js --name "api-bienes-muebles"
+
+cd /var/www/SIGET/modulos/RRHH/server
+pm2 start api-rest.js --name "api-rrrhh"
+
+cd /var/www/SIGET/modulos/Servicio_soporte/server
+pm2 start api-rest.js --name "api-soporte"
+```
+
+Configura PM2 para que se inicie automáticamente al reiniciar el servidor:
+
+```bash
+pm2 startup
+# Copia y ejecuta el comando que aparece
+pm2 save
+```
+
+Verifica el estado:
+
+```bash
+pm2 status
+pm2 logs
+```
+
+### 11. Configurar Nginx como proxy inverso
+
+Crea un archivo de configuración para SIGET:
+
+```bash
+sudo nano /etc/nginx/sites-available/siget
+```
+
+Pega la siguiente configuración (ajusta las rutas si es necesario):
+
+```nginx
+server {
+    listen 80;
+    server_name siget.cet www.siget.cet;  # Cambia por la IP o dominio real
+
+    # ==========================================
+    # 1. LANDING PAGE
+    # ==========================================
+    location / {
+        root /var/www/SIGET/home;
+        index index.html index.htm;
+        try_files $uri $uri/ =404;
+    }
+
+    # ==========================================
+    # 2. MÓDULO: BIENES MUEBLES
+    # ==========================================
+    location /BienesMuebles {
+        alias /var/www/SIGET/modulos/BienesMuebles/client/dist/;
+        index index.html;
+        try_files $uri $uri/ /BienesMuebles/index.html;
+    }
+
+    location /api {
+        proxy_pass http://127.0.0.1:5001/api;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # ==========================================
+    # 3. MÓDULO: RECURSOS HUMANOS
+    # ==========================================
+    location /RRHH/ {
+        alias /var/www/SIGET/modulos/RRHH/client/dist/;
+        index index.html;
+        try_files $uri $uri/ /RRHH/index.html;
+    }
+
+    location /api/rrhh {
+        proxy_pass http://127.0.0.1:5002;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # ==========================================
+    # 4. MÓDULO: SOPORTE TÉCNICO
+    # ==========================================
+    location /soporte/ {
+        alias /var/www/SIGET/modulos/Servicio_soporte/client/dist/;
+        index index.html;
+        try_files $uri $uri/ /soporte/index.html;
+    }
+
+    location /api/sp {
+        proxy_pass http://127.0.0.1:5003;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Habilita el sitio y reinicia Nginx:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/siget /etc/nginx/sites-enabled/
+sudo nginx -t   # Verifica la sintaxis
+sudo systemctl restart nginx
+```
+
+### 12. Verificación final
+
+- Comprueba que los backends estén corriendo con `pm2 status` (deben aparecer como `online`).
+- Abre un navegador en la misma red y accede a `http://<IP_DEL_SERVIDOR>/`. Deberías ver la landing page.
+- Prueba cada módulo: `http://<IP>/BienesMuebles`, `http://<IP>/RRHH`, `http://<IP>/soporte`.
+- Verifica que las llamadas a la API funcionen (por ejemplo, desde el frontend o con `curl` a `http://<IP>/api/...`).
+
+---
+
+## 🔧 Mantenimiento y Preguntas Frecuentes (FAQ)
+
+### ¿Cómo actualizo el sistema a la última versión?
+
+1. Conéctate al servidor y navega a la raíz del proyecto:
+   ```bash
+   cd /var/www/SIGET
+   sudo git pull origin main
+   ```
+
+2. Si hubo cambios en el backend de algún módulo, reinstala dependencias y reinicia el proceso PM2:
+   ```bash
+   cd modulos/BienesMuebles/server
+   npm install --production
+   pm2 restart api-bienes-muebles
+   # Repite para RRHH (api-rrrhh) y Soporte (api-soporte)
+   ```
+
+3. Si hubo cambios en el frontend, recompila:
+   ```bash
+   cd modulos/BienesMuebles/client
+   npm install
+   npm run build
+   # Repite para los demás módulos
+   ```
+
+4. Si hubo cambios en la base de datos de algún módulo, importa el script SQL correspondiente (haz un respaldo previo).
+
+### El servidor se reinició, ¿cómo vuelvo a encender los servicios?
+
+- **MySQL** y **Nginx** se inician automáticamente (si habilitaste `systemctl enable`).
+- **PM2** también se inicia automáticamente si ejecutaste `pm2 startup` y `pm2 save`.  
+  Puedes verificar con `pm2 status`. Si no, ejecuta `pm2 resurrect`.
+
+### ¿Dónde puedo ver los registros de errores?
+
+- **Logs de Nginx:** `/var/log/nginx/access.log` y `error.log`.
+- **Logs de PM2:** `pm2 logs nombre-del-proceso` (ej. `pm2 logs api-bienes-muebles`).
+- **Logs de MySQL:** `/var/log/mysql/error.log`.
+
+### ¿Cómo accedo al sistema desde mi computadora?
+
+- El sistema se encuentra en la red interna de la Contraloría. Usa la IP del servidor: `http://<IP_DEL_SERVIDOR>/`.
+- Si tienes un dominio configurado (ej. `siget.cet`), asegúrate de que apunte a la IP del servidor en el archivo `hosts` de cada máquina cliente o en el DNS interno.
 
 ---
 
 ## 📂 Estructura del Proyecto
 
-        SIGET/
-        ├── BDA/                        # Scripts y esquemas de base de datos
-        ├── home/                       # Página de inicio principal
-        │   └── assets/                 # CSS, JS, imágenes para la página de inicio
-        ├── modulos/                    # Módulos del sistema
-        │   ├── BienesMuebles/          # Módulo de Gestión de Bienes Muebles
-        │   │   ├── client/             # Frontend (React/Vite)
-        │   │   │   ├── public/         # Assets estáticos del frontend
-        │   │   │   ├── src/            # Código fuente de componentes React
-        │   │   │   └── dist/           # Build de producción del frontend (generado al compilar)
-        │   │   ├── server/             # Backend (Node.js/Express)
-        │   │   │   ├── public/         # Recursos públicos del backend (ej. logos para documentos)
-        │   │   │   ├── src/            # Lógica de la API y endpoints
-        │   │   │   │   ├── auth/       # Lógica de autenticación
-        │   │   │   │   ├── controllers/# Controladores de la API
-        │   │   │   │   ├── models/     # Definición de modelos de datos
-        │   │   │   │   ├── routes/     # Definición de rutas de la API
-        │   │   │   │   ├── services/   # Lógica de negocio y servicios
-        │   │   │   │   └── utils/      # Utilidades y funciones auxiliares
-        │   │   │   ├── temp/           # Archivos temporales generados por el backend
-        │   │   │   └── .env            # Variables de entorno del módulo de Bienes Muebles
-        │   └── DireccionRRHH/          # Módulo de Dirección de Recursos Humanos
-        │       ├── PHP/api/            # Endpoints y lógica del backend PHP (usuarios, exportaciones, etc.)
-        │       └── html/               # Vistas y archivos estáticos del frontend PHP
-        └── vendor/                     # Dependencias de Composer (generado automáticamente)
-
+```
+SIGET/
+├── BDA/                          # Scripts SQL (dbsiget.sql, dbsigetrrhh-1.sql, control_informatica.sql)
+├── home/                         # Landing page (index.html)
+├── modulos/
+│   ├── BienesMuebles/
+│   │   ├── client/               # Frontend React
+│   │   │   ├── src/
+│   │   │   ├── dist/             # Compilado para producción
+│   │   │   └── package.json
+│   │   └── server/               # Backend Node.js
+│   │       ├── src/
+│   │       ├── api-rest.js
+│   │       ├── .env              # Variables de entorno
+│   │       └── package.json
+│   ├── RRHH/                     # Estructura idéntica
+│   └── Servicio_soporte/         # Estructura idéntica
+└── README.md
+```
 
 ---
 
-## 🔧 Tecnologías Clave
+## ⚠️ Consideraciones de Seguridad
 
-### Módulo de Recursos Humanos (PHP)
-
-1.  **Frontend**: Plantilla Sneat (HTML5, SCSS, Bootstrap, JS).
-2.  **Backend**: PHP 8.2, AJAX.
-3.  **Librerías Principales**:
-    * SweetAlert2 (alertas interactivas).
-    * Select2 (inputs dinámicos para selecciones).
-    * PHP-JWT (JSON Web Tokens para autenticación).
-    * PHPSpreadsheet (generación y manipulación de archivos XLS).
-    * TCPDF (generación de documentos PDF).
-
-### Módulo de Bienes Muebles (Node.js + React)
-
-1.  **Frontend**: React 19 (con Vite para el proceso de build).
-2.  **Backend**: Node.js 18+ (utilizando el framework Express).
-3.  **Librerías Principales**:
-    * `bcrypt` (para el hashing seguro de contraseñas).
-    * `jsonwebtoken` (para la gestión de JWTs).
-    * `mysql` (cliente para la conexión con la base de datos MySQL).
-    * `express` (framework web para construir la API REST).
-    * `exceljs` (para la exportación de datos a archivos XLS/XLSX).
-    * `pdfkit` (para la generación programática de documentos PDF).
-    * `react-bootstrap` (para componentes de UI basados en Bootstrap en React).
+- **Nunca subas** los archivos `.env` al repositorio (están en `.gitignore`).
+- Cambia las contraseñas por defecto de MySQL y de los usuarios de la aplicación.
+- Restringe el acceso a la base de datos solo desde localhost (ya configurado).
+- Mantén actualizados Node.js, MySQL y Nginx con parches de seguridad.
 
 ---
 
-## ⚠️ Consideraciones Críticas
+## 👥 Responsables Técnicos
 
-Es fundamental tener en cuenta los siguientes puntos para el correcto funcionamiento y mantenimiento del sistema:
-
-1.  **Base de Datos**: No modifiques triggers o esquemas de la base de datos sin la aprobación explícita del Jefe de Área Técnica.
-2.  **Variables Sensibles**: Los archivos `.env` (que contienen credenciales y configuraciones sensibles) deben permanecer locales y **nunca ser subidos al repositorio de GitHub**.
-3.  **Módulos Nuevos**: Al desarrollar nuevos módulos, asegúrate de crear una carpeta independiente dentro de `modulos/` y seguir la estructura de proyecto existente para mantener la coherencia.
-
----
-
-## 🚀 Estrategia de Despliegue
-
-1.  **Entorno Local (Desarrollo)**: Utiliza **XAMPP** para el desarrollo y las pruebas locales. Este entorno es ideal para una configuración rápida y controlada.
-2.  **Entorno de Producción**: Para actualizaciones o despliegues en el servidor de producción, siempre coordina con el Jefe de Área Técnica. **Se desaconseja el uso de XAMPP en producción**; se recomienda una instalación de MySQL/MariaDB standalone y un stack LEMP/LAMP para mayor estabilidad y seguridad.
+- **Módulo Bienes Muebles:** Jose Omaña ([@hoseaal](https://github.com/hoseaal))
+- **Módulo Recursos Humanos:** Eduards Zambrano ([@EdZambrano21](https://github.com/EdZambrano21))
+- **Módulo Soporte Técnico:** [nombre del responsable]
 
 ---
 
 ## 📌 Contacto
 
-Para cualquier consulta, soporte técnico o solicitud de acceso/permisos, contacta a los responsables o al Jefe de Área Técnica.
+Para consultas, soporte o solicitudes de acceso, contacta al **Jefe de Área Técnica** de la Contraloría del Estado Táchira.
 
-1.  **Responsables Técnicos (Desarrolladores)**:
-    * Módulo de Recursos Humanos: **Eduards Zambrano** (Github: [@EdZambrano21](https://github.com/EdZambrano21))
-    * Módulo de Bienes Muebles: **Jose Omaña** (Github: [@hoseaal](https://github.com/hoseaal))
+---
 
-2.  **Acceso y Permisos**: Solicita al Jefe de Área Técnica de la Contraloría.
-
-## Diagrama de Conexión del Sistema 
+## Diagrama de Conexión del Sistema
 
 ```
 +------------------+
 |      USUARIO     |
 +--------+---------+
          |
-         | (1. Accede a la página de inicio)
-         | (`http://<IP-SERVIDOR>/SIGET/home/`)
+         | (1. Accede a la landing page)
+         | `http://<IP>/`
          v
 +--------+----------------------+
 |     Página de Inicio          |
-|   (/SIGET/home/)              |
-| (Botones de Login: BM y RRHH) |
+|   (/home/)                    |
+| (Enlaces a cada módulo)       |
 +-------------------------------+
-    |                                    |
-(2a. Click Login Bienes Muebles)   (2b. Click Login Recursos Humanos)
-    |                                    |
-    v                                    v
-+---+---------------------+   +------------------------------+
-|  Módulo Bienes Muebles  |   |   Módulo Recursos Humanos    |
-| (Frontend: React/Vite)  |   |  (Frontend: HTML/JS/Sneat)   |
-| (Acceso vía Nginx:8080) |   |  (Acceso vía Apache:80)      |
-+-----------+-------------+   +-----------+------------------+
-            |                           |
-            | (3a. Peticiones API)      | (3b. Peticiones AJAX)
-            v                           v
-+-----------+---------------+   +-----------+------------------+
-|  Módulo Bienes Muebles    |   |   Módulo Recursos Humanos    |
-| (Backend: Node.js/Express)|   |    (Backend: PHP 8.2)        |
-| (Escucha en Puerto 5001)  |   |                              |
-+-----------+---------------+   +-----------+------------------+
-            |                                     |
-            | (4. Conexión a Base de Datos MySQL) |
-            +-------------------+-----------------+
-                                |
-                                v
-                        +--------------------+
-                        |    Base de Datos   |
-                        |   (MySQL 8+)       |
-                        +--------------------+
+    |         |         |
+    |         |         |
+(2a)   (2b)     (2c)
+Bienes  RRHH   Soporte
+    |         |         |
+    v         v         v
++---+---------------------+   +------------------------------+   +------------------------------+
+|  Módulo Bienes Muebles  |   |   Módulo Recursos Humanos    |   |   Módulo Soporte Técnico     |
+| (Frontend: React)       |   |  (Frontend: React)           |   |  (Frontend: React)           |
+| (Servido por Nginx)     |   |  (Servido por Nginx)         |   |  (Servido por Nginx)         |
++-----------+-------------+   +-----------+------------------+   +-----------+------------------+
+            |                           |                                  |
+            | (3. Peticiones /api)      | (3. Peticiones /api/rrhh)        | (3. Peticiones /api/sp)
+            v                           v                                  v
++-----------+---------------+   +-----------+------------------+   +-----------+------------------+
+|  Backend Node.js (5001)   |   |  Backend Node.js (5002)     |   |  Backend Node.js (5003)     |
+|  (api-bienes-muebles)     |   |  (api-rrrhh)                |   |  (api-soporte)              |
+|  BD: dbsiget              |   |  BD: dbsigetrrhh-1          |   |  BD: control_informatica    |
++-----------+---------------+   +-----------+------------------+   +-----------+------------------+
+            |                           |                                  |
+            +---------------------------+----------------------------------+
+                                        |
+                                        | (4. Conexión a MySQL)
+                                        v
+                                +--------------------+
+                                |   Servidor MySQL   |
+                                |  (tres bases de    |
+                                |   datos separadas) |
+                                +--------------------+
+```
+
+---
+
+**¡Listo!** Con estos pasos tendrás el sistema SIGET completamente funcional en desarrollo o producción, con cada módulo utilizando su propia base de datos. Si encuentras algún problema, revisa los logs y contacta al equipo técnico.
 ```
