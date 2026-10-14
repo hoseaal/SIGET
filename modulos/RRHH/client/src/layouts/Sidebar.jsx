@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import menuData from '../data/menuData.json';
 import { menuPermissions } from '../data/dataPermissions';
 import { useAuth } from '../hooks/useAuth';
+import logoContraloria from '../../public/assets/img/logo-contraloria-home2.png';
 
 const Sidebar = () => {
     const { user, loading: authLoading } = useAuth();
@@ -55,7 +56,7 @@ const Sidebar = () => {
             <aside id="layout-menu" className="layout-menu menu-vertical menu bg-menu-theme">
                 <div className="app-brand demo">
                     <Link aria-label='Navigate to portal' to="/visualizador" className="app-brand-link">
-                        <img src="../../../assets/img/logo-contraloria-home2.png" alt="logo" style={{ width: '20px', height: 'auto' }} />
+                        <img src={logoContraloria} alt="logo" style={{ width: '20px', height: 'auto' }} />
                         <span className="app-brand-text demo menu-text fw-bold ms-2">SIGET</span>
                     </Link>
                 </div>
@@ -138,7 +139,7 @@ const Sidebar = () => {
         <aside id="layout-menu" className="layout-menu menu-vertical menu bg-menu-theme">
             <div className="app-brand demo">
                 <Link aria-label='Navigate to sneat homepage' to="/Dashboard" className="app-brand-link">
-                    <img src="../../../assets/img/logo-contraloria-home2.png" alt="sneat-logo" style={{ width: '20px', height: 'auto' }} />
+                    <img src={logoContraloria} alt="sneat-logo" style={{ width: '20px', height: 'auto' }} />
                     <span className="app-brand-text demo menu-text fw-bold ms-2">SIGET</span>
                 </Link>
 

@@ -16,7 +16,6 @@ import { ReporteIngresos } from "../pages/Reportes/ReporteIngresos"
 import { ReportePrimas } from "../pages/Reportes/ReportePrimas"
 import { ReporteResumenNomina } from "../pages/Reportes/ReporteResumenNomina"
 import { ReportePadres } from "../pages/Reportes/ReportePadres"
-import { ReportePlaceholder } from "../pages/Reportes/ReportePlaceholder"
 import { ObrerosFijos } from "../pages/empleados/ObrerosFijos/ObrerosFijos.jsx";
 import { NominaActivos } from "../pages/nomina/NominaActivos.jsx";
 import { NominaObreros } from "../pages/nomina/NominaObreros.jsx";
@@ -79,6 +78,18 @@ const AppRoutes = () => {
             <Route path="/Configuracion/Usuarios" element={
                 <ProtectedRoute>
                     <Usuarios />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Configuracion/Instituciones" element={
+                <ProtectedRoute>
+                    <CatalogoInstituticiones />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Configuracion/Vacaciones" element={
+                <ProtectedRoute>
+                    <VacacionesConfig />
                 </ProtectedRoute>
             } />
 
@@ -161,6 +172,48 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
+            <Route path="/Reportes" element={
+                <ProtectedRoute>
+                    <Reportes />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/CajaAhorro" element={
+                <ProtectedRoute>
+                    <ReporteCajaAhorro />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/Pagos" element={
+                <ProtectedRoute>
+                    <ReportePagos />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/Primas" element={
+                <ProtectedRoute>
+                    <ReportePrimas />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/Ingresos" element={
+                <ProtectedRoute>
+                    <ReporteIngresos />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/ResumenNomina" element={
+                <ProtectedRoute>
+                    <ReporteResumenNomina />
+                </ProtectedRoute>
+            } />
+
+            <Route path="/Reportes/Padres" element={
+                <ProtectedRoute>
+                    <ReportePadres />
+                </ProtectedRoute>
+            } />
+
             <Route path="/Configuracion/NuevoUsuario" element={<RegisterPage />} />
 
 
@@ -171,7 +224,7 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path="/Login" element={<LoginPage />} />
+            <Route path="*" element={<Navigate to="/Dashboard" replace />} />
 
         </Routes>
     )

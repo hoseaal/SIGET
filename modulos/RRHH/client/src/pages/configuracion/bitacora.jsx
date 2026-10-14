@@ -27,7 +27,7 @@ export const Bitacora = () => {
         'nombre_usuario': 'Nombre',
         'apellido_usuario': 'Apellido',
         'fecha_hora': 'Fecha y Hora',
-        'registro_id_afectado': 'Bien Afectado',
+        'registro_id_afectado': 'Registro Afectado',
         'tipo_cambio': 'Acción',
         'acciones': 'Acciones' // Nuevo alias para la columna de acciones
     };
@@ -55,7 +55,7 @@ export const Bitacora = () => {
                 }));
                 setColumns(processedColumns);
 
-                const res = await fetch(`/api/rrhh/bienes/bitacora?page=${currentPage}&limit=${limit}`, { credentials: 'include' });
+                const res = await fetch(`/api/rrhh/bitacora?page=${currentPage}&limit=${limit}`, { credentials: 'include' });
 
                 if (!res.ok) {
                     throw new Error(`Error HTTP! estado: ${res.status}`);
@@ -141,10 +141,10 @@ export const Bitacora = () => {
 
     return (
         <div>
-            <h4 className="py-3 mb-4"><span className="text-muted fw-light">Administración /</span> Bitácora de Bienes Muebles</h4>
+            <h4 className="py-3 mb-4"><span className="text-muted fw-light">Administración /</span> Bitácora del Sistema</h4>
             <Card>
                 <Card.Header className="d-flex justify-content-between align-items-center">
-                    <h5 className="mb-0">Bitácora de Bienes Muebles</h5>
+                    <h5 className="mb-0">Bitácora del Sistema</h5>
                     <Dropdown>
                         <Dropdown.Toggle variant="secondary" id="dropdown-basic">
                             Registros por página: {limit}

@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import express from 'express'
 import { connectDB } from './src/utils/database.js'
 import cookieParser from 'cookie-parser'
@@ -20,6 +21,7 @@ import nivelAntiguoRouter from './src/routes/nivelSalarialAntiguo.routes.js'
 import antiguedadRouter from './src/routes/antiguedad.routes.js'
 import antiguedadRegistroRouter from './src/routes/antiguedadRegistro.routes.js'
 import sueldoPensionadoRouter from './src/routes/sueldoPensionado.routes.js'
+import sueldoSobrevivienteRouter from './src/routes/sueldoSobreviviente.routes.js'
 import jubiladoRouter from './src/routes/jubilado.routes.js'
 import pensionadoRouter from './src/routes/pensionado.routes.js'
 import permisoRouter from './src/routes/permiso.routes.js'
@@ -54,9 +56,12 @@ import festivosRouter from './src/routes/festivos.routes.js'
 import nominaRouter from './src/routes/nomina.routes.js'
 import constanciaRouter from './src/routes/constancia.routes.js'
 import miPerfilRouter from './src/routes/miPerfil.routes.js'
+import bitacoraRouter from './src/routes/bitacora.routes.js'
+import { registrarBitacora } from './src/middlewares/bitacora.middleware.js'
 import { VacacionesModel } from './src/models/vacaciones.model.js'
 import { CajaAhorroModel } from './src/models/cajaAhorro.model.js'
 import { HistorialSalarioModel } from './src/models/historialSalario.model.js'
+import { BitacoraModel } from './src/models/bitacora.model.js'
 
 import cors from 'cors'
 import morgan from 'morgan'
@@ -78,6 +83,8 @@ connectDB()
       console.log('🟢 Tabla caja_ahorro inicializada')
       await HistorialSalarioModel.ensureTable()
       console.log('🟢 Tabla historial_pagos inicializada')
+      await BitacoraModel.ensureTable()
+      console.log('🟢 Tabla bitacora inicializada')
     } catch (err) {
       console.error('🔴 Error al inicializar tablas:', err.message)
     }
@@ -89,13 +96,14 @@ connectDB()
 
 // Ruta de prueba
 app.get('/', (req, res) => {
-  res.json({ message: 'API de Bienes Muebles' })
+  res.json({ message: 'API de RRHH' })
 })
 
 app.use(cors({
   credentials: true // permite el uso de cookies
 }))
 
+app.use('/api/rrhh', registrarBitacora)
 app.use('/api/rrhh/auth', authRouter)
 app.use('/api/rrhh/meta', metaRouter)
 
@@ -124,6 +132,7 @@ app.use('/api/rrhh/condiciones-laborales', condicionLaboralRouter)
 
 app.use('/api/rrhh/registros-antiguedad', antiguedadRegistroRouter)
 app.use('/api/rrhh/sueldo-pensionado', sueldoPensionadoRouter)
+app.use('/api/rrhh/sueldo-sobreviviente', sueldoSobrevivienteRouter)
 app.use('/api/rrhh/jubilados', jubiladoRouter)
 app.use('/api/rrhh/permisos', permisoRouter)
 
@@ -156,6 +165,7 @@ app.use('/api/rrhh/resumen-nomina', reporteResumenNominaRouter)
 app.use('/api/rrhh/reporte-padres', reportePadresRouter)
 app.use('/api/rrhh/constancias', constanciaRouter)
 app.use('/api/rrhh/mi-perfil', miPerfilRouter)
+app.use('/api/rrhh/bitacora', bitacoraRouter)
 
 
 const PORT = 5002

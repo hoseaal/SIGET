@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { getTableMetadata } from '../../data/fetchData';
 import ModalRegistrarUsuario from './ModalRegistrarUsuario';
-import ModalUpdate from '../Modales/modalUpdate';
+import ModalEditarUsuario from './ModalEditarUsuario';
 import ModalDelete from '../Modales/modalDelete';
 import ModalContraseña from '../Modales/modalContraseña'
 
@@ -127,11 +127,9 @@ export const Usuarios = () => {
                                 </tr>
                             ))}
                         </tbody>
-                        <ModalUpdate
+                        <ModalEditarUsuario
                             show={showUserUpModal}
                             handleClose={() => setShowUserUpModal(false)}
-                            columns={columns}
-                            tableName='usuarios'
                             rowData={editingItem}
                             onSuccess={handleSuccess}
                             idColumn={idColumn}

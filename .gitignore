@@ -18,3 +18,4 @@ vendor/firebase/php-jwt/
 /modulos/Servicio_soporte/server/node_modules/
 /modulos/Servicio_soporte/client/.env
 /modulos/Servicio_soporte/client/node_modules/
+/modulos/RRHH/server/backups/

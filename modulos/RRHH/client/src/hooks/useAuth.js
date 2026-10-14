@@ -16,12 +16,16 @@ export function useAuth() {
   useEffect(() => {
     if (cachedUser) return
 
+    const resolveUser = (data) => {
+      cachedUser = data
+      setUser(data)
+    }
+
     if (cachedPromise) {
-      cachedPromise.then(data => {
-        cachedUser = data
-        setUser(data)
-        setLoading(false)
-      })
+      cachedPromise
+        .then(resolveUser)
+        .catch(() => { cachedUser = null })
+        .finally(() => setLoading(false))
       return
     }
 
@@ -41,7 +45,9 @@ export function useAuth() {
       throw err
     })
 
-    cachedPromise.then(() => setLoading(false))
+    cachedPromise
+      .then(() => setLoading(false))
+      .catch(() => setLoading(false))
   }, [])
 
   return {

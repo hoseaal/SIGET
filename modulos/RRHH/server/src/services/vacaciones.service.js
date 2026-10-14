@@ -1445,6 +1445,14 @@ export class VacacionesService {
     // Preferir los valores ya persistidos en BD (fecha_finalizacion_real /
     // fecha_reintegro_laboral). Para registros legacy (columnas aún NULL)
     // se proyecta en tiempo real con el mismo algoritmo de días hábiles.
+    // Derechos y saldos (calculado antes de proyectar las fechas del recibo)
+    let derechos = null
+    try {
+      derechos = await this.calcularDerechosYLiquidacion(empleadoId, 0)
+    } catch {
+      derechos = null
+    }
+
     let fechaFinReal = ultimaFecha?.fecha_finalizacion_real || null
     let fechaReincorporacionReal = ultimaFecha?.fecha_reintegro_laboral || null
 
@@ -1470,12 +1478,7 @@ export class VacacionesService {
     }
 
     // ── Derechos y saldos ─────────────────────────────────────────────
-    let derechos = null
-    try {
-      derechos = await this.calcularDerechosYLiquidacion(empleadoId, 0)
-    } catch {
-      derechos = null
-    }
+    // (derechos se calcula más arriba, antes de proyectar las fechas del recibo)
 
     // ── Cálculo del período anual ─────────────────────────────────────
     const fechaIngreso = this.dateOnly(emp.fecha_ingreso)
