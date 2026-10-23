@@ -4,6 +4,7 @@ import { toast } from 'react-toastify'
 import api from '../../../utils/helpFetch.js'
 import { toISODate } from '../../../utils/dateHelpers.js'
 import { useAuth } from '../../../context/AuthContext.jsx'
+import BienBuscador from './BienBuscador.jsx'
 
 const FORM_VACIO = {
   fecha: toISODate(new Date()),
@@ -267,20 +268,16 @@ export default function RegistroActividadModal ({
             <Col xs={12} md={6}>
               <Form.Group controlId="actBien">
                 <Form.Label className="small fw-semibold">Bien mueble (opcional)</Form.Label>
-                <Form.Select
+                <BienBuscador
+                  id="actBien"
                   value={form.bim_ide}
-                  onChange={e => setField('bim_ide', e.target.value)}
-                  disabled={cargandoBienes}
-                >
-                  <option value="">{cargandoBienes ? 'Cargando bienes...' : 'Sin bien asociado'}</option>
-                  {bienesFiltrados.map(b => (
-                    <option key={b.bim_ide} value={b.bim_ide}>
-                      {b.bim_ide} - {b.tipo_soporte}{b.bim_des ? ` (${b.bim_des})` : ''}
-                    </option>
-                  ))}
-                </Form.Select>
+                  options={bienesFiltrados}
+                  onChange={value => setField('bim_ide', value)}
+                  loading={cargandoBienes}
+                />
                 <Form.Text className="text-muted">
-                  Si el departamento tiene equivalencia en Bienes Muebles se filtran sus bienes; de lo contrario se muestran todos.
+                  Escriba el número o parte de la descripción para filtrar los bienes.
+                  {!cargandoBienes && bienesFiltrados.length > 0 && ` (${bienesFiltrados.length} disponibles)`}
                 </Form.Text>
               </Form.Group>
             </Col>
