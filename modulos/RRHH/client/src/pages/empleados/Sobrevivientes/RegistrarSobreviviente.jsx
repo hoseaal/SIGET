@@ -1,47 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from '../../../components/atoms/Buttons';
-import Alert from '../../../components/atoms/Alert';
+import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import FormFeedback from '../../../components/atoms/FormFeedback';
 import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
+import {
+    crearFeedbackDeError,
+    detectarErrorDeBD,
+    leerRespuestaJson,
+    mensajeParaCampo,
+    obtenerCamposAfectados,
+    obtenerMensajeDeExcepcion,
+    obtenerMensajeError
+} from '../../../utils/formErrors';
+
+const FECHA_HOY = new Date().toISOString().split('T')[0];
+
+const FORMULARIO_INICIAL = {
+    // ── Datos Personales (tabla empleados) ──
+    cedula: '',
+    nombres: '',
+    apellidos: '',
+    fecha_nacimiento: '',
+    genero: '',
+    direccion_habitacion: '',
+    profesion_id: '',
+    prima_profesional_id: '',
+
+    // ── Datos Laborales ──
+    fecha_ingreso: '',
+    cargo_cet_id: '',
+    cargo_onapre_id: '',
+    condicion_laboral_id: '',
+    nivel_salarial_id: '',
+    direccion_id: '',
+    division_id: '',
+    unidad_id: '',
+
+    // ── Datos del Familiar Sobreviviente ──
+    familiar_cedula: '',
+    familiar_nombres: '',
+    familiar_apellidos: '',
+    familiar_fecha_nacimiento: '',
+    familiar_parentesco: '',
+    familiar_direccion: '',
+    familiar_telefono: '',
+    familiar_cuenta_bancaria: '',
+    familiar_fecha_ingreso_beneficio: '',
+    familiar_observacion: '',
+};
+
+const REGLAS_CAMPOS_SERVIDOR = [
+    { patron: /familiar.*c[eé]dula|c[eé]dula.*familiar/i, campo: 'familiar_cedula' },
+    { patron: /familiar.*nombres?|nombres?.*familiar/i, campo: 'familiar_nombres' },
+    { patron: /familiar.*apellidos?|apellidos?.*familiar/i, campo: 'familiar_apellidos' },
+    { patron: /familiar.*fecha.*nacimiento|fecha.*nacimiento.*familiar|mayor.*18|mayor[ií]a.*edad/i, campo: 'familiar_fecha_nacimiento' },
+    { patron: /cuenta.*bancaria/i, campo: 'familiar_cuenta_bancaria' },
+    { patron: /c[eé]dula/i, campo: 'cedula' },
+    { patron: /nombres?/i, campo: 'nombres' },
+    { patron: /apellidos?/i, campo: 'apellidos' },
+    { patron: /fecha.*nacimiento/i, campo: 'fecha_nacimiento' },
+    { patron: /profesi[oó]n/i, campo: 'profesion_id' },
+    { patron: /direcci[oó]n/i, campo: 'direccion_habitacion' }
+];
+
+const PASO_POR_CAMPO = {
+    cedula: 1, nombres: 1, apellidos: 1, fecha_nacimiento: 1,
+    genero: 1, direccion_habitacion: 1,
+    profesion_id: 2, prima_profesional_id: 2, fecha_ingreso: 2,
+    cargo_cet_id: 2, cargo_onapre_id: 2, condicion_laboral_id: 2,
+    nivel_salarial_id: 2, direccion_id: 2, division_id: 2, unidad_id: 2,
+    familiar_cedula: 3, familiar_nombres: 3, familiar_apellidos: 3,
+    familiar_fecha_nacimiento: 3, familiar_parentesco: 3,
+    familiar_direccion: 3, familiar_telefono: 3,
+    familiar_cuenta_bancaria: 3, familiar_fecha_ingreso_beneficio: 3,
+    familiar_observacion: 3, cuenta_bancaria: 3
+};
 
 // Componente para registrar nuevos sobrevivientes
 const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) => {
     const [paso, setPaso] = useState(1);
-    const [mensajeMostrado, setMensajeMostrado] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [guardando, setGuardando] = useState(false);
+    const [feedback, setFeedback] = useState(null);
+    const [erroresCampos, setErroresCampos] = useState({});
+    const bodyRef = useRef(null);
 
-    const [formData, setFormData] = useState({
-        // ── Datos Personales (tabla empleados) ──
-        cedula: '',
-        nombres: '',
-        apellidos: '',
-        direccion_habitacion: '',
-        profesion_id: '',
-        prima_profesional_id: '',
-
-        // ── Datos Laborales ──
-        fecha_ingreso: '',
-        cargo_cet_id: '',
-        cargo_onapre_id: '',
-        condicion_laboral_id: '',
-        nivel_salarial_id: '',
-        direccion_id: '',
-        division_id: '',
-        unidad_id: '',
-
-        // ── Datos del Familiar Sobreviviente ──
-        familiar_cedula: '',
-        familiar_nombres: '',
-        familiar_apellidos: '',
-        familiar_fecha_nacimiento: '',
-        familiar_parentesco: '',
-        familiar_direccion: '',
-        familiar_telefono: '',
-        familiar_cuenta_bancaria: '',
-        familiar_fecha_ingreso_beneficio: '',
-        familiar_observacion: '',
-    });
+    const [formData, setFormData] = useState(() => ({ ...FORMULARIO_INICIAL }));
 
     const [catalogos, setCatalogos] = useState({
         profesiones: [],
@@ -99,11 +144,25 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                 }));
             } catch (error) {
                 console.error('Error cargando catálogos:', error);
-                setErrorMessage('Error cargando listas desplegables.');
+                setFeedback({
+                    type: 'warning',
+                    title: 'No se pudieron cargar las listas desplegables',
+                    message: 'Algunos campos no tendrán opciones disponibles. Cierre el modal y vuelva a abrirlo; si el problema persiste, recargue la página.',
+                    items: [],
+                    hint: 'Mientras tanto puede completar los datos que no dependan de esas listas.'
+                });
             }
         };
 
         fetchCatalogos();
+    }, [show]);
+
+    // Limpia los errores de un intento anterior al reabrir el modal.
+    useEffect(() => {
+        if (!show) return;
+        setErroresCampos({});
+        setFeedback(prev => (prev?.type === 'warning' ? prev : null));
+        setGuardando(false);
     }, [show]);
 
     // Cascada: Niveles Salariales según Cargo ONAPRE (se mantiene API)
@@ -128,6 +187,110 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
     }, [formData.cargo_onapre_id]);
     // Nota: Divisiones y Unidades se filtran localmente via useSelectsDependientes
 
+    const desplazarAlInicio = () => {
+        window.requestAnimationFrame(() => {
+            if (bodyRef.current) bodyRef.current.scrollTop = 0;
+        });
+    };
+
+    const mostrarErrores = (errores, mensaje, titulo = 'Revise los datos del formulario', sugerencia) => {
+        setErroresCampos(errores);
+        setFeedback(crearFeedbackDeError({ titulo, mensaje, errores, sugerencia }));
+
+        // Si el error está en otro paso, llevamos al usuario hasta ese paso.
+        const pasos = Object.keys(errores).map(campo => PASO_POR_CAMPO[campo]).filter(Boolean);
+        if (pasos.length > 0) setPaso(Math.min(...pasos));
+
+        desplazarAlInicio();
+    };
+
+    const calcularEdad = (fecha) => {
+        const birthDate = new Date(`${fecha}T00:00:00`);
+        const current = new Date();
+        let age = current.getFullYear() - birthDate.getFullYear();
+        const m = current.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && current.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const validarPaso1 = () => {
+        const errores = {};
+
+        if (!formData.cedula.trim()) {
+            errores.cedula = 'La cédula de identidad es obligatoria.';
+        }
+        if (!formData.nombres.trim()) {
+            errores.nombres = 'Los nombres son obligatorios.';
+        }
+        if (!formData.apellidos.trim()) {
+            errores.apellidos = 'Los apellidos son obligatorios.';
+        }
+        if (formData.fecha_nacimiento && formData.fecha_nacimiento > FECHA_HOY) {
+            errores.fecha_nacimiento = 'La fecha de nacimiento no puede ser posterior a la fecha actual.';
+        }
+
+        return errores;
+    };
+
+    const validarFamiliar = () => {
+        const errores = {};
+
+        if (!formData.familiar_nombres.trim()) {
+            errores.familiar_nombres = 'Los nombres del familiar son obligatorios.';
+        }
+        if (!formData.familiar_apellidos.trim()) {
+            errores.familiar_apellidos = 'Los apellidos del familiar son obligatorios.';
+        }
+        if (!formData.familiar_fecha_nacimiento) {
+            errores.familiar_fecha_nacimiento = 'La fecha de nacimiento del familiar es obligatoria para verificar su mayoría de edad.';
+        } else if (formData.familiar_fecha_nacimiento > FECHA_HOY) {
+            errores.familiar_fecha_nacimiento = 'La fecha de nacimiento del familiar no puede ser posterior a la fecha actual.';
+        } else if (calcularEdad(formData.familiar_fecha_nacimiento) < 18) {
+            errores.familiar_fecha_nacimiento = 'El familiar debe tener al menos 18 años.';
+        }
+        if (!formData.familiar_cuenta_bancaria.trim()) {
+            errores.familiar_cuenta_bancaria = 'La cuenta bancaria del familiar es obligatoria.';
+        }
+
+        return errores;
+    };
+
+    const validarFormulario = () => ({
+        ...validarPaso1(),
+        ...validarFamiliar()
+    });
+
+    const mostrarErrorServidor = (mensaje) => {
+        const errorBD = detectarErrorDeBD(mensaje);
+        const errores = {};
+
+        if (errorBD?.campo) {
+            const campo = errorBD.campo === 'cuenta_bancaria' ? 'familiar_cuenta_bancaria' : errorBD.campo;
+            errores[campo] = errorBD.mensaje;
+        }
+
+        const campos = obtenerCamposAfectados(mensaje, REGLAS_CAMPOS_SERVIDOR);
+        const tieneCamposFamiliar = campos.some(campo => campo.startsWith('familiar_'));
+        campos.forEach(campo => {
+            // Evita marcar los datos del empleado cuando el mensaje se refiere al familiar.
+            if (tieneCamposFamiliar && ['cedula', 'nombres', 'apellidos', 'fecha_nacimiento'].includes(campo)) return;
+            if (!errores[campo]) errores[campo] = mensajeParaCampo(mensaje);
+        });
+
+        const mensajeVisible = errorBD?.mensaje || mensaje;
+
+        mostrarErrores(
+            errores,
+            mensajeVisible,
+            'No se pudo registrar el sobreviviente',
+            Object.keys(errores).length > 0
+                ? 'Corrija los campos señalados. Los datos que ya ingresó se conservan y puede modificarlos antes de volver a guardar.'
+                : 'Verifique los datos e intente nuevamente. Si el problema persiste, comparta este mensaje con el administrador del sistema.'
+        );
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => {
@@ -137,70 +300,79 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
             else if (name === 'cargo_onapre_id') { newData.cargo_cet_id = ''; newData.nivel_salarial_id = ''; }
             return newData;
         });
+
+        // Al corregir un campo, quitamos su marca de error.
+        const camposAfectados = name === 'direccion_id'
+            ? [name, 'division_id', 'unidad_id']
+            : name === 'division_id'
+                ? [name, 'unidad_id']
+                : name === 'cargo_onapre_id'
+                    ? [name, 'cargo_cet_id', 'nivel_salarial_id']
+                    : [name];
+
+        if (camposAfectados.some(campo => erroresCampos[campo])) {
+            const restantes = { ...erroresCampos };
+            camposAfectados.forEach(campo => delete restantes[campo]);
+            setErroresCampos(restantes);
+            if (Object.keys(restantes).length === 0) setFeedback(null);
+        }
     };
 
     const limpiarFormulario = () => {
-        setFormData({
-            cedula: '', nombres: '', apellidos: '',
-            direccion_habitacion: '',
-            profesion_id: '', prima_profesional_id: '',
-            fecha_ingreso: '', cargo_cet_id: '', cargo_onapre_id: '',
-            condicion_laboral_id: '', nivel_salarial_id: '',
-            direccion_id: '', division_id: '', unidad_id: '',
-            familiar_nombres: '', familiar_apellidos: '',
-            familiar_fecha_nacimiento: '', familiar_parentesco: '',
-            familiar_direccion: '', familiar_telefono: '', familiar_cuenta_bancaria: '',
-            familiar_fecha_ingreso_beneficio: '', familiar_observacion: '',
-        });
-        setErrorMessage('');
-        setMensajeMostrado(false);
+        setFormData({ ...FORMULARIO_INICIAL });
+        setErroresCampos({});
+        setFeedback(null);
         setPaso(1);
     };
 
     const handleSiguiente = () => {
         if (paso === 1) {
-            if (!formData.cedula || !formData.nombres || !formData.apellidos) {
-                setErrorMessage('Por favor complete Cédula, Nombres y Apellidos.');
-                setMensajeMostrado(true);
-                setTimeout(() => setMensajeMostrado(false), 3000);
+            const errores = validarPaso1();
+            if (Object.keys(errores).length > 0) {
+                mostrarErrores(
+                    errores,
+                    'Complete o corrija los datos personales antes de continuar.',
+                    'Revise los datos personales'
+                );
                 return;
             }
         }
-        setErrorMessage('');
-        setMensajeMostrado(false);
-        setPaso(prev => prev + 1);
+
+        setErroresCampos({});
+        setFeedback(null);
+        setPaso(prev => Math.min(prev + 1, 3));
+        desplazarAlInicio();
     };
 
     const handleAtras = () => {
-        setErrorMessage('');
-        setMensajeMostrado(false);
-        setPaso(prev => prev - 1);
+        setErroresCampos({});
+        setFeedback(null);
+        setPaso(prev => Math.max(prev - 1, 1));
+        desplazarAlInicio();
+    };
+
+    const cerrarModal = () => {
+        if (!guardando) handleClose();
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
+        if (guardando) return;
 
-        if (!formData.familiar_nombres || !formData.familiar_apellidos || !formData.familiar_fecha_nacimiento) {
-            setErrorMessage('Por favor complete los nombres, apellidos y fecha de nacimiento del familiar sobreviviente.');
-            setMensajeMostrado(true);
-            setTimeout(() => setMensajeMostrado(false), 3000);
+        // Validaciones antes de enviar
+        const errores = validarFormulario();
+        if (Object.keys(errores).length > 0) {
+            mostrarErrores(
+                errores,
+                'Faltan datos obligatorios o hay valores inválidos. Revise los campos señalados antes de guardar.',
+                'Revise los datos del formulario'
+            );
             return;
         }
 
-        const birthDate = new Date(formData.familiar_fecha_nacimiento);
-        const current = new Date();
-        let age = current.getFullYear() - birthDate.getFullYear();
-        const m = current.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && current.getDate() < birthDate.getDate())) {
-            age--;
-        }
-
-        if (age <= 18) {
-            setErrorMessage('El familiar debe ser mayor de 18 años.');
-            setMensajeMostrado(true);
-            setTimeout(() => setMensajeMostrado(false), 3000);
-            return;
-        }
+        setGuardando(true);
+        setFeedback(null);
+        setErroresCampos({});
 
         if (onSaveStart) onSaveStart();
 
@@ -211,14 +383,26 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                 body: JSON.stringify(formData),
             });
 
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Error al registrar sobreviviente');
+            const result = await leerRespuestaJson(response);
 
+            if (!response.ok) {
+                const mensaje = obtenerMensajeError(result, 'No se pudo registrar el sobreviviente.');
+                mostrarErrorServidor(mensaje);
+                if (onSaveEnd) onSaveEnd(false, mensaje);
+                return;
+            }
+
+            // Éxito
             limpiarFormulario();
-            if (onSaveEnd) onSaveEnd(true, 'Sobreviviente registrado exitosamente.');
+            if (onSaveEnd) onSaveEnd(true, result.message || 'Sobreviviente registrado exitosamente.');
+            handleClose();
         } catch (error) {
             console.error('Error:', error);
-            if (onSaveEnd) onSaveEnd(false, error.message);
+            const mensaje = obtenerMensajeDeExcepcion(error, 'No se pudo registrar el sobreviviente.');
+            mostrarErrorServidor(mensaje);
+            if (onSaveEnd) onSaveEnd(false, mensaje);
+        } finally {
+            setGuardando(false);
         }
     };
 
@@ -232,14 +416,25 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
     };
 
     return (
-        <Modal show={show} onHide={handleClose} size="xl" backdrop="static">
+        <Modal show={show} onHide={cerrarModal} size="xl" backdrop="static">
             <Modal.Header closeButton>
                 <Modal.Title>{getTituloPaso()}</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
-                {mensajeMostrado && <Alert key="danger" type="danger">{errorMessage}</Alert>}
+            <Modal.Body ref={bodyRef}>
+                {/* ERRORES DE VALIDACIÓN Y DEL SERVIDOR */}
+                <FormFeedback
+                    {...(feedback || {})}
+                    onClose={feedback ? () => {
+                        setFeedback(null);
+                        setErroresCampos({});
+                    } : undefined}
+                />
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (paso < 3) handleSiguiente();
+                    else handleSubmit(e);
+                }}>
 
                     {/* ══════════ PASO 1: DATOS PERSONALES ══════════ */}
                     {paso === 1 && (
@@ -565,24 +760,33 @@ const RegistrarSobreviviente = ({ show, handleClose, onSaveStart, onSaveEnd }) =
                 </form>
             </Modal.Body>
             <Modal.Footer>
-                <Button type='secondary' onClick={handleClose}>Cancelar</Button>
+                <Button type='secondary' onClick={cerrarModal} disabled={guardando}>Cancelar</Button>
                 {paso > 1 && (
-                    <Button type='secondary' className="me-2" onClick={handleAtras}>
+                    <Button type='secondary' className="me-2" onClick={handleAtras} disabled={guardando}>
                         <i className="bx bx-left-arrow-alt me-1"></i> Atrás
                     </Button>
                 )}
                 {paso < 3 && (
-                    <Button type='primary' onClick={handleSiguiente}>
+                    <Button type='primary' onClick={handleSiguiente} disabled={guardando}>
                         Siguiente <i className="bx bx-right-arrow-alt ms-1"></i>
                     </Button>
                 )}
                 {paso === 3 && (
                     <>
-                        <Button type='secondary' className="me-2" onClick={limpiarFormulario}>
+                        <Button type='secondary' className="me-2" onClick={limpiarFormulario} disabled={guardando}>
                             Limpiar
                         </Button>
-                        <Button type='primary' onClick={handleSubmit}>
-                            <i className="bx bx-save me-1"></i> Registrar Sobreviviente
+                        <Button type='primary' onClick={handleSubmit} disabled={guardando}>
+                            {guardando ? (
+                                <>
+                                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                                    Guardando...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="bx bx-save me-1"></i> Registrar Sobreviviente
+                                </>
+                            )}
                         </Button>
                     </>
                 )}

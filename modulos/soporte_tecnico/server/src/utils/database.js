@@ -1,0 +1,30 @@
+// server/src/utils/database.js
+import { createPool } from 'mysql2/promise'
+import 'dotenv/config'
+
+const pool = createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+})
+
+// Verifica la conexion al iniciar la app
+export const connectDB = async () => {
+  try {
+    const connection = await pool.getConnection()
+    await connection.ping()
+    connection.release()
+    console.log(`✅ Conexion exitosa a MySQL: ${process.env.DB_DATABASE}`)
+  } catch (error) {
+    console.error('❌ Error al conectar a MySQL:', error.message)
+    throw error
+  }
+}
+
+export const getConnection = () => pool.getConnection()
+
+export default pool

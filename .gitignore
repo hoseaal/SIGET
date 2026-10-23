@@ -19,3 +19,10 @@ vendor/firebase/php-jwt/
 /modulos/Servicio_soporte/client/.env
 /modulos/Servicio_soporte/client/node_modules/
 /modulos/RRHH/server/backups/
+/modulos/SOPORTE/backend/.env
+
+# Modulo Soporte Tecnico (Node.js / React)
+/modulos/soporte_tecnico/server/node_modules/
+/modulos/soporte_tecnico/client/node_modules/
+/modulos/soporte_tecnico/server/.env
+/modulos/soporte_tecnico/client/.env

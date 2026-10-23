@@ -1,58 +1,107 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from '../../../components/atoms/Buttons';
-import Alert from "../../../components/atoms/Alert";
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import FormFeedback from '../../../components/atoms/FormFeedback';
 import { useSelectsDependientes } from '../../../hooks/useSelectsDependientes';
+import {
+    crearFeedbackDeError,
+    detectarErrorDeBD,
+    leerRespuestaJson,
+    mensajeParaCampo,
+    obtenerCamposAfectados,
+    obtenerMensajeDeExcepcion,
+    obtenerMensajeError
+} from '../../../utils/formErrors';
 // import { hasPermission, ACTIONS } from '../../../data/dataPermissions' // Descomentar si usas permisos
+
+const FECHA_HOY = new Date().toISOString().split('T')[0];
+
+const FORMULARIO_INICIAL = {
+    // Datos Personales
+    cedula: '',
+    nombres: '',
+    apellidos: '',
+    rif: '',
+    fecha_nacimiento: '',
+    lugar_nacimiento: '',
+    genero: '',
+    estado_civil: 'Soltero', // Valor por defecto
+    tipo_sangre: '',
+    direccion_habitacion: '',
+    telefono_fijo: '',
+    celular: '',
+    correo_principal: '',
+    correo_secundario: '',
+    cuenta_bancaria: '',
+    fecha_ingreso: FECHA_HOY, // Fecha actual por defecto
+    contacto_emergencia_1: '',
+    telefono_emergencia_1: '',
+    contacto_emergencia_2: '',
+    telefono_emergencia_2: '',
+    deportes: '',
+    actividades_culturales: '',
+
+    // Tablas Maestras Personales
+    profesion_id: '',
+    prima_profesional_id: '',
+    estatus_id: 1, // Por defecto Activo (asumiendo ID 1)
+
+    // Datos Contractuales (Opcionales pero recomendados)
+    cargo_cet_id: '',
+    cargo_onapre_id: '',
+    nivel_salarial_id: '',
+    condicion_laboral_id: '',
+    direccion_id: '', // Nivel 1
+    division_id: '', // Nivel 2
+    unidad_id: ''  // Nivel 3
+};
+
+const REGLAS_CAMPOS_SERVIDOR = [
+    { patron: /c[eé]dula/i, campo: 'cedula' },
+    { patron: /nombres?/i, campo: 'nombres' },
+    { patron: /apellidos?/i, campo: 'apellidos' },
+    { patron: /\brif\b/i, campo: 'rif' },
+    { patron: /fecha.*nacimiento/i, campo: 'fecha_nacimiento' },
+    { patron: /fecha.*ingreso/i, campo: 'fecha_ingreso' },
+    { patron: /direcci[oó]n/i, campo: 'direccion_id' },
+    { patron: /divisi[oó]n/i, campo: 'division_id' },
+    { patron: /unidad/i, campo: 'unidad_id' },
+    { patron: /cargo.*cet|cet.*cargo/i, campo: 'cargo_cet_id' },
+    { patron: /onapre/i, campo: 'cargo_onapre_id' },
+    { patron: /nivel.*salarial|salarial/i, campo: 'nivel_salarial_id' },
+    { patron: /condici[oó]n.*laboral/i, campo: 'condicion_laboral_id' },
+    { patron: /profesi[oó]n/i, campo: 'profesion_id' },
+    { patron: /cuenta.*bancaria/i, campo: 'cuenta_bancaria' },
+    { patron: /correo/i, campo: 'correo_principal' },
+    { patron: /tel[eé]fono.*emergencia.*1/i, campo: 'telefono_emergencia_1' },
+    { patron: /tel[eé]fono.*emergencia.*2/i, campo: 'telefono_emergencia_2' },
+    { patron: /tel[eé]fono|celular/i, campo: 'celular' }
+];
+
+const PASO_POR_CAMPO = {
+    cedula: 1, nombres: 1, apellidos: 1, rif: 1, fecha_nacimiento: 1,
+    lugar_nacimiento: 1, genero: 1, estado_civil: 1, tipo_sangre: 1,
+    direccion_habitacion: 1, telefono_fijo: 1, celular: 1,
+    correo_principal: 1, correo_secundario: 1, cuenta_bancaria: 1,
+    nro_cuenta_bancaria: 1, deportes: 1, actividades_culturales: 1,
+    fecha_ingreso: 2, profesion_id: 2, prima_profesional_id: 2,
+    cargo_onapre_id: 2, cargo_cet_id: 2, nivel_salarial_id: 2,
+    condicion_laboral_id: 2, direccion_id: 2, division_id: 2, unidad_id: 2,
+    contacto_emergencia_1: 2, telefono_emergencia_1: 2,
+    contacto_emergencia_2: 2, telefono_emergencia_2: 2
+};
 
 export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd }) => {
     const [paso, setPaso] = useState(1);
-    const [userType, setUserType] = useState(null);
-    const [mensajeMostrado, setMensajeMostrado] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [guardando, setGuardando] = useState(false);
+    const [feedback, setFeedback] = useState(null);
+    const [erroresCampos, setErroresCampos] = useState({});
+    const bodyRef = useRef(null);
 
     // Estado del Formulario (Coincide con el endpoint POST /api/rrhh/funcionarios)
-    const [formData, setFormData] = useState({
-        // Datos Personales
-        cedula: '',
-        nombres: '',
-        apellidos: '',
-        rif: '',
-        fecha_nacimiento: '',
-        lugar_nacimiento: '',
-        genero: '',
-        estado_civil: 'Soltero', // Valor por defecto
-        tipo_sangre: '',
-        direccion_habitacion: '',
-        telefono_fijo: '',
-        celular: '',
-        correo_principal: '',
-        correo_secundario: '',
-        cuenta_bancaria: '',
-        fecha_ingreso: new Date().toISOString().split('T')[0], // Fecha actual por defecto
-        contacto_emergencia_1: '',
-        telefono_emergencia_1: '',
-        contacto_emergencia_2: '',
-        telefono_emergencia_2: '',
-        deportes: '',
-        actividades_culturales: '',
-
-        // Tablas Maestras Personales
-        profesion_id: '',
-        prima_profesional_id: '',
-        estatus_id: 1, // Por defecto Activo (asumiendo ID 1)
-
-        // Datos Contractuales (Opcionales pero recomendados)
-        cargo_cet_id: '',
-        cargo_onapre_id: '',
-        nivel_salarial_id: '',
-        condicion_laboral_id: '',
-        direccion_id: '', // Nivel 1
-        division_id: '', // Nivel 2
-        unidad_id: ''  // Nivel 3
-    });
+    const [formData, setFormData] = useState(() => ({ ...FORMULARIO_INICIAL }));
 
     // Estados para los Selectores (Catalogos)
     const [catalogos, setCatalogos] = useState({
@@ -106,12 +155,26 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
 
             } catch (error) {
                 console.error("Error cargando catálogos:", error);
-                setErrorMessage("Error cargando listas desplegables.");
+                setFeedback({
+                    type: 'warning',
+                    title: 'No se pudieron cargar las listas desplegables',
+                    message: 'Algunos campos no tendrán opciones disponibles. Cierre el modal y vuelva a abrirlo; si el problema persiste, recargue la página.',
+                    items: [],
+                    hint: 'Mientras tanto puede completar los datos que no dependan de esas listas.'
+                });
             }
         };
 
         fetchCatalogos();
     }, []);
+
+    // Limpia los errores de un intento anterior al reabrir el modal.
+    useEffect(() => {
+        if (!show) return;
+        setErroresCampos({});
+        setFeedback(prev => (prev?.type === 'warning' ? prev : null));
+        setGuardando(false);
+    }, [show]);
 
     // Efecto: Cargar Niveles cuando cambia el Cargo ONAPRE (cargo_onapre_id)
     useEffect(() => {
@@ -124,7 +187,7 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                 // Asumiendo un endpoint que filtre niveles por cargo ONAPRE
                 const res = await fetch(`/api/rrhh/niveles-salariales?cargo_onapre_id=${formData.cargo_onapre_id}`);
                 const data = await res.json();
-                setCatalogos(prev => ({ ...prev, niveles: data }));
+                setCatalogos(prev => ({ ...prev, niveles: Array.isArray(data) ? data : [] }));
             } catch (error) {
                 console.error("Error cargando niveles:", error);
             }
@@ -132,6 +195,84 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
         fetchNiveles();
     }, [formData.cargo_onapre_id]);
 
+    const desplazarAlInicio = () => {
+        window.requestAnimationFrame(() => {
+            if (bodyRef.current) bodyRef.current.scrollTop = 0;
+        });
+    };
+
+    const mostrarErrores = (errores, mensaje, titulo = 'Revise los datos del formulario', sugerencia) => {
+        setErroresCampos(errores);
+        setFeedback(crearFeedbackDeError({ titulo, mensaje, errores, sugerencia }));
+
+        // Si el error está en el otro paso, llevamos al usuario hasta ese paso.
+        const pasos = Object.keys(errores).map(campo => PASO_POR_CAMPO[campo]).filter(Boolean);
+        if (pasos.length > 0) setPaso(Math.min(...pasos));
+
+        desplazarAlInicio();
+    };
+
+    const validarPaso1 = () => {
+        const errores = {};
+
+        if (!formData.cedula.trim()) {
+            errores.cedula = 'La cédula de identidad es obligatoria.';
+        }
+        if (!formData.nombres.trim()) {
+            errores.nombres = 'Los nombres son obligatorios.';
+        }
+        if (!formData.apellidos.trim()) {
+            errores.apellidos = 'Los apellidos son obligatorios.';
+        }
+        if (formData.fecha_nacimiento && formData.fecha_nacimiento > FECHA_HOY) {
+            errores.fecha_nacimiento = 'La fecha de nacimiento no puede ser posterior a la fecha actual.';
+        }
+        if (formData.correo_principal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo_principal)) {
+            errores.correo_principal = 'Ingrese un correo electrónico válido (ejemplo: nombre@dominio.com).';
+        }
+        if (formData.correo_secundario && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo_secundario)) {
+            errores.correo_secundario = 'Ingrese un correo electrónico válido (ejemplo: nombre@dominio.com).';
+        }
+
+        return errores;
+    };
+
+    const validarFormulario = () => {
+        const errores = validarPaso1();
+
+        if (!formData.fecha_ingreso) {
+            errores.fecha_ingreso = 'La fecha de ingreso es obligatoria.';
+        }
+        if (!formData.direccion_id) {
+            errores.direccion_id = 'Seleccione la dirección de adscripción.';
+        }
+
+        return errores;
+    };
+
+    const mostrarErrorServidor = (mensaje) => {
+        const errorBD = detectarErrorDeBD(mensaje);
+        const errores = {};
+
+        if (errorBD?.campo) {
+            errores[errorBD.campo] = errorBD.mensaje;
+        }
+
+        obtenerCamposAfectados(mensaje, REGLAS_CAMPOS_SERVIDOR).forEach(campo => {
+            if (!errores[campo]) errores[campo] = mensajeParaCampo(mensaje);
+        });
+
+        const mensajeVisible = errorBD?.mensaje || mensaje;
+
+        mostrarErrores(
+            errores,
+            mensajeVisible,
+            'No se pudo registrar el funcionario',
+            Object.keys(errores).length > 0
+                ? 'Corrija los campos señalados. Los datos que ya ingresó se conservan y puede modificarlos antes de volver a guardar.'
+                : 'Verifique los datos e intente nuevamente. Si el problema persiste, comparta este mensaje con el administrador del sistema.'
+        );
+    };
 
     // Manejador de cambios en inputs
     const handleChange = (e) => {
@@ -153,50 +294,77 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
 
             return newData;
         });
+
+        // Al corregir un campo, quitamos su marca de error.
+        const camposAfectados = name === 'direccion_id'
+            ? [name, 'division_id', 'unidad_id']
+            : name === 'division_id'
+                ? [name, 'unidad_id']
+                : name === 'cargo_onapre_id'
+                    ? [name, 'cargo_cet_id', 'nivel_salarial_id']
+                    : [name];
+
+        if (camposAfectados.some(campo => erroresCampos[campo])) {
+            const restantes = { ...erroresCampos };
+            camposAfectados.forEach(campo => delete restantes[campo]);
+            setErroresCampos(restantes);
+            if (Object.keys(restantes).length === 0) setFeedback(null);
+        }
     };
 
     const limpiarFormulario = () => {
-        setFormData({
-            cedula: '', nombres: '', apellidos: '', rif: '',
-            fecha_nacimiento: '', lugar_nacimiento: '', genero: '', estado_civil: 'Soltero',
-            tipo_sangre: '', direccion_habitacion: '', celular: '', correo_principal: '', correo_secundario: '', cuenta_bancaria: '',
-            fecha_ingreso: new Date().toISOString().split('T')[0],
-            contacto_emergencia_1: '', telefono_emergencia_1: '', contacto_emergencia_2: '', telefono_emergencia_2: '', profesion_id: '', prima_profesional_id: '', estatus_id: 1,
-            cargo_cet_id: '', cargo_onapre_id: '', nivel_salarial_id: '', condicion_laboral_id: '', direccion_id: '', division_id: '', unidad_id: ''
-        });
-        setErrorMessage('');
-        setMensajeMostrado(false);
+        setFormData({ ...FORMULARIO_INICIAL });
+        setErroresCampos({});
+        setFeedback(null);
         setPaso(1);
     };
 
     const handleSiguiente = () => {
-        if (!formData.cedula || !formData.nombres || !formData.apellidos) {
-            setErrorMessage('Por favor complete Cédula, Nombres, y Apellidos requeridos.');
-            setMensajeMostrado(true);
-            setTimeout(() => setMensajeMostrado(false), 3000);
+        const errores = validarPaso1();
+        if (Object.keys(errores).length > 0) {
+            mostrarErrores(
+                errores,
+                'Complete o corrija los datos personales antes de continuar.',
+                'Revise los datos personales'
+            );
             return;
         }
-        setErrorMessage('');
-        setMensajeMostrado(false);
+
+        setErroresCampos({});
+        setFeedback(null);
         setPaso(2);
+        desplazarAlInicio();
     };
 
     const handleAtras = () => {
-        setErrorMessage('');
-        setMensajeMostrado(false);
+        setErroresCampos({});
+        setFeedback(null);
         setPaso(1);
+        desplazarAlInicio();
+    };
+
+    const cerrarModal = () => {
+        if (!guardando) handleClose();
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
+        if (guardando) return;
 
         // Validaciones básicas antes de enviar
-        if (!formData.direccion_id) {
-            setErrorMessage('Por favor complete la Dirección de Adscripción.');
-            setMensajeMostrado(true);
-            setTimeout(() => setMensajeMostrado(false), 3000);
+        const errores = validarFormulario();
+        if (Object.keys(errores).length > 0) {
+            mostrarErrores(
+                errores,
+                'Faltan datos obligatorios o hay valores inválidos. Revise los campos señalados antes de guardar.',
+                'Revise los datos del formulario'
+            );
             return;
         }
+
+        setGuardando(true);
+        setFeedback(null);
+        setErroresCampos({});
 
         if (onSaveStart) onSaveStart();
 
@@ -209,38 +377,52 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                 body: JSON.stringify(formData)
             });
 
-            const result = await response.json();
+            const result = await leerRespuestaJson(response);
 
             if (!response.ok) {
-                throw new Error(result.error || 'Error al registrar funcionario');
+                const mensaje = obtenerMensajeError(result, 'No se pudo registrar el funcionario.');
+                mostrarErrorServidor(mensaje);
+                if (onSaveEnd) onSaveEnd(false, mensaje);
+                return;
             }
 
             // Éxito
             limpiarFormulario();
-            if (onSaveEnd) onSaveEnd(true, 'Funcionario registrado exitosamente.');
+            if (onSaveEnd) onSaveEnd(true, result.message || 'Funcionario registrado exitosamente.');
+            handleClose();
 
         } catch (error) {
             console.error('Error:', error);
-            if (onSaveEnd) onSaveEnd(false, error.message);
+            const mensaje = obtenerMensajeDeExcepcion(error, 'No se pudo registrar el funcionario.');
+            mostrarErrorServidor(mensaje);
+            if (onSaveEnd) onSaveEnd(false, mensaje);
+        } finally {
+            setGuardando(false);
         }
     };
 
     return (
-        <Modal show={show} onHide={handleClose} size="xl" backdrop="static">
+        <Modal show={show} onHide={cerrarModal} size="xl" backdrop="static">
             <Modal.Header closeButton>
                 <Modal.Title>
                     {paso === 1 ? 'Registrar Funcionario - Datos Personales' : 'Registrar Funcionario - Datos Laborales'}
                 </Modal.Title>
             </Modal.Header>
-            <Modal.Body>
-                {/* MENSAJES DE ALERTA DE VALIDACIÓN */}
-                {mensajeMostrado &&
-                    <Alert key="danger" type="danger">
-                        {errorMessage}
-                    </Alert>
-                }
+            <Modal.Body ref={bodyRef}>
+                {/* ERRORES DE VALIDACIÓN Y DEL SERVIDOR */}
+                <FormFeedback
+                    {...(feedback || {})}
+                    onClose={feedback ? () => {
+                        setFeedback(null);
+                        setErroresCampos({});
+                    } : undefined}
+                />
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (paso === 1) handleSiguiente();
+                    else handleSubmit(e);
+                }}>
                     {paso === 1 && (
                         <>
                             {/* SECCIÓN 1: DATOS PERSONALES */}
@@ -593,14 +775,22 @@ export const RegistrarFuncionario = ({ show, handleClose, onSaveStart, onSaveEnd
                 </form>
             </Modal.Body>
             <Modal.Footer>
+                <Button type='secondary' onClick={cerrarModal} disabled={guardando}>Cancelar</Button>
                 {paso === 1 && (
-                    <Button type='primary' onClick={handleSiguiente}>Siguiente</Button>
+                    <Button type='primary' onClick={handleSiguiente} disabled={guardando}>Siguiente</Button>
                 )}
                 {paso === 2 && (
                     <>
-                        <Button type='secondary' className="me-2" onClick={handleAtras}>Atrás</Button>
-                        <Button type='secondary' className="me-2" onClick={limpiarFormulario}>Limpiar</Button>
-                        <Button type='primary' onClick={handleSubmit}>Registrar Funcionario</Button>
+                        <Button type='secondary' className="me-2" onClick={handleAtras} disabled={guardando}>Atrás</Button>
+                        <Button type='secondary' className="me-2" onClick={limpiarFormulario} disabled={guardando}>Limpiar</Button>
+                        <Button type='primary' onClick={handleSubmit} disabled={guardando}>
+                            {guardando ? (
+                                <>
+                                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                                    Guardando...
+                                </>
+                            ) : 'Registrar Funcionario'}
+                        </Button>
                     </>
                 )}
             </Modal.Footer>

@@ -320,15 +320,18 @@ export const Sobrevivientes = () => {
                     show={showRegistro}
                     handleClose={() => setShowRegistro(false)}
                     onSaveStart={() => {
-                        setShowRegistro(false);
+                        // El modal permanece abierto: los errores se muestran dentro de él.
                         setIsRegistering(true);
                         setRegistroStatus({ show: false, success: false, message: '' });
                     }}
                     onSaveEnd={(success, msg) => {
                         setIsRegistering(false);
-                        setRegistroStatus({ show: true, success, message: msg });
-                        if (success) setRefreshKey(prev => prev + 1);
-                        setTimeout(() => setRegistroStatus(prev => ({ ...prev, show: false })), 4000);
+                        if (success) {
+                            setShowRegistro(false);
+                            setRegistroStatus({ show: true, success: true, message: msg });
+                            setRefreshKey(prev => prev + 1);
+                            setTimeout(() => setRegistroStatus(prev => ({ ...prev, show: false })), 4000);
+                        }
                     }}
                 />
 

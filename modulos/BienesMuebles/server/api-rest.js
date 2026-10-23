@@ -1,4 +1,5 @@
 import express from 'express'
+import 'dotenv/config'
 import { connectDB } from './src/utils/database.js'
 import cookieParser from 'cookie-parser'
 import authRouter from './src/auth/auth.routes.js'
@@ -19,6 +20,7 @@ import reporteBM4Routes from './src/routes/reporte.routes.js'
 import pdfRouter from './src/routes/pdf.routes.js'
 import excelRoutes from './src/routes/excel.routes.js'
 import userRoutes from './src/routes/user.routes.js'
+import soporteBienesRouter from './src/routes/soporteBienes.routes.js'
 import cors from 'cors'
 import morgan from 'morgan'
 
@@ -71,6 +73,9 @@ app.use('/api/pdf', pdfRouter)
 app.use('/api/excel', excelRoutes)
 
 app.use('/api/user', userRoutes)
+
+// Integracion de solo lectura para el modulo de Soporte Tecnico
+app.use('/api/soporte/bienes', soporteBienesRouter)
 
 const PORT = 5001
 app.listen(PORT, () => {
