@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Modal, Form, Row, Col } from 'react-bootstrap'
 import {
-  FaPlus, FaPenToSquare, FaTrashCan, FaFileExcel, FaMagnifyingGlass,
+  FaPlus, FaPenToSquare, FaTrashCan, FaFileExcel, FaFileWord, FaMagnifyingGlass,
   FaRotateLeft, FaCalendarWeek, FaCircleInfo, FaChevronLeft, FaChevronRight
 } from 'react-icons/fa6'
 import { toast } from 'react-toastify'
@@ -37,6 +37,7 @@ export default function ActividadesPage () {
   const [bienes, setBienes] = useState([])
   const [loading, setLoading] = useState(true)
   const [exportando, setExportando] = useState(false)
+  const [exportandoWord, setExportandoWord] = useState(false)
 
   const [draft, setDraft] = useState(filtrosIniciales)
   const [filtros, setFiltros] = useState(filtrosIniciales)
@@ -224,6 +225,22 @@ export default function ActividadesPage () {
       toast.error(error.message || 'No se pudo generar el reporte mensual')
     } finally {
       setExportando(false)
+    }
+  }
+
+  const exportarMensualWord = async () => {
+    setExportandoWord(true)
+    try {
+      await downloadFile(
+        `/reportes/actividades/mensual-word?mes=${mes}&anio=${anio}`,
+        `Actividades_Mensual_${anio}_${String(mes).padStart(2, '0')}.docx`
+      )
+      toast.success('Reporte mensual en Word generado correctamente')
+      setShowMensual(false)
+    } catch (error) {
+      toast.error(error.message || 'No se pudo generar el reporte mensual en Word')
+    } finally {
+      setExportandoWord(false)
     }
   }
 
@@ -546,7 +563,18 @@ export default function ActividadesPage () {
           <button className="btn btn-outline-secondary" onClick={() => setShowMensual(false)}>
             Cancelar
           </button>
-          <button className="btn btn-success" onClick={exportarMensual} disabled={exportando}>
+          <button
+            className="btn btn-outline-primary"
+            onClick={exportarMensualWord}
+            disabled={exportando || exportandoWord}
+          >
+            <FaFileWord className="me-1" /> {exportandoWord ? 'Generando...' : 'Descargar Word'}
+          </button>
+          <button
+            className="btn btn-success"
+            onClick={exportarMensual}
+            disabled={exportando || exportandoWord}
+          >
             <FaFileExcel className="me-1" /> {exportando ? 'Generando...' : 'Descargar Excel'}
           </button>
         </Modal.Footer>
