@@ -1,5 +1,6 @@
 import { ActividadModel } from '../models/actividad.model.js'
 import { generarExcelSemanal, generarExcelMensual } from '../services/excel/actividades.excel.service.js'
+import { generarWordMensual } from '../services/word/actividades.word.service.js'
 
 export const exportarSemanal = async (req, res) => {
   try {
@@ -31,6 +32,23 @@ export const exportarMensual = async (req, res) => {
   } catch (error) {
     console.error('Error al generar Excel mensual:', error)
     res.status(500).json({ error: 'Error al generar el archivo Excel.' })
+  }
+}
+
+export const exportarMensualWord = async (req, res) => {
+  try {
+    const mes = Number(req.query.mes) || (new Date().getMonth() + 1)
+    const anio = Number(req.query.anio) || new Date().getFullYear()
+    const rows = await ActividadModel.getMonthlyConsolidated(mes, anio)
+    const buffer = await generarWordMensual(rows, { mes, anio })
+
+    const nombre = `Actividades_Mensual_${anio}_${String(mes).padStart(2, '0')}.docx`
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    res.setHeader('Content-Disposition', `attachment; filename="${nombre}"`)
+    res.send(buffer)
+  } catch (error) {
+    console.error('Error al generar Word mensual:', error)
+    res.status(500).json({ error: 'Error al generar el archivo Word.' })
   }
 }
 
