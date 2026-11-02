@@ -3,6 +3,7 @@ import {
   BorderStyle,
   Document,
   ImageRun,
+  LevelFormat,
   Packer,
   Paragraph,
   Table,
@@ -51,6 +52,14 @@ const number = value => {
   const n = Number(value)
   return Number.isFinite(n) ? n : 0
 }
+
+// En el reporte las celdas sin actividad se dejan vacias, no con "0".
+const valorCelda = value => {
+  const n = number(value)
+  return n === 0 ? '' : n
+}
+
+const REFERENCIA_LISTA = 'actividades-adicionales'
 
 function texto (value, {
   bold = false,
@@ -200,12 +209,12 @@ export async function generarWordMensual (rows, { mes, anio } = {}) {
       children: [
         celdaDato(index + 1),
         celdaDato(r.nombre || '', { alignment: AlignmentType.LEFT }),
-        celdaDato(valores.prev_sw),
-        celdaDato(valores.prev_hw),
-        celdaDato(valores.corr_sw),
-        celdaDato(valores.corr_hw),
-        celdaDato(valores.plat_serv),
-        celdaDato(valores.plat_inf)
+        celdaDato(valorCelda(valores.prev_sw)),
+        celdaDato(valorCelda(valores.prev_hw)),
+        celdaDato(valorCelda(valores.corr_sw)),
+        celdaDato(valorCelda(valores.corr_hw)),
+        celdaDato(valorCelda(valores.plat_serv)),
+        celdaDato(valorCelda(valores.plat_inf))
       ]
     })
   })
@@ -217,12 +226,12 @@ export async function generarWordMensual (rows, { mes, anio } = {}) {
         bold: true,
         columnSpan: 2
       }),
-      celdaDato(totales.prev_sw, { bold: true }),
-      celdaDato(totales.prev_hw, { bold: true }),
-      celdaDato(totales.corr_sw, { bold: true }),
-      celdaDato(totales.corr_hw, { bold: true }),
-      celdaDato(totales.plat_serv, { bold: true }),
-      celdaDato(totales.plat_inf, { bold: true })
+      celdaDato(valorCelda(totales.prev_sw), { bold: true }),
+      celdaDato(valorCelda(totales.prev_hw), { bold: true }),
+      celdaDato(valorCelda(totales.corr_sw), { bold: true }),
+      celdaDato(valorCelda(totales.corr_hw), { bold: true }),
+      celdaDato(valorCelda(totales.plat_serv), { bold: true }),
+      celdaDato(valorCelda(totales.plat_inf), { bold: true })
     ]
   })
 
@@ -262,9 +271,9 @@ export async function generarWordMensual (rows, { mes, anio } = {}) {
   const totalSw = totales.prev_sw + totales.corr_sw
 
   const resumen = [
-    ['MANTENIMIENTOS PREVENTIVOS Y CORRECTIVOS DE HARDWARE', totalHw],
-    ['MANTENIMIENTOS PREVENTIVOS Y CORRECTIVOS DE SOFTWARE', totalSw],
-    ['TOTAL DE SERVICIOS DEL MES', totalGeneral]
+    ['MANTENIMIENTOS PREVENTIVOS Y CORRECTIVOS DE HARDWARE', valorCelda(totalHw)],
+    ['MANTENIMIENTOS PREVENTIVOS Y CORRECTIVOS DE SOFTWARE', valorCelda(totalSw)],
+    ['TOTAL DE SERVICIOS DEL MES', valorCelda(totalGeneral)]
   ]
 
   const tablaResumen = new Table({
@@ -290,10 +299,72 @@ export async function generarWordMensual (rows, { mes, anio } = {}) {
     }))
   })
 
+  const periodo = mesNombre ? `${mesNombre.toLowerCase()} de ${anio}` : String(anio ?? '')
+
+  const parrafoIntro = new Paragraph({
+    alignment: AlignmentType.JUSTIFY,
+    spacing: { before: 0, after: 120, line: 360 },
+    children: [
+      new TextRun({
+        text: `En cuanto a las actividades del mes de ${periodo} la División de Soporte Técnico, adscrita a la Dirección General de la Contraloría del Estado Táchira, desarrollo las siguientes actividades como se muestra en el cuadro adjunto:`,
+        font: FONT,
+        size: FONT_SIZE
+      })
+    ]
+  })
+
+  const parrafoAdicional = new Paragraph({
+    alignment: AlignmentType.JUSTIFY,
+    spacing: { before: 0, after: 120, line: 360 },
+    children: [
+      new TextRun({
+        text: 'Adicionalmente, la División de Soporte Técnico, realizo las siguientes actividades no enmarcadas dentro del Plan Operativo Anual, pero que tienen relevancia para la continuidad de la Gestión de la Dirección General:',
+        font: FONT,
+        size: FONT_SIZE
+      })
+    ]
+  })
+
+  const listaAdicional = [
+    'Se ejecuta el monitoreo constante del enlace de conexión a Internet por Fibra Óptica de la Contraloría del Estado Táchira.',
+    'Se emitieron los reportes de acceso del sistema IVMS4200 AC, para la Dirección de Recursos Humanos.'
+  ].map(item => new Paragraph({
+    numbering: { reference: REFERENCIA_LISTA, level: 0 },
+    alignment: AlignmentType.JUSTIFY,
+    spacing: { before: 0, after: 0, line: 360 },
+    children: [
+      new TextRun({
+        text: item,
+        font: FONT,
+        size: FONT_SIZE
+      })
+    ]
+  }))
+
   const doc = new Document({
     creator: 'SIGET - Soporte Tecnico',
     title: `Reporte mensual de actividades - ${mesNombre} ${anio}`,
     description: 'Consolidado mensual por direccion y clasificacion',
+    numbering: {
+      config: [
+        {
+          reference: REFERENCIA_LISTA,
+          levels: [
+            {
+              level: 0,
+              format: LevelFormat.DECIMAL,
+              text: '%1.',
+              alignment: AlignmentType.LEFT,
+              style: {
+                paragraph: {
+                  indent: { left: 720, hanging: 360 }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
     styles: {
       default: {
         document: {
@@ -312,10 +383,15 @@ export async function generarWordMensual (rows, { mes, anio } = {}) {
           tablaEncabezadoInstitucional(
             `REPORTE MENSUAL DE ACTIVIDADES - ${mesNombre.toUpperCase()} ${anio}`
           ),
+          parrafoIntro,
           new Paragraph({ spacing: { before: 0, after: 120 } }),
           tablaActividades,
           new Paragraph({ spacing: { before: 0, after: 160 } }),
-          tablaResumen
+          tablaResumen,
+          new Paragraph({ spacing: { before: 0, after: 160 } }),
+          parrafoAdicional,
+          new Paragraph({ spacing: { before: 0, after: 0 } }),
+          ...listaAdicional
         ]
       }
     ]
