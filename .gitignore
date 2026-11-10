@@ -26,3 +26,9 @@ vendor/firebase/php-jwt/
 /modulos/soporte_tecnico/client/node_modules/
 /modulos/soporte_tecnico/server/.env
 /modulos/soporte_tecnico/client/.env
+
+# Modulo de control Descentralizado (Node.js / React)
+/modulos/SIGEA/server/.env
+/modulos/SIGEA/server/node_modules/
+/modulos/SIGEA/server/dist/
+/modulos/SIGEA/server/src/generated/prisma/

@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// 1. ENUMS
+enum StatusSolicitud {
+  EN_ESPERA
+  RESPONDIDA
+  VENCIDA
+  RATIFICADA
+  EN_MULTA
+}
+
+enum UserRol {
+  DIRECTOR
+  ABOGADO 
+  ANALISTA_ADMINISTRATIVO
+  AUXILIAR_OFICINA 
+  JEFE_DIVISION_GENERAL 
+  SUPERVISOR
+  AUDITOR 
+  ASISTENTE_ADMINISTRATIVO
+}
+
+enum AuditoriaRol {
+  COORDINADOR 
+  AUDITOR
+  ASISTENTE
+  SUPERVISOR
+}
+
+enum StatusAuditoria {
+  EN_CURSO
+  CERRADA
+  SUSPENDIDA
+}
+
+// 2. TABLAS BASE
+model Usuario {
+  id       Int      @id @default(autoincrement())
+  name     String
+  ci       Int      @unique
+  rol      UserRol
+  password String
+  createdAt DateTime @default(now())
+  
+  auditoriasAsignadas UsuarioAuditoria[]
+}
+
+model Ente {
+  id        Int      @id @default(autoincrement())
+  name      String
+  rif       String   @unique
+  siglas    String?
+  autoridad String?
+  createdAt DateTime @default(now())
+  
+  auditorias Auditoria[]
+}
+
+model AuditoriaTipo {
+  id        Int      @id @default(autoincrement())
+  nameType  String
+  createdAt DateTime @default(now())
+  
+  auditorias Auditoria[]
+}
+
+// Tabla intermedia: Equipo de trabajo por auditoría
+model UsuarioAuditoria {
+  id        Int          @id @default(autoincrement())
+  idUser    Int
+  idAudit   Int
+  rol       AuditoriaRol
+  createdAt DateTime     @default(now())
+
+  usuario   Usuario   @relation(fields: [idUser], references: [id])
+  auditoria Auditoria @relation(fields: [idAudit], references: [id])
+}
+
+// 3. LA AUDITORÍA (El expediente principal)
+model Auditoria {
+  id          Int             @id @default(autoincrement())
+  auditNumber Int             @unique
+  entityId    Int
+  typeId      Int
+  startDate   DateTime?       // Fecha formal de inicio
+  endDate     DateTime?       // Fecha formal de cierre
+  status      StatusAuditoria @default(EN_CURSO)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt // Se actualiza solo al modificar el registro
+
+  ente        Ente               @relation(fields: [entityId], references: [id])
+  tipo        AuditoriaTipo      @relation(fields: [typeId], references: [id])
+  equipo      UsuarioAuditoria[]
+  solicitudes Solicitud[]
+  cedulas     Cedula[]
+}
+
+// 4. FASE DE EJECUCIÓN
+model Solicitud {
+  id        Int             @id @default(autoincrement())
+  auditId   Int
+  createdAt DateTime        @default(now())
+  dueDate   DateTime        // Fecha calculada por el backend (días hábiles)
+  status    StatusSolicitud @default(EN_ESPERA)
+  updatedAt DateTime        @updatedAt // Para saber cuándo cambió de estado
+
+  auditoria Auditoria         @relation(fields: [auditId], references: [id])
+  detalles  DetalleSolicitud[]
+}
+
+model DetalleSolicitud {
+  id            Int             @id @default(autoincrement())
+  idRequest     Int
+  detailRequest String
+  status        StatusSolicitud @default(EN_ESPERA)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  solicitud      Solicitud      @relation(fields: [idRequest], references: [id])
+  respuestas     Respuesta[]
+  ratificaciones Ratificacion[]
+}
+
+model Respuesta {
+  id           Int      @id @default(autoincrement())
+  detailId     Int
+  responseText String?
+  createdAt    DateTime @default(now()) 
+
+  detalle DetalleSolicitud @relation(fields: [detailId], references: [id])
+}
+
+model Ratificacion {
+  id                  Int      @id @default(autoincrement())
+  detailId            Int
+  ratificationNumber  Int
+  createdAt           DateTime @default(now()) 
+  penalty             Boolean  @default(false)
+  updatedAt           DateTime @updatedAt // Para saber cuándo cambió la penalización
+
+  detalle DetalleSolicitud @relation(fields: [detailId], references: [id])
+}
+
+model Cedula {
+  id          Int      @id @default(autoincrement())
+  auditId     Int
+  code        String
+  description String?
+  pdfPath     String?
+  createdAt   DateTime @default(now()) 
+
+  auditoria Auditoria @relation(fields: [auditId], references: [id])
+}
