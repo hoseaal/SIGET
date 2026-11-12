@@ -20,10 +20,7 @@ export const login = async (request, response) => {
       throw new HttpError(400, 'El cuerpo de la solicitud debe ser un objeto JSON.');
     }
 
-    const result = await loginUser({
-      ci: request.body.ci,
-      password: request.body.password,
-    });
+    const result = await loginUser(request.body);
     response.json(result);
   } catch (error) {
     sendControllerError(error, response, 'iniciar sesión');
