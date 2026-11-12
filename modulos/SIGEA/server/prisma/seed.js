@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../src/config/prisma.js';
-import { UserRol } from '../src/generated/prisma/enums.js';
+import { UserRol } from '@prisma/client';
 
-async function main(): Promise<void> {
+async function main() {
   const name = process.env.DIRECTOR_NAME;
   const ciValue = process.env.DIRECTOR_CI;
   const password = process.env.DIRECTOR_PASSWORD;
@@ -42,7 +42,7 @@ async function main(): Promise<void> {
 }
 
 main()
-  .catch((error: unknown) => {
+  .catch((error) => {
     console.error('Error al crear la cuenta inicial:', error);
     process.exitCode = 1;
   })

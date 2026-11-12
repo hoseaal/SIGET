@@ -1,4 +1,4 @@
-export function getJwtSecret(): string {
+export function getJwtSecret() {
   const secret = process.env.JWT_SECRET;
 
   if (!secret || Buffer.byteLength(secret, 'utf8') < 32) {

@@ -1,4 +1,7 @@
-# Backend SIGEA: base de autenticación
+# Backend SIGEA: base JavaScript de autenticación
+
+El backend está escrito en JavaScript y se ejecuta directamente con Node.js; no necesita transpilarse.
+`npm run dev` usa el modo watch de Node.js y `npm start` inicia la aplicación.
 
 ## Alcance actual
 
@@ -11,9 +14,14 @@ La API solo expone el flujo de autenticación:
 | GET | `/api/auth/me` | Requiere un encabezado Authorization con el esquema Bearer y el token |
 
 El registro recibe `name`, `ci` y `password`. El inicio de sesión devuelve `{ token, user }`.
-Los controladores HTTP están en `src/controllers/auth.controller.ts`; la lógica de cuenta,
-contraseñas y JWT está en `src/services/auth.service.ts`. El middleware de sesión está en
-`src/middleware/auth.middleware.ts`.
+La entrada del registro se valida con Zod en `src/schemas/auth.schema.js`; el esquema
+normaliza el nombre y la cédula, valida el tamaño UTF-8 de la contraseña y rechaza campos extra.
+Los esquemas del login y de otros endpoints se incorporarán por separado.
+Los controladores HTTP están en `src/controllers/auth.controller.js`; la lógica de cuenta,
+contraseñas y JWT está en `src/services/auth.service.js`. El middleware de sesión está en
+`src/middleware/auth.middleware.js`.
+
+Las pruebas del esquema del registro se ejecutan con `npm test`.
 
 ## Persistencia y datos existentes
 

@@ -1,10 +1,8 @@
-import type { RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
-import { UserRol } from '../generated/prisma/enums.js';
 import { getJwtSecret } from '../config/auth.js';
 import { prisma } from '../config/prisma.js';
 
-export const authenticate: RequestHandler = async (request, response, next) => {
+export const authenticate = async (request, response, next) => {
   const authorization = request.header('authorization');
   const token = authorization?.startsWith('Bearer ')
     ? authorization.slice('Bearer '.length).trim()
@@ -52,19 +50,3 @@ export const authenticate: RequestHandler = async (request, response, next) => {
     response.status(500).json({ error: 'No se pudo validar la sesión.' });
   }
 };
-
-export function requireRoles(...roles: UserRol[]): RequestHandler {
-  return (request, response, next) => {
-    if (!request.authUser) {
-      response.status(401).json({ error: 'Se requiere una sesión válida.' });
-      return;
-    }
-
-    if (!roles.includes(request.authUser.rol)) {
-      response.status(403).json({ error: 'No tienes permiso para realizar esta acción.' });
-      return;
-    }
-
-    next();
-  };
-}

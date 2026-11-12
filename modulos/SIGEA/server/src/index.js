@@ -19,7 +19,7 @@ app.use((_request, response) => {
   response.status(404).json({ error: 'No se encontró el endpoint solicitado.' });
 });
 
-async function startServer(): Promise<void> {
+async function startServer() {
   try {
     getJwtSecret();
     await prisma.$queryRaw`SELECT 1`;

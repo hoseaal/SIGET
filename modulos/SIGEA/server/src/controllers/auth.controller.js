@@ -1,25 +1,20 @@
-import type { RequestHandler } from 'express';
 import { findCurrentUser, loginUser, registerUser } from '../services/auth.service.js';
 import { HttpError, isRecord, sendControllerError } from '../utils/http-error.js';
 
-export const register: RequestHandler = async (request, response) => {
+export const register = async (request, response) => {
   try {
     if (!isRecord(request.body)) {
       throw new HttpError(400, 'El cuerpo de la solicitud debe ser un objeto JSON.');
     }
 
-    const result = await registerUser({
-      name: request.body.name,
-      ci: request.body.ci,
-      password: request.body.password,
-    });
+    const result = await registerUser(request.body);
     response.status(201).json(result);
   } catch (error) {
     sendControllerError(error, response, 'registrar usuario');
   }
 };
 
-export const login: RequestHandler = async (request, response) => {
+export const login = async (request, response) => {
   try {
     if (!isRecord(request.body)) {
       throw new HttpError(400, 'El cuerpo de la solicitud debe ser un objeto JSON.');
@@ -35,7 +30,7 @@ export const login: RequestHandler = async (request, response) => {
   }
 };
 
-export const currentUser: RequestHandler = async (request, response) => {
+export const currentUser = async (request, response) => {
   try {
     if (!request.authUser) {
       throw new HttpError(401, 'Se requiere una sesión válida.');

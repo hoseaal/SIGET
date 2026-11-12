@@ -1,25 +1,17 @@
-import type { Response } from 'express';
-
 export class HttpError extends Error {
-  constructor(
-    public readonly status: number,
-    message: string,
-  ) {
+  constructor(status, message) {
     super(message);
     this.name = 'HttpError';
+    this.status = status;
   }
 }
 
-function isPrismaError(error: unknown): error is { code: string } {
+function isPrismaError(error) {
   return typeof error === 'object' && error !== null && 'code' in error &&
     typeof error.code === 'string';
 }
 
-export function sendControllerError(
-  error: unknown,
-  response: Response,
-  operation: string,
-): void {
+export function sendControllerError(error, response, operation) {
   if (error instanceof HttpError) {
     response.status(error.status).json({ error: error.message });
     return;
@@ -46,11 +38,11 @@ export function sendControllerError(
   response.status(500).json({ error: 'Ocurrió un error interno.' });
 }
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function parsePositiveInteger(value: unknown): number | null {
+export function parsePositiveInteger(value) {
   const parsed = typeof value === 'number' ? value :
     typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : NaN;
 

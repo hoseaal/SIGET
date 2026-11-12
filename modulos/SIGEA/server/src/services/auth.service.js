@@ -1,44 +1,26 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { UserRol } from '../generated/prisma/enums.js';
+import { UserRol } from '@prisma/client';
 import { getJwtSecret } from '../config/auth.js';
 import { prisma } from '../config/prisma.js';
 import { HttpError, parsePositiveInteger } from '../utils/http-error.js';
+import { registerSchema } from '../schemas/auth.schema.js';
 
 const bcryptRounds = 12;
 
-interface PublicUser {
-  id: number;
-  name: string;
-  ci: number;
-  rol: UserRol;
-}
-
-function createToken(userId: number): string {
+function createToken(userId) {
   return jwt.sign({}, getJwtSecret(), {
     subject: String(userId),
     expiresIn: '8h',
   });
 }
 
-export async function registerUser(input: {
-  name: unknown;
-  ci: unknown;
-  password: unknown;
-}): Promise<{ token: string; user: PublicUser }> {
-  const { name, password } = input;
-  const ci = parsePositiveInteger(input.ci);
-
-  if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 100) {
-    throw new HttpError(400, 'El nombre debe tener entre 2 y 100 caracteres.');
+export async function registerUser(input) {
+  const parsed = registerSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new HttpError(400, parsed.error.issues.map((issue) => issue.message).join(' '));
   }
-  if (ci === null) {
-    throw new HttpError(400, 'La cédula debe ser un número entero positivo.');
-  }
-  if (typeof password !== 'string' || Buffer.byteLength(password, 'utf8') < 10 ||
-    Buffer.byteLength(password, 'utf8') > 72) {
-    throw new HttpError(400, 'La contraseña debe tener entre 10 y 72 bytes.');
-  }
+  const { name, ci, password } = parsed.data;
 
   const user = await prisma.usuario.create({
     data: {
@@ -53,10 +35,7 @@ export async function registerUser(input: {
   return { token: createToken(user.id), user };
 }
 
-export async function loginUser(input: {
-  ci: unknown;
-  password: unknown;
-}): Promise<{ token: string; user: PublicUser }> {
+export async function loginUser(input) {
   const ci = parsePositiveInteger(input.ci);
   if (ci === null || typeof input.password !== 'string' || input.password.length === 0) {
     throw new HttpError(400, 'Debes indicar una cédula y contraseña válidas.');
@@ -75,7 +54,7 @@ export async function loginUser(input: {
   };
 }
 
-export async function findCurrentUser(userId: number) {
+export async function findCurrentUser(userId) {
   const user = await prisma.usuario.findUnique({
     where: { id: userId },
     select: { id: true, name: true, ci: true, rol: true, createdAt: true },

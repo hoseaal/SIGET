@@ -5,7 +5,8 @@ Los endpoints de catálogos y solicitudes se retiraron del código; el esquema/m
 históricos y los datos existentes se conservaron y no se eliminaron de MySQL.
 
 ## Fase 1: Configuración inicial (✅ Completada)
-- [x] Configurar Node.js, npm, Express y TypeScript.
+- [x] Configurar Node.js, npm, Express y JavaScript ES modules.
+- [x] Eliminar TypeScript y ejecutar los archivos `.js` directamente con Node.js.
 - [x] Configurar Prisma 7 y la conexión MySQL.
 - [x] Crear la estructura base del servidor.
 
