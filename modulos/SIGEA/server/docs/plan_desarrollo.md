@@ -1,31 +1,24 @@
 # Plan de Desarrollo SIGEA
 
+Se reinició el alcance de la API. El único flujo implementado por ahora es autenticación.
+Los endpoints de catálogos y solicitudes se retiraron del código; el esquema/migraciones
+históricos y los datos existentes se conservaron y no se eliminaron de MySQL.
+
 ## Fase 1: Configuración inicial (✅ Completada)
-- [x] Preparar el backend en `modulos/SIGEA/server`.
-- [x] Configurar Node.js, npm, Express y TypeScript estricto.
-- [x] Configurar Prisma 7 con el adaptador MariaDB/MySQL.
-- [x] Configurar `.env` local y excluirlo de Git.
-- [x] Crear el servidor base.
-- [x] Verificar la conexión real a la base de datos.
+- [x] Configurar Node.js, npm, Express y TypeScript.
+- [x] Configurar Prisma 7 y la conexión MySQL.
+- [x] Crear la estructura base del servidor.
 
-## Fase 2: Modelo, migraciones y seeders (✅ Completada)
-- [x] Definir y validar el esquema SIGEA (Usuarios, Entes, Auditorías, Solicitudes y relaciones).
-- [x] Crear y revisar una migración inicial válida.
-- [x] Ejecutar la migración contra la base de datos SIGEA.
-- [x] Crear y ejecutar seeders idempotentes para datos de prueba.
+## Fase 2: Base de datos (✅ Completada para el esquema existente)
+- [x] Conservar el esquema y las migraciones aplicadas.
+- [x] Mantener el seeder únicamente para la cuenta inicial DIRECTOR.
 
-El seeder agrega registros ficticios identificables para probar Ente, tipo de auditoría, Auditoría, Solicitud y DetalleSolicitud. Ejecutarlo con `npm run db:seed`.
+## Fase 3: Autenticación (🔄 Base implementada)
+- [x] Registro básico con contraseña cifrada y rol asignado por el servidor.
+- [x] Inicio de sesión con JWT.
+- [x] Endpoint autenticado para consultar la cuenta actual.
+- [ ] Ajustar el modelo de usuario y reglas de autenticación a los requisitos finales.
+- [ ] Añadir pruebas automatizadas de autenticación.
 
-## Fase 3: Autenticación y catálogos
-- [ ] Registro e inicio de sesión con JWT.
-- [ ] Middleware de autenticación.
-- [ ] CRUD de Entes y tipos de auditoría.
-
-## Fase 4: Solicitudes y ratificaciones
-- [ ] Cálculo de días hábiles.
-- [ ] Flujo de Solicitud, DetalleSolicitud y Respuesta.
-- [ ] Flujo de Ratificación y reglas de multa.
-
-## Fase 5: Pruebas y cierre
-- [ ] Probar los endpoints.
-- [ ] Documentar la API.
+## Fases futuras
+- [ ] Definir con el usuario los requisitos antes de diseñar otros módulos o endpoints.

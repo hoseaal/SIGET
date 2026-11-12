@@ -1,37 +1,31 @@
-# 🤖 Contexto del Proyecto SIGEA para la IA
+# Contexto del backend SIGEA
 
-Eres un asistente experto en desarrollo backend. Estás trabajando en un proyecto **NUEVO** para el sistema **SIGEA** (Sistema de Gestión de Expedientes de Auditoría). 
+## Alcance actual
 
-## 🛠️ Stack Tecnológico (Configuración Actual)
-- **Runtime:** Node.js (última versión LTS).
-- **Lenguaje:** TypeScript (Estricto, sin usar `any`).
-- **Framework Backend:** Express.
-- **ORM:** Prisma 7 (con `prisma.config.ts` y `@prisma/adapter-mariadb`).
-- **Base de Datos:** MySQL (gestionado localmente con XAMPP).
-- **Autenticación:** JWT (JSON Web Tokens) y Bcrypt.
+El backend expone únicamente `/api/auth`: registro, inicio de sesión y consulta del usuario autenticado.
+No agregar endpoints de catálogos, auditorías o solicitudes hasta que el usuario defina sus requisitos.
 
-## 📂 Estructura del Proyecto (Nueva Carpeta)
-- `src/index.ts`: Punto de entrada (servidor Express).
-- `src/config/prisma.ts`: Instancia única de Prisma Client con el adaptador de MySQL.
-- `src/controllers/`: Lógica de las peticiones HTTP.
-- `src/routes/`: Definición de los endpoints.
-- `src/services/`: Lógica de negocio compleja (ej. cálculo de días hábiles).
-- `prisma/schema.prisma`: Esquema de la base de datos.
-- `prisma.config.ts`: Configuración de la URL de la base de datos para Prisma 7.
-- `docs/`: Documentación del proyecto (este archivo, plan y arquitectura).
+## Stack
 
-## 🧠 Contexto Adicional
-- **MCP MySQL:** Ya tienes instalado y configurado el MCP `mysql-explorer` en tu sistema. Si necesitas ver la estructura de la base de datos, puedes pedirle al usuario que te la muestre o usar el MCP si está habilitado en la sesión.
-- **Prisma 7:** Recuerda que en esta versión, la URL de conexión **NO** va en el `schema.prisma`, sino que se lee desde el `prisma.config.ts` usando `dotenv`.
+- Node.js y TypeScript estricto.
+- Express.
+- Prisma 7 con `@prisma/adapter-mariadb`.
+- MySQL local.
+- JWT y bcrypt para autenticación.
 
-## 📌 Reglas de Negocio (MVP)
-1. **Días Hábiles:** El sistema calcula vencimientos sumando días hábiles (excluyendo sábados y domingos).
-2. **Estados:** `EN_ESPERA`, `RESPONDIDA`, `VENCIDA`, `RATIFICADA`, `EN_MULTA`.
-3. **Ratificaciones:** Si no hay respuesta, se emite una Ratificación. A la 3ra, se multa.
+## Organización
 
-## ⚠️ Reglas de Código (OBLIGATORIAS)
-- **NO** uses `any` en TypeScript. Define interfaces o tipos.
-- Usa `try/catch` en todos los controladores y devuelve respuestas JSON claras (ej. `{ message: "..." }` o `{ error: "..." }`).
-- Antes de escribir una consulta de Prisma, revisa el archivo `prisma/schema.prisma` para usar los nombres exactos de los modelos y campos.
-- Si necesitas instalar una nueva librería, pídemelo y dime el comando exacto.
-- Trabaja **un paso a la vez** (primero el controlador, luego la ruta, etc.).
+- `src/index.ts`: servidor Express y montaje de rutas.
+- `src/routes/auth.routes.ts`: endpoints de autenticación.
+- `src/controllers/auth.controller.ts`: manejo HTTP y respuestas.
+- `src/services/auth.service.ts`: registro, inicio de sesión y consulta de cuenta.
+- `src/middleware/auth.middleware.ts`: validación de JWT.
+- `src/config/`: configuración de Prisma y JWT.
+
+## Reglas
+
+- No usar `any`; validar datos externos y mantener TypeScript estricto.
+- No devolver contraseñas ni secretos.
+- El rol de registro se define en el servidor, nunca desde la petición.
+- Mantener los controladores delgados y la lógica de autenticación en el servicio.
+- El esquema y las migraciones existentes se conservan; no borrar ni modificar datos de MySQL sin autorización explícita.

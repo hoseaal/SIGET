@@ -2,21 +2,26 @@ import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
 import morgan from 'morgan';
+import { getJwtSecret } from './config/auth.js';
 import { prisma } from './config/prisma.js';
+import authRouter from './routes/auth.routes.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
 app.use(cors());
 
-app.get('/health', (_request, response) => {
-  response.json({ status: 'ok', modulo: 'SIGEA' });
+app.use('/api/auth', authRouter);
+
+app.use((_request, response) => {
+  response.status(404).json({ error: 'No se encontró el endpoint solicitado.' });
 });
 
 async function startServer(): Promise<void> {
   try {
+    getJwtSecret();
     await prisma.$queryRaw`SELECT 1`;
     app.listen(port, () => {
       console.log(`SIGEA API disponible en http://localhost:${port}`);

@@ -13,7 +13,7 @@ enum StatusSolicitud {
   RESPONDIDA
   VENCIDA
   RATIFICADA
-  EN_MULTA
+  DERIVADA
 }
 
 enum UserRol {
@@ -58,6 +58,8 @@ model Ente {
   rif       String   @unique
   siglas    String?
   autoridad String?
+  telefono  String?
+  direccion String?  @db.Text
   createdAt DateTime @default(now())
   
   auditorias Auditoria[]
@@ -107,7 +109,8 @@ model Solicitud {
   id        Int             @id @default(autoincrement())
   auditId   Int
   createdAt DateTime        @default(now())
-  dueDate   DateTime        // Fecha calculada por el backend (días hábiles)
+  dueDate   DateTime
+  businessDays Int          @default(7)
   status    StatusSolicitud @default(EN_ESPERA)
   updatedAt DateTime        @updatedAt // Para saber cuándo cambió de estado
 
@@ -120,6 +123,7 @@ model DetalleSolicitud {
   idRequest     Int
   detailRequest String
   status        StatusSolicitud @default(EN_ESPERA)
+  dueDate       DateTime        @default(now())
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
@@ -142,10 +146,11 @@ model Ratificacion {
   detailId            Int
   ratificationNumber  Int
   createdAt           DateTime @default(now()) 
-  penalty             Boolean  @default(false)
   updatedAt           DateTime @updatedAt // Para saber cuándo cambió la penalización
 
   detalle DetalleSolicitud @relation(fields: [detailId], references: [id])
+
+  @@unique([detailId, ratificationNumber])
 }
 
 model Cedula {
