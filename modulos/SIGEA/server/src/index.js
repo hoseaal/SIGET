@@ -4,7 +4,10 @@ import express from 'express';
 import morgan from 'morgan';
 import { getJwtSecret } from './config/auth.js';
 import { prisma } from './config/prisma.js';
+import auditoriaRouter from './routes/auditoria.routes.js';
 import authRouter from './routes/auth.routes.js';
+import enteRouter from './routes/ente.routes.js';
+import solicitudRouter from './routes/solicitud.routes.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -14,6 +17,9 @@ app.use(morgan('dev'));
 app.use(cors());
 
 app.use('/api/auth', authRouter);
+app.use('/api/entes', enteRouter);
+app.use('/api/auditorias', auditoriaRouter);
+app.use('/api/solicitudes', solicitudRouter);
 
 app.use((_request, response) => {
   response.status(404).json({ error: 'No se encontró el endpoint solicitado.' });

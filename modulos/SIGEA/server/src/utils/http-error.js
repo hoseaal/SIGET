@@ -50,3 +50,13 @@ export function parsePositiveInteger(value) {
     ? parsed
     : null;
 }
+
+export function parseOrThrow(schema, input) {
+  const parsed = schema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new HttpError(400, parsed.error.issues.map((issue) => issue.message).join(' '));
+  }
+
+  return parsed.data;
+}

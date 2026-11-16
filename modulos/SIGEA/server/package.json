@@ -12,7 +12,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:status": "prisma migrate status",
     "db:seed": "prisma db seed",
-    "test": "node --test src/schemas/auth.schema.test.js"
+    "test": "node --test \"src/schemas/*.test.js\""
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.10.1",

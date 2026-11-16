@@ -2,18 +2,10 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getJwtSecret } from '../config/auth.js';
 import { prisma } from '../config/prisma.js';
-import { HttpError } from '../utils/http-error.js';
+import { HttpError, parseOrThrow } from '../utils/http-error.js';
 import { loginSchema, registerSchema } from '../schemas/auth.schema.js';
 
 const bcryptRounds = 12;
-
-function parseOrThrow(schema, input) {
-  const parsed = schema.safeParse(input);
-  if (!parsed.success) {
-    throw new HttpError(400, parsed.error.issues.map((issue) => issue.message).join(' '));
-  }
-  return parsed.data;
-}
 
 function createToken(user, secret) {
   return jwt.sign(
@@ -40,7 +32,7 @@ export async function registerUser(input) {
     select: { id: true, name: true, ci: true, rol: true },
   });
 
-  return { token: createToken(user.id, secret), user };
+  return { token: createToken(user, secret), user };
 }
 
 export async function loginUser(input) {
@@ -55,7 +47,7 @@ export async function loginUser(input) {
   }
 
   return {
-    token: createToken(user.id, secret),
+    token: createToken(user, secret),
     user: { id: user.id, name: user.name, ci: user.ci, rol: user.rol },
   };
 }
