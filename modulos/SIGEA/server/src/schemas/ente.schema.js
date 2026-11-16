@@ -18,10 +18,10 @@ const optionalTextSchema = (max, label) => z.string()
 export const createEnteSchema = z.object({
   name: nameSchema,
   rif: rifSchema,
-  siglas: optionalTextSchema(10, 'Las siglas'),
-  autoridad: optionalTextSchema(100, 'La autoridad'),
-  telefono: optionalTextSchema(10, 'El teléfono'),
-  direccion: optionalTextSchema(500, 'La dirección'),
+  acronym: optionalTextSchema(10, 'Las siglas'),
+  authority: optionalTextSchema(100, 'La autoridad'),
+  phone: optionalTextSchema(11, 'El teléfono'),
+  address: optionalTextSchema(500, 'La dirección'),
 }).strict();
 
 export const updateEnteSchema = createEnteSchema.partial().strict();

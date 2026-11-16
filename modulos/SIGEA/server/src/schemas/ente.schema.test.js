@@ -19,16 +19,21 @@ test('accepts optional fields and trims whitespace', () => {
   const result = createEnteSchema.safeParse({
     name: '  Instituto Nacional  ',
     rif: ' J-12345678-9 ',
-    siglas: '  IN  ',
-    autoridad: 'María Pérez',
-    telefono: '0212-5555555',
-    direccion: 'Caracas',
+    acronym: '  IN  ',
+    authority: 'María Pérez',
+    phone: '04125555555',
+    address: 'Caracas',
   });
 
   assert.equal(result.success, true);
   assert.equal(result.data.name, ' Instituto Nacional '.trim());
   assert.equal(result.data.rif, 'J-12345678-9');
-  assert.equal(result.data.siglas, 'IN');
+  assert.equal(result.data.acronym, 'IN');
+  assert.equal(createEnteSchema.safeParse({
+    name: 'Instituto Nacional',
+    rif: 'J-12345678-9',
+    phone: '041255555551',
+  }).success, false);
 });
 
 test('rejects missing or invalid required fields', () => {
@@ -50,8 +55,8 @@ test('rejects unrelated extra fields with strict mode', () => {
 });
 
 test('update schema accepts any subset of fields', () => {
-  assert.equal(updateEnteSchema.safeParse({ siglas: 'CG' }).success, true);
-  assert.equal(updateEnteSchema.safeParse({ telefono: '0212-1111111' }).success, true);
+  assert.equal(updateEnteSchema.safeParse({ acronym: 'CG' }).success, true);
+  assert.equal(updateEnteSchema.safeParse({ phone: '04121111111' }).success, true);
   assert.equal(updateEnteSchema.safeParse({}).success, true);
   assert.equal(updateEnteSchema.safeParse({ name: 'A' }).success, false);
   assert.equal(updateEnteSchema.safeParse({ id: 1 }).success, false);

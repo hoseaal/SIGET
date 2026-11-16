@@ -55,10 +55,10 @@ model Ente {
   id        Int      @id @default(autoincrement())
   name      String
   rif       String   @unique
-  siglas    String?
-  autoridad String?
-  telefono  String?
-  direccion String?  @db.Text
+  acronym   String?
+  authority String?
+  phone     String?  @db.VarChar(11)
+  address   String?  @db.Text
   createdAt DateTime @default(now())
   
   auditorias Auditoria[]

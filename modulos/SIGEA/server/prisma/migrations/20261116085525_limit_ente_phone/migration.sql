@@ -1,0 +1,2 @@
+ALTER TABLE `Ente`
+    MODIFY COLUMN `phone` VARCHAR(11) NULL;

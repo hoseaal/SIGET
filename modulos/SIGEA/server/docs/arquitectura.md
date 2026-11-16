@@ -34,8 +34,8 @@ contraseñas y JWT está en `src/services/auth.service.js`. El middleware de ses
 
 ### Entes
 
-`src/schemas/ente.schema.js` valida `name` y `rif` obligatorios, y `siglas`, `autoridad`,
-`telefono` y `direccion` opcionales. El controlador `src/controllers/ente.controller.js` delega en
+`src/schemas/ente.schema.js` valida `name` y `rif` obligatorios, y `acronym`, `authority`,
+`phone` (hasta 11 caracteres) y `address` opcionales. El controlador `src/controllers/ente.controller.js` delega en
 `src/services/ente.service.js`: `GET` lista por nombre; `PUT` acepta actualizaciones parciales;
 `DELETE` responde 409 con "No se puede eliminar porque tiene auditorías asociadas" cuando Prisma
 devuelve la violación de clave foránea (`P2003`).
